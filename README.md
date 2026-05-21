@@ -17,9 +17,7 @@ enough evidence to answer.
 The benchmark is designed to stress both **search** and **reasoning**. A task may require combining information from public datasets,
 metadata files, and reference documents. This makes success depend not only on reasoning after retrieval, but also on whether the agent can find and inspect the correct evidence in the first place.
 
-<p align="center">
-  <img src="figures/lakeqa_fig1.png" alt="LakeQA emphasizes both search intensity and reasoning intensity." width="720">
-</p>
+![LakeQA emphasizes both search intensity and reasoning intensity.](figures/lakeqa_fig1.png)
 
 ## Downloading Task Data From S3
 
