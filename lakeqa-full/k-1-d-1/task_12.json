@@ -1,0 +1,30 @@
+{
+    "question": "Which year from 2005-2010 has the lowest number of stroke deaths in the United States? Your response should be in the format [Answer].",
+    "answer": "2009",
+    "nodes": {
+        "1": {
+            "source": "datagov/nchs-leading-causes-of-death-united-states/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/nchs-leading-causes-of-death-united-states/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Deaths\"] = pd.to_numeric(df[\"Deaths\"], errors=\"coerce\")\nfiltered = df[df[\"Year\"].between(2005, 2010) & df[\"State\"].eq(\"United States\") & df[\"Cause Name\"].eq(\"Stroke\")].copy()\nyearly_totals = filtered.groupby(\"Year\", dropna=True)[\"Deaths\"].sum()\nanswer = str(int(yearly_totals.idxmin()))\n",
+            "subquestion": "Which year from 2005-2010 has the lowest number of stroke deaths in the United States?",
+            "answer": "2009"
+        }
+    },
+    "datasets_used": [
+        "datagov/nchs-leading-causes-of-death-united-states/files/rows.txt",
+        "datagov/nchs-leading-causes-of-death-united-states/signed-metadata.txt",
+        "datagov/nchs-leading-causes-of-death-united-states/files/bi63-dtpu.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter to `State` = `United States` and `Cause Name` = `Stroke`, sum `Deaths` by `Year` within 2005-2010, and select the year with the smallest total. The answer is 2009.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2009"
+        }
+    ]
+}

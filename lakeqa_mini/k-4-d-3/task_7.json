@@ -1,0 +1,115 @@
+{
+    "question": "Among Washington, DC wards 2 and 5, identify which ward had more scheduled street-cleaning events from 2022 to 2024. In that ward, find the charter school whose serving spans grades 8 and 9, and is named after a famous person. What county is that person's birthplace located in? Please return the county only, i.e. `XX County`. Your response should be in the format [Answer].",
+    "answer": "Ulster County",
+    "nodes": {
+        "1": {
+            "source": "datagov/street-sweeping-schedule-2022/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/street-sweeping-schedule-2022/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()))\nward_numeric = pd.to_numeric(df[\"WARD\"], errors=\"coerce\")\ncounts = (\n    df[ward_numeric.isin([2, 5])]\n    .groupby(ward_numeric[ward_numeric.isin([2, 5])])\n    .size()\n    .sort_index()\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {int(x)}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "For Wards 2 and 5, how many scheduled street-cleaning events were listed in 2022?",
+            "answer": {
+                "Ward 2": 72,
+                "Ward 5": 80
+            }
+        },
+        "2": {
+            "source": "datagov/street-sweeping-schedule-2023/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/street-sweeping-schedule-2023/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()))\nward_numeric = pd.to_numeric(df[\"WARD\"], errors=\"coerce\")\ncounts = (\n    df[ward_numeric.isin([2, 5])]\n    .groupby(ward_numeric[ward_numeric.isin([2, 5])])\n    .size()\n    .sort_index()\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {int(x)}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "For Wards 2 and 5, how many scheduled street-cleaning events were listed in 2023?",
+            "answer": {
+                "Ward 2": 54,
+                "Ward 5": 83
+            }
+        },
+        "3": {
+            "source": "datagov/street-sweeping-schedule-2024/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/street-sweeping-schedule-2024/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()))\nward_numeric = pd.to_numeric(df[\"WARD\"], errors=\"coerce\")\ncounts = (\n    df[ward_numeric.isin([2, 5])]\n    .groupby(ward_numeric[ward_numeric.isin([2, 5])])\n    .size()\n    .sort_index()\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {int(x)}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "For Wards 2 and 5, how many scheduled street-cleaning events were listed in 2024?",
+            "answer": {
+                "Ward 2": 54,
+                "Ward 5": 87
+            }
+        },
+        "4": {
+            "source": "datagov/dc-charter-schools/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/dc-charter-schools/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\n\ngrade_map = {\n    \"PK3\": -2,\n    \"PK4\": -1,\n    \"KG\": 0,\n    \"1st\": 1,\n    \"2nd\": 2,\n    \"3rd\": 3,\n    \"4th\": 4,\n    \"5th\": 5,\n    \"6th\": 6,\n    \"7th\": 7,\n    \"8th\": 8,\n    \"9th\": 9,\n    \"10th\": 10,\n    \"11th\": 11,\n    \"12th\": 12,\n}\n\ndef spans_8_and_9(grades):\n    if not isinstance(grades, str):\n        return False\n    for part in grades.replace(\"–\", \"-\").split(\";\"):\n        part = part.strip()\n        if \"-\" in part:\n            start, end = [x.strip() for x in part.split(\"-\", 1)]\n            if start in grade_map and end in grade_map and grade_map[start] <= 8 <= grade_map[end] and grade_map[start] <= 9 <= grade_map[end]:\n                return True\n    return False\n\nmatches = (\n    df[(df[\"properties.WARD\"] == \"Ward 5\") & (df[\"properties.GRADES\"].apply(spans_8_and_9))]\n    [\"properties.NAME\"]\n    .tolist()\n)\nanswer = matches[0] if len(matches) == 1 else matches\n",
+            "subquestion": "Which charter school in <hop 1 answer> spans grades 8 and 9?",
+            "answer": "Sojourner Truth PCS"
+        },
+        "5": {
+            "source": "wikipedia/Sojourner_Truth/content.txt",
+            "fact": "Sojourner Truth was born into slavery in Swartekill, New York.",
+            "subquestion": "According to the biography of <hop 2 answer>, where was that person born?",
+            "answer": "Swartekill, New York"
+        },
+        "6": {
+            "source": "wikipedia/Rifton,_New_York/content.txt",
+            "fact": "Rifton is a hamlet (and census-designated place) in Ulster County, New York, and Swartekill was one of the hamlets encompassed in Rifton's former village.",
+            "subquestion": "According to the Rifton, New York article, what county is <hop 3 answer> located in?",
+            "answer": "Ulster County"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Sojourner_Truth/content.txt",
+        "wikipedia/Rifton,_New_York/content.txt",
+        "datagov/street-sweeping-schedule-2022/files/rows.txt",
+        "datagov/street-sweeping-schedule-2022/signed-metadata.txt",
+        "datagov/street-sweeping-schedule-2023/files/rows.txt",
+        "datagov/street-sweeping-schedule-2023/signed-metadata.txt",
+        "datagov/street-sweeping-schedule-2024/files/rows.txt",
+        "datagov/street-sweeping-schedule-2024/signed-metadata.txt",
+        "datagov/street-sweeping-schedule-2024/v1/files/3q8d-2t69.json",
+        "datagov/dc-charter-schools/files/data.txt",
+        "datagov/dc-charter-schools/signed-metadata.txt",
+        "datagov/dc-charter-schools/files/1.arcgis-layer.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: For Wards 2 and 5, count 2022 street-sweeping schedule entries by `WARD`.",
+                "Node 2: For Wards 2 and 5, count 2023 street-sweeping schedule entries by `WARD`.",
+                "Node 3: For Wards 2 and 5, count 2024 street-sweeping schedule entries by `WARD`.",
+                "Hop result: higher average street-sweeping schedule count = {Ward 5: (80 + 83 + 87) / 3 = 83.33, Ward 2: (72 + 54 + 54) / 3 = 60.0} -> Ward 5."
+            ],
+            "answer": "Ward 5"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In `Ward 5`, filter charter schools where `properties.WARD` equals `Ward 5` and `properties.GRADES` span both 8th and 9th grade, yielding Sojourner Truth PCS.",
+                "Hop result: Sojourner Truth PCS."
+            ],
+            "answer": "Sojourner Truth PCS"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Sojourner Truth was born in Swartekill, New York.",
+                "Hop result: Swartekill, New York."
+            ],
+            "answer": "Swartekill, New York"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Swartekill was one of the hamlets encompassed in Rifton, and Rifton is in Ulster County, New York.",
+                "Hop result: Ulster County."
+            ],
+            "answer": "Ulster County"
+        }
+    ]
+}

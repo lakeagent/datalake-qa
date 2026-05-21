@@ -1,0 +1,259 @@
+{
+  "question": "Among New York City schools that served high school students and reported at least 151 total VADIR incidents in 2013-2014, which schools also had at least 25 total incidents reported by school safety in 2013-2014, a safety and respect score of 7.3 or lower in 2013, and a poverty rate of at least 70% in 2013-2014? Among those schools, which had the highest four-year August graduation rate for the 2014 cohort? How many male athletic teams are named for that school? Please return only the number in the format [Answer].",
+  "answer": 15,
+  "nodes": {
+    "1": {
+      "source": "datagov/2013-2014-vadir-incidents/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2013-2014-vadir-incidents/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\ndf.columns = [\n    str(col).strip()\n    .replace('Without Weapon(s)', ' Without Weapon(s)')\n    .replace('With Weapon(s)', ' With Weapon(s)')\n    .replace('  ', ' ')\n    for col in df.columns\n]\n\ndimension_cols = {\n    'School year',\n    'School Year',\n    'County',\n    'District',\n    'School Name',\n    'BEDS Code',\n    'Grade Organization',\n    'Need/Resource Category',\n    'School Type',\n    'Enrollment',\n}\nincident_cols = [col for col in df.columns if col not in dimension_cols]\nnyc_counties = {\n    'bronx',\n    'bronx county',\n    'kings',\n    'kings county',\n    'brooklyn',\n    'new york',\n    'new york county',\n    'manhattan',\n    'queens',\n    'queens county',\n    'richmond',\n    'richmond county',\n    'staten island',\n}\n\nfiltered = df[df['County'].astype(str).str.strip().str.lower().isin(nyc_counties)].copy()\nfiltered = filtered[filtered['Grade Organization'].astype(str).str.contains('High', case=False, na=False)].copy()\nfiltered['BEDS Code'] = filtered['BEDS Code'].astype(str).str.strip()\nfiltered['School Name'] = filtered['School Name'].astype(str).str.strip()\nfiltered[incident_cols] = filtered[incident_cols].apply(pd.to_numeric, errors='coerce').fillna(0)\nfiltered['_total_incidents'] = filtered[incident_cols].sum(axis=1)\n\nranked = (\n    filtered.groupby(['BEDS Code', 'School Name'], as_index=False)['_total_incidents']\n    .sum()\n    .sort_values(['_total_incidents', 'BEDS Code'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nqualified = ranked[ranked['_total_incidents'].ge(151)].copy()\nanswer = [\n    f\"{row['BEDS Code']} | {row['School Name']}\"\n    for _, row in qualified.iterrows()\n]\n",
+      "subquestion": "Which New York City schools that served high school students reported at least 151 total VADIR incidents in 2013-2014, and what was each school's Basic Educational Data System code?",
+      "answer": [
+        "353100011460 | Susan E Wagner High School",
+        "342700011475 | Richmond Hill High School",
+        "331700011382 | Acad For College Prep & Career Exploration: A College Board Sch",
+        "331700011533 | School For Democracy And Leadership",
+        "331700011600 | Clara Barton High School",
+        "320700011473 | Mott Haven Village Prep High School",
+        "342400011485 | Grover Cleveland High School",
+        "320800011405 | Herbert H Lehman High School",
+        "310400011680 | Heritage School (the)",
+        "332100011525 | Edward R Murrow High School",
+        "342600011435 | Martin Van Buren High School",
+        "331500010448 | Brooklyn Secondary School For Collaborative Studies",
+        "342500011425 | John Bowne High School",
+        "331500011429 | Brooklyn School For Global Studies",
+        "332200011495 | Sheepshead Bay High School",
+        "343000011445 | William Cullen Bryant High School",
+        "321200011267 | Bronx Latin School",
+        "332100011410 | Abraham Lincoln High School",
+        "353100011440 | New Dorp High School",
+        "331700011548 | Brooklyn School For Music & Theater",
+        "342600011566 | Queens High School Of Teaching, Liberal Arts And Sciences"
+      ]
+    },
+    "2": {
+      "source": "datagov/2013-2014-school-locations/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2013-2014-school-locations/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nnode_1_answer = [\n    '353100011460 | Susan E Wagner High School',\n    '342700011475 | Richmond Hill High School',\n    '331700011382 | Acad For College Prep & Career Exploration: A College Board Sch',\n    '331700011533 | School For Democracy And Leadership',\n    '331700011600 | Clara Barton High School',\n    '320700011473 | Mott Haven Village Prep High School',\n    '342400011485 | Grover Cleveland High School',\n    '320800011405 | Herbert H Lehman High School',\n    '310400011680 | Heritage School (the)',\n    '332100011525 | Edward R Murrow High School',\n    '342600011435 | Martin Van Buren High School',\n    '331500010448 | Brooklyn Secondary School For Collaborative Studies',\n    '342500011425 | John Bowne High School',\n    '331500011429 | Brooklyn School For Global Studies',\n    '332200011495 | Sheepshead Bay High School',\n    '343000011445 | William Cullen Bryant High School',\n    '321200011267 | Bronx Latin School',\n    '332100011410 | Abraham Lincoln High School',\n    '353100011440 | New Dorp High School',\n    '331700011548 | Brooklyn School For Music & Theater',\n    '342600011566 | Queens High School Of Teaching, Liberal Arts And Sciences',\n]\n\nlookup = pd.DataFrame(\n    [\n        {'BEDS Code': item.split(' | ')[0].strip(), 'School Name': item.split(' | ', 1)[1].strip()}\n        for item in node_1_answer\n    ]\n)\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nlocations = df[['BEDS NUMBER', 'ATS SYSTEM CODE']].copy()\nlocations['BEDS NUMBER'] = pd.to_numeric(locations['BEDS NUMBER'], errors='coerce').astype('Int64').astype(str).str.strip()\nlocations['ATS SYSTEM CODE'] = locations['ATS SYSTEM CODE'].astype(str).str.strip()\nlocations = locations.drop_duplicates(subset=['BEDS NUMBER'], keep='first')\n\nmatched = lookup.merge(locations, left_on='BEDS Code', right_on='BEDS NUMBER', how='left', validate='one_to_one')\nanswer = [\n    f\"{row['School Name']} | {row['ATS SYSTEM CODE']}\"\n    for _, row in matched.iterrows()\n]\n",
+      "subquestion": "For the schools from node 1, what was each school's six-character school code?",
+      "answer": [
+        "Susan E Wagner High School | 31R460",
+        "Richmond Hill High School | 27Q475",
+        "Acad For College Prep & Career Exploration: A College Board Sch | 17K382",
+        "School For Democracy And Leadership | 17K533",
+        "Clara Barton High School | 17K600",
+        "Mott Haven Village Prep High School | 07X473",
+        "Grover Cleveland High School | 24Q485",
+        "Herbert H Lehman High School | 08X405",
+        "Heritage School (the) | 04M680",
+        "Edward R Murrow High School | 21K525",
+        "Martin Van Buren High School | 26Q435",
+        "Brooklyn Secondary School For Collaborative Studies | 15K448",
+        "John Bowne High School | 25Q425",
+        "Brooklyn School For Global Studies | 15K429",
+        "Sheepshead Bay High School | 22K495",
+        "William Cullen Bryant High School | 30Q445",
+        "Bronx Latin School | 12X267",
+        "Abraham Lincoln High School | 21K410",
+        "New Dorp High School | 31R440",
+        "Brooklyn School For Music & Theater | 17K548",
+        "Queens High School Of Teaching, Liberal Arts And Sciences | 26Q566"
+      ]
+    },
+    "3": {
+      "source": "datagov/2010-2016-school-safety-report/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2010-2016-school-safety-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nnode_2_answer = [\n    'Susan E Wagner High School | 31R460',\n    'Richmond Hill High School | 27Q475',\n    'Acad For College Prep & Career Exploration: A College Board Sch | 17K382',\n    'School For Democracy And Leadership | 17K533',\n    'Clara Barton High School | 17K600',\n    'Mott Haven Village Prep High School | 07X473',\n    'Grover Cleveland High School | 24Q485',\n    'Herbert H Lehman High School | 08X405',\n    'Heritage School (the) | 04M680',\n    'Edward R Murrow High School | 21K525',\n    'Martin Van Buren High School | 26Q435',\n    'Brooklyn Secondary School For Collaborative Studies | 15K448',\n    'John Bowne High School | 25Q425',\n    'Brooklyn School For Global Studies | 15K429',\n    'Sheepshead Bay High School | 22K495',\n    'William Cullen Bryant High School | 30Q445',\n    'Bronx Latin School | 12X267',\n    'Abraham Lincoln High School | 21K410',\n    'New Dorp High School | 31R440',\n    'Brooklyn School For Music & Theater | 17K548',\n    'Queens High School Of Teaching, Liberal Arts And Sciences | 26Q566',\n]\n\nlookup = pd.DataFrame(\n    [\n        {'School Name': item.split(' | ')[0].strip(), 'DBN': item.split(' | ')[1].strip()}\n        for item in node_2_answer\n    ]\n)\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\ndf['DBN'] = df['DBN'].astype(str).str.strip()\ndf = df[df['School Year'].astype(str).str.strip().eq('2013-14')].copy()\ndf = df[df['DBN'].str.match(r'^[0-9]{2}[A-Z][0-9]{3}$', na=False)].copy()\nfor col in ['Major N', 'Oth N', 'NoCrim N', 'Prop N', 'Vio N', 'Register']:\n    df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '', regex=False), errors='coerce')\ndf = df.sort_values(['DBN', 'Register'], ascending=[True, False], kind='mergesort')\ndf = df.drop_duplicates(subset=['DBN'], keep='first')\ndf['_total_reported_incidents'] = df[['Major N', 'Oth N', 'NoCrim N', 'Prop N', 'Vio N']].fillna(0).sum(axis=1)\n\nmatched = lookup.merge(df[['DBN', '_total_reported_incidents']], on='DBN', how='left', validate='one_to_one')\nqualified = matched[matched['_total_reported_incidents'].ge(25)].copy()\nanswer = qualified['School Name'].tolist()\n",
+      "subquestion": "Which schools from node 2 had at least 25 total incidents reported by school safety in 2013-2014?",
+      "answer": [
+        "Susan E Wagner High School",
+        "Clara Barton High School",
+        "Grover Cleveland High School",
+        "Edward R Murrow High School",
+        "Martin Van Buren High School",
+        "John Bowne High School",
+        "William Cullen Bryant High School"
+      ]
+    },
+    "4": {
+      "source": "datagov/2013-nyc-school-survey/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2013-nyc-school-survey/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nnode_2_answer = [\n    'Susan E Wagner High School | 31R460',\n    'Richmond Hill High School | 27Q475',\n    'Acad For College Prep & Career Exploration: A College Board Sch | 17K382',\n    'School For Democracy And Leadership | 17K533',\n    'Clara Barton High School | 17K600',\n    'Mott Haven Village Prep High School | 07X473',\n    'Grover Cleveland High School | 24Q485',\n    'Herbert H Lehman High School | 08X405',\n    'Heritage School (the) | 04M680',\n    'Edward R Murrow High School | 21K525',\n    'Martin Van Buren High School | 26Q435',\n    'Brooklyn Secondary School For Collaborative Studies | 15K448',\n    'John Bowne High School | 25Q425',\n    'Brooklyn School For Global Studies | 15K429',\n    'Sheepshead Bay High School | 22K495',\n    'William Cullen Bryant High School | 30Q445',\n    'Bronx Latin School | 12X267',\n    'Abraham Lincoln High School | 21K410',\n    'New Dorp High School | 31R440',\n    'Brooklyn School For Music & Theater | 17K548',\n    'Queens High School Of Teaching, Liberal Arts And Sciences | 26Q566',\n]\n\nlookup = pd.DataFrame(\n    [\n        {'School Name': item.split(' | ')[0].strip(), 'DBN': item.split(' | ')[1].strip()}\n        for item in node_2_answer\n    ]\n)\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\ndf['DBN'] = df['DBN'].astype(str).str.strip()\ndf['Total Safety and Respect Score'] = pd.to_numeric(df['Total Safety and Respect Score'], errors='coerce')\ndf = df[df['DBN'].str.match(r'^[0-9]{2}[A-Z][0-9]{3}$', na=False)].copy()\ndf = df.drop_duplicates(subset=['DBN'], keep='first')\n\nmatched = lookup.merge(df[['DBN', 'Total Safety and Respect Score']], on='DBN', how='left', validate='one_to_one')\nqualified = matched[matched['Total Safety and Respect Score'].le(7.3)].copy()\nanswer = qualified['School Name'].tolist()\n",
+      "subquestion": "Which schools from node 2 had a safety and respect score of 7.3 or lower in 2013?",
+      "answer": [
+        "Richmond Hill High School",
+        "Acad For College Prep & Career Exploration: A College Board Sch",
+        "School For Democracy And Leadership",
+        "Clara Barton High School",
+        "Herbert H Lehman High School",
+        "Heritage School (the)",
+        "Martin Van Buren High School",
+        "John Bowne High School",
+        "Brooklyn School For Global Studies",
+        "Sheepshead Bay High School",
+        "William Cullen Bryant High School",
+        "New Dorp High School",
+        "Brooklyn School For Music & Theater"
+      ]
+    },
+    "5": {
+      "source": "datagov/2011-2016-demographic-snapshot/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2011-2016-demographic-snapshot/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nnode_2_answer = [\n    'Susan E Wagner High School | 31R460',\n    'Richmond Hill High School | 27Q475',\n    'Acad For College Prep & Career Exploration: A College Board Sch | 17K382',\n    'School For Democracy And Leadership | 17K533',\n    'Clara Barton High School | 17K600',\n    'Mott Haven Village Prep High School | 07X473',\n    'Grover Cleveland High School | 24Q485',\n    'Herbert H Lehman High School | 08X405',\n    'Heritage School (the) | 04M680',\n    'Edward R Murrow High School | 21K525',\n    'Martin Van Buren High School | 26Q435',\n    'Brooklyn Secondary School For Collaborative Studies | 15K448',\n    'John Bowne High School | 25Q425',\n    'Brooklyn School For Global Studies | 15K429',\n    'Sheepshead Bay High School | 22K495',\n    'William Cullen Bryant High School | 30Q445',\n    'Bronx Latin School | 12X267',\n    'Abraham Lincoln High School | 21K410',\n    'New Dorp High School | 31R440',\n    'Brooklyn School For Music & Theater | 17K548',\n    'Queens High School Of Teaching, Liberal Arts And Sciences | 26Q566',\n]\n\nlookup = pd.DataFrame(\n    [\n        {'School Name': item.split(' | ')[0].strip(), 'DBN': item.split(' | ')[1].strip()}\n        for item in node_2_answer\n    ]\n)\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\ndf['DBN'] = df['DBN'].astype(str).str.strip()\ndf = df[df['Year'].astype(str).str.strip().eq('2013-14')].copy()\ndf['% Poverty'] = pd.to_numeric(df['% Poverty'].astype(str).str.rstrip('%'), errors='coerce')\ndf = df.drop_duplicates(subset=['DBN'], keep='first')\n\nmatched = lookup.merge(df[['DBN', '% Poverty']], on='DBN', how='left', validate='one_to_one')\nqualified = matched[matched['% Poverty'].ge(70)].copy()\nanswer = qualified['School Name'].tolist()\n",
+      "subquestion": "Which schools from node 2 had a poverty rate of at least 70% in 2013-2014?",
+      "answer": [
+        "Richmond Hill High School",
+        "Acad For College Prep & Career Exploration: A College Board Sch",
+        "School For Democracy And Leadership",
+        "Clara Barton High School",
+        "Mott Haven Village Prep High School",
+        "Grover Cleveland High School",
+        "Herbert H Lehman High School",
+        "Heritage School (the)",
+        "Brooklyn Secondary School For Collaborative Studies",
+        "John Bowne High School",
+        "Brooklyn School For Global Studies",
+        "William Cullen Bryant High School",
+        "Bronx Latin School",
+        "Brooklyn School For Music & Theater"
+      ]
+    },
+    "6": {
+      "source": "datagov/2005-2019-graduation-rates-all/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2005-2019-graduation-rates-all/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nnode_3_answer = [\n    'Susan E Wagner High School',\n    'Clara Barton High School',\n    'Grover Cleveland High School',\n    'Edward R Murrow High School',\n    'Martin Van Buren High School',\n    'John Bowne High School',\n    'William Cullen Bryant High School',\n]\nnode_4_answer = [\n    'Richmond Hill High School',\n    'Acad For College Prep & Career Exploration: A College Board Sch',\n    'School For Democracy And Leadership',\n    'Clara Barton High School',\n    'Herbert H Lehman High School',\n    'Heritage School (the)',\n    'Martin Van Buren High School',\n    'John Bowne High School',\n    'Brooklyn School For Global Studies',\n    'Sheepshead Bay High School',\n    'William Cullen Bryant High School',\n    'New Dorp High School',\n    'Brooklyn School For Music & Theater',\n]\nnode_5_answer = [\n    'Richmond Hill High School',\n    'Acad For College Prep & Career Exploration: A College Board Sch',\n    'School For Democracy And Leadership',\n    'Clara Barton High School',\n    'Mott Haven Village Prep High School',\n    'Grover Cleveland High School',\n    'Herbert H Lehman High School',\n    'Heritage School (the)',\n    'Brooklyn Secondary School For Collaborative Studies',\n    'John Bowne High School',\n    'Brooklyn School For Global Studies',\n    'William Cullen Bryant High School',\n    'Bronx Latin School',\n    'Brooklyn School For Music & Theater',\n]\n\ncandidate_schools = sorted(set(node_3_answer) & set(node_4_answer) & set(node_5_answer))\nlookup = pd.DataFrame({'School Name': candidate_schools})\nlookup['_school_key'] = lookup['School Name'].astype(str).str.strip().str.upper()\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\ndf['DBN'] = df['DBN'].astype(str).str.strip()\ndf['School Name'] = df['School Name'].astype(str).str.strip()\ndf['_school_key'] = df['School Name'].str.upper()\ndf['Cohort Year'] = pd.to_numeric(df['Cohort Year'], errors='coerce')\ndf['% Grads'] = pd.to_numeric(df['% Grads'], errors='coerce')\n\nfiltered = df[\n    df['_school_key'].isin(lookup['_school_key'])\n    & df['Category'].astype(str).str.strip().eq('All Students')\n    & df['Cohort'].astype(str).str.strip().eq('4 year August')\n    & df['Cohort Year'].eq(2014)\n].copy()\nfiltered = filtered.drop_duplicates(subset=['_school_key'], keep='first')\n\nmatched = lookup.merge(filtered[['_school_key', '% Grads']], on='_school_key', how='left', validate='one_to_one')\nmatched = matched.sort_values(['% Grads', 'School Name'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = matched.iloc[0]['School Name']\n",
+      "subquestion": "Among the schools that appear in the answers to nodes 3, 4, and 5, which had the highest four-year August graduation rate for the 2014 cohort?",
+      "answer": "John Bowne High School"
+    },
+    "7": {
+      "source": "wikipedia/John_Bowne_High_School/content.txt",
+      "fact": "John Bowne's male athletic teams consist of: Varsity Baseball and JV Baseball, Varsity Basketball and JV Basketball, Varsity Bowling, Coed Cricket, Cross Country, Coed Golf, Varsity Handball, Indoor Track, Outdoor Track, Varsity Soccer, Varsity Tennis, Varsity Volleyball, and Varsity Wrestling.",
+      "subquestion": "How many male athletic teams are named for <hop 4 answer>?",
+      "answer": 15
+    }
+  },
+  "datasets_used": [
+    "datagov/2013-2014-vadir-incidents/files/rows.txt",
+    "datagov/2013-2014-vadir-incidents/files/columns.txt",
+    "datagov/2013-2014-school-locations/files/rows.txt",
+    "datagov/2013-2014-school-locations/files/columns.txt",
+    "datagov/2013-2014-school-locations/files/ac4n-c5re.txt",
+    "datagov/2010-2016-school-safety-report/files/rows.txt",
+    "datagov/2010-2016-school-safety-report/signed-metadata.txt",
+    "datagov/2010-2016-school-safety-report/files/qybk-bjjc.publisher-view.json",
+    "datagov/2013-nyc-school-survey/files/rows.txt",
+    "datagov/2013-nyc-school-survey/signed-metadata.txt",
+    "datagov/2013-nyc-school-survey/files/School_Survey_Data_Dictionary.xls",
+    "datagov/2011-2016-demographic-snapshot/files/rows.txt",
+    "datagov/2011-2016-demographic-snapshot/files/Demographic_Snapshot_DD.xlsx",
+    "datagov/2005-2019-graduation-rates-all/files/rows.txt",
+    "datagov/2005-2019-graduation-rates-all/signed-metadata.txt",
+    "datagov/2005-2019-graduation-rates-all/files/organization-of-new-york-state-graduation-reporting.pdf",
+    "wikipedia/John_Bowne_High_School/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: After summing all reported incident columns for NYC high schools in 2013-14, 21 schools meet the confirmed threshold of at least 151 total VADIR incidents.",
+        "The cutoff is tied at 151 incidents between Brooklyn School For Music & Theater and Queens High School Of Teaching, Liberal Arts And Sciences, so the complete answer set has 21 schools rather than 20.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": [
+        "353100011460 | Susan E Wagner High School",
+        "342700011475 | Richmond Hill High School",
+        "331700011382 | Acad For College Prep & Career Exploration: A College Board Sch",
+        "331700011533 | School For Democracy And Leadership",
+        "331700011600 | Clara Barton High School",
+        "320700011473 | Mott Haven Village Prep High School",
+        "342400011485 | Grover Cleveland High School",
+        "320800011405 | Herbert H Lehman High School",
+        "310400011680 | Heritage School (the)",
+        "332100011525 | Edward R Murrow High School",
+        "342600011435 | Martin Van Buren High School",
+        "331500010448 | Brooklyn Secondary School For Collaborative Studies",
+        "342500011425 | John Bowne High School",
+        "331500011429 | Brooklyn School For Global Studies",
+        "332200011495 | Sheepshead Bay High School",
+        "343000011445 | William Cullen Bryant High School",
+        "321200011267 | Bronx Latin School",
+        "332100011410 | Abraham Lincoln High School",
+        "353100011440 | New Dorp High School",
+        "331700011548 | Brooklyn School For Music & Theater",
+        "342600011566 | Queens High School Of Teaching, Liberal Arts And Sciences"
+      ]
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: In the 2013-2014 school locations file, each hop-1 BEDS code maps to a single ATS SYSTEM CODE, which is the school's six-character school code.",
+        "Hop result: <node_2 answer>"
+      ],
+      "answer": [
+        "Susan E Wagner High School | 31R460",
+        "Richmond Hill High School | 27Q475",
+        "Acad For College Prep & Career Exploration: A College Board Sch | 17K382",
+        "School For Democracy And Leadership | 17K533",
+        "Clara Barton High School | 17K600",
+        "Mott Haven Village Prep High School | 07X473",
+        "Grover Cleveland High School | 24Q485",
+        "Herbert H Lehman High School | 08X405",
+        "Heritage School (the) | 04M680",
+        "Edward R Murrow High School | 21K525",
+        "Martin Van Buren High School | 26Q435",
+        "Brooklyn Secondary School For Collaborative Studies | 15K448",
+        "John Bowne High School | 25Q425",
+        "Brooklyn School For Global Studies | 15K429",
+        "Sheepshead Bay High School | 22K495",
+        "William Cullen Bryant High School | 30Q445",
+        "Bronx Latin School | 12X267",
+        "Abraham Lincoln High School | 21K410",
+        "New Dorp High School | 31R440",
+        "Brooklyn School For Music & Theater | 17K548",
+        "Queens High School Of Teaching, Liberal Arts And Sciences | 26Q566"
+      ]
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 3: Among the schools from hop 2, seven have at least 25 total reported incidents in 2013-14 after summing Major N, Oth N, NoCrim N, Prop N, and Vio N in the school safety report.",
+        "Node 4: Among the schools from hop 2, thirteen have a safety and respect score of 7.3 or lower in the 2013 school survey.",
+        "Node 5: Among the schools from hop 2, fourteen have a poverty rate of at least 70 percent in the 2013-14 demographic snapshot.",
+        "Intersecting <node_3 answer>, <node_4 answer>, and <node_5 answer> leaves Clara Barton High School, John Bowne High School, and William Cullen Bryant High School.",
+        "Hop result: Clara Barton High School | John Bowne High School | William Cullen Bryant High School"
+      ],
+      "answer": [
+        "Clara Barton High School",
+        "John Bowne High School",
+        "William Cullen Bryant High School"
+      ]
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: Among the three schools left after hop 3, John Bowne High School has the highest four-year August graduation rate for the 2014 cohort at 77.1 percent, ahead of Clara Barton High School at 74.5 percent and William Cullen Bryant High School at 70.8 percent.",
+        "Hop result: <node_6 answer>"
+      ],
+      "answer": "John Bowne High School"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: The source names fifteen male athletic team categories for <hop 4 answer>.",
+        "Hop result: 15."
+      ],
+      "answer": 15
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+{
+    "question": "Identify the state that appears in both groups: the states where Hawaii state and county candidates in the 2010-2012 election cycle still owed vendors at least $300 altogether while having paid back no more than half of what they owed, and the states that in 2015 had a value of at least 2 when you multiply the number of different utilities by how much the average household price divided by the average industrial price exceeds 1 for places where supply and delivery were sold together. Among the national parks listed in that state, which one has the largest 2024 recreation-visitor count? Your response should be in the format [Answer].",
+    "answer": "Grand Canyon",
+    "nodes": {
+        "1": {
+            "source": "datagov/unpaid-expenditures-for-hawaii-state-and-county-candidates-from-november-8-2006-through-31/files/ccsche.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/unpaid-expenditures-for-hawaii-state-and-county-candidates-from-november-8-2006-through-31/files/ccsche.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\nfiltered = df[(df[\"Election Period\"] == \"2010-2012\") & df[\"State\"].notna()].copy()\nfiltered[\"State\"] = filtered[\"State\"].astype(str).str.strip()\nfiltered[\"state_name\"] = filtered[\"State\"].map(state_map).fillna(filtered[\"State\"])\nfiltered[\"Unpaid Expenditure Amount\"] = pd.to_numeric(filtered[\"Unpaid Expenditure Amount\"], errors=\"coerce\")\nfiltered[\"Repay Amount\"] = pd.to_numeric(filtered[\"Repay Amount\"], errors=\"coerce\")\n\nstate_metric = (\n    filtered.groupby(\"state_name\", dropna=False)\n    .agg(\n        total_unpaid=(\"Unpaid Expenditure Amount\", \"sum\"),\n        total_repay=(\"Repay Amount\", \"sum\")\n    )\n    .reset_index()\n)\nstate_metric[\"repayment_coverage\"] = state_metric[\"total_repay\"] / state_metric[\"total_unpaid\"]\n\nresult = state_metric[\n    (state_metric[\"total_unpaid\"] >= 300) &\n    (state_metric[\"repayment_coverage\"] <= 0.5)\n].sort_values(\"state_name\").reset_index(drop=True)\n\nanswer = result[\"state_name\"].tolist()",
+            "subquestion": "During the 2010-2012 election cycle, which states were the vendors located in when Hawaii state and county candidates from november 8 2006 to 31 still owed at least $300 in total and had paid back no more than half of that amount?",
+            "answer": [
+                "Alabama",
+                "Arizona"
+            ]
+        },
+        "2": {
+            "source": "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2015-b41e3/files/iouzipcodes2015.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2015-b41e3/files/iouzipcodes2015.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\nfiltered = df[df[\"service_type\"] == \"Bundled\"].copy()\nfiltered[\"res_rate\"] = pd.to_numeric(filtered[\"res_rate\"], errors=\"coerce\")\nfiltered[\"ind_rate\"] = pd.to_numeric(filtered[\"ind_rate\"], errors=\"coerce\")\nfiltered = filtered[\n    filtered[\"res_rate\"].notna() &\n    filtered[\"ind_rate\"].notna() &\n    (filtered[\"ind_rate\"] > 0)\n].copy()\nfiltered[\"state\"] = filtered[\"state\"].astype(str).str.strip()\nfiltered[\"state_name\"] = filtered[\"state\"].map(state_map).fillna(filtered[\"state\"])\nfiltered[\"residential_to_industrial_rate_ratio\"] = filtered[\"res_rate\"] / filtered[\"ind_rate\"]\n\nstate_metric = (\n    filtered.groupby(\"state_name\", dropna=False)\n    .agg(\n        utility_count=(\"utility_name\", \"nunique\"),\n        avg_residential_to_industrial_rate_ratio=(\"residential_to_industrial_rate_ratio\", \"mean\")\n    )\n    .reset_index()\n)\nstate_metric[\"utility_spread_score\"] = (\n    state_metric[\"utility_count\"] *\n    (state_metric[\"avg_residential_to_industrial_rate_ratio\"] - 1)\n)\n\nresult = state_metric[\n    state_metric[\"utility_spread_score\"] >= 2\n].sort_values(\"state_name\").reset_index(drop=True)\n\nanswer = result[\"state_name\"].tolist()",
+            "subquestion": "Which states in 2015 had a value of at least 2 when you multiply the number of different utilities by how much the average household price divided by the average industrial price exceeds 1, considering only places where supply and delivery were sold together?",
+            "answer": [
+                "Arizona",
+                "Florida",
+                "Illinois",
+                "Indiana",
+                "Iowa",
+                "Kansas",
+                "Kentucky",
+                "Louisiana",
+                "Michigan",
+                "Minnesota",
+                "Missouri",
+                "New Jersey",
+                "New Mexico",
+                "New York",
+                "North Carolina",
+                "Ohio",
+                "Oklahoma",
+                "Pennsylvania",
+                "South Carolina",
+                "South Dakota",
+                "Texas",
+                "Virginia",
+                "West Virginia",
+                "Wisconsin",
+                "Wyoming"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/List_of_national_parks_of_the_United_States/content.txt",
+            "fact": "The national parks set a visitation record in 2024, with more than 94 million visitors. National parks  Legend  +List of national parks of the United States Name Image Location Date established as park Area (2023) Recreation visitors (2024) Description. Grand Canyon *200pxArizona4,919,163The Grand Canyon, carved by the mighty Colorado River, is long, up to 1 mile (1.6 km) deep, and up to wide. Petrified Forest200x200px|alt=Cone-shaped rock formationsArizona559,254This portion of the Chinle Formation has a large concentration of 225-million-year-old petrified wood. Saguaro200pxArizona946,369Split into the separate Rincon Mountain and Tucson Mountain districts, this park is evidence that the dry Sonoran Desert is still home to a great variety of life spanning six biotic communities.",
+            "subquestion": "Among the national parks listed in <hop 1 answer>, which one has the largest 2024 recreation-visitor count?",
+            "answer": "Grand Canyon"
+        }
+    },
+    "datasets_used": [
+        "datagov/unpaid-expenditures-for-hawaii-state-and-county-candidates-from-november-8-2006-through-31/files/ccsche.txt",
+        "datagov/unpaid-expenditures-for-hawaii-state-and-county-candidates-from-november-8-2006-through-31/signed-metadata.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2015-b41e3/files/iouzipcodes2015.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2015-b41e3/signed-metadata.txt",
+        "wikipedia/List_of_national_parks_of_the_United_States/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Election Period` = `2010-2012` and `State` is present, convert `Unpaid Expenditure Amount` and `Repay Amount` to numeric, normalize vendor `State` values to full state names, aggregate by state to get total unpaid and total repaid amounts, compute repayment coverage as total repaid divided by total unpaid, and keep states with total unpaid at least 300 and repayment coverage at most 0.5.",
+                "Node 2: Filter rows where `service_type` = `Bundled`, convert `res_rate` and `ind_rate` to numeric, exclude rows with missing values or nonpositive `ind_rate`, normalize `state` values to full state names, compute each row's residential-to-industrial rate ratio, aggregate by state to get distinct `utility_name` count and the average ratio, compute spread score as utility count multiplied by the average ratio minus 1, and keep states with spread score at least 2.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Arizona."
+            ],
+            "answer": "Arizona"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Use <hop 1 answer> as the state, then compare the 2024 recreation-visitor counts for the national parks listed in that state. Arizona's listed 2024 counts are Grand Canyon 4,919,163, Petrified Forest 559,254, and Saguaro 946,369.",
+                "Hop result: Grand Canyon has the largest listed 2024 recreation-visitor count among the national parks in Arizona."
+            ],
+            "answer": "Grand Canyon"
+        }
+    ]
+}

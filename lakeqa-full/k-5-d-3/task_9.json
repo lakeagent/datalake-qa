@@ -1,0 +1,218 @@
+{
+    "question": "Across 2019-2021, identify the Texas counties that consistently ranked in the statewide top five for spending on major asset purchases and long-term property improvements and also in the statewide top five for releases from the Texas state prison system in each of those years. Among that set, find the county with the highest average intake counts into the Texas state prison system over 2019-2021. Its county seat has been home to a National Basketball Association franchise since 1971. Which franchise is it? Return the team name only. Your response should be in the format [Answer].",
+    "answer": "Houston Rockets",
+    "nodes": {
+        "1": {
+            "source": "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-state-expenditures-by-county-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"County\"] = df[\"County\"].astype(str).str.upper().str.strip()\ndf[\"Amount\"] = pd.to_numeric(df[\"Amount\"], errors=\"coerce\")\nanswer = (\n    df[df[\"Major Spending Category\"].astype(str).str.upper().eq(\"CAPITAL OUTLAY\")]\n    .groupby(\"County\", as_index=False)[\"Amount\"]\n    .sum()\n    .sort_values([\"Amount\", \"County\"], ascending=[False, True])\n    .head(5)[\"County\"]\n    .tolist()\n)",
+            "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2019?",
+            "answer": [
+                "HARRIS",
+                "TRAVIS",
+                "DALLAS",
+                "HARDIN",
+                "BEXAR"
+            ]
+        },
+        "2": {
+            "source": "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-state-expenditures-by-county-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"County\"] = df[\"County\"].astype(str).str.upper().str.strip()\ndf[\"Amount\"] = pd.to_numeric(df[\"Amount\"], errors=\"coerce\")\nanswer = (\n    df[df[\"Major Spending Category\"].astype(str).str.upper().eq(\"CAPITAL OUTLAY\")]\n    .groupby(\"County\", as_index=False)[\"Amount\"]\n    .sum()\n    .sort_values([\"Amount\", \"County\"], ascending=[False, True])\n    .head(5)[\"County\"]\n    .tolist()\n)",
+            "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2020?",
+            "answer": [
+                "TRAVIS",
+                "HARRIS",
+                "DALLAS",
+                "BEXAR",
+                "GRAYSON"
+            ]
+        },
+        "3": {
+            "source": "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-state-expenditures-by-county-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"County\"] = df[\"County\"].astype(str).str.upper().str.strip()\ndf[\"Amount\"] = pd.to_numeric(df[\"Amount\"], errors=\"coerce\")\nanswer = (\n    df[df[\"Major Spending Category\"].astype(str).str.upper().eq(\"CAPITAL OUTLAY\")]\n    .groupby(\"County\", as_index=False)[\"Amount\"]\n    .sum()\n    .sort_values([\"Amount\", \"County\"], ascending=[False, True])\n    .head(5)[\"County\"]\n    .tolist()\n)",
+            "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2021?",
+            "answer": [
+                "HARRIS",
+                "TRAVIS",
+                "DALLAS",
+                "BEXAR",
+                "GUADALUPE"
+            ]
+        },
+        "4": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nhop_1_counties = [\"HARRIS\", \"TRAVIS\", \"DALLAS\", \"HARDIN\", \"BEXAR\"]\ndf[\"County\"] = df[\"County\"].astype(str).str.upper().str.strip()\nstatewide_top_5 = (\n    df.groupby(\"County\", as_index=False)\n    .size()\n    .rename(columns={\"size\": \"release_count\"})\n    .sort_values([\"release_count\", \"County\"], ascending=[False, True])\n    .head(5)\n)\nanswer = statewide_top_5[statewide_top_5[\"County\"].isin(hop_1_counties)][\"County\"].tolist()",
+            "subquestion": "In 2019, among <hop 1 answer>, which counties were in the statewide top 5 for releases from the Texas state prison system?",
+            "answer": [
+                "HARRIS",
+                "DALLAS",
+                "BEXAR"
+            ]
+        },
+        "5": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nhop_1_counties = [\"TRAVIS\", \"HARRIS\", \"DALLAS\", \"BEXAR\", \"GRAYSON\"]\ndf[\"County\"] = df[\"County\"].astype(str).str.upper().str.strip()\nstatewide_top_5 = (\n    df.groupby(\"County\", as_index=False)\n    .size()\n    .rename(columns={\"size\": \"release_count\"})\n    .sort_values([\"release_count\", \"County\"], ascending=[False, True])\n    .head(5)\n)\nanswer = statewide_top_5[statewide_top_5[\"County\"].isin(hop_1_counties)][\"County\"].tolist()",
+            "subquestion": "In 2020, among <hop 1 answer>, which counties were in the statewide top 5 for releases from the Texas state prison system?",
+            "answer": [
+                "HARRIS",
+                "DALLAS",
+                "BEXAR",
+                "TRAVIS"
+            ]
+        },
+        "6": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nhop_1_counties = [\"HARRIS\", \"TRAVIS\", \"DALLAS\", \"BEXAR\", \"GUADALUPE\"]\ndf[\"County\"] = df[\"County\"].astype(str).str.upper().str.strip()\nstatewide_top_5 = (\n    df.groupby(\"County\", as_index=False)\n    .size()\n    .rename(columns={\"size\": \"release_count\"})\n    .sort_values([\"release_count\", \"County\"], ascending=[False, True])\n    .head(5)\n)\nanswer = statewide_top_5[statewide_top_5[\"County\"].isin(hop_1_counties)][\"County\"].tolist()",
+            "subquestion": "In 2021, among <hop 1 answer>, which counties were in the statewide top 5 for releases from the Texas state prison system?",
+            "answer": [
+                "HARRIS",
+                "DALLAS",
+                "BEXAR"
+            ]
+        },
+        "7": {
+            "source": "datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nhop_2_counties = [\"HARRIS\", \"DALLAS\", \"BEXAR\"]\ndf[\"County\"] = df[\"County\"].astype(str).str.upper().str.strip()\nanswer = (\n    df[df[\"County\"].isin(hop_2_counties)]\n    .groupby(\"County\", as_index=False)\n    .size()\n    .rename(columns={\"size\": \"intake_count\"})\n    .sort_values([\"intake_count\", \"County\"], ascending=[False, True])\n    .set_index(\"County\")[\"intake_count\"]\n    .to_dict()\n)",
+            "subquestion": "In 2019, what were the intake counts into the Texas state prison system for counties in <hop 2 answer>?",
+            "answer": {
+                "HARRIS": 7874,
+                "DALLAS": 4660,
+                "BEXAR": 4457
+            }
+        },
+        "8": {
+            "source": "datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nhop_2_counties = [\"HARRIS\", \"DALLAS\", \"BEXAR\"]\ndf[\"County\"] = df[\"County\"].astype(str).str.upper().str.strip()\nanswer = (\n    df[df[\"County\"].isin(hop_2_counties)]\n    .groupby(\"County\", as_index=False)\n    .size()\n    .rename(columns={\"size\": \"intake_count\"})\n    .sort_values([\"intake_count\", \"County\"], ascending=[False, True])\n    .set_index(\"County\")[\"intake_count\"]\n    .to_dict()\n)",
+            "subquestion": "In 2020, what were the intake counts into the Texas state prison system for counties in <hop 2 answer>?",
+            "answer": {
+                "HARRIS": 3840,
+                "DALLAS": 2519,
+                "BEXAR": 2420
+            }
+        },
+        "9": {
+            "source": "datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nhop_2_counties = [\"HARRIS\", \"DALLAS\", \"BEXAR\"]\ndf[\"County\"] = df[\"County\"].astype(str).str.upper().str.strip()\nanswer = (\n    df[df[\"County\"].isin(hop_2_counties)]\n    .groupby(\"County\", as_index=False)\n    .size()\n    .rename(columns={\"size\": \"intake_count\"})\n    .sort_values([\"intake_count\", \"County\"], ascending=[False, True])\n    .set_index(\"County\")[\"intake_count\"]\n    .to_dict()\n)",
+            "subquestion": "In 2021, what were the intake counts into the Texas state prison system for counties in <hop 2 answer>?",
+            "answer": {
+                "HARRIS": 4652,
+                "DALLAS": 3520,
+                "BEXAR": 2822
+            }
+        },
+        "10": {
+            "source": "wikipedia/Harris_County,_Texas/content.txt",
+            "fact": "Harris County is the most populous county in Texas and the third-most populous in the United States. The county seat is Houston, which is also the largest city in Texas and the fourth-largest city in the United States.",
+            "subquestion": "What city is the county seat of <hop 3 answer>?",
+            "answer": "Houston"
+        },
+        "11": {
+            "source": "wikipedia/Houston/content.txt",
+            "fact": "The Houston Rockets are a National Basketball Association franchise based in the city since 1971.",
+            "subquestion": "Which National Basketball Association franchise is based in <hop 4 answer> and has been there since 1971?",
+            "answer": "Houston Rockets"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Harris_County,_Texas/content.txt",
+        "wikipedia/Houston/content.txt",
+        "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2019/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2019/files/2x5x-m677.txt",
+        "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2020/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2020/files/aact-g69n.publisher-view.json",
+        "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2021/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2021/files/tup7-smjg.publisher-view.json",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2021/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2019/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2020/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2021/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Convert `County` to uppercase, convert `Amount` to numeric, filter 2019 rows where `Major Spending Category` = `CAPITAL OUTLAY`, group by `County`, sum `Amount`, sort descending, and keep the top five counties.",
+                "Node 2: Convert `County` to uppercase, convert `Amount` to numeric, filter 2020 rows where `Major Spending Category` = `CAPITAL OUTLAY`, group by `County`, sum `Amount`, sort descending, and keep the top five counties.",
+                "Node 3: Convert `County` to uppercase, convert `Amount` to numeric, filter 2021 rows where `Major Spending Category` = `CAPITAL OUTLAY`, group by `County`, sum `Amount`, sort descending, and keep the top five counties.",
+                "Hop result: intersect the three yearly top-five county sets to keep the counties that were top five for capital outlay spending in all three years: HARRIS, TRAVIS, DALLAS, and BEXAR."
+            ],
+            "answer": [
+                "HARRIS",
+                "TRAVIS",
+                "DALLAS",
+                "BEXAR"
+            ]
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: Convert `County` to uppercase, group FY 2019 release rows by `County`, count rows, sort descending, keep the statewide top five counties, and return the overlap with <hop 1 answer>.",
+                "Node 5: Convert `County` to uppercase, group FY 2020 release rows by `County`, count rows, sort descending, keep the statewide top five counties, and return the overlap with <hop 1 answer>.",
+                "Node 6: Convert `County` to uppercase, group FY 2021 release rows by `County`, count rows, sort descending, keep the statewide top five counties, and return the overlap with <hop 1 answer>.",
+                "Hop result: intersect the three yearly overlap sets to keep the counties that were top five for both capital outlay spending and TDCJ releases in every year: HARRIS, DALLAS, and BEXAR."
+            ],
+            "answer": [
+                "HARRIS",
+                "DALLAS",
+                "BEXAR"
+            ]
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                7,
+                8,
+                9
+            ],
+            "reasoning": [
+                "Node 7: Convert `County` to uppercase, filter FY 2019 intake rows where `County` is one of <hop 2 answer>, group by `County`, count rows, and return the yearly intake mapping.",
+                "Node 8: Convert `County` to uppercase, filter FY 2020 intake rows where `County` is one of <hop 2 answer>, group by `County`, count rows, and return the yearly intake mapping.",
+                "Node 9: Convert `County` to uppercase, filter FY 2021 intake rows where `County` is one of <hop 2 answer>, group by `County`, count rows, and return the yearly intake mapping.",
+                "Hop result: average the three yearly intake counts and select HARRIS because it has the highest overall average."
+            ],
+            "answer": "HARRIS"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: Retrieve the county seat of <hop 3 answer>.",
+                "Hop result: the county seat is Houston."
+            ],
+            "answer": "Houston"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                11
+            ],
+            "reasoning": [
+                "Node 11: Retrieve the National Basketball Association franchise based in <hop 4 answer> since 1971.",
+                "Hop result: the franchise is the Houston Rockets."
+            ],
+            "answer": "Houston Rockets"
+        }
+    ]
+}

@@ -1,0 +1,106 @@
+{
+    "question": "First identify the US city with the highest average age-adjusted adult obesity rate across 2016 and 2018. Then identify the corporation that founded that city. For that corporation's later acquisition, what is the difference between the price including debt and the announced purchase price, in billions of US dollars? Round your answer to one decimal. Your response should be in the format [Answer].",
+    "answer": "0.8",
+    "nodes": {
+        "1": {
+            "source": "datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[\n    df[\"GeographicLevel\"].astype(str).str.strip().eq(\"City\")\n    & df[\"Measure\"].astype(str).str.strip().eq(\"Obesity among adults aged >=18 Years\")\n    & df[\"Data_Value_Type\"].astype(str).str.strip().eq(\"Age-adjusted prevalence\")\n].copy()\nfiltered[\"Data_Value\"] = pd.to_numeric(filtered[\"Data_Value\"], errors=\"coerce\")\ncity_scores = filtered.groupby(\"CityName\", dropna=True)[\"Data_Value\"].mean().sort_values(ascending=False)\nanswer = {city: round(float(city_scores.loc[city]), 1) for city in city_scores.head(8).index.tolist()}\n",
+            "subquestion": "In 2016, what was the average age-adjusted adult obesity rate for each US city?",
+            "answer": {
+                "Dayton": 47.2,
+                "Gary": 46.9,
+                "Detroit": 45.2,
+                "Youngstown": 43.8,
+                "Macon": 42.9,
+                "Flint": 42.7,
+                "Camden": 42.2,
+                "Cleveland": 42.1
+            },
+            "limit": 8
+        },
+        "2": {
+            "source": "datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[\n    df[\"GeographicLevel\"].astype(str).str.strip().eq(\"City\")\n    & df[\"Measure\"].astype(str).str.strip().eq(\"Obesity among adults aged >=18 Years\")\n    & df[\"Data_Value_Type\"].astype(str).str.strip().eq(\"Age-adjusted prevalence\")\n].copy()\nfiltered[\"Data_Value\"] = pd.to_numeric(filtered[\"Data_Value\"], errors=\"coerce\")\ncity_scores = filtered.groupby(\"CityName\", dropna=True)[\"Data_Value\"].mean().sort_values(ascending=False)\nanswer = {city: round(float(city_scores.loc[city]), 1) for city in city_scores.head(8).index.tolist()}\n",
+            "subquestion": "In 2018, what was the average age-adjusted adult obesity rate for each US city?",
+            "answer": {
+                "Gary": 49.0,
+                "Detroit": 47.4,
+                "Flint": 45.4,
+                "Jackson": 44.5,
+                "Brownsville": 44.4,
+                "Camden": 44.1,
+                "Macon": 44.0,
+                "Dayton": 43.5
+            },
+            "limit": 8
+        },
+        "3": {
+            "source": "wikipedia/Gary,_Indiana/content.txt",
+            "fact": "Gary, Indiana, was founded in 1906 by the U.S. Steel corporation as the home for its new plant, Gary Works. The city was named after lawyer Elbert Henry Gary, who was the founding chairman of the United States Steel Corporation.",
+            "subquestion": "What corporation founded <hop 1 answer>?",
+            "answer": "U.S. Steel Corporation"
+        },
+        "4": {
+            "source": "wikipedia/U.S._Steel/content.txt",
+            "fact": "The United States Steel Corporation is an American steel company based in Pittsburgh, Pennsylvania, that maintains production facilities at several additional locations in the U.S. and Central Europe. The company produces and sells steel products, including flat-rolled and tubular products for customers in industries across automotive, construction, consumer, electrical, industrial equipment, distribution, and energy. Operations also include iron ore and coke production facilities. In 2025, U.S. Steel was acquired by Nippon Steel in a deal arranged with the United States government.\n\nU.S. Steel ranked eighth among global steel producers in 2008 and 24th by 2022, remaining the second-largest in the U.S. behind Nucor. Renamed USX Corporation in 1986, it reverted to U.S. Steel in 2001 after spinning off its energy assets, including Marathon Oil. In December 2023, Nippon Steel announced a $14.9 billion acquisition of U.S. Steel, retaining its name and Pittsburgh headquarters. The deal faced opposition from the United Steelworkers, the Trump presidential campaign, and the Biden administration, which formally blocked it in January 2025. U.S. Steel and Nippon Steel sued the administration, claiming the block was unlawful. The acquisition was finalized on June 18, 2025, making U.S. Steel a subsidiary of Nippon Steel North America, with an oversight role for the federal government of the United States through a golden share.",
+            "subquestion": "What acquisition price including debt is stated for <hop 2 answer>?",
+            "answer": "$14.9 billion"
+        },
+        "5": {
+            "source": "wikipedia/Nippon_Steel/content.txt",
+            "fact": "On December 18, 2023, Nippon Steel announced an agreement with U.S. Steel to purchase the company for US$14.1 billion, or US$55 per share, pending regulatory approval; when including U.S. Steel debts, the price of the acquisition rises to US$14.9 billion. The company agreed to maintain a headquarters for US Steel in its hometown of Pittsburgh and honor all steelworker union contracts.",
+            "subquestion": "What announced purchase price excluding debt is stated for <hop 2 answer>'s acquisition?",
+            "answer": "$14.1 billion"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Gary,_Indiana/content.txt",
+        "wikipedia/U.S._Steel/content.txt",
+        "wikipedia/Nippon_Steel/content.txt",
+        "datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt",
+        "datagov/500-cities-local-data-for-better-health-2016-release/signed-metadata.txt",
+        "datagov/500-cities-local-data-for-better-health-2016-release/files/9z78-nsfp.publisher-view.json",
+        "datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt",
+        "datagov/500-cities-local-data-for-better-health-2018-release/signed-metadata.txt",
+        "datagov/500-cities-local-data-for-better-health-2018-release/files/rja3-32tc.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: For 2016, filter rows where `GeographicLevel` is `City`, `Measure` is `Obesity among adults aged >=18 Years`, and `Data_Value_Type` is `Age-adjusted prevalence`, then group by `CityName` and average `Data_Value` for all cities. The stored node answer uses `limit = 8` to keep a readable top slice.",
+                "Node 2: For 2018, filter rows where `GeographicLevel` is `City`, `Measure` is `Obesity among adults aged >=18 Years`, and `Data_Value_Type` is `Age-adjusted prevalence`, then group by `CityName` and average `Data_Value` for all cities. The stored node answer uses `limit = 8` to keep a readable top slice.",
+                "Hop result: compare the overlapping cities retained in the limited node outputs and average their values across 2016 and 2018. Gary averages (46.9 + 49.0) / 2 = 47.95, Detroit averages (45.2 + 47.4) / 2 = 46.3, Dayton averages (47.2 + 43.5) / 2 = 45.35, Flint averages (42.7 + 45.4) / 2 = 44.05, Macon averages (42.9 + 44.0) / 2 = 43.45, and Camden averages (42.2 + 44.1) / 2 = 43.15. The highest average is Gary, Indiana."
+            ],
+            "answer": "Gary, Indiana"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: U.S. Steel Corporation is the corporation that founded <hop 1 answer> in 1906.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "U.S. Steel Corporation"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 4: The acquisition price including debt for <hop 2 answer> is $14.9 billion.",
+                "Node 5: The announced purchase price excluding debt for the same acquisition is $14.1 billion.",
+                "Hop result: 14.9 - 14.1 = 0.8 billion, rounded to one decimal."
+            ],
+            "answer": "0.8"
+        }
+    ]
+}

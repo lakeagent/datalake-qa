@@ -1,0 +1,130 @@
+{
+  "question": "First identify the institution that satisfies all four of these analytical conditions: all of its listed New York bank-owned ATM locations are concentrated in a single county; it appears exactly once in the 2023 foreclosure-avoidance program beneficiary affidavit records, reports zero 2022 foreclosures, and uses only one mailing city; it appears exactly once in the 2014 foreclosure-avoidance mediation beneficiary affidavit records, reports zero previous-year foreclosures, and uses only one mailing state; and it appears exactly once in the 2017 foreclosure-avoidance mediation beneficiary affidavit records and uses only one mailing state. Which company was it sold to after it closed? Return the company name only. Your response should be in the format [Answer].",
+  "answer": "JPMorgan Chase",
+  "nodes": {
+    "1": {
+      "source": "datagov/bank-owned-atm-locations-in-new-york-state/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/bank-owned-atm-locations-in-new-york-state/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfor column in [\"Name of Institution\", \"County\"]:\n    df[column] = df[column].astype(str).str.replace(r\"\\\\s+\", \" \", regex=True).str.strip()\n\nfiltered = df[\n    df[\"Name of Institution\"].ne(\"\")\n    & df[\"Name of Institution\"].ne(\"nan\")\n    & df[\"County\"].ne(\"\")\n    & df[\"County\"].ne(\"nan\")\n].copy()\n\nranked = (\n    filtered.groupby(\"Name of Institution\")\n    .agg(county_count=(\"County\", \"nunique\"))\n    .reset_index()\n)\n\nanswer = ranked.loc[\n    ranked[\"county_count\"].eq(1),\n    \"Name of Institution\"\n].sort_values(key=lambda s: s.str.lower()).tolist()",
+      "subquestion": "Which institutions have all listed New York bank-owned ATM locations concentrated within a single county?",
+      "answer": [
+        "ACMG Federal Credit Union",
+        "Advantage Federal C.U.",
+        "Alco Federal Credit Union",
+        "Alden State Bank",
+        "Alternatives Federal Credit Union",
+        "Amerasia Bank",
+        "American Broadcast Employees Federal Credit Union",
+        "Bank of Akron",
+        "Bank of Cattaraugus",
+        "Bank of Millbrook"
+      ],
+      "limit": 10
+    },
+    "2": {
+      "source": "datagov/2023-foreclosure-avoidance-program-beneficiary-exemption-affidavits-pursuant-to-hb-2009/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2023-foreclosure-avoidance-program-beneficiary-exemption-affidavits-pursuant-to-hb-2009/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfor column in [\"Beneficiary\", \"City\", \"Foreclosures \\n2022 year\"]:\n    df[column] = df[column].astype(str).str.replace(r\"\\\\s+\", \" \", regex=True).str.strip()\n\nfiltered = df[\n    df[\"Beneficiary\"].ne(\"\")\n    & df[\"Beneficiary\"].ne(\"nan\")\n].copy()\nfiltered[\"foreclosures_2022\"] = pd.to_numeric(filtered[\"Foreclosures \\n2022 year\"], errors=\"coerce\").fillna(0)\n\nranked = (\n    filtered.groupby(\"Beneficiary\")\n    .agg(\n        affidavit_count=(\"Beneficiary\", \"size\"),\n        foreclosure_total=(\"foreclosures_2022\", \"sum\"),\n        city_count=(\"City\", lambda s: s[(s != \"\") & (s != \"nan\")].nunique())\n    )\n    .reset_index()\n)\n\nanswer = ranked.loc[\n    ranked[\"affidavit_count\"].eq(1)\n    & ranked[\"foreclosure_total\"].eq(0)\n    & ranked[\"city_count\"].eq(1),\n    \"Beneficiary\"\n].sort_values(key=lambda s: s.str.lower()).tolist()",
+      "subquestion": "Which beneficiaries filed exactly one 2023 foreclosure-avoidance program affidavit, reported zero 2022 foreclosures, and used only one mailing city?",
+      "answer": [
+        "Ajax Mortgage Loan Trust 2021-C, US Bank National Ass as Indenture Trustee",
+        "Alaska Air Group Credit Union",
+        "Alaska USA Federal Credit Union",
+        "Alliant Credit Union",
+        "Ally Bank",
+        "American Neighborhood Mortgage Acceptance Company LLC",
+        "AmeriSave Mortgage Corporation",
+        "Arc Home LLC",
+        "Avista Corp. Credit Union",
+        "Baker Boyer National Bank"
+      ],
+      "limit": 10
+    },
+    "3": {
+      "source": "datagov/2014-foreclosure-avoidance-mediation-beneficiary-exemption-affidavits-pursuant-to-sb-558/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2014-foreclosure-avoidance-mediation-beneficiary-exemption-affidavits-pursuant-to-sb-558/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfor column in [\"Beneficiary\", \"State\", \"Foreclosures previous year\"]:\n    df[column] = df[column].astype(str).str.replace(r\"\\\\s+\", \" \", regex=True).str.strip()\n\nfiltered = df[\n    df[\"Beneficiary\"].ne(\"\")\n    & df[\"Beneficiary\"].ne(\"nan\")\n].copy()\nfiltered[\"foreclosures_previous_year\"] = pd.to_numeric(filtered[\"Foreclosures previous year\"], errors=\"coerce\").fillna(0)\n\nranked = (\n    filtered.groupby(\"Beneficiary\")\n    .agg(\n        affidavit_count=(\"Beneficiary\", \"size\"),\n        state_count=(\"State\", lambda s: s[(s != \"\") & (s != \"nan\")].nunique()),\n        foreclosure_total=(\"foreclosures_previous_year\", \"sum\")\n    )\n    .reset_index()\n)\n\nanswer = ranked.loc[\n    ranked[\"affidavit_count\"].eq(1)\n    & ranked[\"state_count\"].eq(1)\n    & ranked[\"foreclosure_total\"].eq(0),\n    \"Beneficiary\"\n].sort_values(key=lambda s: s.str.lower()).tolist()",
+      "subquestion": "Which beneficiaries filed exactly one 2014 foreclosure-avoidance mediation affidavit, reported zero previous-year foreclosures, and used only one mailing state?",
+      "answer": [
+        "A. Wayne Scott & Marlene L. Scott",
+        "Aaron S. Yerzy & Jacqueline S. Yerzy Trustee",
+        "Ada Mae Farrar, Trustee of the Trust of George Farrar and Ada Mae Farrar dated May 6, 1991",
+        "AKT America Capital, Inc",
+        "Albert Thibodeau",
+        "Albina Community Bank",
+        "Alerus Financial N.A.",
+        "Alfonso V. Cadena and Annette R. Cadena",
+        "Allen Bigelow & Nancy Muktoyuk Co-Trustees of the Bigelow Revocable Trust U/T/A Dated 1/31/13",
+        "AllQuest Home Mortgage Coroporation"
+      ],
+      "limit": 10
+    },
+    "4": {
+      "source": "datagov/2017-foreclosure-avoidance-mediation-beneficiary-exemption-affidavits-pursuant-to-sb-558/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2017-foreclosure-avoidance-mediation-beneficiary-exemption-affidavits-pursuant-to-sb-558/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfor column in [\"Beneficiary\", \"State\"]:\n    df[column] = df[column].astype(str).str.replace(r\"\\\\s+\", \" \", regex=True).str.strip()\n\nfiltered = df[\n    df[\"Beneficiary\"].ne(\"\")\n    & df[\"Beneficiary\"].ne(\"nan\")\n].copy()\n\nranked = (\n    filtered.groupby(\"Beneficiary\")\n    .agg(\n        affidavit_count=(\"Beneficiary\", \"size\"),\n        state_count=(\"State\", lambda s: s[(s != \"\") & (s != \"nan\")].nunique())\n    )\n    .reset_index()\n)\n\nanswer = ranked.loc[\n    ranked[\"affidavit_count\"].eq(1)\n    & ranked[\"state_count\"].eq(1),\n    \"Beneficiary\"\n].sort_values(key=lambda s: s.str.lower()).tolist()",
+      "subquestion": "Which beneficiaries filed exactly one 2017 foreclosure-avoidance mediation affidavit and used only one mailing state?",
+      "answer": [
+        "21st Mortgage Corporation",
+        "360 Mortgage Group, LLC",
+        "Ader Holdings, LLC",
+        "Advantis Credit Union",
+        "AgStar Financial Services, FLCA",
+        "Alaska USA Federal Credit Union",
+        "Alder Financial, LLC",
+        "Alera Management Group, LLC",
+        "Allen W. Koftinow",
+        "Alvin L. Van Hulzen and Jean Van Hulzen"
+      ],
+      "limit": 10
+    },
+    "5": {
+      "source": "wikipedia/First_Republic_Bank/content.txt",
+      "fact": "On May 1, 2023, as part of the 2023 United States banking crisis, the FDIC announced that First Republic had been closed and sold to JPMorgan Chase.",
+      "subquestion": "Which company was <hop 1 answer> sold to?",
+      "answer": "JPMorgan Chase"
+    }
+  },
+  "datasets_used": [
+    "datagov/bank-owned-atm-locations-in-new-york-state/files/rows.txt",
+    "datagov/bank-owned-atm-locations-in-new-york-state/signed-metadata.txt",
+    "datagov/bank-owned-atm-locations-in-new-york-state/files/ndex-ad5r.txt",
+    "datagov/2023-foreclosure-avoidance-program-beneficiary-exemption-affidavits-pursuant-to-hb-2009/files/rows.txt",
+    "datagov/2023-foreclosure-avoidance-program-beneficiary-exemption-affidavits-pursuant-to-hb-2009/signed-metadata.txt",
+    "datagov/2014-foreclosure-avoidance-mediation-beneficiary-exemption-affidavits-pursuant-to-sb-558/files/rows.txt",
+    "datagov/2014-foreclosure-avoidance-mediation-beneficiary-exemption-affidavits-pursuant-to-sb-558/signed-metadata.txt",
+    "datagov/2017-foreclosure-avoidance-mediation-beneficiary-exemption-affidavits-pursuant-to-sb-558/files/rows.txt",
+    "datagov/2017-foreclosure-avoidance-mediation-beneficiary-exemption-affidavits-pursuant-to-sb-558/signed-metadata.txt",
+    "wikipedia/First_Republic_Bank/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: In the New York bank-owned ATM dataset, grouping by `Name of Institution` and keeping institutions with `county_count = 1` yields a 103-institution candidate set.",
+        "Node 2: In the 2023 foreclosure-avoidance program affidavit dataset, grouping by `Beneficiary` and keeping entities with `affidavit_count = 1`, `foreclosure_total = 0`, and `city_count = 1` yields a 119-beneficiary candidate set.",
+        "Node 3: In the 2014 foreclosure-avoidance mediation affidavit dataset, grouping by `Beneficiary` and keeping entities with `affidavit_count = 1`, `state_count = 1`, and `foreclosure_total = 0` yields a 205-beneficiary candidate set.",
+        "Node 4: In the 2017 foreclosure-avoidance mediation affidavit dataset, grouping by `Beneficiary` and keeping entities with `affidavit_count = 1` and `state_count = 1` yields a 235-beneficiary candidate set.",
+        "Necessity check: omitting node 1 leaves 6 candidates: `Blue Mountain Credit Union`, `First Republic Bank`, `People's Community Federal Credit Union`, `South Coast ILWU Federal Credit Union`, `Thrivent Federal Credit Union`, and `Westerra Credit Union`.",
+        "Necessity check: omitting node 2 leaves 2 candidates: `First Republic Bank` and `Pentagon Federal Credit Union`.",
+        "Necessity check: omitting node 3 leaves 2 candidates: `First Republic Bank` and `Webster Bank`.",
+        "Necessity check: omitting node 4 leaves 2 candidates: `First Republic Bank` and `Kinecta Federal Credit Union`.",
+        "Hop result: intersect the four analytical candidate sets from nodes 1-4. The only institution that satisfies all four conditions is `First Republic Bank`."
+      ],
+      "answer": "First Republic Bank"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: The source says First Republic had been closed and sold to JPMorgan Chase.",
+        "Hop result: after <hop 1 answer> was closed, it was sold to `JPMorgan Chase`."
+      ],
+      "answer": "JPMorgan Chase"
+    }
+  ]
+}

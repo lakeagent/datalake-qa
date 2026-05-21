@@ -1,0 +1,174 @@
+{
+    "question": "Find the NYC high schools that were in the top 8 by overall score every year from 2006-07 through 2010-11. Determine the neighborhoods those schools are located in, identify the earliest bridge connecting that area to NYC, and report the year it is built. Your response should be in the format [Answer].",
+    "answer": "1693",
+    "nodes": {
+        "1": {
+            "source": "datagov/2006-2007-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2006-2007-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nschool_col = \"SCHOOL\"\nlevel_col = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()][0]\nscore_col = [c for c in df.columns if \"OVERALL SCORE\" in c.upper()][0]\nfiltered = df[df[level_col].astype(str).str.strip().eq(\"High School\")].copy()\nfiltered[score_col] = pd.to_numeric(filtered[score_col], errors=\"coerce\")\nranked = filtered.dropna(subset=[school_col, score_col]).sort_values([score_col, school_col], ascending=[False, True])\nanswer = ranked[school_col].head(8).astype(str).str.strip().tolist()",
+            "subquestion": "Which NYC high schools were in the top 8 by overall score in 2006-07?",
+            "answer": [
+                "MANHATTAN BRIDGES HIGH SCHOOL",
+                "BEDFORD ACADEMY HIGH SCHOOL",
+                "MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES",
+                "HIGH SCHOOL FOR CONTEMPORARY ARTS",
+                "BRONX AEROSPACE HIGH SCHOOL",
+                "ELEANOR ROOSEVELT HIGH SCHOOL",
+                "BRONX ACADEMY OF LETTERS",
+                "NEW EXPLORATIONS INTO SCIENCE, TECHNOLOGY AND MATH"
+            ]
+        },
+        "2": {
+            "source": "datagov/2007-2008-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2007-2008-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nschool_col = \"SCHOOL\"\nlevel_col = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()][0]\nscore_col = [c for c in df.columns if \"OVERALL SCORE\" in c.upper()][0]\nfiltered = df[df[level_col].astype(str).str.strip().eq(\"High School\")].copy()\nfiltered[score_col] = pd.to_numeric(filtered[score_col], errors=\"coerce\")\nranked = filtered.dropna(subset=[school_col, score_col]).sort_values([score_col, school_col], ascending=[False, True])\nanswer = ranked[school_col].head(8).astype(str).str.strip().tolist()",
+            "subquestion": "Which NYC high schools were in the top 8 by overall score in 2007-08?",
+            "answer": [
+                "BROOKLYN INTERNATIONAL HIGH SCHOOL",
+                "GREGORIO LUPERON HIGH SCHOOL FOR SCIENCE AND MATHEMATICS",
+                "HIGH SCHOOL FOR CONTEMPORARY ARTS",
+                "BEDFORD ACADEMY HIGH SCHOOL",
+                "MANHATTAN BRIDGES HIGH SCHOOL",
+                "MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES",
+                "NEW WORLD HIGH SCHOOL",
+                "BRONX AEROSPACE HIGH SCHOOL"
+            ]
+        },
+        "3": {
+            "source": "datagov/2008-2009-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2008-2009-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nschool_col = \"SCHOOL\"\nlevel_col = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()][0]\nscore_col = [c for c in df.columns if \"OVERALL SCORE\" in c.upper()][0]\nfiltered = df[df[level_col].astype(str).str.strip().eq(\"High School\")].copy()\nfiltered[score_col] = pd.to_numeric(filtered[score_col], errors=\"coerce\")\nranked = filtered.dropna(subset=[school_col, score_col]).sort_values([score_col, school_col], ascending=[False, True])\nanswer = ranked[school_col].head(8).astype(str).str.strip().tolist()",
+            "subquestion": "Which NYC high schools were in the top 8 by overall score in 2008-09?",
+            "answer": [
+                "HIGH SCHOOL OF HOSPITALITY MANAGEMENT",
+                "BEDFORD ACADEMY HIGH SCHOOL",
+                "WILLIAMSBURG PREPARATORY SCHOOL",
+                "SOUTH BRONX PREPARATORY: A COLLEGE BOARD SCHOOL",
+                "MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES",
+                "HIGH SCHOOL FOR VIOLIN AND DANCE",
+                "ESSEX STREET ACADEMY",
+                "BELMONT PREPARATORY HIGH SCHOOL"
+            ]
+        },
+        "4": {
+            "source": "datagov/2009-2010-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2009-2010-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nschool_col = \"SCHOOL\"\nlevel_col = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()][0]\nscore_col = [c for c in df.columns if \"OVERALL SCORE\" in c.upper()][0]\nfiltered = df[df[level_col].astype(str).str.strip().eq(\"High School\")].copy()\nfiltered[score_col] = pd.to_numeric(filtered[score_col], errors=\"coerce\")\nranked = filtered.dropna(subset=[school_col, score_col]).sort_values([score_col, school_col], ascending=[False, True])\nanswer = ranked[school_col].head(8).astype(str).str.strip().tolist()",
+            "subquestion": "Which NYC high schools were in the top 8 by overall score in 2009-10?",
+            "answer": [
+                "Theatre Arts Production Company School",
+                "Brooklyn International High School at Water's Edge",
+                "Williamsburg Preparatory School",
+                "Marble Hill High School for International Studies",
+                "Williamsburg High School for Architecture and Design",
+                "Manhattan Village Academy",
+                "High School for Violin and Dance",
+                "Manhattan Bridges High School"
+            ]
+        },
+        "5": {
+            "source": "datagov/2010-2011-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2010-2011-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nschool_col = \"SCHOOL\"\nlevel_col = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()][0]\nscore_col = [c for c in df.columns if \"OVERALL SCORE\" in c.upper()][0]\nfiltered = df[df[level_col].astype(str).str.strip().eq(\"High School\")].copy()\nfiltered[score_col] = pd.to_numeric(filtered[score_col], errors=\"coerce\")\nranked = filtered.dropna(subset=[school_col, score_col]).sort_values([score_col, school_col], ascending=[False, True])\nanswer = ranked[school_col].head(8).astype(str).str.strip().tolist()",
+            "subquestion": "Which NYC high schools were in the top 8 by overall score in 2010-11?",
+            "answer": [
+                "Brooklyn International High School",
+                "Manhattan Village Academy",
+                "It Takes a Village Academy",
+                "Williamsburg High School for Architecture and Design",
+                "Manhattan Bridges High School",
+                "Academy of Finance and Enterprise",
+                "Urban Assembly School for Media Studies, The",
+                "Marble Hill High School for International Studies"
+            ]
+        },
+        "6": {
+            "source": "wikipedia/John_F._Kennedy_High_School_(New_York_City)/content.txt",
+            "fact": "John F. Kennedy Educational Campus houses Marble Hill High School for International Studies among its co-located schools. The campus is located at 99 Terrace View Avenue, on the border of the Spuyten Duyvil neighborhood of the Bronx and the Marble Hill neighborhood of Manhattan.",
+            "subquestion": "Which neighborhoods are <intersection of node_1, node_2, node_3, node_4, node_5> located in?",
+            "answer": [
+                "Spuyten Duyvil",
+                "Marble Hill"
+            ]
+        },
+        "7": {
+            "source": "wikipedia/Spuyten_Duyvil,_Bronx/content.txt",
+            "fact": "In the late 17th century, Frederick Philipse received permission to construct a bridge across Spuyten Duyvil Creek and charge tolls. King's Bridge, located roughly south of and parallel to where West 230th Street lies today, later opened there.",
+            "subquestion": "What is the earliest bridge connecting the neighborhoods in <node_6 answer> to NYC?",
+            "answer": "King's Bridge"
+        },
+        "8": {
+            "source": "wikipedia/Kingsbridge,_Bronx/content.txt",
+            "fact": "The neighborhood is named for the King's Bridge, likely erected by enslaved Africans in 1693 and owned by Frederick Philipse.",
+            "subquestion": "In what year was <node_7 answer> built?",
+            "answer": "1693"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/John_F._Kennedy_High_School_(New_York_City)/content.txt",
+        "wikipedia/Spuyten_Duyvil,_Bronx/content.txt",
+        "wikipedia/Kingsbridge,_Bronx/content.txt",
+        "datagov/2006-2007-school-progress-report/files/rows.txt",
+        "datagov/2006-2007-school-progress-report/signed-metadata.txt",
+        "datagov/2007-2008-school-progress-report/files/rows.txt",
+        "datagov/2007-2008-school-progress-report/signed-metadata.txt",
+        "datagov/2008-2009-school-progress-report/files/rows.txt",
+        "datagov/2008-2009-school-progress-report/signed-metadata.txt",
+        "datagov/2009-2010-school-progress-report/files/rows.txt",
+        "datagov/2009-2010-school-progress-report/signed-metadata.txt",
+        "datagov/2010-2011-school-progress-report/files/rows.txt",
+        "datagov/2010-2011-school-progress-report/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 1: In 2006-07, the top 8 NYC high schools by overall score were MANHATTAN BRIDGES HIGH SCHOOL, BEDFORD ACADEMY HIGH SCHOOL, MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES, HIGH SCHOOL FOR CONTEMPORARY ARTS, BRONX AEROSPACE HIGH SCHOOL, ELEANOR ROOSEVELT HIGH SCHOOL, BRONX ACADEMY OF LETTERS, and NEW EXPLORATIONS INTO SCIENCE, TECHNOLOGY AND MATH.",
+                "Node 2: In 2007-08, the top 8 NYC high schools by overall score were BROOKLYN INTERNATIONAL HIGH SCHOOL, GREGORIO LUPERON HIGH SCHOOL FOR SCIENCE AND MATHEMATICS, HIGH SCHOOL FOR CONTEMPORARY ARTS, BEDFORD ACADEMY HIGH SCHOOL, MANHATTAN BRIDGES HIGH SCHOOL, MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES, NEW WORLD HIGH SCHOOL, and BRONX AEROSPACE HIGH SCHOOL.",
+                "Node 3: In 2008-09, the top 8 NYC high schools by overall score were HIGH SCHOOL OF HOSPITALITY MANAGEMENT, BEDFORD ACADEMY HIGH SCHOOL, WILLIAMSBURG PREPARATORY SCHOOL, SOUTH BRONX PREPARATORY: A COLLEGE BOARD SCHOOL, MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES, HIGH SCHOOL FOR VIOLIN AND DANCE, ESSEX STREET ACADEMY, and BELMONT PREPARATORY HIGH SCHOOL.",
+                "Node 4: In 2009-10, the top 8 NYC high schools by overall score were Theatre Arts Production Company School, Brooklyn International High School at Water's Edge, Williamsburg Preparatory School, Marble Hill High School for International Studies, Williamsburg High School for Architecture and Design, Manhattan Village Academy, High School for Violin and Dance, and Manhattan Bridges High School.",
+                "Node 5: In 2010-11, the top 8 NYC high schools by overall score were Brooklyn International High School, Manhattan Village Academy, It Takes a Village Academy, Williamsburg High School for Architecture and Design, Manhattan Bridges High School, Academy of Finance and Enterprise, Urban Assembly School for Media Studies, The, and Marble Hill High School for International Studies.",
+                "Derive hop 1 answer using nodes 1, 2, 3, 4, 5: Intersect source-native school labels across years using semantic entity resolution (for example, case differences across datasets). Hop answer: Marble Hill High School for International Studies."
+            ],
+            "answer": "Marble Hill High School for International Studies"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: John F. Kennedy Educational Campus houses Marble Hill High School for International Studies among its co-located schools. The campus is located at 99 Terrace View Avenue, on the border of the Spuyten Duyvil neighborhood of the Bronx and the Marble Hill neighborhood of Manhattan.",
+                "Derive hop 2 answer from node 6: Which neighborhoods is the campus housing Marble Hill High School for International Studies located in? Hop answer: Spuyten Duyvil and Marble Hill."
+            ],
+            "answer": [
+                "Spuyten Duyvil",
+                "Marble Hill"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Frederick Philipse received permission to construct a bridge across Spuyten Duyvil Creek and charge tolls, and King's Bridge later opened there.",
+                "Derive hop 3 answer from node 7: Node 7 depends on node 6: What is the earliest bridge connecting the Spuyten Duyvil and Marble Hill area to NYC? Hop answer: King's Bridge."
+            ],
+            "answer": "King's Bridge"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: King's Bridge was likely erected in 1693.",
+                "Derive hop 4 answer from node 8: Node 8 depends on node 7: In what year was King's Bridge erected? Hop answer: 1693."
+            ],
+            "answer": "1693"
+        }
+    ]
+}

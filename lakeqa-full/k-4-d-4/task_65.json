@@ -1,0 +1,179 @@
+{
+  "question": "Among Washington state's public four-year universities, which two had the highest average contract counts between 2014 and 2016? Find the counties where those two universities are located. Across those two universities and their counties, how many years apart are the earliest county formation or establishment year and the latest university founding year? Please return only the number in the format [Answer].",
+  "answer": 30,
+  "nodes": {
+    "1": {
+      "source": "wikipedia/List_of_colleges_and_universities_in_Washington_(state)/content.txt",
+      "fact": "Four-year universities\n\n Name Founded Control Enrollment(Fall 2022) Endowment Location Other branchesUniversity of Washington1861Public52,319$6.62 billionSeattleBothell, Tacoma,  Spokane, Rome campus, León campusWashington State University1890Public27,539$1.27 billionPullmanSpokane, Tri-Cities, Vancouver, Everett Puyallup agricultural campus, Global CampusWestern Washington University1893Public14,747$109.8 Million BellinghamAnacortes, Bremerton, Everett, Port Angeles, PoulsboEastern Washington University1882Public10,910$52.2 millionCheneyBellevue, Everett, SpokaneCentral Washington University1891Public9,257$13.3 millionEllensburgDes Moines, Everett, Lynnwood, Moses Lake, Pierce County, Sammamish, Wenatchee, YakimaEvergreen State College1967Public2,105$8.9 millionOlympiaAberdeen, Tacoma",
+      "subquestion": "Which public four-year universities are in Washington state?",
+      "answer": [
+        "University of Washington",
+        "Washington State University",
+        "Western Washington University",
+        "Eastern Washington University",
+        "Central Washington University",
+        "Evergreen State College"
+      ]
+    },
+    "2": {
+      "source": "datagov/agency-contracts-fiscal-year-2014/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/agency-contracts-fiscal-year-2014/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"agency_norm\"] = df[\"Agency Name\"].astype(str).str.replace(r\"\\s+\", \" \", regex=True).str.strip()\nuniversity_map = {\n    \"University of Washington (UW)\": \"University of Washington\",\n    \"Washington State University (WSU)\": \"Washington State University\",\n    \"Western Washington University (WWU)\": \"Western Washington University\",\n    \"Eastern Washington University (EWU)\": \"Eastern Washington University\",\n    \"Central Washington University (CWU)\": \"Central Washington University\",\n    \"The Evergreen State College (TESC)\": \"Evergreen State College\",\n}\n\ncounts = (\n    df[df[\"agency_norm\"].isin(university_map)]\n    .groupby(\"agency_norm\")\n    .size()\n    .reindex(university_map.keys(), fill_value=0)\n)\n\nanswer = {\n    canonical: int(counts[raw_name])\n    for raw_name, canonical in university_map.items()\n}",
+      "subquestion": "What were the FY 2014 contract counts for the Washington public four-year universities from <hop 1 answer>?",
+      "answer": {
+        "University of Washington": 3679,
+        "Washington State University": 484,
+        "Western Washington University": 799,
+        "Eastern Washington University": 840,
+        "Central Washington University": 223,
+        "Evergreen State College": 275
+      },
+      "limit": 6
+    },
+    "3": {
+      "source": "datagov/agency-contracts-fiscal-year-2015/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/agency-contracts-fiscal-year-2015/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"agency_norm\"] = df[\"Agency Name\"].astype(str).str.replace(r\"\\s+\", \" \", regex=True).str.strip()\nuniversity_map = {\n    \"University of Washington (UW)\": \"University of Washington\",\n    \"Washington State University (WSU)\": \"Washington State University\",\n    \"Western Washington University (WWU)\": \"Western Washington University\",\n    \"Eastern Washington University (EWU)\": \"Eastern Washington University\",\n    \"Central Washington University (CWU)\": \"Central Washington University\",\n    \"The Evergreen State College (TESC)\": \"Evergreen State College\",\n}\n\ncounts = (\n    df[df[\"agency_norm\"].isin(university_map)]\n    .groupby(\"agency_norm\")\n    .size()\n    .reindex(university_map.keys(), fill_value=0)\n)\n\nanswer = {\n    canonical: int(counts[raw_name])\n    for raw_name, canonical in university_map.items()\n}",
+      "subquestion": "What were the FY 2015 contract counts for the Washington public four-year universities from <hop 1 answer>?",
+      "answer": {
+        "University of Washington": 212,
+        "Washington State University": 498,
+        "Western Washington University": 605,
+        "Eastern Washington University": 600,
+        "Central Washington University": 274,
+        "Evergreen State College": 231
+      },
+      "limit": 6
+    },
+    "4": {
+      "source": "datagov/agency-contracts-fiscal-year-2016/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/agency-contracts-fiscal-year-2016/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"agency_norm\"] = df[\"Agency Name\"].astype(str).str.replace(r\"\\s+\", \" \", regex=True).str.strip()\nuniversity_map = {\n    \"University of Washington (UW)\": \"University of Washington\",\n    \"Washington State University (WSU)\": \"Washington State University\",\n    \"Western Washington University (WWU)\": \"Western Washington University\",\n    \"Eastern Washington University (EWU)\": \"Eastern Washington University\",\n    \"Central Washington University (CWU)\": \"Central Washington University\",\n    \"The Evergreen State College (TESC)\": \"Evergreen State College\",\n}\n\ncounts = (\n    df[df[\"agency_norm\"].isin(university_map)]\n    .groupby(\"agency_norm\")\n    .size()\n    .reindex(university_map.keys(), fill_value=0)\n)\n\nanswer = {\n    canonical: int(counts[raw_name])\n    for raw_name, canonical in university_map.items()\n}",
+      "subquestion": "What were the FY 2016 contract counts for the Washington public four-year universities from <hop 1 answer>?",
+      "answer": {
+        "University of Washington": 23,
+        "Washington State University": 466,
+        "Western Washington University": 132,
+        "Eastern Washington University": 505,
+        "Central Washington University": 362,
+        "Evergreen State College": 207
+      },
+      "limit": 6
+    },
+    "5": {
+      "source": "wikipedia/University_of_Washington/content.txt",
+      "fact": "The University of Washington (UW, and informally U-Dub or U Dub) is a public research university in Seattle, Washington, United States.",
+      "subquestion": "Where is the #1 public four-year university by average contracts from <hop 2 answer> located?",
+      "answer": "University of Washington is located in Seattle, Washington"
+    },
+    "6": {
+      "source": "wikipedia/Eastern_Washington_University/content.txt",
+      "fact": "Eastern Washington University (EWU) is a public university in Cheney, Washington, United States.",
+      "subquestion": "Where is the #2 public four-year university by average contracts from <hop 2 answer> located?",
+      "answer": "Eastern Washington University is located in Cheney, Washington"
+    },
+    "7": {
+      "source": "wikipedia/University_of_Washington/content.txt",
+      "fact": "The University of Washington (UW, and informally U-Dub or U Dub) is a public research university in Seattle, Washington, United States. Founded  in 1861, it is one of the oldest universities on the West Coast.",
+      "subquestion": "For the first university in <hop 2 answer>, what year was it founded?",
+      "answer": 1861
+    },
+    "8": {
+      "source": "wikipedia/Eastern_Washington_University/content.txt",
+      "fact": "Eastern Washington University (EWU) is a public university in Cheney, Washington, United States. It shares its satellite campus in Spokane, Washington with Washington State University.\n\nFounded in 1882, the university is academically divided into four colleges: the College of Arts, Humanities & Social Sciences; the College of Health Science & Public Health; the College of Professional Programs; and the College of Science, Technology, Engineering & Mathematics.",
+      "subquestion": "For the second university in <hop 2 answer>, what year was it founded?",
+      "answer": 1882
+    },
+    "9": {
+      "source": "wikipedia/King_County,_Washington/content.txt",
+      "fact": "On December 22, 1852, the Oregon Territory legislature formed King County out of territory from within Thurston County.",
+      "subquestion": "For the county in <hop 3 answer> that contains the first university in <hop 2 answer>, what year was it formed?",
+      "answer": 1852
+    },
+    "10": {
+      "source": "wikipedia/Spokane_County,_Washington/content.txt",
+      "fact": "Spokane County was established by the Washington Territorial Legislature effective January 29, 1858, from a portion of Walla Walla County, which originally encompassed most of eastern Washington Territory between the Cascades and Rockies.",
+      "subquestion": "For the county in <hop 3 answer> that contains the second university in <hop 2 answer>, what year was it first established?",
+      "answer": 1858
+    }
+  },
+  "datasets_used": [
+    "wikipedia/List_of_colleges_and_universities_in_Washington_(state)/content.txt",
+    "wikipedia/University_of_Washington/content.txt",
+    "wikipedia/Eastern_Washington_University/content.txt",
+    "wikipedia/King_County,_Washington/content.txt",
+    "wikipedia/Spokane_County,_Washington/content.txt",
+    "datagov/agency-contracts-fiscal-year-2014/files/rows.txt",
+    "datagov/agency-contracts-fiscal-year-2014/signed-metadata.txt",
+    "datagov/agency-contracts-fiscal-year-2015/files/rows.txt",
+    "datagov/agency-contracts-fiscal-year-2015/signed-metadata.txt",
+    "datagov/agency-contracts-fiscal-year-2016/files/rows.txt",
+    "datagov/agency-contracts-fiscal-year-2016/signed-metadata.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop_id": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1 retrieves the set of Washington public four-year universities.",
+        "Hop result: the candidate institutions are University of Washington, Washington State University, Western Washington University, Eastern Washington University, Central Washington University, and Evergreen State College."
+      ],
+      "answer": [
+        "University of Washington",
+        "Washington State University",
+        "Western Washington University",
+        "Eastern Washington University",
+        "Central Washington University",
+        "Evergreen State College"
+      ]
+    },
+    {
+      "hop_id": 2,
+      "node_ids": [
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 2: Count FY 2014 contracts for each university in <hop 1 answer> using the agency-contracts dataset.",
+        "Node 3: Count FY 2015 contracts for each university in <hop 1 answer> using the agency-contracts dataset.",
+        "Node 4: Count FY 2016 contracts for each university in <hop 1 answer> using the agency-contracts dataset.",
+        "Hop result: among the public four-year universities that recorded contracts in all three fiscal years, compute the average contract count from FY 2014 to FY 2016 and rank them; the top two are University of Washington and Eastern Washington University."
+      ],
+      "answer": [
+        "University of Washington",
+        "Eastern Washington University"
+      ]
+    },
+    {
+      "hop_id": 3,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5: Retrieve the location of the first university from <hop 2 answer> and map Seattle to King County.",
+        "Node 6: Retrieve the location of the second university from <hop 2 answer> and map Cheney to Spokane County.",
+        "Hop result: the candidate counties are King County and Spokane County."
+      ],
+      "answer": [
+        "King County",
+        "Spokane County"
+      ]
+    },
+    {
+      "hop_id": 4,
+      "node_ids": [
+        7,
+        8,
+        9,
+        10
+      ],
+      "reasoning": [
+        "Nodes 7 and 8 retrieve the founding years of the two universities from <hop 2 answer>: 1861 and 1882.",
+        "Nodes 9 and 10 retrieve the formation or first establishment years of the corresponding counties from <hop 3 answer>: 1852 and 1858.",
+        "Hop result: the latest university founding year is 1882 and the earliest county formation or establishment year is 1852, so the difference is 30 years."
+      ],
+      "answer": 30
+    }
+  ]
+}

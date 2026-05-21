@@ -1,0 +1,138 @@
+{
+    "question": "Among the Chicago library branches Sulzer Regional Library, Edgewater, and Lincoln Belmont, which branch ranked in the top five for visitors and top three for computer sessions every year from 2019 to 2021, and in which Chicago neighborhood is that branch located? Return the neighborhood name only. Your response should be in the format [Answer].",
+    "answer": "Lincoln Square",
+    "nodes": {
+        "1": {
+            "source": "datagov/libraries-2019-visitors-by-location/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/libraries-2019-visitors-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\ngroup_col = \"BRANCH\" if \"BRANCH\" in df.columns else \"LOCATION\"\nfiltered = df[df[\"ADDRESS\"].notna()].copy()\nfiltered[\"YTD\"] = pd.to_numeric(filtered[\"YTD\"], errors=\"coerce\")\ntotals = filtered.groupby(group_col, dropna=True)[\"YTD\"].sum().sort_values(ascending=False)\nanswer = totals.head(5).index.astype(str).str.strip().tolist()\n",
+            "subquestion": "Which branches were in the top 5 by YTD visitors in the given year?",
+            "answer": [
+                "Harold Washtington Library Center",
+                "Sulzer Regional Library",
+                "Chinatown",
+                "Woodson Regional Library",
+                "Edgewater"
+            ]
+        },
+        "2": {
+            "source": "datagov/libraries-2020-visitors-by-location/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/libraries-2020-visitors-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\ngroup_col = \"BRANCH\" if \"BRANCH\" in df.columns else \"LOCATION\"\nfiltered = df[df[\"ADDRESS\"].notna()].copy()\nfiltered[\"YTD\"] = pd.to_numeric(filtered[\"YTD\"], errors=\"coerce\")\ntotals = filtered.groupby(group_col, dropna=True)[\"YTD\"].sum().sort_values(ascending=False)\nanswer = totals.head(5).index.astype(str).str.strip().tolist()\n",
+            "subquestion": "Which branches were in the top 5 by YTD visitors in the given year?",
+            "answer": [
+                "Harold Washtington Library Center",
+                "Sulzer Regional Library",
+                "Edgewater",
+                "Woodson Regional Library",
+                "Rogers Park"
+            ]
+        },
+        "3": {
+            "source": "datagov/libraries-2021-visitors-by-location/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/libraries-2021-visitors-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\ngroup_col = \"BRANCH\" if \"BRANCH\" in df.columns else \"LOCATION\"\nfiltered = df[df[\"ADDRESS\"].notna()].copy()\nfiltered[\"YTD\"] = pd.to_numeric(filtered[\"YTD\"], errors=\"coerce\")\ntotals = filtered.groupby(group_col, dropna=True)[\"YTD\"].sum().sort_values(ascending=False)\nanswer = totals.head(5).index.astype(str).str.strip().tolist()\n",
+            "subquestion": "Which branches were in the top 5 by YTD visitors in the given year?",
+            "answer": [
+                "Harold Washtington Library Center",
+                "Sulzer Regional Library",
+                "Edgewater",
+                "Chinatown",
+                "Logan Square"
+            ]
+        },
+        "4": {
+            "source": "datagov/libraries-2019-computer-sessions-by-location/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/libraries-2019-computer-sessions-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['Harold Washtington Library Center', 'Sulzer Regional Library', 'Chinatown', 'Woodson Regional Library', 'Edgewater']\nnode_2_answer = ['Harold Washtington Library Center', 'Sulzer Regional Library', 'Edgewater', 'Woodson Regional Library', 'Rogers Park']\nnode_3_answer = ['Harold Washtington Library Center', 'Sulzer Regional Library', 'Edgewater', 'Chinatown', 'Logan Square']\n\ngroup_col = \"BRANCH\" if \"BRANCH\" in df.columns else \"LOCATION\"\nfiltered = df[df[\"ADDRESS\"].notna()].copy()\nfiltered[\"YTD\"] = pd.to_numeric(filtered[\"YTD\"], errors=\"coerce\")\ntotals = filtered.groupby(group_col, dropna=True)[\"YTD\"].sum().sort_values(ascending=False)\nanswer = totals.head(3).index.astype(str).str.strip().tolist()\n",
+            "subquestion": "Which branches were in the top 3 by YTD computer sessions in the given year?",
+            "answer": [
+                "HAROLD WASHINGTON LIBRARY CENTER",
+                "Woodson Regional Library",
+                "Sulzer Regional Library"
+            ]
+        },
+        "5": {
+            "source": "datagov/libraries-2020-computer-sessions-by-location/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/libraries-2020-computer-sessions-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['Harold Washtington Library Center', 'Sulzer Regional Library', 'Chinatown', 'Woodson Regional Library', 'Edgewater']\nnode_2_answer = ['Harold Washtington Library Center', 'Sulzer Regional Library', 'Edgewater', 'Woodson Regional Library', 'Rogers Park']\nnode_3_answer = ['Harold Washtington Library Center', 'Sulzer Regional Library', 'Edgewater', 'Chinatown', 'Logan Square']\n\ngroup_col = \"BRANCH\" if \"BRANCH\" in df.columns else \"LOCATION\"\nfiltered = df[df[\"ADDRESS\"].notna()].copy()\nfiltered[\"YTD\"] = pd.to_numeric(filtered[\"YTD\"], errors=\"coerce\")\ntotals = filtered.groupby(group_col, dropna=True)[\"YTD\"].sum().sort_values(ascending=False)\nanswer = totals.head(3).index.astype(str).str.strip().tolist()\n",
+            "subquestion": "Which branches were in the top 3 by YTD computer sessions in the given year?",
+            "answer": [
+                "Harold Washington Library Center",
+                "Woodson Regional Library",
+                "Sulzer Regional Library"
+            ]
+        },
+        "6": {
+            "source": "datagov/libraries-2021-computer-sessions-by-location/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/libraries-2021-computer-sessions-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['Harold Washtington Library Center', 'Sulzer Regional Library', 'Chinatown', 'Woodson Regional Library', 'Edgewater']\nnode_2_answer = ['Harold Washtington Library Center', 'Sulzer Regional Library', 'Edgewater', 'Woodson Regional Library', 'Rogers Park']\nnode_3_answer = ['Harold Washtington Library Center', 'Sulzer Regional Library', 'Edgewater', 'Chinatown', 'Logan Square']\n\ngroup_col = \"BRANCH\" if \"BRANCH\" in df.columns else \"LOCATION\"\nfiltered = df[df[\"ADDRESS\"].notna()].copy()\nfiltered[\"YTD\"] = pd.to_numeric(filtered[\"YTD\"], errors=\"coerce\")\ntotals = filtered.groupby(group_col, dropna=True)[\"YTD\"].sum().sort_values(ascending=False)\nanswer = totals.head(3).index.astype(str).str.strip().tolist()\n",
+            "subquestion": "Which branches were in the top 3 by YTD computer sessions in the given year?",
+            "answer": [
+                "Harold Washington Library Center",
+                "Woodson Regional Library",
+                "Sulzer Regional Library"
+            ]
+        },
+        "7": {
+            "source": "wikipedia/Conrad_Sulzer_Regional_Library/content.txt",
+            "fact": "According to the Wikipedia article for Conrad Sulzer Regional Library, the library is located in the Lincoln Square neighborhood at 4455 N.",
+            "subquestion": "Which Chicago neighborhood is the library branch (from hop 2) located in? (Lookup: Conrad Sulzer Regional Library article.).",
+            "answer": "Lincoln Square"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Conrad_Sulzer_Regional_Library/content.txt",
+        "datagov/libraries-2019-visitors-by-location/files/rows.txt",
+        "datagov/libraries-2019-visitors-by-location/signed-metadata.txt",
+        "datagov/libraries-2020-visitors-by-location/files/rows.txt",
+        "datagov/libraries-2020-visitors-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-visitors-by-location/files/rows.txt",
+        "datagov/libraries-2021-visitors-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-visitors-by-location/files/8i46-4b7w.txt",
+        "datagov/libraries-2019-computer-sessions-by-location/files/rows.txt",
+        "datagov/libraries-2019-computer-sessions-by-location/signed-metadata.txt",
+        "datagov/libraries-2020-computer-sessions-by-location/files/rows.txt",
+        "datagov/libraries-2020-computer-sessions-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-computer-sessions-by-location/files/rows.txt",
+        "datagov/libraries-2021-computer-sessions-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-computer-sessions-by-location/files/hcqe-be23.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: In the 2019 Chicago Public Library visitors-by-location dataset (physical branches with non-null addresses), the top 5 by YTD visitors were: Harold Washtington Library Center (1405964), Sulzer Regional Library (358644), Chinatown (271514), Woodson Regional Library (214173), and Edgewater (197045).",
+                "Node 2: In the 2020 Chicago Public Library visitors-by-location dataset (physical branches with non-null addresses), the top 5 by YTD visitors were: Harold Washtington Library Center (554374), Sulzer Regional Library (165519), Edgewater (91450), Woodson Regional Library (78366), and Rogers Park (75717).",
+                "Node 3: In the 2021 Chicago Public Library visitors-by-location dataset (physical branches with non-null addresses), the top 5 by YTD visitors were: Harold Washtington Library Center (543951), Sulzer Regional Library (175377), Edgewater (94307), Chinatown (93783), and Logan Square (92688).",
+                "Hop result: report <node_1 answer>, <node_2 answer>, <node_3 answer> as this hop answer."
+            ],
+            "answer": "Sulzer Regional Library and Edgewater"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: In the 2019 Chicago Public Library computer-sessions-by-location dataset (physical branches with non-null addresses), the top 3 by YTD computer sessions were: HAROLD WASHINGTON LIBRARY CENTER (209583), Woodson Regional Library (86153), and Sulzer Regional Library (75723).",
+                "Node 5: In the 2020 Chicago Public Library computer-sessions-by-location dataset (physical branches with non-null addresses), the top 3 by YTD computer sessions were: Harold Washington Library Center (78203), Woodson Regional Library (33365), and Sulzer Regional Library (27772).",
+                "Node 6: In the 2021 Chicago Public Library computer-sessions-by-location dataset (physical branches with non-null addresses), the top 3 by YTD computer sessions were: Harold Washington Library Center (69312), Woodson Regional Library (28566), and Sulzer Regional Library (22938).",
+                "Hop result: <node_4 answer> ∩ <node_5 answer> ∩ <node_6 answer> = [\"Sulzer Regional Library\", \"Woodson Regional Library\"]."
+            ],
+            "answer": "Sulzer Regional Library"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: According to the Wikipedia article for Conrad Sulzer Regional Library, the library is located in the Lincoln Square neighborhood at 4455 N. Lincoln Avenue.",
+                "Hop result: report <node_7 answer> as the final answer."
+            ],
+            "answer": "Lincoln Square"
+        }
+    ]
+}

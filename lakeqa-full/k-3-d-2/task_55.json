@@ -1,0 +1,97 @@
+{
+  "question": "What US city had the highest average adult obesity rate, adjusted for differences in age structure, in 2016 and 2018? What corporation founded this city? How many people does the baseball stadium named after that corporation seat? Your response should be in the format [Answer].",
+  "answer": 6139,
+  "nodes": {
+    "1": {
+      "source": "datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[\n    df[\"GeographicLevel\"].astype(str).str.strip().eq(\"City\")\n    & df[\"Measure\"].astype(str).str.strip().eq(\"Obesity among adults aged >=18 Years\")\n    & df[\"Data_Value_Type\"].astype(str).str.strip().eq(\"Age-adjusted prevalence\")\n].copy()\nfiltered[\"Data_Value\"] = pd.to_numeric(filtered[\"Data_Value\"], errors=\"coerce\")\ncity_scores = filtered.groupby(\"CityName\", dropna=True)[\"Data_Value\"].mean().sort_values(ascending=False)\nanswer = {city: round(float(city_scores.loc[city]), 1) for city in city_scores.head(8).index.tolist()}\n",
+      "subquestion": "In 2016, what was the average adult obesity rate, adjusted for differences in age structure for each US city?",
+      "answer": {
+        "Dayton": 47.2,
+        "Gary": 46.9,
+        "Detroit": 45.2,
+        "Youngstown": 43.8,
+        "Macon": 42.9,
+        "Flint": 42.7,
+        "Camden": 42.2,
+        "Cleveland": 42.1
+      },
+      "limit": 8
+    },
+    "2": {
+      "source": "datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[\n    df[\"GeographicLevel\"].astype(str).str.strip().eq(\"City\")\n    & df[\"Measure\"].astype(str).str.strip().eq(\"Obesity among adults aged >=18 Years\")\n    & df[\"Data_Value_Type\"].astype(str).str.strip().eq(\"Age-adjusted prevalence\")\n].copy()\nfiltered[\"Data_Value\"] = pd.to_numeric(filtered[\"Data_Value\"], errors=\"coerce\")\ncity_scores = filtered.groupby(\"CityName\", dropna=True)[\"Data_Value\"].mean().sort_values(ascending=False)\nanswer = {city: round(float(city_scores.loc[city]), 1) for city in city_scores.head(8).index.tolist()}\n",
+      "subquestion": "In 2018, what was the average adult obesity rate, adjusted for differences in age structure for each US city?",
+      "answer": {
+        "Gary": 49.0,
+        "Detroit": 47.4,
+        "Flint": 45.4,
+        "Jackson": 44.5,
+        "Brownsville": 44.4,
+        "Camden": 44.1,
+        "Macon": 44.0,
+        "Dayton": 43.5
+      },
+      "limit": 8
+    },
+    "3": {
+      "source": "wikipedia/Gary,_Indiana/content.txt",
+      "fact": "Gary, Indiana was founded in 1906 by the U.S. Steel corporation as the home for its new plant, Gary Works.",
+      "subquestion": "What corporation founded <hop 1 answer>?",
+      "answer": "U.S. Steel Corporation"
+    },
+    "4": {
+      "source": "wikipedia/U.S._Steel_Yard/content.txt",
+      "fact": "U.S. Steel Yard is a baseball stadium located in Gary, Indiana, next to I-90 in the city's Emerson neighborhood. It is home to the Gary SouthShore RailCats and seats 6,139 people.",
+      "subquestion": "How many people does the baseball stadium named after <hop 2 answer> seat?",
+      "answer": 6139
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `GeographicLevel` is `City`, `Measure` is `Obesity among adults aged >=18 Years`, and `Data_Value_Type` is `Age-adjusted prevalence`, then group by `CityName` and average `Data_Value` for all cities. The stored node answer uses `limit = 8` to keep a readable top slice.",
+        "Node 2: Filter rows where `GeographicLevel` is `City`, `Measure` is `Obesity among adults aged >=18 Years`, and `Data_Value_Type` is `Age-adjusted prevalence`, then group by `CityName` and average `Data_Value` for all cities. The stored node answer uses `limit = 8` to keep a readable top slice.",
+        "Hop result: compare the overlapping cities retained in the limited node outputs and average their values across 2016 and 2018. Gary averages (46.9 + 49.0) / 2 = 47.95, Detroit averages (45.2 + 47.4) / 2 = 46.3, Dayton averages (47.2 + 43.5) / 2 = 45.35, Flint averages (42.7 + 45.4) / 2 = 44.05, Macon averages (42.9 + 44.0) / 2 = 43.45, and Camden averages (42.2 + 44.1) / 2 = 43.15. The highest average is Gary, Indiana."
+      ],
+      "answer": "Gary, Indiana"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: U.S. Steel Corporation is the corporation that founded <hop 1 answer> in 1906.",
+        "Hop result: U.S. Steel Corporation"
+      ],
+      "answer": "U.S. Steel Corporation"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: The baseball stadium named after <hop 2 answer> seats `6,139` people.",
+        "Hop result: 6139."
+      ],
+      "answer": 6139
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/Gary,_Indiana/content.txt",
+    "datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt",
+    "datagov/500-cities-local-data-for-better-health-2016-release/signed-metadata.txt",
+    "datagov/500-cities-local-data-for-better-health-2016-release/files/9z78-nsfp.publisher-view.json",
+    "datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt",
+    "datagov/500-cities-local-data-for-better-health-2018-release/signed-metadata.txt",
+    "datagov/500-cities-local-data-for-better-health-2018-release/files/rja3-32tc.txt",
+    "wikipedia/U.S._Steel_Yard/content.txt"
+  ]
+}

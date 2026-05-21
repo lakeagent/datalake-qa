@@ -1,0 +1,151 @@
+{
+    "question": "Find the Connecticut counties that satisfy both criteria: (1) more than 200 accidental overdose deaths in 2020, and (2) assignment to a COVID health-service region with a number above 80. Find the largest cities in the counties with the highest and lowest accidental drug death totals in 2020. Determine which of these two cities had the lower average unadjusted percentage of adults ages 18-64 who did not have health insurance across 2018 and 2019. Then find the largest employer in that city. Just tell me after whom that employer is named. Your response should be in the format [Answer].",
+    "answer": "Elihu Yale",
+    "nodes": {
+        "1": {
+            "source": "datagov/accidental-drug-related-deaths-2012-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/accidental-drug-related-deaths-2012-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Date\"] = pd.to_datetime(df[\"Date\"], errors=\"coerce\")\ndf_2020 = df[df[\"Date\"].dt.year == 2020].copy()\ndf_2020[\"Residence County\"] = df_2020[\"Residence County\"].fillna(\"\").astype(str).str.strip()\n\ncounty_counts = (\n    df_2020.loc[df_2020[\"Residence County\"] != \"\", \"Residence County\"]\n    .value_counts()\n    .rename_axis(\"county\")\n    .reset_index(name=\"accidental_drug_deaths_2020\")\n)\ncounty_counts[\"county\"] = county_counts[\"county\"].str.title() + \" County\"\nfiltered = county_counts[county_counts[\"accidental_drug_deaths_2020\"] > 200].copy()\nanswer = dict(zip(filtered[\"county\"], filtered[\"accidental_drug_deaths_2020\"]))",
+            "subquestion": "Which Connecticut counties had more than 200 accidental overdose deaths in 2020, and what were those totals?",
+            "answer": {
+                "New Haven County": 383,
+                "Hartford County": 335,
+                "Fairfield County": 208
+            }
+        },
+        "2": {
+            "source": "datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"state\"] == \"Connecticut\") & (df[\"health_service_area_number\"] > 80)].copy()\nanswer = filtered[\"county_name\"].drop_duplicates().tolist()",
+            "subquestion": "Which Connecticut counties were assigned to a COVID health-service region with a number above 80?",
+            "answer": [
+                "Fairfield County",
+                "New Haven County",
+                "Middlesex County",
+                "Litchfield County"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/New_Haven_County,_Connecticut/content.txt",
+            "fact": "Two of the state's five largest cities, New Haven (3rd) and Waterbury (5th), are part of New Haven County.",
+            "subquestion": "Which city in the higher-accidental-drug-death county from <hop 1 answer> is the largest?",
+            "answer": "New Haven"
+        },
+        "4": {
+            "source": "wikipedia/Fairfield_County,_Connecticut/content.txt",
+            "fact": "the county contains four of the state's seven largest cities—Bridgeport (first), Stamford (second), Norwalk (sixth) and Danbury (seventh)—whose combined population of 433,368 is nearly half the county's total population.",
+            "subquestion": "Which city in the lower-accidental-drug-death county from <hop 1 answer> is the largest?",
+            "answer": "Bridgeport"
+        },
+        "5": {
+            "source": "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"StateAbbr\"] == \"CT\") & (df[\"PlaceName\"].isin([\"New Haven\", \"Bridgeport\"]))].copy()\nanswer = dict(zip(filtered[\"PlaceName\"], filtered[\"ACCESS2_CrudePrev\"].map(lambda x: f\"{x}%\")))",
+            "subquestion": "What was the unadjusted percentage of adults ages 18-64 in <hop 2 answer> who currently did not have health insurance in 2018?",
+            "answer": {
+                "New Haven": "13.9%",
+                "Bridgeport": "16.9%"
+            }
+        },
+        "6": {
+            "source": "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"StateAbbr\"] == \"CT\") & (df[\"PlaceName\"].isin([\"New Haven\", \"Bridgeport\"]))].copy()\nanswer = dict(zip(filtered[\"PlaceName\"], filtered[\"ACCESS2_CrudePrev\"].map(lambda x: f\"{x}%\")))",
+            "subquestion": "What was the unadjusted percentage of adults ages 18-64 in <hop 2 answer> who currently did not have health insurance in 2019?",
+            "answer": {
+                "New Haven": "15.4%",
+                "Bridgeport": "19.3%"
+            }
+        },
+        "7": {
+            "source": "wikipedia/New_Haven,_Connecticut/content.txt",
+            "fact": "Yale is the city's largest employer, followed by Yale – New Haven Hospital.",
+            "subquestion": "What is the largest employer in <hop 3 answer>?",
+            "answer": "Yale University"
+        },
+        "8": {
+            "source": "wikipedia/Yale_University/content.txt",
+            "fact": "Coat of arms of the family of Elihu Yale, for whom the university was named in 1718",
+            "subquestion": "After whom is <hop 4 answer> named?",
+            "answer": "Elihu Yale"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/New_Haven_County,_Connecticut/content.txt",
+        "wikipedia/Fairfield_County,_Connecticut/content.txt",
+        "wikipedia/New_Haven,_Connecticut/content.txt",
+        "wikipedia/Yale_University/content.txt",
+        "datagov/accidental-drug-related-deaths-2012-2018/files/rows.txt",
+        "datagov/accidental-drug-related-deaths-2012-2018/signed-metadata.txt",
+        "datagov/accidental-drug-related-deaths-2012-2018/files/rybz-nyjw.publisher-view.json",
+        "datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/files/rows.txt",
+        "datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/signed-metadata.txt",
+        "datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/files/5tw8-bi5h.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/signed-metadata.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/pf7q-w24q.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/signed-metadata.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/dxpw-cm5u.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Parse 2020 `Date`, count rows by `Residence County`, keep counties with `accidental_drug_deaths_2020 > 200`, and return `county -> accidental_drug_deaths_2020`.",
+                "Node 2: Filter rows where `state` = `Connecticut` and `health_service_area_number > 80`, then return distinct `county_name` values.",
+                "Hop result: intersect node 1 counties with node 2 counties, then compare 2020 accidental drug death counts. Higher county = New Haven County; lower county = Fairfield County."
+            ],
+            "answer": {
+                "higher_accidental_drug_death_county": "New Haven County",
+                "lower_accidental_drug_death_county": "Fairfield County"
+            }
+        },
+        {
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: From the higher-accidental-drug-death county in <hop 1 answer>, select the city ranked 3rd among Connecticut's largest cities.",
+                "Node 4: From the lower-accidental-drug-death county in <hop 1 answer>, select the city ranked 1st among Connecticut's largest cities.",
+                "Hop result: the two comparison cities are New Haven and Bridgeport."
+            ],
+            "answer": [
+                "New Haven",
+                "Bridgeport"
+            ]
+        },
+        {
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Filter 2018 rows where `StateAbbr` = `CT` and `PlaceName` is in <hop 2 answer>, then return `PlaceName -> ACCESS2_CrudePrev`.",
+                "Node 6: Filter 2019 rows where `StateAbbr` = `CT` and `PlaceName` is in <hop 2 answer>, then return `PlaceName -> ACCESS2_CrudePrev`.",
+                "Hop result: average the 2018 and 2019 ACCESS2 rates for each city. New Haven has the lower average lack-of-health-insurance rate."
+            ],
+            "answer": "New Haven"
+        },
+        {
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Identify the largest employer in <hop 3 answer>.",
+                "Hop result: Yale University."
+            ],
+            "answer": "Yale University"
+        },
+        {
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Identify the person after whom <hop 4 answer> was named.",
+                "Hop result: Elihu Yale."
+            ],
+            "answer": "Elihu Yale"
+        }
+    ]
+}

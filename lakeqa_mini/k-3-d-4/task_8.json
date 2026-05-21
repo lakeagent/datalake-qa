@@ -1,0 +1,136 @@
+{
+    "question": "In what year was the university founded where the civil rights leader after whom the only NYC elementary school that received an 'A' consistently from 2007-2011 in District 6 is named after earned his bachelor's degree? Your response should be in the format [Answer].",
+    "answer": "1819",
+    "nodes": {
+        "1": {
+            "source": "datagov/2007-2008-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2007-2008-school-progress-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nlevel_col = next(col for col in df.columns if 'SCHOOL LEVEL' in col.upper())\ngrade_col = next(col for col in df.columns if 'OVERALL GRADE' in col.upper())\ndf['DISTRICT'] = pd.to_numeric(df['DISTRICT'], errors='coerce')\nname_map = {\n    'P.S. 005 ELLEN LURIE': 'P.S. 005 Ellen Lurie',\n    'P.S. 008 LUIS BELLIARD': 'P.S. 008 Luis Belliard',\n    'P.S. 028 WRIGHT BROTHERS': 'P.S. 028 Wright Brothers',\n    'P.S. 048 P.O. MICHAEL J. BUCZEK': 'P.S. 048 P.O. Michael J. Buczek',\n    'P.S. 128 AUDUBON': 'P.S. 128 Audubon',\n    'P.S. 152 DYCKMAN VALLEY': 'P.S. 152 Dyckman Valley',\n    'P.S. 153 ADAM CLAYTON POWELL': 'P.S. 153 Adam Clayton Powell',\n    'P.S. 192 JACOB H. SCHIFF': 'P.S. 192 Jacob H. Schiff'\n}\nfiltered = df[\n    df['DISTRICT'].eq(6)\n    & df[level_col].astype(str).str.contains('Elementary', case=False, na=False)\n    & df[grade_col].astype(str).str.strip().eq('A')\n].copy()\nanswer = (\n    filtered['SCHOOL']\n    .dropna()\n    .astype(str)\n    .drop_duplicates()\n    .sort_values()\n    .map(name_map)\n    .tolist()\n)",
+            "subquestion": "Which District 6 NYC elementary schools received an 'A' overall grade in 2007-08?",
+            "answer": [
+                "P.S. 005 Ellen Lurie",
+                "P.S. 008 Luis Belliard",
+                "P.S. 028 Wright Brothers",
+                "P.S. 048 P.O. Michael J. Buczek",
+                "P.S. 128 Audubon",
+                "P.S. 152 Dyckman Valley",
+                "P.S. 153 Adam Clayton Powell",
+                "P.S. 192 Jacob H. Schiff"
+            ]
+        },
+        "2": {
+            "source": "datagov/2008-2009-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2008-2009-school-progress-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nlevel_col = next(col for col in df.columns if 'SCHOOL LEVEL' in col.upper())\ngrade_col = next(col for col in df.columns if 'OVERALL GRADE' in col.upper())\ndf['DISTRICT'] = pd.to_numeric(df['DISTRICT'], errors='coerce')\nname_map = {\n    'HAMILTON HEIGHTS SCHOOL': 'Hamilton Heights School',\n    'MUSCOTA': 'Muscota',\n    'P.S. 004 DUKE ELLINGTON': 'P.S. 004 Duke Ellington',\n    'P.S. 005 ELLEN LURIE': 'P.S. 005 Ellen Lurie',\n    'P.S. 008 LUIS BELLIARD': 'P.S. 008 Luis Belliard',\n    'P.S. 028 WRIGHT BROTHERS': 'P.S. 028 Wright Brothers',\n    'P.S. 048 P.O. MICHAEL J. BUCZEK': 'P.S. 048 P.O. Michael J. Buczek',\n    'P.S. 098 SHORAC KAPPOCK': 'P.S. 098 Shorac Kappock',\n    'P.S. 115 ALEXANDER HUMBOLDT': 'P.S. 115 Alexander Humboldt',\n    'P.S. 128 AUDUBON': 'P.S. 128 Audubon',\n    'P.S. 132 JUAN PABLO DUARTE': 'P.S. 132 Juan Pablo Duarte',\n    'P.S. 152 DYCKMAN VALLEY': 'P.S. 152 Dyckman Valley',\n    'P.S. 153 ADAM CLAYTON POWELL': 'P.S. 153 Adam Clayton Powell',\n    'P.S. 173': 'P.S. 173',\n    'P.S. 189': 'P.S. 189',\n    'P.S. 192 JACOB H. SCHIFF': 'P.S. 192 Jacob H. Schiff',\n    'P.S. 325': 'P.S. 325'\n}\nfiltered = df[\n    df['DISTRICT'].eq(6)\n    & df[level_col].astype(str).str.contains('Elementary', case=False, na=False)\n    & df[grade_col].astype(str).str.strip().eq('A')\n].copy()\nanswer = (\n    filtered['SCHOOL']\n    .dropna()\n    .astype(str)\n    .drop_duplicates()\n    .sort_values()\n    .map(name_map)\n    .tolist()\n)",
+            "subquestion": "Which District 6 NYC elementary schools received an 'A' overall grade in 2008-09?",
+            "answer": [
+                "Hamilton Heights School",
+                "Muscota",
+                "P.S. 004 Duke Ellington",
+                "P.S. 005 Ellen Lurie",
+                "P.S. 008 Luis Belliard",
+                "P.S. 028 Wright Brothers",
+                "P.S. 048 P.O. Michael J. Buczek",
+                "P.S. 098 Shorac Kappock",
+                "P.S. 115 Alexander Humboldt",
+                "P.S. 128 Audubon",
+                "P.S. 132 Juan Pablo Duarte",
+                "P.S. 152 Dyckman Valley",
+                "P.S. 153 Adam Clayton Powell",
+                "P.S. 173",
+                "P.S. 189",
+                "P.S. 192 Jacob H. Schiff",
+                "P.S. 325"
+            ]
+        },
+        "3": {
+            "source": "datagov/2009-2010-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2009-2010-school-progress-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nlevel_col = next(col for col in df.columns if 'SCHOOL LEVEL' in col.upper())\ngrade_col = next(col for col in df.columns if 'OVERALL GRADE' in col.upper())\ndf['DISTRICT'] = pd.to_numeric(df['DISTRICT'], errors='coerce')\nname_map = {\n    'P.S. 008 Luis Belliard': 'P.S. 008 Luis Belliard',\n    'P.S. 028 Wright Brothers': 'P.S. 028 Wright Brothers',\n    'P.S. 153 Adam Clayton Powell': 'P.S. 153 Adam Clayton Powell',\n    'P.S. 189': 'P.S. 189'\n}\nfiltered = df[\n    df['DISTRICT'].eq(6)\n    & df[level_col].astype(str).str.contains('Elementary', case=False, na=False)\n    & df[grade_col].astype(str).str.strip().eq('A')\n].copy()\nanswer = (\n    filtered['SCHOOL']\n    .dropna()\n    .astype(str)\n    .drop_duplicates()\n    .sort_values()\n    .map(name_map)\n    .tolist()\n)",
+            "subquestion": "Which District 6 NYC elementary schools received an 'A' overall grade in 2009-10?",
+            "answer": [
+                "P.S. 008 Luis Belliard",
+                "P.S. 028 Wright Brothers",
+                "P.S. 153 Adam Clayton Powell",
+                "P.S. 189"
+            ]
+        },
+        "4": {
+            "source": "datagov/2010-2011-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2010-2011-school-progress-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nlevel_col = next(col for col in df.columns if 'SCHOOL LEVEL' in col.upper())\ngrade_col = next(col for col in df.columns if 'OVERALL GRADE' in col.upper())\ndf['DISTRICT'] = pd.to_numeric(df['DISTRICT'], errors='coerce')\nname_map = {\n    'Hamilton Heights School': 'Hamilton Heights School',\n    'P.S. 048 P.O. Michael J. Buczek': 'P.S. 048 P.O. Michael J. Buczek',\n    'P.S. 153 Adam Clayton Powell': 'P.S. 153 Adam Clayton Powell',\n    'P.S. 189': 'P.S. 189'\n}\nfiltered = df[\n    df['DISTRICT'].eq(6)\n    & df[level_col].astype(str).str.contains('Elementary', case=False, na=False)\n    & df[grade_col].astype(str).str.strip().eq('A')\n].copy()\nanswer = (\n    filtered['SCHOOL']\n    .dropna()\n    .astype(str)\n    .drop_duplicates()\n    .sort_values()\n    .map(name_map)\n    .tolist()\n)",
+            "subquestion": "Which District 6 NYC elementary schools received an 'A' overall grade in 2010-11?",
+            "answer": [
+                "Hamilton Heights School",
+                "P.S. 048 P.O. Michael J. Buczek",
+                "P.S. 153 Adam Clayton Powell",
+                "P.S. 189"
+            ]
+        },
+        "5": {
+            "source": "wikipedia/Adam_Clayton_Powell_Jr./content.txt",
+            "fact": "Adam Clayton Powell Jr. (1908-1972) was an American Baptist pastor and politician who represented Harlem in the U.S. House of Representatives. He attended Colgate University where he earned his bachelor's degree in 1930.",
+            "subquestion": "At which university did <intersection of node_1, node_2, node_3, node_4> namesake earn his bachelor's degree?",
+            "answer": "Colgate University"
+        },
+        "6": {
+            "source": "wikipedia/Colgate_University/content.txt",
+            "fact": "Colgate University is a private college in Hamilton, New York. It was founded in 1819 as the Baptist Education Society of the State of New York.",
+            "subquestion": "In what year was <node_5 answer> founded?",
+            "answer": "1819"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: In 2007-08, the District 6 elementary schools with an overall grade of A were P.S. 005 Ellen Lurie, P.S. 008 Luis Belliard, P.S. 028 Wright Brothers, P.S. 048 P.O. Michael J. Buczek, P.S. 128 Audubon, P.S. 152 Dyckman Valley, P.S. 153 Adam Clayton Powell, and P.S. 192 Jacob H. Schiff.",
+                "Node 2: In 2008-09, the District 6 elementary schools with an overall grade of A were Hamilton Heights School, Muscota, P.S. 004 Duke Ellington, P.S. 005 Ellen Lurie, P.S. 008 Luis Belliard, P.S. 028 Wright Brothers, P.S. 048 P.O. Michael J. Buczek, P.S. 098 Shorac Kappock, P.S. 115 Alexander Humboldt, P.S. 128 Audubon, P.S. 132 Juan Pablo Duarte, P.S. 152 Dyckman Valley, P.S. 153 Adam Clayton Powell, P.S. 173, P.S. 189, P.S. 192 Jacob H. Schiff, and P.S. 325.",
+                "Node 3: In 2009-10, the District 6 elementary schools with an overall grade of A were P.S. 008 Luis Belliard, P.S. 028 Wright Brothers, P.S. 153 Adam Clayton Powell, and P.S. 189.",
+                "Node 4: In 2010-11, the District 6 elementary schools with an overall grade of A were Hamilton Heights School, P.S. 048 P.O. Michael J. Buczek, P.S. 153 Adam Clayton Powell, and P.S. 189.",
+                "Derive hop 1 answer using nodes 1, 2, 3, 4: Nodes 1-4 ask for District 6 schools with an A grade across four years; intersecting these sets leaves P.S. 153 Adam Clayton Powell as the consistent school. Hop answer: P.S. 153 Adam Clayton Powell."
+            ],
+            "answer": "P.S. 153 Adam Clayton Powell"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Adam Clayton Powell Jr. (1908-1972) was an American Baptist pastor and politician who represented Harlem in the U.S. House of Representatives. He attended Colgate University where he earned his bachelor's degree in 1930.",
+                "Derive hop 2 answer from node 5: Node 5 uses the namesake from hop 1 and asks which university he earned his bachelor's degree at. Hop answer: Colgate University."
+            ],
+            "answer": "Colgate University"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Colgate University is a private college in Hamilton, New York. It was founded in 1819 as the Baptist Education Society of the State of New York.",
+                "Derive hop 3 answer from node 6: Node 6 depends on hop 2 and asks for the founding year of Colgate University, which is the final year required. Hop answer: 1819."
+            ],
+            "answer": "1819"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Adam_Clayton_Powell_Jr./content.txt",
+        "wikipedia/Colgate_University/content.txt",
+        "datagov/2007-2008-school-progress-report/files/rows.txt",
+        "datagov/2007-2008-school-progress-report/signed-metadata.txt",
+        "datagov/2007-2008-school-progress-report/files/School_Progress_Reports_-_All_Schools.xlsx",
+        "datagov/2008-2009-school-progress-report/files/rows.txt",
+        "datagov/2008-2009-school-progress-report/signed-metadata.txt",
+        "datagov/2008-2009-school-progress-report/files/School_Progress_Reports_-_All_Schools.xlsx",
+        "datagov/2009-2010-school-progress-report/files/rows.txt",
+        "datagov/2009-2010-school-progress-report/signed-metadata.txt",
+        "datagov/2009-2010-school-progress-report/files/School_Progress_Reports_-_All_Schools_2009-10.xlsx",
+        "datagov/2010-2011-school-progress-report/files/rows.txt",
+        "datagov/2010-2011-school-progress-report/signed-metadata.txt",
+        "datagov/2010-2011-school-progress-report/files/School_Progress_Report_2010-2011.xlsx"
+    ]
+}

@@ -1,0 +1,187 @@
+{
+    "question": "Find the New York counties, excluding NYC boroughs, satisfying both criteria: (1) an average rate of being sent back to prison or jail between 38% and 40% across 2018 and 2019, and (2) an average count of traffic crashes above 15,000 across 2019 and 2020. Among the counties that satisfy both conditions, identify the one named after a U.S. president. Then find the county where that president was born, and report the year that birth county was established. Report only the year in your response. Your response should be in the format [Answer].",
+    "answer": "1653",
+    "nodes": {
+        "1": {
+            "source": "datagov/recidivism-beginning-2008/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/recidivism-beginning-2008/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nexclude_counties = {\"BRONX\", \"KINGS\", \"NEW YORK\", \"QUEENS\", \"RICHMOND\", \"UNKNOWN\"}\nreturned_statuses = {\"Returned Parole Violation\", \"New Felony Offense\"}\n\nanswer = (\n    df[df[\"Release Year\"] == 2018]\n    .loc[lambda x: ~x[\"County of Indictment\"].isin(exclude_counties)]\n    .groupby(\"County of Indictment\")[\"Return Status\"]\n    .apply(lambda s: f\"{(s.isin(returned_statuses).mean() * 100):.1f}%\")\n    .to_dict()\n)",
+            "subquestion": "What were the 2018 rates of being sent back to prison or jail for New York counties excluding NYC boroughs?",
+            "answer": {
+                "ALBANY": "43.0%",
+                "ALLEGANY": "47.2%",
+                "BROOME": "46.0%",
+                "CATTARAUGUS": "33.0%",
+                "CAYUGA": "47.4%",
+                "CHAUTAUQUA": "46.5%",
+                "CHEMUNG": "43.0%",
+                "CHENANGO": "39.1%",
+                "CLINTON": "27.9%",
+                "COLUMBIA": "32.0%"
+            },
+            "limit": 10
+        },
+        "2": {
+            "source": "datagov/recidivism-beginning-2008/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/recidivism-beginning-2008/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nexclude_counties = {\"BRONX\", \"KINGS\", \"NEW YORK\", \"QUEENS\", \"RICHMOND\", \"UNKNOWN\"}\nreturned_statuses = {\"Returned Parole Violation\", \"New Felony Offense\"}\n\nanswer = (\n    df[df[\"Release Year\"] == 2019]\n    .loc[lambda x: ~x[\"County of Indictment\"].isin(exclude_counties)]\n    .groupby(\"County of Indictment\")[\"Return Status\"]\n    .apply(lambda s: f\"{(s.isin(returned_statuses).mean() * 100):.1f}%\")\n    .to_dict()\n)",
+            "subquestion": "What were the 2019 rates of being sent back to prison or jail for New York counties excluding NYC boroughs?",
+            "answer": {
+                "ALBANY": "34.1%",
+                "ALLEGANY": "26.3%",
+                "BROOME": "36.6%",
+                "CATTARAUGUS": "33.3%",
+                "CAYUGA": "37.6%",
+                "CHAUTAUQUA": "31.4%",
+                "CHEMUNG": "36.5%",
+                "CHENANGO": "29.3%",
+                "CLINTON": "26.4%",
+                "COLUMBIA": "21.8%"
+            },
+            "limit": 10
+        },
+        "3": {
+            "source": "datagov/motor-vehicle-crashes-case-information-three-year-window/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/motor-vehicle-crashes-case-information-three-year-window/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nexclude_counties = {\"BRONX\", \"KINGS\", \"NEW YORK\", \"QUEENS\", \"RICHMOND\", \"UNKNOWN\"}\n\nanswer = (\n    df[df[\"Year\"] == 2019]\n    .loc[lambda x: ~x[\"County Name\"].isin(exclude_counties)]\n    .groupby(\"County Name\")\n    .size()\n    .astype(int)\n    .astype(str)\n    .to_dict()\n)",
+            "subquestion": "What were the 2019 counts of traffic crashes for New York counties excluding NYC boroughs?",
+            "answer": {
+                "ALBANY": "9930",
+                "ALLEGANY": "1322",
+                "BROOME": "5401",
+                "CATTARAUGUS": "1950",
+                "CAYUGA": "2291",
+                "CHAUTAUQUA": "3001",
+                "CHEMUNG": "2190",
+                "CHENANGO": "1399",
+                "CLINTON": "2362",
+                "COLUMBIA": "2087"
+            },
+            "limit": 10
+        },
+        "4": {
+            "source": "datagov/motor-vehicle-crashes-case-information-three-year-window/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/motor-vehicle-crashes-case-information-three-year-window/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nexclude_counties = {\"BRONX\", \"KINGS\", \"NEW YORK\", \"QUEENS\", \"RICHMOND\", \"UNKNOWN\"}\n\nanswer = (\n    df[df[\"Year\"] == 2020]\n    .loc[lambda x: ~x[\"County Name\"].isin(exclude_counties)]\n    .groupby(\"County Name\")\n    .size()\n    .astype(int)\n    .astype(str)\n    .to_dict()\n)",
+            "subquestion": "What were the 2020 counts of traffic crashes for New York counties excluding NYC boroughs?",
+            "answer": {
+                "ALBANY": "7564",
+                "ALLEGANY": "1061",
+                "BROOME": "4367",
+                "CATTARAUGUS": "1631",
+                "CAYUGA": "1883",
+                "CHAUTAUQUA": "2477",
+                "CHEMUNG": "1929",
+                "CHENANGO": "1270",
+                "CLINTON": "1711",
+                "COLUMBIA": "1720"
+            },
+            "limit": 10
+        },
+        "5": {
+            "source": "wikipedia/Erie_County,_New_York/content.txt",
+            "fact": "Both the county and Lake Erie were named for the regional Iroquoian language-speaking Erie tribe of Native Americans, who lived in the area before 1654.",
+            "subquestion": "After whom or what is Erie from <hop 2 answer> named?",
+            "answer": "Erie tribe of Native Americans"
+        },
+        "6": {
+            "source": "wikipedia/Monroe_County,_New_York/content.txt",
+            "fact": "The county is named after James Monroe, the fifth president of the United States.",
+            "subquestion": "After whom or what is Monroe from <hop 2 answer> named?",
+            "answer": "James Monroe, the fifth president of the United States"
+        },
+        "7": {
+            "source": "wikipedia/James_Monroe/content.txt",
+            "fact": "James Monroe was born on April 28, 1758, in his parents' house in a wooded area of Westmoreland County in the Colony of Virginia",
+            "subquestion": "In which county was <hop 3 answer> born?",
+            "answer": "Westmoreland County, Virginia"
+        },
+        "8": {
+            "source": "wikipedia/Westmoreland_County,_Virginia/content.txt",
+            "fact": "As originally established by the Virginia colony's House of Burgesses, this area was separated from Northumberland County in 1653 and named for the English county of Westmorland",
+            "subquestion": "In what year was <hop 4 answer> established?",
+            "answer": "1653"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Erie_County,_New_York/content.txt",
+        "wikipedia/Monroe_County,_New_York/content.txt",
+        "wikipedia/James_Monroe/content.txt",
+        "wikipedia/Westmoreland_County,_Virginia/content.txt",
+        "datagov/recidivism-beginning-2008/files/rows.txt",
+        "datagov/recidivism-beginning-2008/signed-metadata.txt",
+        "datagov/recidivism-beginning-2008/files/y7pw-wrny.txt",
+        "datagov/motor-vehicle-crashes-case-information-three-year-window/files/rows.txt",
+        "datagov/motor-vehicle-crashes-case-information-three-year-window/signed-metadata.txt",
+        "datagov/motor-vehicle-crashes-case-information-three-year-window/files/e8ky-4vqe.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Release Year` = 2018, exclude NYC boroughs and `UNKNOWN` from `County of Indictment`, group by `County of Indictment`, and compute the share of `Return Status` in {`Returned Parole Violation`, `New Felony Offense`}.",
+                "Node 2: Filter rows where `Release Year` = 2019, exclude NYC boroughs and `UNKNOWN` from `County of Indictment`, group by `County of Indictment`, and compute the share of `Return Status` in {`Returned Parole Violation`, `New Felony Offense`}.",
+                "Hop result: average the 2018 and 2019 return-to-custody rates by county, then keep counties with averages between 38% and 40%. The qualifying counties are SULLIVAN, CHEMUNG, JEFFERSON, SCHENECTADY, CHAUTAUQUA, CORTLAND, ALBANY, ONONDAGA, ERIE, MONROE, and STEUBEN."
+            ],
+            "answer": [
+                "SULLIVAN",
+                "CHEMUNG",
+                "JEFFERSON",
+                "SCHENECTADY",
+                "CHAUTAUQUA",
+                "CORTLAND",
+                "ALBANY",
+                "ONONDAGA",
+                "ERIE",
+                "MONROE",
+                "STEUBEN"
+            ]
+        },
+        {
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `Year` = 2019, exclude NYC boroughs and `UNKNOWN` from `County Name`, group by `County Name`, and count crashes.",
+                "Node 4: Filter rows where `Year` = 2020, exclude NYC boroughs and `UNKNOWN` from `County Name`, group by `County Name`, and count crashes.",
+                "Hop result: from the counties in <hop 1 answer>, average the 2019 and 2020 crash counts and keep counties with averages above 15,000. The qualifying counties are ERIE and MONROE."
+            ],
+            "answer": [
+                "ERIE",
+                "MONROE"
+            ]
+        },
+        {
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Identify what Erie from <hop 2 answer> was named after.",
+                "Node 6: Identify whom Monroe from <hop 2 answer> was named after.",
+                "Hop result: the county named after a U.S. president is Monroe County, named after James Monroe."
+            ],
+            "answer": "James Monroe"
+        },
+        {
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Identify the county where <hop 3 answer> was born.",
+                "Hop result: Westmoreland County, Virginia."
+            ],
+            "answer": "Westmoreland County, Virginia"
+        },
+        {
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Identify the establishment year of <hop 4 answer>.",
+                "Hop result: 1653."
+            ],
+            "answer": 1653
+        }
+    ]
+}

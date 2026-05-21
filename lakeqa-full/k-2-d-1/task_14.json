@@ -1,0 +1,48 @@
+{
+    "question": "Which year from 2005-2010 has the highest homicide injury deaths for all ages, both sexes, and all races in the U.S. After finding that, which team won the WNBA Championship in that year? Your response should be in the format [Answer].",
+    "answer": "Detroit Shock",
+    "nodes": {
+        "1": {
+            "source": "datagov/nchs-injury-mortality-united-states/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/nchs-injury-mortality-united-states/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=None, engine=\"python\")\n\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Deaths\"] = pd.to_numeric(df[\"Deaths\"], errors=\"coerce\")\nfiltered = df[\n    df[\"Sex\"].astype(str).str.strip().str.lower().eq(\"both sexes\")\n    & df[\"Age group (years)\"].astype(str).str.strip().str.lower().eq(\"all ages\")\n    & df[\"Race\"].astype(str).str.strip().str.lower().eq(\"all races\")\n    & df[\"Injury mechanism\"].astype(str).str.strip().str.lower().eq(\"all mechanisms\")\n    & df[\"Injury intent\"].astype(str).str.strip().str.lower().eq(\"homicide\")\n    & df[\"Year\"].between(2005, 2010)\n]\nyearly_totals = filtered.groupby(\"Year\", dropna=True)[\"Deaths\"].sum()\nanswer = str(int(yearly_totals.idxmax()))\n",
+            "subquestion": "Which year from 2005-2010 has the highest homicide injury deaths for all ages, both sexes, and all races in the U.S.?",
+            "answer": "2006"
+        },
+        "2": {
+            "source": "wikipedia/2006_WNBA_season/content.txt",
+            "fact": "The season ended with the Detroit Shock winning their second WNBA Championship.",
+            "subquestion": "Which team won the WNBA Championship in <hop 1 answer>?",
+            "answer": "Detroit Shock"
+        }
+    },
+    "datasets_used": [
+        "datagov/nchs-injury-mortality-united-states/files/rows.txt",
+        "datagov/nchs-injury-mortality-united-states/signed-metadata.txt",
+        "datagov/nchs-injury-mortality-united-states/files/injury_mortality_in_the_united_states.html",
+        "wikipedia/2006_WNBA_season/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter to `Sex` = both sexes, `Race` = all races, `Age group (years)` = all ages, `Injury mechanism` = all mechanisms, and `Injury intent` = homicide; then sum `Deaths` by `Year` from 2005 to 2010 and select the year with the highest total. The peak year is 2006.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2006"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Detroit Shock was the WNBA champion for 2006.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Detroit Shock"
+        }
+    ]
+}

@@ -1,0 +1,296 @@
+{
+  "question": "From the counties that were in the statewide top 5 for releases from the Texas state prison system in 2019, 2020, and 2021, find the county that has the most recently established county seat. In that county, identify the school district that had the highest average percentage across its sites of students automatically recognized as eligible for free school meals without submitting a household meal application from 2019-2020 through 2021-2022. Find the year that school district was incorporated. In the U.S. presidential election held in that year, what was the electoral-vote difference between the winner and runner-up? Please return only the number in the format [Answer].",
+  "answer": 23,
+  "nodes": {
+    "1": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.groupby(\"County\")\n    .size()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = result.index.tolist()",
+      "subquestion": "Which counties were in the statewide top 5 for releases from the Texas state prison system in 2019?",
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Tarrant",
+        "Bexar",
+        "Hidalgo"
+      ]
+    },
+    "2": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.groupby(\"County\")\n    .size()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = result.index.tolist()",
+      "subquestion": "Which counties were in the statewide top 5 for releases from the Texas state prison system in 2020?",
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Tarrant",
+        "Bexar",
+        "Travis"
+      ]
+    },
+    "3": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.groupby(\"County\")\n    .size()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = result.index.tolist()",
+      "subquestion": "Which counties were in the statewide top 5 for releases from the Texas state prison system in 2021?",
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Tarrant",
+        "Bexar",
+        "Hidalgo"
+      ]
+    },
+    "4": {
+      "source": "wikipedia/Harris_County,_Texas/content.txt",
+      "fact": "Harris County is a county located in the U.S. state of Texas. As of the 2020 census, the population was 4,731,145, and was estimated to be 5,009,302 in 2024, making it the most populous county in Texas and the third-most populous county in the United States. Its county seat is Houston, the most populous city in Texas and the fourth-most populous city in the United States.",
+      "subquestion": "What is the county seat of Harris County from <hop 1 answer>?",
+      "answer": "Houston is the county seat of Harris County"
+    },
+    "5": {
+      "source": "wikipedia/Dallas_County,_Texas/content.txt",
+      "fact": "Dallas County is a county located in the U.S. state of Texas. As of the 2020 census, the population was 2,613,539, and was estimated to be 2,656,028 in 2024, making it the second-most populous county in Texas and the eighth-most populous county in the United States. Its county seat is Dallas, the third-most populous city in Texas and the ninth-most populous city in the United States.",
+      "subquestion": "What is the county seat of Dallas County from <hop 1 answer>?",
+      "answer": "Dallas is the county seat of Dallas County"
+    },
+    "6": {
+      "source": "wikipedia/Tarrant_County,_Texas/content.txt",
+      "fact": "Tarrant County is a county located in the U.S. state of Texas with a 2020 U.S. census population of 2,110,640, making it the third-most populous county in Texas and the 15th-most populous in the United States. Its county seat is Fort Worth. Tarrant County, one of 26 counties created out of the Peters Colony, was established in 1849 and organized the next year.",
+      "subquestion": "What is the county seat of Tarrant County from <hop 1 answer>?",
+      "answer": "Fort Worth is the county seat of Tarrant County"
+    },
+    "7": {
+      "source": "wikipedia/Bexar_County,_Texas/content.txt",
+      "fact": "Bexar County (  or  ;  ) is a county in the U.S. state of Texas. It is in South Texas and its county seat is San Antonio.",
+      "subquestion": "What is the county seat of Bexar County from <hop 1 answer>?",
+      "answer": "San Antonio is the county seat of Bexar County"
+    },
+    "8": {
+      "source": "wikipedia/Houston/content.txt",
+      "fact": "Houston was founded by land investors on August 30, 1836, at the confluence of Buffalo Bayou and White Oak Bayou (a point now known as Allen's Landing) and incorporated as a city on June 5, 1837.",
+      "subquestion": "When was Houston from <hop 2 answer> founded?",
+      "answer": "Houston was founded on August 30, 1836"
+    },
+    "9": {
+      "source": "wikipedia/Dallas/content.txt",
+      "fact": "Two years later, in 1841, he returned to establish a permanent settlement named Dallas.",
+      "subquestion": "When was Dallas from <hop 2 answer> established?",
+      "answer": "Dallas was established in 1841"
+    },
+    "10": {
+      "source": "wikipedia/Fort_Worth,_Texas/content.txt",
+      "fact": "The city of Fort Worth was established in 1849 as an army outpost on a bluff overlooking the Trinity River.",
+      "subquestion": "When was Fort Worth from <hop 2 answer> established?",
+      "answer": "Fort Worth was established in 1849"
+    },
+    "11": {
+      "source": "wikipedia/San_Antonio/content.txt",
+      "fact": "Founded in 1718 as a Spanish mission and colonial outpost, San Antonio became the first chartered civil settlement in present-day Texas in 1731.",
+      "subquestion": "When was San Antonio from <hop 2 answer> founded?",
+      "answer": "San Antonio was established in 1718"
+    },
+    "12": {
+      "source": "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[\n        (df[\"SiteCounty\"] == \"TARRANT\")\n        & (df[\"CEName\"].str.contains(\"ISD\", na=False))\n    ]\n    .groupby(\"CEName\", as_index=False)[\"SiteISP\"]\n    .mean()\n)\nresult[\"SiteISP\"] = result[\"SiteISP\"].round(2)\nresult = result.sort_values([\"SiteISP\", \"CEName\"], ascending=[False, True]).reset_index(drop=True)\nanswer = dict(zip(result[\"CEName\"], result[\"SiteISP\"]))",
+      "subquestion": "For <hop 3 answer> in 2019-2020, what is the average percentage across each district's sites of students automatically recognized as eligible for free school meals without submitting a household meal application?",
+      "answer": {
+        "LAKE WORTH ISD": 65.0,
+        "FORT WORTH ISD": 59.0,
+        "CASTLEBERRY ISD": 55.89,
+        "ARLINGTON ISD": 52.73,
+        "CROWLEY ISD": 49.63,
+        "BIRDVILLE ISD": 46.24,
+        "WHITE SETTLEMENT ISD": 43.16,
+        "EVERMAN ISD": 40.87,
+        "AZLE ISD": 40.83,
+        "HURST-EULESS-BEDFORD ISD": 40.21,
+        "KENNEDALE ISD": 34.39,
+        "EAGLE MT-SAGINAW ISD": 34.3,
+        "MANSFIELD ISD": 29.46,
+        "KELLER ISD": 22.11,
+        "GRAPEVINE-COLLEYVILLE ISD": 21.48,
+        "NORTHWEST ISD": 15.86
+      }
+    },
+    "13": {
+      "source": "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[\n        (df[\"SiteCounty\"] == \"TARRANT\")\n        & (df[\"CEName\"].str.contains(\"ISD\", na=False))\n    ]\n    .groupby(\"CEName\", as_index=False)[\"SiteISP\"]\n    .mean()\n)\nresult[\"SiteISP\"] = result[\"SiteISP\"].round(2)\nresult = result.sort_values([\"SiteISP\", \"CEName\"], ascending=[False, True]).reset_index(drop=True)\nanswer = dict(zip(result[\"CEName\"], result[\"SiteISP\"]))",
+      "subquestion": "For <hop 3 answer> in 2020-2021, what is the average percentage across each district's sites of students automatically recognized as eligible for free school meals without submitting a household meal application?",
+      "answer": {
+        "EVERMAN ISD": 66.81,
+        "LAKE WORTH ISD": 65.94,
+        "FORT WORTH ISD": 57.62,
+        "CASTLEBERRY ISD": 52.16,
+        "ARLINGTON ISD": 51.2,
+        "CROWLEY ISD": 47.68,
+        "BIRDVILLE ISD": 43.88,
+        "WHITE SETTLEMENT ISD": 43.51,
+        "HURST-EULESS-BEDFORD ISD": 40.11,
+        "AZLE ISD": 39.74,
+        "KENNEDALE ISD": 33.64,
+        "EAGLE MT-SAGINAW ISD": 33.61,
+        "MANSFIELD ISD": 30.04,
+        "KELLER ISD": 22.67,
+        "GRAPEVINE-COLLEYVILLE ISD": 21.82,
+        "NORTHWEST ISD": 18.0
+      }
+    },
+    "14": {
+      "source": "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[\n        (df[\"SiteCounty\"] == \"TARRANT\")\n        & (df[\"CEName\"].str.contains(\"ISD\", na=False))\n    ]\n    .groupby(\"CEName\", as_index=False)[\"SiteISP\"]\n    .mean()\n)\nresult[\"SiteISP\"] = result[\"SiteISP\"].round(2)\nresult = result.sort_values([\"SiteISP\", \"CEName\"], ascending=[False, True]).reset_index(drop=True)\nanswer = dict(zip(result[\"CEName\"], result[\"SiteISP\"]))",
+      "subquestion": "For <hop 3 answer> in 2021-2022, what is the average percentage across each district's sites of students automatically recognized as eligible for free school meals without submitting a household meal application?",
+      "answer": {
+        "LAKE WORTH ISD": 71.65,
+        "EVERMAN ISD": 66.23,
+        "CASTLEBERRY ISD": 56.55,
+        "FORT WORTH ISD": 56.53,
+        "HURST-EULESS-BEDFORD ISD": 55.46,
+        "CROWLEY ISD": 51.18,
+        "ARLINGTON ISD": 51.05,
+        "EAGLE MT-SAGINAW ISD": 46.26,
+        "BIRDVILLE ISD": 44.01,
+        "AZLE ISD": 40.11,
+        "WHITE SETTLEMENT ISD": 39.39,
+        "KENNEDALE ISD": 38.07,
+        "MANSFIELD ISD": 30.13,
+        "NORTHWEST ISD": 22.05,
+        "KELLER ISD": 21.55,
+        "GRAPEVINE-COLLEYVILLE ISD": 20.34
+      }
+    },
+    "15": {
+      "source": "wikipedia/Lake_Worth_Independent_School_District/content.txt",
+      "fact": "On May 6, 1916, local citizens voted 16-1 to incorporate Rosen Heights Independent School District (ISD).",
+      "subquestion": "In what year was <hop 4 answer> incorporated?",
+      "answer": 1916
+    },
+    "16": {
+      "source": "wikipedia/1916_United_States_presidential_election/content.txt",
+      "fact": "The electoral vote was one of the closest in U.S. history – with 266 votes needed to win, Wilson took 30 states for 277 electoral votes, while Hughes won 18 states and 254 electoral votes.",
+      "subquestion": "In the U.S. presidential election held in <hop 5 answer>, what was the electoral-vote difference between the winner and runner-up?",
+      "answer": 23
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Harris_County,_Texas/content.txt",
+    "wikipedia/Dallas_County,_Texas/content.txt",
+    "wikipedia/Tarrant_County,_Texas/content.txt",
+    "wikipedia/Bexar_County,_Texas/content.txt",
+    "wikipedia/Houston/content.txt",
+    "wikipedia/Dallas/content.txt",
+    "wikipedia/Fort_Worth,_Texas/content.txt",
+    "wikipedia/San_Antonio/content.txt",
+    "wikipedia/Lake_Worth_Independent_School_District/content.txt",
+    "wikipedia/1916_United_States_presidential_election/content.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2021/signed-metadata.txt",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2019/files/rows.txt",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2019/signed-metadata.txt",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2019/files/h47d-wyhn.publisher-view.json",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2020/files/rows.txt",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2020/signed-metadata.txt",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2020/files/3369-uxbk.publisher-view.json",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/signed-metadata.txt",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/shme-pbr8.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop_id": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: Group 2019 rows by `County`, count rows, sort descending, and keep the statewide top five counties by release count.",
+        "Node 2: Group 2020 rows by `County`, count rows, sort descending, and keep the statewide top five counties by release count.",
+        "Node 3: Group 2021 rows by `County`, count rows, sort descending, and keep the statewide top five counties by release count.",
+        "Hop result: intersect the three yearly top-five county sets to keep the counties that remained statewide top five across 2019 through 2021: Harris, Dallas, Tarrant, and Bexar."
+      ],
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Tarrant",
+        "Bexar"
+      ]
+    },
+    {
+      "hop_id": 2,
+      "node_ids": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "reasoning": [
+        "Node 4: Retrieve the county seat of Harris County from <hop 1 answer>.",
+        "Node 5: Retrieve the county seat of Dallas County from <hop 1 answer>.",
+        "Node 6: Retrieve the county seat of Tarrant County from <hop 1 answer>.",
+        "Node 7: Retrieve the county seat of Bexar County from <hop 1 answer>.",
+        "Hop result: the county seats are Houston, Dallas, Fort Worth, and San Antonio."
+      ],
+      "answer": {
+        "Harris": "Houston",
+        "Dallas": "Dallas",
+        "Tarrant": "Fort Worth",
+        "Bexar": "San Antonio"
+      }
+    },
+    {
+      "hop_id": 3,
+      "node_ids": [
+        8,
+        9,
+        10,
+        11
+      ],
+      "reasoning": [
+        "Node 8: Retrieve when Houston was founded.",
+        "Node 9: Retrieve when Dallas was established.",
+        "Node 10: Retrieve when Fort Worth was established.",
+        "Node 11: Retrieve when San Antonio was established.",
+        "Hop result: compare the establishment dates of the county seats and select Tarrant County because Fort Worth was established most recently."
+      ],
+      "answer": "Tarrant County"
+    },
+    {
+      "hop_id": 4,
+      "node_ids": [
+        12,
+        13,
+        14
+      ],
+      "reasoning": [
+        "Node 12: Filter 2019-2020 rows where `SiteCounty` = `TARRANT` and `CEName` contains `ISD`, group by `CEName`, compute mean `SiteISP`, and return the yearly ISD mapping.",
+        "Node 13: Filter 2020-2021 rows where `SiteCounty` = `TARRANT` and `CEName` contains `ISD`, group by `CEName`, compute mean `SiteISP`, and return the yearly ISD mapping.",
+        "Node 14: Filter 2021-2022 rows where `SiteCounty` = `TARRANT` and `CEName` contains `ISD`, group by `CEName`, compute mean `SiteISP`, and return the yearly ISD mapping.",
+        "Hop result: average `SiteISP` across the three school years and select the ISD with the highest overall average; the district is LAKE WORTH ISD."
+      ],
+      "answer": "LAKE WORTH ISD"
+    },
+    {
+      "hop_id": 5,
+      "node_ids": [
+        15
+      ],
+      "reasoning": [
+        "Node 15 retrieves the year when <hop 4 answer> was incorporated under its original district name.",
+        "Hop result: the year is 1916."
+      ],
+      "answer": 1916
+    },
+    {
+      "hop_id": 6,
+      "node_ids": [
+        16
+      ],
+      "reasoning": [
+        "Node 16 retrieves the winner and runner-up electoral vote totals in the U.S. presidential election held in <hop 5 answer>.",
+        "Hop result: 277 - 254 = 23 electoral votes."
+      ],
+      "answer": 23
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "question": "Identify the NYC senior high school that was in the top 3 by total VADIR incidents in each school year from 2010-11 through 2013-14, then find its borough. Among the vehicular bridge crossings that connect that borough to New Jersey, how many had an original opening, construction, or completion year before 1932? Return the count only. Your response should be in the format [Answer].",
+  "answer": 3,
+  "nodes": {
+    "1": {
+      "source": "datagov/2010-2011-vadir-incidents/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2010-2011-vadir-incidents/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ndimension_cols = {'School year', 'School Year', 'County', 'District', 'School Name', 'BEDS Code', 'Grade Organization', 'Need/Resource Category', 'School Type', 'Enrollment'}\nincident_cols = [col for col in df.columns if col not in dimension_cols]\nnyc_counties = {'bronx', 'bronx county', 'kings', 'kings county', 'brooklyn', 'new york', 'new york county', 'manhattan', 'queens', 'queens county', 'richmond', 'richmond county', 'staten island'}\nfiltered = df[df['County'].astype(str).str.strip().str.lower().isin(nyc_counties)].copy()\nfiltered = filtered[filtered['Grade Organization'].astype(str).str.strip().eq('Senior High')].copy()\nfiltered[incident_cols] = filtered[incident_cols].apply(pd.to_numeric, errors='coerce')\nfiltered['_total_incidents'] = filtered[incident_cols].fillna(0).sum(axis=1)\nranked = filtered.groupby('School Name')['_total_incidents'].sum().reset_index().sort_values(['_total_incidents', 'School Name'], ascending=[False, True])\nanswer = ranked['School Name'].head(3).map(lambda s: str(s).strip().title().replace('Susan E Wagner', 'Susan E. Wagner')).tolist()",
+      "subquestion": "Which NYC senior high schools were in the top 3 by total VADIR incidents in 2010-11?",
+      "answer": [
+        "Herbert H Lehman High School",
+        "Susan E. Wagner High School",
+        "Automotive High School"
+      ]
+    },
+    "2": {
+      "source": "datagov/2011-2012-vadir-incidents/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2011-2012-vadir-incidents/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ndimension_cols = {'School year', 'School Year', 'County', 'District', 'School Name', 'BEDS Code', 'Grade Organization', 'Need/Resource Category', 'School Type', 'Enrollment'}\nincident_cols = [col for col in df.columns if col not in dimension_cols]\nnyc_counties = {'bronx', 'bronx county', 'kings', 'kings county', 'brooklyn', 'new york', 'new york county', 'manhattan', 'queens', 'queens county', 'richmond', 'richmond county', 'staten island'}\nfiltered = df[df['County'].astype(str).str.strip().str.lower().isin(nyc_counties)].copy()\nfiltered = filtered[filtered['Grade Organization'].astype(str).str.strip().eq('Senior High')].copy()\nfiltered[incident_cols] = filtered[incident_cols].apply(pd.to_numeric, errors='coerce')\nfiltered['_total_incidents'] = filtered[incident_cols].fillna(0).sum(axis=1)\nranked = filtered.groupby('School Name')['_total_incidents'].sum().reset_index().sort_values(['_total_incidents', 'School Name'], ascending=[False, True])\nanswer = ranked['School Name'].head(3).map(lambda s: str(s).strip().title().replace('Susan E Wagner', 'Susan E. Wagner')).tolist()",
+      "subquestion": "Which NYC senior high schools were in the top 3 by total VADIR incidents in 2011-12?",
+      "answer": [
+        "Herbert H Lehman High School",
+        "Susan E. Wagner High School",
+        "John Adams High School"
+      ]
+    },
+    "3": {
+      "source": "datagov/2012-2013-vadir-incidents/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2012-2013-vadir-incidents/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ndimension_cols = {'School year', 'School Year', 'County', 'District', 'School Name', 'BEDS Code', 'Grade Organization', 'Need/Resource Category', 'School Type', 'Enrollment'}\nincident_cols = [col for col in df.columns if col not in dimension_cols]\nnyc_counties = {'bronx', 'bronx county', 'kings', 'kings county', 'brooklyn', 'new york', 'new york county', 'manhattan', 'queens', 'queens county', 'richmond', 'richmond county', 'staten island'}\nfiltered = df[df['County'].astype(str).str.strip().str.lower().isin(nyc_counties)].copy()\nfiltered = filtered[filtered['Grade Organization'].astype(str).str.strip().eq('Senior High')].copy()\nfiltered[incident_cols] = filtered[incident_cols].apply(pd.to_numeric, errors='coerce')\nfiltered['_total_incidents'] = filtered[incident_cols].fillna(0).sum(axis=1)\nranked = filtered.groupby('School Name')['_total_incidents'].sum().reset_index().sort_values(['_total_incidents', 'School Name'], ascending=[False, True])\nanswer = ranked['School Name'].head(3).map(lambda s: str(s).strip().title().replace('Susan E Wagner', 'Susan E. Wagner')).tolist()",
+      "subquestion": "Which NYC senior high schools were in the top 3 by total VADIR incidents in 2012-13?",
+      "answer": [
+        "Susan E. Wagner High School",
+        "Herbert H Lehman High School",
+        "Sheepshead Bay High School"
+      ]
+    },
+    "4": {
+      "source": "datagov/2013-2014-vadir-incidents/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2013-2014-vadir-incidents/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ndimension_cols = {'School year', 'School Year', 'County', 'District', 'School Name', 'BEDS Code', 'Grade Organization', 'Need/Resource Category', 'School Type', 'Enrollment'}\nincident_cols = [col for col in df.columns if col not in dimension_cols]\nnyc_counties = {'bronx', 'bronx county', 'kings', 'kings county', 'brooklyn', 'new york', 'new york county', 'manhattan', 'queens', 'queens county', 'richmond', 'richmond county', 'staten island'}\nfiltered = df[df['County'].astype(str).str.strip().str.lower().isin(nyc_counties)].copy()\nfiltered = filtered[filtered['Grade Organization'].astype(str).str.strip().eq('Senior High')].copy()\nfiltered[incident_cols] = filtered[incident_cols].apply(pd.to_numeric, errors='coerce')\nfiltered['_total_incidents'] = filtered[incident_cols].fillna(0).sum(axis=1)\nranked = filtered.groupby('School Name')['_total_incidents'].sum().reset_index().sort_values(['_total_incidents', 'School Name'], ascending=[False, True])\nanswer = ranked['School Name'].head(3).map(lambda s: str(s).strip().title().replace('Susan E Wagner', 'Susan E. Wagner')).tolist()",
+      "subquestion": "Which NYC senior high schools were in the top 3 by total VADIR incidents in 2013-14?",
+      "answer": [
+        "Susan E. Wagner High School",
+        "Richmond Hill High School",
+        "Clara Barton High School"
+      ]
+    },
+    "5": {
+      "source": "wikipedia/Susan_E._Wagner_High_School/content.txt",
+      "fact": "Susan E. Wagner High School is a New York City public school located at 1200 Manor Road in Staten Island, New York.",
+      "subquestion": "In which NYC borough is <hop 1 answer> located?",
+      "answer": "Staten Island"
+    },
+    "6": {
+      "source": "wikipedia/Staten_Island/content.txt",
+      "fact": "Staten Island is connected to New Jersey via three vehicular bridges and one railroad bridge. The Outerbridge Crossing to Perth Amboy, New Jersey, is at the southern end of New York State Route 440, and the Bayonne Bridge to Bayonne, New Jersey is at the northern end of NY 440; both ends of NY 440 continue into New Jersey as Route 440. The Goethals Bridge, carrying Interstate 278, connects Elizabeth, New Jersey with the Staten Island Expressway.",
+      "subquestion": "Which vehicular bridge crossings connect <hop 2 answer> to New Jersey?",
+      "answer": [
+        "Outerbridge Crossing",
+        "Bayonne Bridge",
+        "Goethals Bridge"
+      ]
+    },
+    "7": {
+      "source": "wikipedia/Outerbridge_Crossing/content.txt",
+      "fact": "The Outerbridge Crossing, also known as the Outerbridge, is a cantilever bridge that spans the Arthur Kill between Perth Amboy, New Jersey, and Staten Island, New York, United States. It opened simultaneously with the first Goethals Bridge on June 29, 1928.",
+      "subquestion": "In what year did the Outerbridge Crossing open?",
+      "answer": 1928
+    },
+    "8": {
+      "source": "wikipedia/Bayonne_Bridge/content.txt",
+      "fact": "The Bayonne Bridge is a steel through arch bridge that spans the Kill Van Kull between Staten Island, New York, and Bayonne, New Jersey, United States. Completed in 1931, it included a walkway, and offered  of vertical clearance above the water.",
+      "subquestion": "In what year was the Bayonne Bridge completed?",
+      "answer": 1931
+    },
+    "9": {
+      "source": "wikipedia/Goethals_Bridge/content.txt",
+      "fact": "The Goethals Bridge () is a pair of cable-stayed bridge spans connecting Elizabeth, New Jersey, to Staten Island, New York, United States. The spans cross a strait known as Arthur Kill, and replaced a cantilever bridge span built in 1928.",
+      "subquestion": "What year was the predecessor span of the Goethals Bridge built?",
+      "answer": 1928
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: In 2010-11, the top 3 NYC senior high schools by total Violent and Disruptive Incident Reporting incidents were: Herbert H Lehman HS (878), Susan E Wagner HS (302), Automotive HS (290).",
+        "Node 2: In 2011-12, the top 3 NYC senior high schools by total Violent and Disruptive Incident Reporting incidents were: Herbert H Lehman HS (432), Susan E Wagner HS (403), John Adams HS (291).",
+        "Node 3: In 2012-13, the top 3 NYC senior high schools by total Violent and Disruptive Incident Reporting incidents were: Susan E Wagner HS (275), Herbert H Lehman HS (257), Sheepshead Bay HS (224).",
+        "Node 4: In 2013-14, the top 3 NYC senior high schools by total Violent and Disruptive Incident Reporting incidents were: Susan E Wagner HS (320), Richmond Hill HS (290), Clara Barton HS (221).",
+        "Derive hop 1 answer using nodes 1, 2, 3, and 4: intersect the four yearly top-3 senior-high-school sets to get the single consistently top school. Hop answer: Susan E. Wagner High School."
+      ],
+      "answer": "Susan E. Wagner High School"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: <hop 1 answer> is a New York City public school located at 1200 Manor Road in Staten Island, New York.",
+        "Derive hop 2 answer from node 5: map the selected school to its borough. Hop answer: Staten Island."
+      ],
+      "answer": "Staten Island"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: The vehicular bridge crossings that connect <hop 2 answer> to New Jersey are the Outerbridge Crossing, Bayonne Bridge, and Goethals Bridge.",
+        "Hop result: Outerbridge Crossing, Bayonne Bridge, and Goethals Bridge."
+      ],
+      "answer": [
+        "Outerbridge Crossing",
+        "Bayonne Bridge",
+        "Goethals Bridge"
+      ]
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        7,
+        8,
+        9
+      ],
+      "reasoning": [
+        "Node 7: The Outerbridge Crossing opened in 1928.",
+        "Node 8: The Bayonne Bridge was completed in 1931.",
+        "Node 9: The predecessor span of the Goethals Bridge was built in 1928.",
+        "Hop result: all three years, 1928, 1931, and 1928, are before 1932, so the count is 3."
+      ],
+      "answer": 3
+    }
+  ],
+  "datasets_used": [
+    "datagov/2010-2011-vadir-incidents/files/rows.txt",
+    "datagov/2011-2012-vadir-incidents/files/rows.txt",
+    "datagov/2012-2013-vadir-incidents/files/rows.txt",
+    "datagov/2013-2014-vadir-incidents/files/rows.txt",
+    "wikipedia/Susan_E._Wagner_High_School/content.txt",
+    "wikipedia/Staten_Island/content.txt",
+    "wikipedia/Outerbridge_Crossing/content.txt",
+    "wikipedia/Bayonne_Bridge/content.txt",
+    "wikipedia/Goethals_Bridge/content.txt",
+    "datagov/2010-2011-vadir-incidents/files/vadir-glossary.html",
+    "datagov/2011-2012-vadir-incidents/files/columns.txt",
+    "datagov/2012-2013-vadir-incidents/files/columns.txt",
+    "datagov/2013-2014-vadir-incidents/files/columns.txt"
+  ]
+}

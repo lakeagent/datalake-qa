@@ -1,0 +1,123 @@
+{
+  "question": "From 2014-15 to 2018-19, for all students in Grade 12, which borough had the 2nd highest average attendance rate? For that borough, define a better area as one with condominiums whose average year built are more recent and average value per square foot are higher, which postcodes are the 17th to 19th best areas in the year of 2008-2009, 4th to 6th best areas in the year of 2009-2010, and 6th to 8th best areas in the year of 2010-2011 in that borough? Across all postcodes that appear in those three answers, which pre kindergarten schools in those areas are district schools that provide breakfast and lunch to students in 2018? Among those schools, we define a diverse school as one with at least three ethnicity are enrolled, and the gap between the highest and lowest percentage of enrolled ethnicity is no more than 15 percentage, and which of those schools are diverse? Among those diverse schools, for the neighborhood name that appears after the school number in the first school, how many public schools does that neighborhood contain? Please return only the number in the format [Answer].",
+  "answer": 5,
+  "nodes": {
+    "1": {
+      "source": "datagov/2013-2019-attendance-results-borough/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2013-2019-attendance-results-borough/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nattendance = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in attendance.columns:\n    attendance[col] = attendance[col].fillna('').astype(str).str.strip()\nattendance['att_num'] = pd.to_numeric(attendance['% Attendance'].astype(str).str.replace('%', '', regex=False), errors='coerce')\nfiltered = attendance[\n    attendance['Year'].isin(['2014-15', '2015-16', '2016-17', '2017-18', '2018-19'])\n    & attendance['Grade'].eq('12')\n    & attendance['Demographic Category'].eq('All Students')\n    & attendance['Demographic Variable'].eq('All Students')\n].copy()\nranked = filtered.groupby('Borough', as_index=False)['att_num'].mean().sort_values(['att_num', 'Borough'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = str(ranked.iloc[1]['Borough'])\n",
+      "subquestion": "From from school year of 2014-15 to 2018-19, for all students in Grade 12, which borough had the 2nd highest average attendance rate?",
+      "answer": "Queens"
+    },
+    "2": {
+      "source": "datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf = df[df['Postcode'].ne('')].copy()\ndf['year_built_num'] = pd.to_numeric(df['QUEENS CONDOMINIUM PROPERTY Year Built'].astype(str).str.replace(',', '', regex=False), errors='coerce')\ndf['mv_sqft_num'] = pd.to_numeric(df['QUEENS CONDOMINIUM PROPERTY Market Value per SqFt'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = df.groupby('Postcode', as_index=False).agg(avg_year_built=('year_built_num', 'mean'), avg_mv_sqft=('mv_sqft_num', 'mean'))\nranked = ranked[ranked['avg_year_built'].notna() & ranked['avg_mv_sqft'].notna()].copy()\nranked['year_rank'] = ranked['avg_year_built'].rank(method='min', ascending=False)\nranked['value_rank'] = ranked['avg_mv_sqft'].rank(method='min', ascending=False)\nranked['combined_rank'] = ranked['year_rank'] + ranked['value_rank']\nranked = ranked.sort_values(['combined_rank', 'year_rank', 'value_rank', 'Postcode'], ascending=[True, True, True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[16:19]['Postcode'].tolist())\n",
+      "subquestion": "In <node_1 answer>, we define a better area as one with condominiums whose average year built are more recent and average value per square foot are higher, what are the postcodes of the 17th to 19th best areas in the year of 2008-2009?",
+      "answer": "11374; 11360; 11416"
+    },
+    "3": {
+      "source": "datagov/dof-condominium-comparable-rental-income-queens-fy-2009-2010/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/dof-condominium-comparable-rental-income-queens-fy-2009-2010/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf = df[df['Postcode'].ne('')].copy()\ndf['year_built_num'] = pd.to_numeric(df['QUEENS CONDOMINIUM PROPERTY Year Built'].astype(str).str.replace(',', '', regex=False), errors='coerce')\ndf['mv_sqft_num'] = pd.to_numeric(df['QUEENS CONDOMINIUM PROPERTY Market Value per SqFt'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = df.groupby('Postcode', as_index=False).agg(avg_year_built=('year_built_num', 'mean'), avg_mv_sqft=('mv_sqft_num', 'mean'))\nranked = ranked[ranked['avg_year_built'].notna() & ranked['avg_mv_sqft'].notna()].copy()\nranked['year_rank'] = ranked['avg_year_built'].rank(method='min', ascending=False)\nranked['value_rank'] = ranked['avg_mv_sqft'].rank(method='min', ascending=False)\nranked['combined_rank'] = ranked['year_rank'] + ranked['value_rank']\nranked = ranked.sort_values(['combined_rank', 'year_rank', 'value_rank', 'Postcode'], ascending=[True, True, True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[3:6]['Postcode'].tolist())\n",
+      "subquestion": "In <node_1 answer>, we define a better area as one with condominiums whose average year built are more recent and average value per square foot are higher, what are the postcodes of the 4th to 6th best areas in the year of 2009-2010?",
+      "answer": "11432; 11693; 11368"
+    },
+    "4": {
+      "source": "datagov/dof-condominium-comparable-rental-income-queens-fy-2010-2011/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/dof-condominium-comparable-rental-income-queens-fy-2010-2011/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf = df[df['Postcode'].ne('')].copy()\ndf['year_built_num'] = pd.to_numeric(df['QUEENS CONDOMINIUM PROPERTY Year Built'].astype(str).str.replace(',', '', regex=False), errors='coerce')\ndf['mv_sqft_num'] = pd.to_numeric(df['QUEENS CONDOMINIUM PROPERTY Market Value per SqFt'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = df.groupby('Postcode', as_index=False).agg(avg_year_built=('year_built_num', 'mean'), avg_mv_sqft=('mv_sqft_num', 'mean'))\nranked = ranked[ranked['avg_year_built'].notna() & ranked['avg_mv_sqft'].notna()].copy()\nranked['year_rank'] = ranked['avg_year_built'].rank(method='min', ascending=False)\nranked['value_rank'] = ranked['avg_mv_sqft'].rank(method='min', ascending=False)\nranked['combined_rank'] = ranked['year_rank'] + ranked['value_rank']\nranked = ranked.sort_values(['combined_rank', 'year_rank', 'value_rank', 'Postcode'], ascending=[True, True, True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[5:8]['Postcode'].tolist())\n",
+      "subquestion": "In <node_1 answer>, we define a better area as one with condominiums whose average year built are more recent and average value per square foot are higher, what are the postcodes of the 6th to 8th best areas in the year of 2010-2011?",
+      "answer": "11432; 11693; 11356"
+    },
+    "5": {
+      "source": "datagov/2018-pre-k-school-directory/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2018-pre-k-school-directory/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_2_answer = '11374; 11360; 11416'\nnode_3_answer = '11432; 11693; 11368'\nnode_4_answer = '11432; 11693; 11356'\nzip_codes = sorted({part.strip() for value in [node_2_answer, node_3_answer, node_4_answer] for part in str(value).split(';') if part.strip()})\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[\n    df['borough'].eq('Queens')\n    & df['Postcode'].isin(zip_codes)\n    & df['prek_type'].eq('District School')\n    & df['meals'].eq('Breakfast/Lunch')\n].copy().sort_values(['schooldbn', 'locationname'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((filtered['schooldbn'] + ' ' + filtered['locationname']).tolist())\n",
+      "subquestion": "Across all postcodes that appear in <node_2 answer>, <node_3 answer>, and <node_4 answer>, which pre kindergarten schools in those areas are district schools that provide breakfast and lunch to students in 2018?",
+      "answer": "24Q028 P.S. 28 The Thomas Emanuel Early Childhood Center; 25Q029 P.S. 29 Queens; 25Q169 P.S. 169 Bay Terrace; 27Q047 P.S. 47 Chris Galas; 27Q183 P.S. 183 Dr. Richard R. Green; 27Q316 Queens Explorers Elementary School; 28Q174 P.S. 174 William Sidney Mount; 28Q175 P.S. 175 The Lynn Gross Discovery School; 28Q206 P.S. 206 The Horace Harding School; 30Q092 P.S. 92 Harry T. Stewart Sr."
+    },
+    "6": {
+      "source": "datagov/2017-2018-diversity-report-pre-kindergarten/files/rows.txt",
+      "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2017-2018-diversity-report-pre-kindergarten/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_5_answer = '24Q028 P.S. 28 The Thomas Emanuel Early Childhood Center; 25Q029 P.S. 29 Queens; 25Q169 P.S. 169 Bay Terrace; 27Q047 P.S. 47 Chris Galas; 27Q183 P.S. 183 Dr. Richard R. Green; 27Q316 Queens Explorers Elementary School; 28Q174 P.S. 174 William Sidney Mount; 28Q175 P.S. 175 The Lynn Gross Discovery School; 28Q206 P.S. 206 The Horace Harding School; 30Q092 P.S. 92 Harry T. Stewart Sr.'\ntarget_dbns = sorted(set(re.findall(r'\\b\\d{2}[A-Z]\\d{3}\\b', node_5_answer)))\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfor col in ['%Asian', '%Black', '%Hispanic', '%White', '%Other']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace('%', '', regex=False), errors='coerce')\ndf['reported_groups'] = df[[c + '_num' for c in ['%Asian', '%Black', '%Hispanic', '%White', '%Other']]].notna().sum(axis=1)\ndf['spread'] = df[[c + '_num' for c in ['%Asian', '%Black', '%Hispanic', '%White', '%Other']]].max(axis=1) - df[[c + '_num' for c in ['%Asian', '%Black', '%Hispanic', '%White', '%Other']]].min(axis=1)\nfiltered = df[df['DBN'].isin(target_dbns) & df['Year'].eq('2017-18')].copy()\nranked = filtered[(filtered['reported_groups'] >= 3) & (filtered['spread'] <= 15)].sort_values(['DBN'], ascending=[True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked['DBN'] + ' ' + ranked['School Name']).tolist())\n",
+      "subquestion": "We define a diverse school as one with at least three ethnicity are enrolled, and the gap between the highest and lowest percentage of enrolled ethnicity is no more than 15 percentage. Among the schools in <node_5 answer>, which of them are diverse schools?",
+      "answer": "25Q169 P.S. 169 Bay Terrace; 28Q174 P.S. 174 William Sidney Mount; 28Q206 P.S. 206 The Horace Harding School"
+    },
+    "7": {
+      "source": "wikipedia/Bay_Terrace,_Queens/content.txt",
+      "fact": "Bay Terrace's public schools are operated by the New York City Department of Education. Bay Terrace contains the following public schools:\n\n  * PS 169 Bay Terrace\n  * IS 25 Adrien Block\n  * JHS 194 William Carr\n  * MS 294 Bell Academy\n  * Bayside High School",
+      "subquestion": "For the neighborhood name that appears after the school number in the first school in <hop 3 answer>, how many public schools does that neighborhood contain?",
+      "answer": 5
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1 filters the borough attendance table to 2014-15 through 2018-19, Grade 12, and the All Students category.",
+        "It averages attendance rates by borough across those five years.",
+        "When boroughs are ranked by that average from highest to lowest, Queens is 2nd."
+      ],
+      "answer": "Queens"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "For each Queens condo dataset, postcodes are ranked by average year built and average market value per square foot, both descending, and the two ranks are added.",
+        "Node 2 returns the 17th through 19th postcodes in 2008-2009: 11374, 11360, and 11416.",
+        "Node 3 returns the 4th through 6th postcodes in 2009-2010: 11432, 11693, and 11368.",
+        "Node 4 returns the 6th through 8th postcodes in 2010-2011: 11432, 11693, and 11356.",
+        "Taking the union yields seven relevant Queens zip codes: 11356, 11360, 11368, 11374, 11416, 11432, and 11693."
+      ],
+      "answer": "11356; 11360; 11368; 11374; 11416; 11432; 11693"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5 filters the 2018 pre-K directory to Queens schools in those zip codes that are District Schools and provide Breakfast/Lunch, yielding ten schools.",
+        "Node 6 keeps only schools from that set whose 2017-18 diversity record reports at least three ethnicity percentages and whose highest minus lowest reported ethnicity percentage is at most 15 points.",
+        "The schools that satisfy the diversity definition are P.S. 169 Bay Terrace, P.S. 174 William Sidney Mount, and P.S. 206 The Horace Harding School."
+      ],
+      "answer": "25Q169 P.S. 169 Bay Terrace; 28Q174 P.S. 174 William Sidney Mount; 28Q206 P.S. 206 The Horace Harding School"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7 uses the first school in <hop 3 answer>; the neighborhood name after its school number is Bay Terrace.",
+        "The Bay Terrace page says the neighborhood contains five public schools.",
+        "Therefore the hop 4 answer is 5."
+      ],
+      "answer": 5
+    }
+  ],
+  "datasets_used": [
+    "datagov/2013-2019-attendance-results-borough/files/rows.txt",
+    "datagov/2013-2019-attendance-results-borough/signed-metadata.txt",
+    "datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/files/rows.txt",
+    "datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/signed-metadata.txt",
+    "datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/files/Data_Dictionary_condominium.xlsx",
+    "datagov/dof-condominium-comparable-rental-income-queens-fy-2009-2010/files/rows.txt",
+    "datagov/dof-condominium-comparable-rental-income-queens-fy-2009-2010/signed-metadata.txt",
+    "datagov/dof-condominium-comparable-rental-income-queens-fy-2009-2010/files/Data_Dictionary_condominium.xlsx",
+    "datagov/dof-condominium-comparable-rental-income-queens-fy-2010-2011/files/rows.txt",
+    "datagov/dof-condominium-comparable-rental-income-queens-fy-2010-2011/signed-metadata.txt",
+    "datagov/dof-condominium-comparable-rental-income-queens-fy-2010-2011/files/Data_Dictionary_condominium.xlsx",
+    "datagov/2018-pre-k-school-directory/files/rows.txt",
+    "datagov/2018-pre-k-school-directory/signed-metadata.txt",
+    "datagov/2018-pre-k-school-directory/files/xck4-5xd5.txt",
+    "datagov/2017-2018-diversity-report-pre-kindergarten/files/rows.txt",
+    "datagov/2017-2018-diversity-report-pre-kindergarten/signed-metadata.txt",
+    "datagov/2017-2018-diversity-report-pre-kindergarten/files/2017_-_2018_Diversity_Report_Pre-Kindergarten_DD.xlsx",
+    "wikipedia/Bay_Terrace,_Queens/content.txt"
+  ]
+}

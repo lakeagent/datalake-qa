@@ -1,0 +1,114 @@
+{
+    "question": "Identify the DC Council member who represents the ward that, among the top two wards, recorded both the highest average crimes involving homicide, assault with dangerous weapon, robbery and sex abuse, and the higher average 311 service requests from 2019 through 2020. Return the council member's name only. Your response should be in the format [Answer].",
+    "answer": "Wendell Felder",
+    "nodes": {
+        "1": {
+            "source": "datagov/crime-incidents-in-2019/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nviolent_offenses = {\"HOMICIDE\", \"ASSAULT W/DANGEROUS WEAPON\", \"ROBBERY\", \"SEX ABUSE\"}\nfiltered = df[df[\"OFFENSE\"].astype(str).str.strip().isin(violent_offenses)]\ncounts = filtered[\"WARD\"].astype(str).str.strip()\ncounts = counts[counts.ne(\"\") & counts.ne(\"nan\")].value_counts().to_dict()\nanswer = {f\"Ward {ward}\": int(counts[ward]) for ward in sorted(counts, key=int)}\n",
+            "subquestion": "In 2019, what were the counts of crimes involving homicide, assault with dangerous weapon, robbery, or sex abuse for each DC ward?",
+            "answer": {
+                "Ward 1": 603,
+                "Ward 2": 452,
+                "Ward 3": 89,
+                "Ward 4": 260,
+                "Ward 5": 685,
+                "Ward 6": 417,
+                "Ward 7": 905,
+                "Ward 8": 765
+            }
+        },
+        "2": {
+            "source": "datagov/crime-incidents-in-2020/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nviolent_offenses = {\"HOMICIDE\", \"ASSAULT W/DANGEROUS WEAPON\", \"ROBBERY\", \"SEX ABUSE\"}\nfiltered = df[df[\"OFFENSE\"].astype(str).str.strip().isin(violent_offenses)]\ncounts = filtered[\"WARD\"].astype(str).str.strip()\ncounts = counts[counts.ne(\"\") & counts.ne(\"nan\")].value_counts().to_dict()\nanswer = {f\"Ward {ward}\": int(counts[ward]) for ward in sorted(counts, key=int)}\n",
+            "subquestion": "In 2020, what were the counts of crimes involving homicide, assault with dangerous weapon, robbery, or sex abuse for each DC ward?",
+            "answer": {
+                "Ward 1": 435,
+                "Ward 2": 289,
+                "Ward 3": 68,
+                "Ward 4": 286,
+                "Ward 5": 680,
+                "Ward 6": 395,
+                "Ward 7": 945,
+                "Ward 8": 907
+            }
+        },
+        "3": {
+            "source": "datagov/311-city-service-requests-in-2019/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/311-city-service-requests-in-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nhop_1_answer = [\"Ward 7\", \"Ward 8\"]\n\nimport re\nwards = set()\nfor item in hop_1_answer:\n    m = re.search(r'Ward\\s*(\\d+)', str(item), flags=re.I)\n    if m:\n        wards.add(m.group(1))\nfiltered = df[df[\"WARD\"].astype(str).str.strip().isin(wards)]\ncounts = filtered[\"WARD\"].astype(str).str.strip().value_counts().to_dict()\nward_order = sorted(wards, key=lambda x: int(x))\nanswer = [f\"Ward {w} ({int(counts.get(w, 0)):,})\" for w in ward_order]\n",
+            "subquestion": "For the wards in <hop 1 answer>, what were the 2019 counts of 311 service requests by ward?",
+            "answer": [
+                "Ward 7 (42,226)",
+                "Ward 8 (34,959)"
+            ]
+        },
+        "4": {
+            "source": "datagov/311-city-service-requests-in-2020/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/311-city-service-requests-in-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nhop_1_answer = [\"Ward 7\", \"Ward 8\"]\n\nimport re\nwards = set()\nfor item in hop_1_answer:\n    m = re.search(r'Ward\\s*(\\d+)', str(item), flags=re.I)\n    if m:\n        wards.add(m.group(1))\nfiltered = df[df[\"WARD\"].astype(str).str.strip().isin(wards)]\ncounts = filtered[\"WARD\"].astype(str).str.strip().value_counts().to_dict()\nward_order = sorted(wards, key=lambda x: int(x))\nanswer = [f\"Ward {w} ({int(counts.get(w, 0)):,})\" for w in ward_order]\n",
+            "subquestion": "For the wards in <hop 1 answer>, what were the 2020 counts of 311 service requests by ward?",
+            "answer": [
+                "Ward 7 (36,113)",
+                "Ward 8 (37,124)"
+            ]
+        },
+        "5": {
+            "source": "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+            "fact": "Ward 7 Councilmember: Wendell Felder.",
+            "subquestion": "Who represents <hop 2 answer> on the DC Council?",
+            "answer": "Wendell Felder"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+        "datagov/crime-incidents-in-2019/files/data.txt",
+        "datagov/crime-incidents-in-2019/signed-metadata.txt",
+        "datagov/crime-incidents-in-2019/files/1.arcgis-layer.json",
+        "datagov/crime-incidents-in-2020/files/data.txt",
+        "datagov/crime-incidents-in-2020/signed-metadata.txt",
+        "datagov/crime-incidents-in-2020/files/2.arcgis-layer.json",
+        "datagov/311-city-service-requests-in-2019/files/data.txt",
+        "datagov/311-city-service-requests-in-2019/signed-metadata.txt",
+        "datagov/311-city-service-requests-in-2019/files/10.arcgis-layer.json",
+        "datagov/311-city-service-requests-in-2020/files/data.txt",
+        "datagov/311-city-service-requests-in-2020/signed-metadata.txt",
+        "datagov/311-city-service-requests-in-2020/files/11.arcgis-layer.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `OFFENSE` is one of HOMICIDE, ASSAULT W/DANGEROUS WEAPON, ROBBERY, or SEX ABUSE, and count records by `WARD` for all wards in 2019.",
+                "Node 2: Filter rows where `OFFENSE` is one of HOMICIDE, ASSAULT W/DANGEROUS WEAPON, ROBBERY, or SEX ABUSE, and count records by `WARD` for all wards in 2020.",
+                "Hop result: Average the node-1 and node-2 violent-crime counts by ward, then rank wards by that average. The top two wards are Ward 7 and Ward 8."
+            ],
+            "answer": "Ward 7 and Ward 8"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Using the wards in <hop 1 answer>, count 2019 311 service requests for each ward.",
+                "Node 4: Using the wards in <hop 1 answer>, count 2020 311 service requests for each ward.",
+                "Hop result: Ward 7 has the higher average 311 service-request count across 2019 and 2020, so the selected ward is Ward 7."
+            ],
+            "answer": "Ward 7"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Wendell Felder is the councilmember for <hop 2 answer>.",
+                "Hop result: <node_5 answer>"
+            ],
+            "answer": "Wendell Felder"
+        }
+    ]
+}

@@ -1,0 +1,101 @@
+{
+  "question": "In fiscal year 2022, which Texas counties ranked in the top five for confirmed Adult Protective Services victims, validated perpetrators, and service activity? Among those counties, as of the 2020 census, how many more people lived in the most populous county than in the least populous county? Please return only the number in the format [Answer].",
+  "answer": 3865488,
+  "nodes": {
+    "1": {
+      "source": "datagov/aps-3-4-investigations-victims-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-3-4-investigations-victims-by-county-fy2013-2022/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['County'] = df['County'].astype(str).str.strip()\ndf = df[\n    df['Fiscal Year'].astype(str).str.strip().eq('2022')\n    & df['Confirmed Victim?'].astype(str).str.strip().eq('Confirmed Victim')\n].copy()\ndf['Victims'] = pd.to_numeric(df['Victims'].astype(str).str.replace(',', '', regex=False).str.strip(), errors='coerce')\nranked = (\n    df.groupby('County', as_index=True)['Victims']\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = '; '.join(ranked.index.tolist())\n",
+      "subquestion": "In fiscal year 2022, which five Texas counties had the highest numbers of confirmed Adult Protective Services victims? Return them as a semicolon-separated list in rank order.",
+      "answer": "Harris; Bexar; Dallas; Tarrant; El Paso"
+    },
+    "2": {
+      "source": "datagov/aps-3-5-investigations-perpetrators-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-3-5-investigations-perpetrators-by-county-fy2013-2022/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['County'] = df['County'].astype(str).str.strip()\ndf = df[\n    df['Fiscal Year'].astype(str).str.strip().eq('2022')\n    & df['Confirmed Perpetrators'].astype(str).str.strip().eq('Validated')\n].copy()\ndf['Perpetrators'] = pd.to_numeric(df['Perpetrators'].astype(str).str.replace(',', '', regex=False).str.strip(), errors='coerce')\nranked = (\n    df.groupby('County', as_index=True)['Perpetrators']\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = '; '.join(ranked.index.tolist())\n",
+      "subquestion": "In fiscal year 2022, which five Texas counties had the highest numbers of validated Adult Protective Services perpetrators? Return them as a semicolon-separated list in rank order.",
+      "answer": "Harris; Bexar; Dallas; Tarrant; El Paso"
+    },
+    "3": {
+      "source": "datagov/aps-4-1-services-activity-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-4-1-services-activity-by-county-fy2013-2022/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['County'] = df['County'].astype(str).str.strip()\ndf = df[df['Fiscal Year'].astype(str).str.strip().eq('2022')].copy()\ndf['Service Stages'] = pd.to_numeric(df['Service Stages'].astype(str).str.replace(',', '', regex=False).str.strip(), errors='coerce')\nranked = (\n    df.groupby('County', as_index=True)['Service Stages']\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = '; '.join(ranked.index.tolist())\n",
+      "subquestion": "In fiscal year 2022, which five Texas counties recorded the most Adult Protective Services service activity, measured by service stages? Return them as a semicolon-separated list in rank order.",
+      "answer": "Harris; Bexar; Dallas; Tarrant; El Paso"
+    },
+    "4": {
+      "source": "wikipedia/Harris_County,_Texas/content.txt",
+      "fact": "Harris County is a county located in the U.S. state of Texas. As of the 2020 census, the population was 4,731,145, and was estimated to be 5,009,302 in 2024, making it the most populous county in Texas and the third-most populous county in the United States. Its county seat is Houston, the most populous city in Texas and the fourth-most populous city in the United States. The county was founded on December 22, 1836 and organized on March 10, 1837. It is named for John Richardson Harris, who founded the town of Harrisburg on Buffalo Bayou in 1826. It contains over 16% of the state's population.Based on the 2024 Estimate: 5,009,302 / 31,290,831 (TX pop.) = 16.01% Harris County is included in the nine-county Houston–The Woodlands–Sugar Land metropolitan statistical area, which is the fifth-most populous metropolitan area in the United States.",
+      "subquestion": "As of the 2020 census, what was the population of Harris County from <hop 1 answer>?",
+      "answer": 4731145
+    },
+    "5": {
+      "source": "wikipedia/Bexar_County,_Texas/content.txt",
+      "fact": "As of the 2020 census, the population was 2,009,324, making it the state's fourth-most populous county.  Bexar County is included in the San Antonio–New Braunfels, TX metropolitan statistical area. It is the 16th-most populous county in the nation and the fourth-most populated in Texas. Bexar County has a large Hispanic population with a significant growing African American population. With a population that is 59.3% Hispanic as of 2020, it is Texas' most populous majority-Hispanic county and the third-largest such nationwide.",
+      "subquestion": "As of the 2020 census, what was the population of Bexar County from <hop 1 answer>?",
+      "answer": 2009324
+    },
+    "6": {
+      "source": "wikipedia/Dallas_County,_Texas/content.txt",
+      "fact": "Dallas County is a county located in the U.S. state of Texas. As of the 2020 census, the population was 2,613,539, and was estimated to be 2,656,028 in 2024, making it the second-most populous county in Texas and the eighth-most populous county in the United States. Its county seat is Dallas, the third-most populous city in Texas and the ninth-most populous city in the United States. The county was founded on March 30, 1846 and was possibly named for George Mifflin Dallas, the 11th Vice President of the United States under U.S. President James K. Polk. Dallas County is included in the eleven-county Dallas–Fort Worth–Arlington metropolitan statistical area, which is the fourth-most populous metropolitan area in the United States.",
+      "subquestion": "As of the 2020 census, what was the population of Dallas County from <hop 1 answer>?",
+      "answer": 2613539
+    },
+    "7": {
+      "source": "wikipedia/Tarrant_County,_Texas/content.txt",
+      "fact": "Tarrant County is a county located in the U.S. state of Texas with a 2020 U.S. census population of 2,110,640, making it the third-most populous county in Texas and the 15th-most populous in the United States. Its county seat is Fort Worth. Tarrant County, one of 26 counties created out of the Peters Colony, was established in 1849 and organized the next year. It is named after Edward H. Tarrant, a lawyer, politician, and militia leader.",
+      "subquestion": "As of the 2020 census, what was the population of Tarrant County from <hop 1 answer>?",
+      "answer": 2110640
+    },
+    "8": {
+      "source": "wikipedia/El_Paso_County,_Texas/content.txt",
+      "fact": "El Paso County is the westernmost county in the U.S. state of Texas. As of the 2020 census, its population was 865,657, making it the ninth-most populous county in Texas. Its county seat is the city of El Paso, the sixth-most populous city in Texas and the 22nd-most populous city in the United States. The county was created in 1850 and later organized in 1871.",
+      "subquestion": "As of the 2020 census, what was the population of El Paso County from <hop 1 answer>?",
+      "answer": 865657
+    }
+  },
+  "datasets_used": [
+    "datagov/aps-3-4-investigations-victims-by-county-fy2013-2022/files/rows.txt",
+    "datagov/aps-3-4-investigations-victims-by-county-fy2013-2022/signed-metadata.txt",
+    "datagov/aps-3-5-investigations-perpetrators-by-county-fy2013-2022/files/rows.txt",
+    "datagov/aps-3-5-investigations-perpetrators-by-county-fy2013-2022/signed-metadata.txt",
+    "datagov/aps-4-1-services-activity-by-county-fy2013-2022/files/rows.txt",
+    "datagov/aps-4-1-services-activity-by-county-fy2013-2022/signed-metadata.txt",
+    "wikipedia/Harris_County,_Texas/content.txt",
+    "wikipedia/Bexar_County,_Texas/content.txt",
+    "wikipedia/Dallas_County,_Texas/content.txt",
+    "wikipedia/Tarrant_County,_Texas/content.txt",
+    "wikipedia/El_Paso_County,_Texas/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: In fiscal year 2022, the five Texas counties with the most confirmed Adult Protective Services victims are Harris (7,627), Bexar (4,044), Dallas (3,554), Tarrant (3,055), and El Paso (2,232).",
+        "Node 2: In fiscal year 2022, the five Texas counties with the most validated Adult Protective Services perpetrators are Harris (7,876), Bexar (4,233), Dallas (3,643), Tarrant (3,168), and El Paso (2,271).",
+        "Node 3: In fiscal year 2022, the five Texas counties with the most Adult Protective Services service stages are Harris (5,806), Bexar (3,501), Dallas (2,611), Tarrant (2,392), and El Paso (1,613).",
+        "Intersecting the three top-five county lists leaves the same shared high-burden set: Bexar, Dallas, El Paso, Harris, and Tarrant.",
+        "Hop result: Bexar; Dallas; El Paso; Harris; Tarrant"
+      ],
+      "answer": "Bexar; Dallas; El Paso; Harris; Tarrant"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "reasoning": [
+        "Nodes 4 through 8 retrieve the 2020 census populations for the five counties in <hop 1 answer>: Harris County 4,731,145; Bexar County 2,009,324; Dallas County 2,613,539; Tarrant County 2,110,640; and El Paso County 865,657.",
+        "The largest population is Harris County and the smallest is El Paso County; the difference is 4,731,145 - 865,657 = 3,865,488.",
+        "Hop result: 3,865,488."
+      ],
+      "answer": 3865488
+    }
+  ]
+}

@@ -1,0 +1,224 @@
+{
+  "question": "Among Texas cities with diabetes prevalence above 12% in each year from 2016 through 2019, identify the recurring cities. Among those cities, how many are county seats? Your response should be in the format [Answer].",
+  "answer": 6,
+  "nodes": {
+    "1": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2016-release/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/500-cities-city-level-data-gis-friendly-format-2016-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate = df[\"StateAbbr\"].astype(str).str.strip()\ncity = df[\"PlaceName\"].astype(str).str.strip()\ndiabetes = pd.to_numeric(df[\"DIABETES_CrudePrev\"], errors=\"coerce\")\nanswer = sorted(city[state.eq(\"TX\") & diabetes.gt(12)].unique().tolist())",
+      "subquestion": "Which Texas cities had diabetes prevalence above 12% in the CDC 500 Cities 2016 release?",
+      "answer": [
+        "Beaumont",
+        "Brownsville",
+        "Corpus Christi",
+        "Edinburg",
+        "El Paso",
+        "Laredo",
+        "McAllen",
+        "Mission",
+        "Pharr",
+        "San Antonio"
+      ]
+    },
+    "2": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate = df[\"StateAbbr\"].astype(str).str.strip()\ncity = df[\"PlaceName\"].astype(str).str.strip()\ndiabetes = pd.to_numeric(df[\"DIABETES_CrudePrev\"], errors=\"coerce\")\nanswer = sorted(city[state.eq(\"TX\") & diabetes.gt(12)].unique().tolist())",
+      "subquestion": "Which Texas cities had diabetes prevalence above 12% in the CDC 500 Cities 2017 release?",
+      "answer": [
+        "Baytown",
+        "Beaumont",
+        "Brownsville",
+        "Corpus Christi",
+        "Edinburg",
+        "El Paso",
+        "Houston",
+        "Laredo",
+        "McAllen",
+        "Mission",
+        "Pharr",
+        "San Antonio"
+      ]
+    },
+    "3": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate = df[\"StateAbbr\"].astype(str).str.strip()\ncity = df[\"PlaceName\"].astype(str).str.strip()\ndiabetes = pd.to_numeric(df[\"DIABETES_CrudePrev\"], errors=\"coerce\")\nanswer = sorted(city[state.eq(\"TX\") & diabetes.gt(12)].unique().tolist())",
+      "subquestion": "Which Texas cities had diabetes prevalence above 12% in the CDC 500 Cities 2018 release?",
+      "answer": [
+        "Beaumont",
+        "Brownsville",
+        "Corpus Christi",
+        "El Paso",
+        "Houston",
+        "Laredo",
+        "Longview",
+        "McAllen",
+        "Mission",
+        "Pharr",
+        "San Antonio",
+        "Tyler"
+      ]
+    },
+    "4": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate = df[\"StateAbbr\"].astype(str).str.strip()\ncity = df[\"PlaceName\"].astype(str).str.strip()\ndiabetes = pd.to_numeric(df[\"DIABETES_CrudePrev\"], errors=\"coerce\")\nanswer = sorted(city[state.eq(\"TX\") & diabetes.gt(12)].unique().tolist())",
+      "subquestion": "Which Texas cities had diabetes prevalence above 12% in the CDC 500 Cities 2019 release?",
+      "answer": [
+        "Beaumont",
+        "Brownsville",
+        "Corpus Christi",
+        "Edinburg",
+        "El Paso",
+        "Laredo",
+        "Longview",
+        "McAllen",
+        "Mission",
+        "Pharr",
+        "San Antonio",
+        "Tyler",
+        "Waco"
+      ]
+    },
+    "5": {
+      "source": "wikipedia/Beaumont,_Texas/content.txt",
+      "fact": "Beaumont is a city in the U.S. state of Texas. It is the county seat of Jefferson County.",
+      "subquestion": "Is this city from <hop 1 answer> a county seat?",
+      "answer": {
+        "city": "Beaumont",
+        "is_county_seat": true
+      }
+    },
+    "6": {
+      "source": "wikipedia/Brownsville,_Texas/content.txt",
+      "fact": "Brownsville is a city in the U.S. state of Texas and the county seat of Cameron County.",
+      "subquestion": "Is this city from <hop 1 answer> a county seat?",
+      "answer": {
+        "city": "Brownsville",
+        "is_county_seat": true
+      }
+    },
+    "7": {
+      "source": "wikipedia/Corpus_Christi,_Texas/content.txt",
+      "fact": "Corpus Christi is a coastal city in the South Texas region of the U.S. state of Texas and the county seat and largest city of Nueces County.",
+      "subquestion": "Is this city from <hop 1 answer> a county seat?",
+      "answer": {
+        "city": "Corpus Christi",
+        "is_county_seat": true
+      }
+    },
+    "8": {
+      "source": "wikipedia/El_Paso,_Texas/content.txt",
+      "fact": "El Paso is a city in and the county seat of El Paso County, Texas, United States.",
+      "subquestion": "Is this city from <hop 1 answer> a county seat?",
+      "answer": {
+        "city": "El Paso",
+        "is_county_seat": true
+      }
+    },
+    "9": {
+      "source": "wikipedia/Laredo,_Texas/content.txt",
+      "fact": "Laredo is a city in the U.S. state of Texas and the county seat and largest city of Webb County.",
+      "subquestion": "Is this city from <hop 1 answer> a county seat?",
+      "answer": {
+        "city": "Laredo",
+        "is_county_seat": true
+      }
+    },
+    "10": {
+      "source": "wikipedia/McAllen,_Texas/content.txt",
+      "fact": "McAllen is a city in Hidalgo County, Texas. Hidalgo County has county seat Edinburg and largest city McAllen.",
+      "subquestion": "Is this city from <hop 1 answer> a county seat?",
+      "answer": {
+        "city": "McAllen",
+        "is_county_seat": false
+      }
+    },
+    "11": {
+      "source": "wikipedia/Mission,_Texas/content.txt",
+      "fact": "Mission is a city in Hidalgo County, Texas. Hidalgo County has county seat Edinburg.",
+      "subquestion": "Is this city from <hop 1 answer> a county seat?",
+      "answer": {
+        "city": "Mission",
+        "is_county_seat": false
+      }
+    },
+    "12": {
+      "source": "wikipedia/Pharr,_Texas/content.txt",
+      "fact": "Pharr is a city in Hidalgo County, Texas. Pharr is bordered to the north by Edinburg, the county seat.",
+      "subquestion": "Is this city from <hop 1 answer> a county seat?",
+      "answer": {
+        "city": "Pharr",
+        "is_county_seat": false
+      }
+    },
+    "13": {
+      "source": "wikipedia/San_Antonio/content.txt",
+      "fact": "San Antonio is a city in the U.S. state of Texas. It is the county seat of Bexar County.",
+      "subquestion": "Is this city from <hop 1 answer> a county seat?",
+      "answer": {
+        "city": "San Antonio",
+        "is_county_seat": true
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: In the CDC 500 Cities 2016 release, 10 Texas cities had diabetes prevalence above 12%: Beaumont, Brownsville, Corpus Christi, Edinburg, El Paso, Laredo, McAllen, Mission, Pharr, and San Antonio.",
+        "Node 2: In the CDC 500 Cities 2017 release, 12 Texas cities had diabetes prevalence above 12%: Baytown, Beaumont, Brownsville, Corpus Christi, Edinburg, El Paso, Houston, Laredo, McAllen, Mission, Pharr, and San Antonio.",
+        "Node 3: In the CDC 500 Cities 2018 release, 12 Texas cities had diabetes prevalence above 12%: Beaumont, Brownsville, Corpus Christi, El Paso, Houston, Laredo, Longview, McAllen, Mission, Pharr, San Antonio, and Tyler.",
+        "Node 4: In the CDC 500 Cities 2019 release, 13 Texas cities had diabetes prevalence above 12%: Beaumont, Brownsville, Corpus Christi, Edinburg, El Paso, Laredo, Longview, McAllen, Mission, Pharr, San Antonio, Tyler, and Waco.",
+        "Derive hop 1 answer using nodes 1, 2, 3, 4: Nodes 1-4 ask for Texas cities with diabetes prevalence above 12% in each release from 2016 to 2019; intersecting these yearly city lists yields the recurring candidate cities. Hop answer: Beaumont, Brownsville, Corpus Christi, El Paso, Laredo, McAllen, Mission, Pharr, San Antonio."
+      ],
+      "answer": "Beaumont, Brownsville, Corpus Christi, El Paso, Laredo, McAllen, Mission, Pharr, San Antonio"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "reasoning": [
+        "Nodes 5-13: Check whether each city from <hop 1 answer> is a county seat using the city or county evidence.",
+        "County seats among <hop 1 answer>: Beaumont, Brownsville, Corpus Christi, El Paso, Laredo, and San Antonio.",
+        "Derive hop 2 answer using nodes 5-13: `6` of the recurring cities are county seats. Hop answer: 6."
+      ],
+      "answer": 6
+    }
+  ],
+  "datasets_used": [
+    "datagov/500-cities-city-level-data-gis-friendly-format-2016-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2016-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2016-release/files/k56w-7tny.publisher-view.json",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/djk3-k3zs.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/pf7q-w24q.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/dxpw-cm5u.publisher-view.json",
+    "wikipedia/Beaumont,_Texas/content.txt",
+    "wikipedia/Brownsville,_Texas/content.txt",
+    "wikipedia/Corpus_Christi,_Texas/content.txt",
+    "wikipedia/El_Paso,_Texas/content.txt",
+    "wikipedia/Laredo,_Texas/content.txt",
+    "wikipedia/McAllen,_Texas/content.txt",
+    "wikipedia/Mission,_Texas/content.txt",
+    "wikipedia/Pharr,_Texas/content.txt",
+    "wikipedia/San_Antonio/content.txt"
+  ]
+}

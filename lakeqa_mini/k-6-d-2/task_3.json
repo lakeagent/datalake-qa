@@ -1,0 +1,149 @@
+{
+    "question": "Among New York counties outside of NYC, identify the top two by total mental health service recipients from 2017 to 2018. The county seat with the earlier incorporation date between these two is located at the terminus of a canal. What was the number of violent crimes per 100,000 population in the county in 2018 that contains the city at this canal's other terminus? Please return the numeric rate only. Your response should be in the format [Answer].",
+    "answer": "359.8",
+    "nodes": {
+        "1": {
+            "source": "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nrecipient_col = \"Count of Recipients by Rate Code Group and County\"\nexclude_nyc = {\"Bronx\", \"Kings\", \"New York\", \"Queens\", \"Richmond\"}\n\nresult = (\n    df[\n        df[\"Service Year\"].isin([2017, 2018])\n        & ~df[\"County Label\"].isin(exclude_nyc)\n    ]\n    .groupby(\"County Label\", as_index=False)[recipient_col]\n    .sum()\n    .sort_values(recipient_col, ascending=False)\n    .reset_index(drop=True)\n)\n\nanswer = result.head(2)[\"County Label\"].tolist()\nprint(answer)",
+            "subquestion": "Which non-NYC New York counties have the highest total mental health service recipients across service years 2017 and 2018, keeping county-level totals so the top two can be identified?",
+            "answer": [
+                "Erie",
+                "Monroe"
+            ]
+        },
+        "2": {
+            "source": "wikipedia/Erie_County,_New_York/content.txt",
+            "fact": "Erie County is a county along the shore of Lake Erie in western New York State. As of the 2020 census, the population was 954,236. However, in 2023 the estimated population was 946,147. The county seat is Buffalo, which makes up about 28% of the county's population.",
+            "subquestion": "What is the county seat of Erie County, New York?",
+            "answer": "Buffalo"
+        },
+        "3": {
+            "source": "wikipedia/Monroe_County,_New_York/content.txt",
+            "fact": "Monroe County is a county in the Finger Lakes region of the U.S. state of New York. Along the southern shore of Lake Ontario, it is east of Buffalo and northwest of Syracuse. As of the 2020 census, the population was 759,443. Its county seat is the city of Rochester.",
+            "subquestion": "What is the county seat of Monroe County, New York?",
+            "answer": "Rochester"
+        },
+        "4": {
+            "source": "wikipedia/Buffalo,_New_York/content.txt",
+            "fact": "Buffalo was selected as the terminus of the Erie Canal in 1825, which led to its incorporation in 1832 and stimulated its growth as the primary inland port between the Great Lakes and Atlantic Ocean.",
+            "subquestion": "In what year was Buffalo incorporated as a city?",
+            "answer": "1832"
+        },
+        "5": {
+            "source": "wikipedia/Rochester,_New_York/content.txt",
+            "fact": "By 1821, Rochesterville became the seat of Monroe County.Peck, p. 59 In 1823, the Erie Canal aqueduct over the Genesee River was completed, connecting the city to the Hudson River to the east.Peck, p. 60 New commerce from the canal turned the village into America's first boomtown. By 1830, Rochester's population had grown to 9,200, page 36 and in 1834, it was rechartered as a city.",
+            "subquestion": "In what year was Rochester rechartered as a city?",
+            "answer": "1834"
+        },
+        "6": {
+            "source": "wikipedia/Erie_Canal/content.txt",
+            "fact": "The original canal was  long, from Albany on the Hudson to Buffalo on Lake Erie.",
+            "subquestion": "What city was at the Erie Canal terminus opposite Buffalo?",
+            "answer": "Albany"
+        },
+        "7": {
+            "source": "wikipedia/Albany,_New_York/content.txt",
+            "fact": "Albany ( ) is the capital city of the U.S. state of New York, and the county seat of – and most populous city in – Albany County.",
+            "subquestion": "What county is Albany, New York in?",
+            "answer": "Albany County"
+        },
+        "8": {
+            "source": "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = df[(df[\"County\"] == \"Albany\") & (df[\"Year\"] == 2018)][[\"County\", \"Year\", \"Violent Rate\"]]\nanswer = result[\"Violent Rate\"].iloc[0]\nprint(answer)",
+            "subquestion": "What was the 2018 violent crime rate per 100,000 population for Albany County?",
+            "answer": 359.8
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Service Year` is 2017 or 2018, exclude NYC counties from `County Label`, group by `County Label`, sum `Count of Recipients by Rate Code Group and County`, and rank counties by the total.",
+                "Hop result: the top two non-NYC counties are [\"Erie\", \"Monroe\"]."
+            ],
+            "answer": [
+                "Erie",
+                "Monroe"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 2: Erie County's county seat is Buffalo.",
+                "Node 3: Monroe County's county seat is Rochester.",
+                "Hop result: the county seats to compare are [\"Buffalo\", \"Rochester\"]."
+            ],
+            "answer": [
+                "Buffalo",
+                "Rochester"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 4: Buffalo was incorporated as a city in 1832, and the same passage identifies Buffalo as an Erie Canal terminus.",
+                "Node 5: Rochester was rechartered as a city in 1834.",
+                "Hop result: 1832 is earlier than 1834, so Buffalo is the earlier-incorporated county seat and the canal in question is the Erie Canal."
+            ],
+            "answer": "Erie Canal"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: The Erie Canal ran from Albany on the Hudson to Buffalo on Lake Erie, so the terminus opposite Buffalo is Albany.",
+                "Hop result: <node 6 answer>"
+            ],
+            "answer": "Albany"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Albany, New York is in Albany County.",
+                "Hop result: <node 7 answer>"
+            ],
+            "answer": "Albany County"
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Filter rows where `County` is Albany and `Year` is 2018, then read `Violent Rate`.",
+                "Hop result: <node 8 answer>"
+            ],
+            "answer": 359.8
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Erie_County,_New_York/content.txt",
+        "wikipedia/Monroe_County,_New_York/content.txt",
+        "wikipedia/Buffalo,_New_York/content.txt",
+        "wikipedia/Rochester,_New_York/content.txt",
+        "wikipedia/Erie_Canal/content.txt",
+        "wikipedia/Albany,_New_York/content.txt",
+        "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt",
+        "datagov/county-mental-health-profiles-phase-2-beginning-2014/signed-metadata.txt",
+        "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/4uks-kzmv.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/signed-metadata.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/DCJS_IndexCrimeRatesByCounty_DataDictionary.pdf"
+    ]
+}

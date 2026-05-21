@@ -1,0 +1,158 @@
+{
+    "question": "Identify the crime types that occur 5th to 7th most often in New York City, 12th to 14th most often in Austin, and 4th to 6th most often in Louisville. For the offense type that appears in all three results, which year did Los Angeles have that offense 2nd most frequently since 2020? In that year, which state had the 25th highest total motor fuel sales tax? For that state's government expenditure on lottery, which other state outside it had the 8th-highest total vendor payments? As of 2025, among the U.S. states bordering that other state, how many are less populous than it? Please return only the number in the format [Answer].",
+    "answer": 3,
+    "nodes": {
+        "1": {
+            "source": "datagov/nypd-hate-crimes/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/nypd-hate-crimes/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\noffenses = df[\"Offense Description\"].fillna(\"\").astype(str).str.strip()\ncounts = offenses[offenses.ne(\"\")].value_counts().rename_axis(\"offense\").reset_index(name=\"count\")\nranked = counts.sort_values([\"count\", \"offense\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nselected = ranked.iloc[4:7][\"offense\"].astype(str).str.title().tolist()\nanswer = \", \".join(selected)\n",
+            "subquestion": "In New York City, which type of crimes were the 5th through 7th most frequent?",
+            "answer": "Felony Assault, Robbery, Grand Larceny"
+        },
+        "2": {
+            "source": "datagov/hate-crimes-2024/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/hate-crimes-2024/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\noffenses = df[\"Offense(s)\"].fillna(\"\").astype(str).str.strip()\ncounts = offenses[offenses.ne(\"\")].value_counts().rename_axis(\"offense\").reset_index(name=\"count\")\nranked = counts.sort_values([\"count\", \"offense\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nselected = ranked.iloc[11:14][\"offense\"].astype(str).tolist()\nanswer = \", \".join(selected)\n",
+            "subquestion": "In Austin, which type of crimes were the 12th through 14th most frequent?",
+            "answer": "Bomb Threat, Robbery, Vandalism"
+        },
+        "3": {
+            "source": "datagov/louisville-metro-ky-lmpd-hate-crimes/files/LOJIC::louisville-metro-ky-lmpd-hate-crimes.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/louisville-metro-ky-lmpd-hate-crimes/files/LOJIC::louisville-metro-ky-lmpd-hate-crimes.txt'\nbucket = \"lakeqa-yc4103-datalake\"\ntext = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)[\"Body\"].read().decode(\"utf-8\", errors=\"replace\")\ndf = pd.DataFrame([feature[\"properties\"] for feature in json.loads(text)[\"features\"]])\n\noffenses = df[\"nibrs_code_name\"].fillna(\"\").astype(str).str.strip()\ncounts = offenses[offenses.ne(\"\")].value_counts().rename_axis(\"offense\").reset_index(name=\"count\")\nranked = counts.sort_values([\"count\", \"offense\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nselected = ranked.iloc[3:6][\"offense\"].astype(str).tolist()\nanswer = \", \".join(selected)\n",
+            "subquestion": "In Louisville, which type of crimes were the 4th through 6th most frequent?",
+            "answer": "Aggravated Assault, All Other Offenses, Robbery"
+        },
+        "4": {
+            "source": "datagov/crime-data-from-2020-to-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/crime-data-from-2020-to-present/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_1_answer = \"Robbery\"\n\ndef normalize(text):\n    return \" \".join(str(text).strip().upper().split())\n\nshared_offense = normalize(hop_1_answer)\n\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"offense_norm\"] = df[\"Crm Cd Desc\"].map(normalize)\ndf[\"year\"] = pd.to_datetime(df[\"DATE OCC\"], errors=\"coerce\").dt.year\nfiltered = df[df[\"offense_norm\"].eq(shared_offense) & df[\"year\"].notna()].copy()\nranked = filtered.groupby(\"year\").size().reset_index(name=\"count\").sort_values([\"count\", \"year\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = str(int(ranked.iloc[1][\"year\"]))\n",
+            "subquestion": "For <hop 1 answer>, which year had the 2nd highest number of incidents in Los Angeles since 2020?",
+            "answer": "2022"
+        },
+        "5": {
+            "source": "datagov/sales-tax-collections-by-state/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/sales-tax-collections-by-state/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_2_answer = \"2022\"\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"value_num\"] = pd.to_numeric(df[\"value\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[\n    df[\"year\"].eq(str(hop_2_answer).strip())\n    & df[\"tax type\"].eq(\"motor fuel\")\n    & df[\"value_num\"].notna()\n    & df[\"state\"].ne(\"\")\n].copy()\nranked = filtered.groupby(\"state\", as_index=False)[\"value_num\"].sum().sort_values(\n    [\"value_num\", \"state\"],\n    ascending=[False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = str(ranked.iloc[24][\"state\"])\n",
+            "subquestion": "Using year <hop 2 answer>, which state had the 25th highest total motor fuel sales tax?",
+            "answer": "Oregon"
+        },
+        "6": {
+            "source": "datagov/lottery-expenditures-multi-year-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nUS_STATE_MAP = {\n    'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming', 'DC': 'District of Columbia'\n}\nUS_STATE_NAMES = set(US_STATE_MAP.values())\n\ndef normalize_us_state(value):\n    text = str(value).strip()\n    if not text:\n        return ''\n    upper = text.upper()\n    if upper in US_STATE_MAP:\n        return US_STATE_MAP[upper]\n    title = text.title()\n    return title if title in US_STATE_NAMES else ''\n\nsource = 'datagov/lottery-expenditures-multi-year-report/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_3_answer = \"Oregon\"\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"Amount_num\"] = pd.to_numeric(df[\"Amount\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\ndf[\"State_norm\"] = df[\"State\"].map(normalize_us_state)\nfiltered = df[\n    df[\"Department\"].eq(\"177-OREGON STATE LOTTERY\")\n    & df[\"Amount_num\"].notna()\n    & df[\"State_norm\"].ne(\"\")\n    & df[\"State_norm\"].ne(str(hop_3_answer).strip())\n].copy()\nranked = filtered.groupby(\"State_norm\", as_index=False)[\"Amount_num\"].sum().sort_values(\n    [\"Amount_num\", \"State_norm\"],\n    ascending=[False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = str(ranked.iloc[7][\"State_norm\"])\n",
+            "subquestion": "For <hop 3 answer>'s government expenditure on lottery, which other state outside <hop 3 answer> had the 8th-highest total vendor payments?",
+            "answer": "California"
+        },
+        "7": {
+            "source": "wikipedia/California/content.txt",
+            "fact": "California () is a state in the Western United States that lies on the Pacific Coast. It borders Oregon to the north, Nevada and Arizona to the east, and shares an international border with the Mexican state of Baja California to the south. With almost 40million residents across an area of , it is the largest state by population, third-largest state by area and the largest state economy in the U.S., with a GDP of approximately $4.1 trillion.",
+            "subquestion": "As of 2025, what population rank does <hop 4 answer> have among U.S. states?",
+            "answer": 1
+        },
+        "8": {
+            "source": "wikipedia/Oregon/content.txt",
+            "fact": "Oregon ( , ) is a state in the Pacific Northwest region of the United States. It is a part of the Western U.S., with the Columbia River delineating much of Oregon's northern boundary with Washington, while the Snake River delineates much of its eastern boundary with Idaho. The 42° north parallel delineates the southern boundary with California and Nevada. The western boundary is formed by the Pacific Ocean.\n\nOregon was admitted to the United States on February 14, 1859, becoming the 33rd state.\n\nToday, with 4.2 million people over , Oregon is the ninth-largest and 27th-most populous U.S. state.",
+            "subquestion": "As of 2025, what population rank does Oregon, one of the U.S. states bordering <hop 4 answer>, have among U.S. states?",
+            "answer": 27
+        },
+        "9": {
+            "source": "wikipedia/Nevada/content.txt",
+            "fact": "Nevada ( ; ) is a state in the Western United States. It is also sometimes placed in the Mountain West and Southwestern United States. It borders Oregon to the northwest, Idaho to the northeast, California to the west, Arizona to the southeast, and Utah to the east. Nevada is the seventh-most extensive and the 32nd-most populous U.S. state.",
+            "subquestion": "As of 2025, what population rank does Nevada, one of the U.S. states bordering <hop 4 answer>, have among U.S. states?",
+            "answer": 32
+        },
+        "10": {
+            "source": "wikipedia/Arizona/content.txt",
+            "fact": "Arizona is a state in the Southwestern region of the United States, sharing the Four Corners region with Colorado, New Mexico, and Utah. It also borders Nevada to the northwest and California to the west, and shares an international border with the Mexican states of Sonora and Baja California to the south and southwest. Its capital and largest city is Phoenix, which is the most populous state capital and fifth-most populous city in the United States. Arizona is divided into 15 counties.\n\nArizona is the sixth-largest state by area and the 14th-most-populous of the 50 states.",
+            "subquestion": "As of 2025, what population rank does Arizona, one of the U.S. states bordering <hop 4 answer>, have among U.S. states?",
+            "answer": 14
+        }
+    },
+    "datasets_used": [
+        "wikipedia/California/content.txt; wikipedia/List_of_U.S._states_and_territories_by_area/content.txt",
+        "datagov/nypd-hate-crimes/files/rows.txt",
+        "datagov/nypd-hate-crimes/signed-metadata.txt",
+        "datagov/nypd-hate-crimes/files/bqiq-cu78.publisher-view.json",
+        "datagov/hate-crimes-2024/files/rows.txt",
+        "datagov/hate-crimes-2024/signed-metadata.txt",
+        "datagov/louisville-metro-ky-lmpd-hate-crimes/files/LOJIC::louisville-metro-ky-lmpd-hate-crimes.txt",
+        "datagov/louisville-metro-ky-lmpd-hate-crimes/signed-metadata.txt",
+        "datagov/crime-data-from-2020-to-present/files/rows.txt",
+        "datagov/crime-data-from-2020-to-present/signed-metadata.txt",
+        "datagov/crime-data-from-2020-to-present/files/2nrs-mtv8.txt",
+        "datagov/sales-tax-collections-by-state/files/rows.txt",
+        "datagov/sales-tax-collections-by-state/signed-metadata.txt",
+        "datagov/sales-tax-collections-by-state/files/3qgg-2u2a.publisher-view.json",
+        "datagov/lottery-expenditures-multi-year-report/files/rows.txt",
+        "datagov/lottery-expenditures-multi-year-report/signed-metadata.txt",
+        "datagov/lottery-expenditures-multi-year-report/files/anxj-teqh.publisher-view.json",
+        "wikipedia/California/content.txt",
+        "wikipedia/Oregon/content.txt",
+        "wikipedia/Nevada/content.txt",
+        "wikipedia/Arizona/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: In New York City, the 5th through 7th most frequent hate-crime offense types are Felony Assault, Robbery, and Grand Larceny.",
+                "Node 2: In Austin, the 12th through 14th most frequent hate-crime offense types are Bomb Threat, Robbery, and Vandalism.",
+                "Node 3: In Louisville, the 4th through 6th most frequent hate-crime offense types are Aggravated Assault, All Other Offenses, and Robbery.",
+                "The only offense type appearing in all three answers is Robbery."
+            ],
+            "answer": "Robbery"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Use <hop 1 answer> and count Los Angeles crime reports with that offense by year from 2020 to the present.",
+                "The yearly counts rank as 2020 first, 2022 second, 2023 third, 2021 fourth, and 2024 fifth.",
+                "Therefore, the year with the second-highest number of reported incidents is 2022."
+            ],
+            "answer": "2022"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In the sales-tax collections by state dataset, use year <hop 2 answer> and sum motor fuel collections across all months within each state.",
+                "When states are ordered by total collections from highest to lowest, Oregon ranks 25th.",
+                "Therefore, the required state is Oregon."
+            ],
+            "answer": "Oregon"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: In the Oregon State Lottery expenditures dataset, normalize vendor state values to U.S. state names, exclude <hop 3 answer>, and sum payments by destination state.",
+                "Among U.S. states outside Oregon, the states rank Nevada first, Massachusetts second, Colorado third, New Jersey fourth, Virginia fifth, Texas sixth, Washington seventh, and California eighth.",
+                "Therefore, the state with the 8th-highest total vendor payments is California."
+            ],
+            "answer": "California"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7,
+                8,
+                9,
+                10
+            ],
+            "reasoning": [
+                "Node 7 gives California as the largest U.S. state by population.",
+                "Nodes 8 through 10 identify the U.S. states bordering California and their population ranks: Oregon is 27th-most populous, Nevada is 32nd-most populous, and Arizona is 14th-most populous.",
+                "All three U.S. states bordering California are less populous than California.",
+                "Hop result: 3."
+            ],
+            "answer": 3
+        }
+    ]
+}

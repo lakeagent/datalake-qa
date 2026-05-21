@@ -1,0 +1,163 @@
+{
+  "question": "I'm researching the Texas counties that ranked in the top five for the average number of sites offering summer meals to children from 2018-2023. Among those counties, which one spans the greatest number of U.S. congressional districts? Return the county name only. Your response should be in the format [Answer].",
+  "answer": "Harris County",
+  "nodes": {
+    "1": {
+      "source": "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-98b1c/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-98b1c/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2018-2019\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+      "subquestion": "What is the full county-level count of sites offering summer meals to children in Texas for 2018-2019?",
+      "answer": {
+        "HARRIS": 1052,
+        "DALLAS": 1014,
+        "HIDALGO": 494,
+        "BEXAR": 411,
+        "TARRANT": 367
+      },
+      "limit": 5
+    },
+    "2": {
+      "source": "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-3651c/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-3651c/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2019-2020\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+      "subquestion": "What is the full county-level count of sites offering summer meals to children in Texas for 2019-2020?",
+      "answer": {
+        "HARRIS": 1919,
+        "DALLAS": 1479,
+        "BEXAR": 1038,
+        "TARRANT": 688,
+        "HIDALGO": 515
+      },
+      "limit": 5
+    },
+    "3": {
+      "source": "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-f6663/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-f6663/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2020-2021\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+      "subquestion": "What is the full county-level count of sites offering summer meals to children in Texas for 2020-2021?",
+      "answer": {
+        "HARRIS": 2674,
+        "DALLAS": 1504,
+        "BEXAR": 1168,
+        "TARRANT": 1033,
+        "HIDALGO": 700
+      },
+      "limit": 5
+    },
+    "4": {
+      "source": "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-a726d/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-a726d/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2021-2022\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+      "subquestion": "What is the full county-level count of sites offering summer meals to children in Texas for 2021-2022?",
+      "answer": {
+        "HARRIS": 1825,
+        "DALLAS": 1545,
+        "BEXAR": 814,
+        "TARRANT": 757,
+        "HIDALGO": 526
+      },
+      "limit": 5
+    },
+    "5": {
+      "source": "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2022-2023\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+      "subquestion": "What is the full county-level count of sites offering summer meals to children in Texas for 2022-2023?",
+      "answer": {
+        "HARRIS": 1016,
+        "DALLAS": 688,
+        "BEXAR": 364,
+        "HIDALGO": 353,
+        "TARRANT": 303
+      },
+      "limit": 5
+    },
+    "6": {
+      "source": "wikipedia/Harris_County,_Texas/content.txt",
+      "fact": "Congressional districts 2nd, 7th, 8th, 9th, 18th, 22nd, 29th, 36th, 38th",
+      "subquestion": "How many U.S. congressional districts does the first county from <hop 1 answer> span?",
+      "answer": 9
+    },
+    "7": {
+      "source": "wikipedia/Dallas_County,_Texas/content.txt",
+      "fact": "Congressional districts 5th, 6th, 24th, 30th, 32nd, 33rd",
+      "subquestion": "How many U.S. congressional districts does the second county from <hop 1 answer> span?",
+      "answer": 6
+    },
+    "8": {
+      "source": "wikipedia/Bexar_County,_Texas/content.txt",
+      "fact": "Congressional districts 20th, 21st, 23rd, 28th, 35th",
+      "subquestion": "How many U.S. congressional districts does the third county from <hop 1 answer> span?",
+      "answer": 5
+    },
+    "9": {
+      "source": "wikipedia/Tarrant_County,_Texas/content.txt",
+      "fact": "Congressional districts 6th, 12th, 24th, 25th, 30th, 33rd",
+      "subquestion": "How many U.S. congressional districts does the fourth county from <hop 1 answer> span?",
+      "answer": 6
+    },
+    "10": {
+      "source": "wikipedia/Hidalgo_County,_Texas/content.txt",
+      "fact": "Congressional districts 15th, 34th",
+      "subquestion": "How many U.S. congressional districts does the fifth county from <hop 1 answer> span?",
+      "answer": 2
+    }
+  },
+  "datasets_used": [
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-98b1c/files/rows.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-98b1c/signed-metadata.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-98b1c/files/aj5s-8pui.publisher-view.json",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-3651c/files/rows.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-3651c/signed-metadata.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-3651c/files/c8jp-i4jb.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-f6663/files/rows.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-f6663/signed-metadata.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-f6663/files/ixpn-g9tj.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-a726d/files/rows.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-a726d/signed-metadata.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-a726d/files/7ae2-5muh.publisher-view.json",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra/files/rows.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra/signed-metadata.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra/files/24ie-9cft.txt",
+    "wikipedia/Harris_County,_Texas/content.txt",
+    "wikipedia/Dallas_County,_Texas/content.txt",
+    "wikipedia/Bexar_County,_Texas/content.txt",
+    "wikipedia/Tarrant_County,_Texas/content.txt",
+    "wikipedia/Hidalgo_County,_Texas/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `ProgramYear` equals `2018-2019`, count rows by `SiteCounty`, and keep the full county-level site-count mapping.",
+        "Node 2: Filter rows where `ProgramYear` equals `2019-2020`, count rows by `SiteCounty`, and keep the full county-level site-count mapping.",
+        "Node 3: Filter rows where `ProgramYear` equals `2020-2021`, count rows by `SiteCounty`, and keep the full county-level site-count mapping.",
+        "Node 4: Filter rows where `ProgramYear` equals `2021-2022`, count rows by `SiteCounty`, and keep the full county-level site-count mapping.",
+        "Node 5: Filter rows where `ProgramYear` equals `2022-2023`, count rows by `SiteCounty`, and keep the full county-level site-count mapping.",
+        "Hop result: compute the 2018-2023 average site count for each county shared across nodes 1-5 and keep the top 5 counties = HARRIS, DALLAS, BEXAR, TARRANT, HIDALGO."
+      ],
+      "answer": "HARRIS; DALLAS; BEXAR; TARRANT; HIDALGO"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "reasoning": [
+        "Node 6: The first county from <hop 1 answer> spans 9 U.S. congressional districts.",
+        "Node 7: The second county from <hop 1 answer> spans 6 U.S. congressional districts.",
+        "Node 8: The third county from <hop 1 answer> spans 5 U.S. congressional districts.",
+        "Node 9: The fourth county from <hop 1 answer> spans 6 U.S. congressional districts.",
+        "Node 10: The fifth county from <hop 1 answer> spans 2 U.S. congressional districts.",
+        "Hop result: 9 is the greatest count, so the answer is `Harris County`."
+      ],
+      "answer": "Harris County"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+    "question": "In school year 2022-2023, identify the capital city of California. Use postsecondary institution records in that city to identify its county, then subtract the number of district administrative offices from the number of public schools in that city and county. Using the annual number of degrees awarded by the California State University campus in that city, what is that difference per 1,000 annual degrees? Round your answer to one decimal. Your response should be in the format [Answer].",
+    "answer": "19.6",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/California/content.txt",
+            "fact": "California's capital is Sacramento.",
+            "subquestion": "What is the capital city of California?",
+            "answer": "Sacramento"
+        },
+        "2": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Sacramento'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n]\nanswer = filtered[\"NMCNTY\"].dropna().astype(str).str.strip().iloc[0]\n",
+            "subquestion": "In school year 2022-2023, among postsecondary institutions located in the city of <node_1 answer>, what is the county name?",
+            "answer": "Sacramento County"
+        },
+        "3": {
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-current-23297/files/data-oyCYxF.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Sacramento'\nnode_2_answer = 'Sacramento County'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n].copy()\nfiltered = filtered[filtered[\"NMCNTY\"].astype(str).str.strip().str.lower().eq(str(node_2_answer).strip().lower())]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In school year 2022-2023, how many public schools are located in the city of <node_1 answer> in <node_2 answer>?",
+            "answer": "203"
+        },
+        "4": {
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Sacramento'\nnode_2_answer = 'Sacramento County'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n].copy()\nfiltered = filtered[filtered[\"NMCNTY\"].astype(str).str.strip().str.lower().eq(str(node_2_answer).strip().lower())]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In school year 2022-2023, how many school district offices are located in the city of <node_1 answer> in <node_2 answer>?",
+            "answer": "27"
+        },
+        "5": {
+            "source": "wikipedia/California_State_University,_Sacramento/content.txt",
+            "fact": "California State University, Sacramento is a public university in Sacramento, California, United States. The university enrolls approximately 30,100 students annually, with 30,833 enrolled in the fall of 2024. It also has an alumni base of more than 290,000 and awards 9,000 degrees annually. Computation: 176 / 9,000 * 1,000 = 19.5556, which rounds to 19.6.",
+            "subquestion": "Using the annual number of degrees awarded by the California State University campus in <hop 1 answer>, what is <hop 3 answer> per 1,000 annual degrees? Round your answer to one decimal.",
+            "answer": "19.6"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/California/content.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt",
+        "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+        "datagov/public-school-locations-current-23297/signed-metadata.txt",
+        "datagov/public-school-locations-current-23297/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "wikipedia/California_State_University,_Sacramento/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Sacramento is the capital of California.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Sacramento"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `CITY` is <hop 1 answer> and `SCHOOLYEAR` is 2022-2023, then take the first non-empty `NMCNTY` value.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Sacramento County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `CITY` is <hop 1 answer> and `SCHOOLYEAR` is 2022-2023, keep rows where `NMCNTY` is <hop 2 answer>, and count the remaining records.",
+                "Node 4: Filter rows where `CITY` is <hop 1 answer> and `SCHOOLYEAR` is 2022-2023, keep rows where `NMCNTY` is <hop 2 answer>, and count the remaining records.",
+                "Hop result: <node_3 answer> - <node_4 answer> = 203 - 27 = 176."
+            ],
+            "answer": "176"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Divide <hop 3 answer> by the annual number of degrees awarded by the California State University campus in <hop 1 answer>, multiply by 1,000, and round to one decimal.",
+                "Hop result: <node_5 answer>"
+            ],
+            "answer": "19.6"
+        }
+    ]
+}

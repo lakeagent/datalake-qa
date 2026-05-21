@@ -1,0 +1,92 @@
+{
+  "question": "In Maryland, find the county or jurisdiction with the most 2020 jobs in professional, scientific, and technical services. Within that county, identify the city tied to the largest total of promised new jobs in state-backed economic-development projects. For that city, consider the valid five-digit ZIP codes that have public-access charging or alternative-fuel station locations. How many of those ZIP codes served the former Cabin John-Brookmont census area? Write your answer as [ANSWER].",
+  "answer": 1,
+  "nodes": {
+    "1": {
+      "source": "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['Jurisdiction', 'Year', 'Professional, scientific, and technical services'])\n\nfiltered = df[df['Year'].astype(str).str.strip().eq('2020')].copy()\nfiltered = filtered[~filtered['Jurisdiction'].astype(str).str.strip().eq('Maryland')].copy()\nfiltered['jobs'] = pd.to_numeric(filtered['Professional, scientific, and technical services'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = filtered[['Jurisdiction', 'jobs']].dropna().sort_values(['jobs', 'Jurisdiction'], ascending=[False, True])\ntop = ranked.iloc[0]\nanswer = f\"{str(top['Jurisdiction']).strip()}, {int(top['jobs'])}\"\n",
+      "subquestion": "In 2020, which Maryland county or jurisdiction had the most jobs in professional, scientific, and technical services, and how many jobs were there?",
+      "answer": "Montgomery County, 107209"
+    },
+    "2": {
+      "source": "datagov/maryland-commerce-consolidated-finance-tracker-data/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/maryland-commerce-consolidated-finance-tracker-data/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['County', 'City', 'New Jobs'])\n\nnode_1_answer = 'Montgomery County, 107209'\ncounty = str(node_1_answer).split(',')[0].replace(' County', '').strip().upper()\nfiltered = df[df['County'].astype(str).str.strip().str.upper().eq(county)].copy()\nfiltered['new_jobs'] = pd.to_numeric(filtered['New Jobs'].astype(str).str.replace(',', '', regex=False), errors='coerce')\ncity_totals = filtered.groupby('City', dropna=True)['new_jobs'].sum().dropna().sort_values(ascending=False)\ncity = str(city_totals.index[0]).strip()\njobs = int(city_totals.iloc[0])\nanswer = f\"{city}, {jobs}\"\n",
+      "subquestion": "Among Maryland state-backed economic-development projects in the county from <node_1 answer>, which city is tied to the largest total number of promised new jobs, and how many new jobs are listed?",
+      "answer": "Bethesda, 889"
+    },
+    "3": {
+      "source": "datagov/public-electric-vehicle-charging-stations-and-alternative-fuel-stations-in-maryland/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/public-electric-vehicle-charging-stations-and-alternative-fuel-stations-in-maryland/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['City', 'ZipCode', 'Access'])\n\nnode_2_answer = 'Bethesda, 889'\ncity = str(node_2_answer).split(',')[0].strip().upper()\nfiltered = df[\n    df['City'].astype(str).str.strip().str.upper().eq(city)\n    & df['Access'].astype(str).str.strip().str.upper().eq('PUBLIC')\n].copy()\nfiltered['zip5'] = filtered['ZipCode'].astype(str).str.extract(r'^\\s*(\\d{5})\\s*$', expand=False)\nzip_codes = sorted(filtered['zip5'].dropna().unique())\nanswer = '; '.join(zip_codes)\n",
+      "subquestion": "In the city from <node_2 answer>, which valid five-digit ZIP codes have public-access charging or alternative-fuel station locations?",
+      "answer": "20814; 20816"
+    },
+    "4": {
+      "source": "wikipedia/Cabin_John-Brookmont,_Maryland/content.txt",
+      "fact": "The ZIP codes serving the area are 20816 and 20818.",
+      "subquestion": "How many ZIP codes from <hop 3 answer> served the former Cabin John-Brookmont census area?",
+      "answer": 1
+    }
+  },
+  "datasets_used": [
+    "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/rows.txt",
+    "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/signed-metadata.txt",
+    "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/columns.txt",
+    "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/i5g8-z4ut.txt",
+    "datagov/maryland-commerce-consolidated-finance-tracker-data/files/rows.txt",
+    "datagov/maryland-commerce-consolidated-finance-tracker-data/signed-metadata.txt",
+    "datagov/maryland-commerce-consolidated-finance-tracker-data/files/columns.txt",
+    "datagov/maryland-commerce-consolidated-finance-tracker-data/files/cf3i-xdgb.publisher-view.json",
+    "datagov/maryland-commerce-consolidated-finance-tracker-data/files/cf3i-xdgb.txt",
+    "datagov/public-electric-vehicle-charging-stations-and-alternative-fuel-stations-in-maryland/files/rows.txt",
+    "datagov/public-electric-vehicle-charging-stations-and-alternative-fuel-stations-in-maryland/signed-metadata.txt",
+    "datagov/public-electric-vehicle-charging-stations-and-alternative-fuel-stations-in-maryland/files/columns.txt",
+    "datagov/public-electric-vehicle-charging-stations-and-alternative-fuel-stations-in-maryland/files/843n-d2np.txt",
+    "wikipedia/Cabin_John-Brookmont,_Maryland/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Among Maryland county-level jurisdictions, Montgomery County has the largest number of 2020 jobs in professional, scientific, and technical services.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "Montgomery County, 107209"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Within Montgomery County state-backed economic-development projects, Bethesda has the largest total of promised new jobs.",
+        "Hop result: <node_2 answer>"
+      ],
+      "answer": "Bethesda, 889"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: In Bethesda, public-access charging or alternative-fuel station locations are found in the valid five-digit ZIP codes 20814 and 20816.",
+        "Hop result: 20814 and 20816"
+      ],
+      "answer": "20814 and 20816"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: The former Cabin John-Brookmont census area was served by ZIP codes 20816 and 20818.",
+        "Hop result: comparing those ZIP codes with <hop 3 answer>, only 20816 overlaps, so the count is 1."
+      ],
+      "answer": 1
+    }
+  ]
+}

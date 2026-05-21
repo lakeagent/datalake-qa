@@ -1,0 +1,110 @@
+{
+  "question": "In the Texas city that appeared most often in the mailing addresses for investor-owned water and sewer utilities, which ZIP code appeared most often in informal complaints about water utilities? In that ZIP code, which organizations operated active sites participating in the school nutrition program, active Child and Adult Care Food Program center sites, and active summer meal program sites? As of 2025, how many square miles does the district that appears in all three groups cover? Please return only the number in the format [Answer].",
+  "answer": 53.5,
+  "nodes": {
+    "1": {
+      "source": "datagov/public-utility-commission-of-texas-water-and-sewer-investor-owned-utilities-ious/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/public-utility-commission-of-texas-water-and-sewer-investor-owned-utilities-ious/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['City', 'State', 'Certificate of Convenience and Necessity (CCN) Number'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['City', 'State', 'Certificate of Convenience and Necessity (CCN) Number'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['City'] = df['City'].astype(str).str.strip().str.upper()\ndf['State'] = df['State'].astype(str).str.strip().str.upper()\ndf['Certificate of Convenience and Necessity (CCN) Number'] = df['Certificate of Convenience and Necessity (CCN) Number'].astype(str).str.strip()\nranked = (\n    df[\n        df['State'].eq('TX')\n        & df['City'].ne('')\n        & df['Certificate of Convenience and Necessity (CCN) Number'].ne('')\n    ]\n    .groupby('City', as_index=False)['Certificate of Convenience and Necessity (CCN) Number']\n    .count()\n    .sort_values(['Certificate of Convenience and Necessity (CCN) Number', 'City'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'Certificate of Convenience and Necessity (CCN) Number'] > ranked.loc[1, 'Certificate of Convenience and Necessity (CCN) Number']\nanswer = str(ranked.loc[0, 'City']).title()\n",
+      "subquestion": "Which Texas city appeared most often in the mailing addresses for investor-owned water and sewer utilities?",
+      "answer": "Houston"
+    },
+    "2": {
+      "source": "datagov/public-utility-commission-of-texas-informal-complaints/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/public-utility-commission-of-texas-informal-complaints/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Customer City', 'Customer State', 'Customer Zip Code', 'Utility Type', 'Complaint Number'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Customer City', 'Customer State', 'Customer Zip Code', 'Utility Type', 'Complaint Number'],\n        dtype=str,\n        low_memory=False,\n    )\n\ncity = str(node_1_answer).strip().upper()\ndf['Customer City'] = df['Customer City'].astype(str).str.strip().str.upper()\ndf['Customer State'] = df['Customer State'].astype(str).str.strip().str.upper()\ndf['Utility Type'] = df['Utility Type'].astype(str).str.strip().str.upper()\ndf['Complaint Number'] = df['Complaint Number'].astype(str).str.strip()\ndf['zip5'] = df['Customer Zip Code'].astype(str).str.extract(r'(\\d{5})', expand=False)\nranked = (\n    df[\n        df['Customer State'].eq('TX')\n        & df['Customer City'].eq(city)\n        & df['Utility Type'].eq('WATER')\n        & df['zip5'].notna()\n        & df['Complaint Number'].ne('')\n    ]\n    .groupby('zip5', as_index=False)['Complaint Number']\n    .count()\n    .sort_values(['Complaint Number', 'zip5'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'Complaint Number'] > ranked.loc[1, 'Complaint Number']\nanswer = str(ranked.loc[0, 'zip5'])\n",
+      "subquestion": "In the city from node 1, which ZIP code appeared most often in informal complaints about water utilities?",
+      "answer": "77044"
+    },
+    "3": {
+      "source": "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2022/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['CEName', 'SiteStatus', 'SiteStreetAddressZipCode'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['CEName', 'SiteStatus', 'SiteStreetAddressZipCode'],\n        dtype=str,\n        low_memory=False,\n    )\n\nzip_code = str(node_2_answer).strip()\ndf['CEName'] = df['CEName'].astype(str).str.strip()\ndf['SiteStatus'] = df['SiteStatus'].astype(str).str.strip().str.upper()\ndf['zip5'] = df['SiteStreetAddressZipCode'].astype(str).str.extract(r'(\\d{5})', expand=False)\norgs = sorted(\n    {\n        name\n        for name in df.loc[\n            df['zip5'].eq(zip_code)\n            & df['SiteStatus'].eq('ACTIVE')\n            & df['CEName'].ne(''),\n            'CEName',\n        ].tolist()\n        if name and name.lower() != 'nan'\n    }\n)\nanswer = '; '.join(orgs)\n",
+      "subquestion": "In the ZIP code from node 2, which organizations operated active sites participating in the school nutrition program in the 2022-2023 school year?",
+      "answer": "HUMBLE ISD; SHELDON ISD; TEXAS COLLEGE PREPARATORY ACADEMIES"
+    },
+    "4": {
+      "source": "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2023/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2023/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['CEName', 'SiteStatus', 'SiteStreetAddressZipCode'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['CEName', 'SiteStatus', 'SiteStreetAddressZipCode'],\n        dtype=str,\n        low_memory=False,\n    )\n\nzip_code = str(node_2_answer).strip()\ndf['CEName'] = df['CEName'].astype(str).str.strip()\ndf['SiteStatus'] = df['SiteStatus'].astype(str).str.strip().str.upper()\ndf['zip5'] = df['SiteStreetAddressZipCode'].astype(str).str.extract(r'(\\d{5})', expand=False)\norgs = sorted(\n    {\n        name\n        for name in df.loc[\n            df['zip5'].eq(zip_code)\n            & df['SiteStatus'].eq('ACTIVE')\n            & df['CEName'].ne(''),\n            'CEName',\n        ].tolist()\n        if name and name.lower() != 'nan'\n    }\n)\nanswer = '; '.join(orgs)\n",
+      "subquestion": "In the ZIP code from node 2, which organizations operated active Child and Adult Care Food Program center sites in the 2023-2024 program year?",
+      "answer": "\"With Helping Hands\" serving nutritious meals; ALWAYS A NUTRITIONAL MEAL; COASTAL CHILD NUTRITION SERVICES; Discovering Healthy Foods; FP ASSISTANCE, INC.; HARRIS COUNTY DEPARTMENT OF EDUCATION; HIRANI PLATINUM CORPORATION; JOANN'S DAY CARE & CAMP; PROFESSIONAL CHILD CARE PROVIDER ASSOCIATION; SHELDON ISD; Southwest Magic Food Program, Inc.; THE HOUSTON FOOD BANK"
+    },
+    "5": {
+      "source": "datagov/summer-meal-programs-summer-food-service-program-sfsp-contacts-and-program-participation-p/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/summer-meal-programs-summer-food-service-program-sfsp-contacts-and-program-participation-p/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['CEName', 'SiteStatus', 'SiteStreetAddressZipCode'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['CEName', 'SiteStatus', 'SiteStreetAddressZipCode'],\n        dtype=str,\n        low_memory=False,\n    )\n\nzip_code = str(node_2_answer).strip()\ndf['CEName'] = df['CEName'].astype(str).str.strip()\ndf['SiteStatus'] = df['SiteStatus'].astype(str).str.strip().str.upper()\ndf['zip5'] = df['SiteStreetAddressZipCode'].astype(str).str.extract(r'(\\d{5})', expand=False)\norgs = sorted(\n    {\n        name\n        for name in df.loc[\n            df['zip5'].eq(zip_code)\n            & df['SiteStatus'].eq('ACTIVE')\n            & df['CEName'].ne(''),\n            'CEName',\n        ].tolist()\n        if name and name.lower() != 'nan'\n    }\n)\nanswer = '; '.join(orgs)\n",
+      "subquestion": "In the ZIP code from node 2, which organizations operated active summer meal program sites in the 2022-2023 program year?",
+      "answer": "\"With Helping Hands\" serving nutritious meals; SHELDON ISD"
+    },
+    "6": {
+      "source": "wikipedia/Sheldon_Independent_School_District/content.txt",
+      "fact": "Sheldon Independent School District is a public school district in unincorporated northeast Harris County, Texas (USA). The majority of the district lies in the extraterritorial jurisdiction of Houston with a small portion within city limits.\n\nSheldon ISD covers 53.5 square miles and serves several neighborhoods in the Sheldon Lake area.",
+      "subquestion": "As of 2025, how many square miles does <hop 3 answer> cover?",
+      "answer": 53.5
+    }
+  },
+  "datasets_used": [
+    "datagov/public-utility-commission-of-texas-water-and-sewer-investor-owned-utilities-ious/files/rows.txt",
+    "datagov/public-utility-commission-of-texas-water-and-sewer-investor-owned-utilities-ious/signed-metadata.txt",
+    "datagov/public-utility-commission-of-texas-water-and-sewer-investor-owned-utilities-ious/files/auk8-env9.publisher-view.json",
+    "datagov/public-utility-commission-of-texas-informal-complaints/files/rows.txt",
+    "datagov/public-utility-commission-of-texas-informal-complaints/signed-metadata.txt",
+    "datagov/public-utility-commission-of-texas-informal-complaints/files/cxnx-7tf4.publisher-view.json",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2022/files/rows.txt",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2022/signed-metadata.txt",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2022/files/h87y-vai4.publisher-view.json",
+    "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2023/files/rows.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2023/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2023/files/kpi2-kf42.txt",
+    "datagov/summer-meal-programs-summer-food-service-program-sfsp-contacts-and-program-participation-p/files/rows.txt",
+    "datagov/summer-meal-programs-summer-food-service-program-sfsp-contacts-and-program-participation-p/signed-metadata.txt",
+    "datagov/summer-meal-programs-summer-food-service-program-sfsp-contacts-and-program-participation-p/files/8ih4-zp65.publisher-view.json",
+    "wikipedia/Sheldon_Independent_School_District/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the Texas investor-owned water and sewer utility directory, Houston appeared most often in mailing addresses (54 listings), ahead of Austin (32) and Cypress (20).",
+        "Hop result: Houston"
+      ],
+      "answer": "Houston"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Among informal complaints about water utilities in Houston, ZIP code 77044 appeared most often (55 complaints), ahead of 77037 (45) and 77099 (40).",
+        "Hop result: 77044"
+      ],
+      "answer": "77044"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 3: In ZIP code 77044, active school nutrition sites in the 2022-2023 school year were operated by HUMBLE ISD, SHELDON ISD, and TEXAS COLLEGE PREPARATORY ACADEMIES.",
+        "Node 4: In ZIP code 77044, active Child and Adult Care Food Program center sites in the 2023-2024 program year were operated by 12 organizations, including SHELDON ISD.",
+        "Node 5: In ZIP code 77044, active summer meal program sites in the 2022-2023 program year were operated by \"With Helping Hands\" serving nutritious meals and SHELDON ISD.",
+        "Hop result: SHELDON ISD is the only organization that appears in all three lists."
+      ],
+      "answer": "SHELDON ISD"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: Sheldon ISD covers 53.5 square miles.",
+        "Hop result: 53.5."
+      ],
+      "answer": 53.5
+    }
+  ]
+}

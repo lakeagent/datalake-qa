@@ -1,0 +1,48 @@
+{
+    "question": "Among operational New York wind-energy projects from 2004 through 2015, find the county with the greatest total energy capacity for projects. How many protected areas are in that county? Please return only the number in the format [Answer].",
+    "answer": 14,
+    "nodes": {
+        "1": {
+            "source": "datagov/wind-energy-projects-2004-2015/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/wind-energy-projects-2004-2015/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str)\ndf.columns = df.columns.str.strip()\noperational = df[df['Status'].astype(str).str.strip().eq('Operational')].copy()\noperational['Project MW'] = pd.to_numeric(operational['Project MW'], errors='coerce')\ncounty_totals = operational.groupby('Location County', dropna=True)['Project MW'].sum().sort_values(ascending=False)\ntop_county = str(county_totals.index[0]).strip()\ntop_capacity = county_totals.iloc[0]\nanswer = f\"{top_county} County, {top_capacity:.1f} MW\"\n",
+            "subquestion": "Among operational New York wind-energy projects from 2004 through 2015, which county has the greatest total energy capacity for projects, and how many megawatts is that total?",
+            "answer": "Clinton County, 501.0 MW"
+        },
+        "2": {
+            "source": "wikipedia/Clinton_County,_New_York/content.txt",
+            "fact": "Protected areas\n\n Adirondack Park (part)\n Ausable Marsh Wildlife Management Area\n Cadyville State Forest\n Chazy Fossil Reef National Natural Landmark (part)\n Dannemora State Forest\n Dunkin's Reserve State Forest\n Flat Rock State Forest\n Kings Bay Wildlife Management Area\n Macomb State Forest\n Miner Lake State ParkMiner Lake State Park. stateparks.com (accessed 6 July 2019)\n Monty's Bay Wildlife Management Area\n Point au Roche State Park\n Valcour Island\n Valcour Island Primitive Area",
+            "subquestion": "How many protected areas are in the county from <hop 1 answer>?",
+            "answer": 14
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter operational New York wind-energy projects from 2004 through 2015, sum project megawatts by county, and select the county with the largest total capacity.",
+                "Hop result: Clinton County has the greatest total capacity, 501.0 MW."
+            ],
+            "answer": "Clinton County, 501.0 MW"
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Count the protected areas named for the county from <hop 1 answer>.",
+                "Hop result: there are 14 protected areas."
+            ],
+            "answer": 14
+        }
+    ],
+    "datasets_used": [
+        "datagov/wind-energy-projects-2004-2015/files/rows.txt",
+        "datagov/wind-energy-projects-2004-2015/signed-metadata.txt",
+        "datagov/wind-energy-projects-2004-2015/files/jmxa-iz8m.publisher-view.json",
+        "wikipedia/Clinton_County,_New_York/content.txt"
+    ]
+}

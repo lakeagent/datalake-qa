@@ -1,0 +1,158 @@
+{
+    "question": "Identify a specific California county based on a set of health and housing statistics. The county had an Area Median Income of at least $142,800 in 2022 and $147,900 in 2023. It also had an infants, children and woman average cost per family of $570 or more in 2018 and $700 or more in 2020, a 2015 perioperative hemorrhage/hematoma observed rate of 19 or higher, and a geographical shape area of at least 3 billion square meters. Once you identify the county that matches all these figures, determine its county seat and state which bay is on the southern shore of that county seat. Only report the bay. Your response should be in the format [Answer].",
+    "answer": "San Francisco Bay",
+    "nodes": {
+        "1": {
+            "source": "datagov/income-limits-by-county/files/2022-income-limits.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/income-limits-by-county/files/2022-income-limits.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"AMI\"] = pd.to_numeric(df[\"AMI\"], errors=\"coerce\")\nresult = df.loc[df[\"AMI\"] >= 142800, [\"County\", \"AMI\"]].copy()\nresult = result.sort_values([\"AMI\", \"County\"], ascending=[False, True])\nanswer = {row[\"County\"]: int(row[\"AMI\"]) for _, row in result.iterrows()}\n",
+            "subquestion": "Which California counties had an Area Median Income of at least $142,800 in 2022?",
+            "answer": {
+                "Santa Clara": 168500,
+                "Marin": 166000,
+                "San Francisco": 166000,
+                "San Mateo": 166000,
+                "Alameda": 142800,
+                "Contra Costa": 142800
+            }
+        },
+        "2": {
+            "source": "datagov/income-limits-by-county/files/2023-income-limits.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/income-limits-by-county/files/2023-income-limits.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"AMI\"] = pd.to_numeric(df[\"AMI\"], errors=\"coerce\")\nresult = df.loc[df[\"AMI\"] >= 147900, [\"County\", \"AMI\"]].copy()\nresult = result.sort_values([\"AMI\", \"County\"], ascending=[False, True])\nanswer = {row[\"County\"]: int(row[\"AMI\"]) for _, row in result.iterrows()}\n",
+            "subquestion": "Which California counties had an Area Median Income of at least $147,900 in 2023?",
+            "answer": {
+                "Santa Clara": 181300,
+                "Marin": 175000,
+                "San Francisco": 175000,
+                "San Mateo": 175000,
+                "Alameda": 147900,
+                "Contra Costa": 147900
+            }
+        },
+        "3": {
+            "source": "datagov/california-women-infants-and-children-program-redemption-by-county-967e9/files/2010-2018-part-a-wic-redemptions-by-vendor-county-with-family-counts.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/california-women-infants-and-children-program-redemption-by-county-967e9/files/2010-2018-part-a-wic-redemptions-by-vendor-county-with-family-counts.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounties = [\"Santa Clara\", \"Marin\", \"San Francisco\", \"San Mateo\", \"Alameda\", \"Contra Costa\"]\ndf[\"Obligation Year and Month\"] = pd.to_numeric(df[\"Obligation Year and Month\"], errors=\"coerce\")\nfiltered = df.loc[\n    df[\"Obligation Year and Month\"].eq(2018) & df[\"Vendor County\"].isin(counties),\n    [\"Vendor County\", \"Average Cost per Family\"],\n].copy()\nfiltered[\"Average Cost per Family\"] = pd.to_numeric(\n    filtered[\"Average Cost per Family\"].astype(str).str.replace(r\"[^0-9.\\-]\", \"\", regex=True),\n    errors=\"coerce\",\n)\nanswer = (\n    filtered.loc[filtered[\"Average Cost per Family\"] >= 570, \"Vendor County\"]\n    .dropna()\n    .drop_duplicates()\n    .sort_values()\n    .tolist()\n)\n",
+            "subquestion": "Among <hop 1 answer>, which counties had a WIC average cost per family of at least $570 in 2018?",
+            "answer": [
+                "Alameda",
+                "Contra Costa",
+                "San Francisco",
+                "Santa Clara"
+            ]
+        },
+        "4": {
+            "source": "datagov/california-women-infants-and-children-program-redemption-by-county-967e9/files/2019-2020-part-b-wic-redemptions-by-vendor-county-with-family-counts.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/california-women-infants-and-children-program-redemption-by-county-967e9/files/2019-2020-part-b-wic-redemptions-by-vendor-county-with-family-counts.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounties = [\"Santa Clara\", \"Marin\", \"San Francisco\", \"San Mateo\", \"Alameda\", \"Contra Costa\"]\ndf[\"Obligation Year and Month\"] = pd.to_numeric(df[\"Obligation Year and Month\"], errors=\"coerce\")\nfiltered = df.loc[\n    df[\"Obligation Year and Month\"].eq(2020) & df[\"Vendor County\"].isin(counties),\n    [\"Vendor County\", \"Average Cost per Family\"],\n].copy()\nfiltered[\"Average Cost per Family\"] = pd.to_numeric(\n    filtered[\"Average Cost per Family\"].astype(str).str.replace(r\"[^0-9.\\-]\", \"\", regex=True),\n    errors=\"coerce\",\n)\nanswer = (\n    filtered.loc[filtered[\"Average Cost per Family\"] >= 700, \"Vendor County\"]\n    .dropna()\n    .drop_duplicates()\n    .sort_values()\n    .tolist()\n)\n",
+            "subquestion": "Among <hop 1 answer>, which counties had a WIC average cost per family of at least $700 in 2020?",
+            "answer": [
+                "Alameda",
+                "San Francisco",
+                "San Mateo",
+                "Santa Clara"
+            ]
+        },
+        "5": {
+            "source": "datagov/hospitalization-counts-and-rates-of-selected-adverse-hospital-events-by-california-county-67a4a/files/ca-oshpd-adveventhospitalizationspsi-county2005-2015q3.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/hospitalization-counts-and-rates-of-selected-adverse-hospital-events-by-california-county-67a4a/files/ca-oshpd-adveventhospitalizationspsi-county2005-2015q3.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounties = [\"Alameda\", \"San Francisco\", \"Santa Clara\"]\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"PSI\"] = pd.to_numeric(df[\"PSI\"], errors=\"coerce\")\ndf[\"ObsRate\"] = pd.to_numeric(df[\"ObsRate\"], errors=\"coerce\")\nfiltered = df.loc[\n    df[\"Year\"].eq(2015) & df[\"PSI\"].eq(27) & df[\"County\"].isin(counties),\n    [\"County\", \"ObsRate\"],\n].copy()\nanswer = (\n    filtered.loc[filtered[\"ObsRate\"] >= 19, \"County\"]\n    .dropna()\n    .drop_duplicates()\n    .sort_values()\n    .tolist()\n)\n",
+            "subquestion": "Among <hop 2 answer>, which counties had a perioperative hemorrhage or hematoma observed rate of at least 19 in 2015?",
+            "answer": [
+                "San Francisco",
+                "Santa Clara"
+            ]
+        },
+        "6": {
+            "source": "datagov/california-county-boundaries-bd0f6/files/California_County_Boundaries_9101614255844818638.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/california-county-boundaries-bd0f6/files/California_County_Boundaries_9101614255844818638.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounties = [\"Alameda\", \"San Francisco\", \"Santa Clara\"]\ndf[\"Shape__Area\"] = pd.to_numeric(df[\"Shape__Area\"], errors=\"coerce\")\nfiltered = df.loc[\n    df[\"COUNTY_NAME\"].isin(counties),\n    [\"COUNTY_NAME\", \"Shape__Area\"],\n].copy()\nanswer = (\n    filtered.loc[filtered[\"Shape__Area\"] >= 3000000000, \"COUNTY_NAME\"]\n    .dropna()\n    .drop_duplicates()\n    .sort_values()\n    .tolist()\n)\n",
+            "subquestion": "Among <hop 2 answer>, which counties had a geographical shape area of at least 3 billion square meters?",
+            "answer": [
+                "Alameda",
+                "Santa Clara"
+            ]
+        },
+        "7": {
+            "source": "wikipedia/Santa_Clara_County,_California/content.txt",
+            "fact": "The county seat and largest city of Santa Clara County is San Jose.",
+            "subquestion": "What is the county seat of <hop 3 answer>?",
+            "answer": "San Jose"
+        },
+        "8": {
+            "source": "wikipedia/San_Jose,_California/content.txt",
+            "fact": "San Jose is located on the southern shore of San Francisco Bay.",
+            "subquestion": "On which bay's southern shore is <hop 4 answer> located?",
+            "answer": "San Francisco Bay"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Santa_Clara_County,_California/content.txt",
+        "wikipedia/San_Jose,_California/content.txt",
+        "datagov/income-limits-by-county/files/2022-income-limits.txt",
+        "datagov/income-limits-by-county/files/2023-income-limits.txt",
+        "datagov/income-limits-by-county/signed-metadata.txt",
+        "datagov/income-limits-by-county/files/income-limits-data-dictionary.docx",
+        "datagov/california-women-infants-and-children-program-redemption-by-county-967e9/files/2010-2018-part-a-wic-redemptions-by-vendor-county-with-family-counts.txt",
+        "datagov/california-women-infants-and-children-program-redemption-by-county-967e9/files/2019-2020-part-b-wic-redemptions-by-vendor-county-with-family-counts.txt",
+        "datagov/california-women-infants-and-children-program-redemption-by-county-967e9/signed-metadata.txt",
+        "datagov/california-women-infants-and-children-program-redemption-by-county-967e9/files/wic-redemption-by-county-by-participant-category-data-2010-2018.txt",
+        "datagov/hospitalization-counts-and-rates-of-selected-adverse-hospital-events-by-california-county-67a4a/files/ca-oshpd-adveventhospitalizationspsi-county2005-2015q3.txt",
+        "datagov/hospitalization-counts-and-rates-of-selected-adverse-hospital-events-by-california-county-67a4a/signed-metadata.txt",
+        "datagov/hospitalization-counts-and-rates-of-selected-adverse-hospital-events-by-california-county-67a4a/files/patient-safety-indicators-data-dictionary.pdf",
+        "datagov/california-county-boundaries-bd0f6/files/California_County_Boundaries_9101614255844818638.txt",
+        "datagov/california-county-boundaries-bd0f6/signed-metadata.txt",
+        "datagov/california-county-boundaries-bd0f6/files/0.arcgis-layer.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "question": "Which California counties had AMI at least $142,800 in 2022 and at least $147,900 in 2023?",
+            "answer": [
+                "Alameda",
+                "Contra Costa",
+                "Marin",
+                "San Francisco",
+                "San Mateo",
+                "Santa Clara"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "question": "Among those counties, which had Average Cost per Family at least $570 in 2018 and at least $700 in 2020?",
+            "answer": [
+                "Alameda",
+                "San Francisco",
+                "Santa Clara"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5,
+                6
+            ],
+            "question": "Among those counties, which had ObsRate >= 19 for PSI 27 in 2015 and Shape__Area >= 3000000000?",
+            "answer": "Santa Clara County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7
+            ],
+            "question": "What is the county seat of Santa Clara County?",
+            "answer": "San Jose"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                8
+            ],
+            "question": "On which bay's southern shore is San Jose located?",
+            "answer": "San Francisco Bay"
+        }
+    ]
+}

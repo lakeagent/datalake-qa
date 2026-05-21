@@ -1,0 +1,73 @@
+{
+  "question": "In New Jersey, which county ranks in the top three for public schools, private schools, and school district offices? For that county, how much higher was its median household income than New Jersey's in the 2017-2021 American Community Survey? Your response should be in the format [Answer].",
+  "answer": 19794,
+  "nodes": {
+    "1": {
+      "source": "datagov/public-school-locations-2021-22-5a116/files/data.txt",
+      "fact": "import xml.etree.ElementTree as ET\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/public-school-locations-2021-22-5a116/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nraw = s3.get_object(Bucket=bucket, Key=source)[\"Body\"].read()\nroot = ET.fromstring(raw)\nns = {\"k\": \"http://www.opengis.net/kml/2.2\"}\nrows = []\nfor placemark in root.findall('.//k:Placemark', ns):\n    row = {}\n    schema_data = placemark.find('k:ExtendedData/k:SchemaData', ns)\n    if schema_data is not None:\n        for item in schema_data.findall('k:SimpleData', ns):\n            row[item.attrib.get('name')] = item.text\n    if row:\n        rows.append(row)\n\ndf = pd.DataFrame(rows)\nstate = df['STATE'].astype(str).str.strip()\ncounty = df['NMCNTY'].astype(str).str.strip().replace('', pd.NA)\nschool_year = df['SCHOOLYEAR'].astype(str).str.strip()\nfiltered = df[state.eq('NJ') & school_year.eq('2021-2022')].copy()\nfiltered['NMCNTY'] = county.loc[filtered.index]\ncounts = (\n    filtered.dropna(subset=['NMCNTY'])\n    .groupby('NMCNTY', dropna=True)\n    .size()\n    .reset_index(name='count')\n    .sort_values(['count', 'NMCNTY'], ascending=[False, True], kind='mergesort')\n)\nanswer = '; '.join(counts['NMCNTY'].head(3).tolist())",
+      "subquestion": "For STFIP='34', which 3 county names have the most public schools? Return the county names separated by '; '.",
+      "answer": "Bergen County; Essex County; Middlesex County"
+    },
+    "2": {
+      "source": "datagov/private-school-locations-2019-20-ee873/files/data.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/private-school-locations-2019-20-ee873/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj['Body'].read().decode('utf-8', errors='replace'))\ndf = pd.DataFrame([feature.get('properties', {}) for feature in geo.get('features', [])])\n\nstate = df['STATE'].astype(str).str.strip()\ncounty = df['NMCNTY'].astype(str).str.strip().replace('', pd.NA)\nfiltered = df[state.eq('NJ')].copy()\nfiltered['NMCNTY'] = county.loc[filtered.index]\ncounts = (\n    filtered.dropna(subset=['NMCNTY'])\n    .groupby('NMCNTY', dropna=True)\n    .size()\n    .reset_index(name='count')\n    .sort_values(['count', 'NMCNTY'], ascending=[False, True], kind='mergesort')\n)\nanswer = '; '.join(counts['NMCNTY'].head(3).tolist())",
+      "subquestion": "For STFIP='34', which 3 county names have the most private schools? Return the county names separated by '; '.",
+      "answer": "Bergen County; Middlesex County; Essex County"
+    },
+    "3": {
+      "source": "datagov/school-district-office-locations-2021-22-d5dd7/files/data-TEK2ZS.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/school-district-office-locations-2021-22-d5dd7/files/data-TEK2ZS.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj['Body'].read().decode('utf-8', errors='replace'))\ndf = pd.DataFrame([feature.get('properties', {}) for feature in geo.get('features', [])])\n\nstate = df['STATE'].astype(str).str.strip()\ncounty = df['NMCNTY'].astype(str).str.strip().replace('', pd.NA)\nfiltered = df[state.eq('NJ')].copy()\nfiltered['NMCNTY'] = county.loc[filtered.index]\ncounts = (\n    filtered.dropna(subset=['NMCNTY'])\n    .groupby('NMCNTY', dropna=True)\n    .size()\n    .reset_index(name='count')\n    .sort_values(['count', 'NMCNTY'], ascending=[False, True], kind='mergesort')\n)\nanswer = '; '.join(counts['NMCNTY'].head(3).tolist())",
+      "subquestion": "For STFIP='34', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+      "answer": "Bergen County; Monmouth County; Camden County"
+    },
+    "4": {
+      "source": "wikipedia/Bergen_County,_New_Jersey/content.txt",
+      "fact": "The county had a median household income of $109,497, compared to $89,703 in New Jersey, as of the 2017-2021 American Community Survey.",
+      "subquestion": "For <hop 1 answer>, what were the county's median household income and New Jersey's median household income in the 2017-2021 American Community Survey?",
+      "answer": {
+        "county_median_household_income": 109497,
+        "new_jersey_median_household_income": 89703
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: Using New Jersey rows, the three counties with the most public schools are `Bergen County`, `Essex County`, and `Middlesex County`.",
+        "Node 2: Using New Jersey rows, the three counties with the most private schools are `Bergen County`, `Middlesex County`, and `Essex County`.",
+        "Node 3: Using New Jersey rows, the three counties with the most school district offices are `Bergen County`, `Monmouth County`, and `Camden County`.",
+        "Hop result: intersecting the three top-three county sets yields `Bergen County`."
+      ],
+      "answer": "Bergen County"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: <hop 1 answer> had median household income `$109,497`; New Jersey's figure was `$89,703` for the same survey period.",
+        "Hop result: `109,497 - 89,703 = 19,794`."
+      ],
+      "answer": 19794
+    }
+  ],
+  "datasets_used": [
+    "datagov/public-school-locations-2021-22-5a116/files/data.txt",
+    "datagov/public-school-locations-2021-22-5a116/signed-metadata.txt",
+    "datagov/public-school-locations-2021-22-5a116/files/0.arcgis-layer.json",
+    "datagov/private-school-locations-2019-20-ee873/files/data.txt",
+    "datagov/private-school-locations-2019-20-ee873/signed-metadata.txt",
+    "datagov/private-school-locations-2019-20-ee873/files/0.arcgis-layer.json",
+    "datagov/school-district-office-locations-2021-22-d5dd7/files/data-TEK2ZS.txt",
+    "datagov/school-district-office-locations-2021-22-d5dd7/signed-metadata.txt",
+    "datagov/school-district-office-locations-2021-22-d5dd7/files/0.arcgis-layer.json",
+    "wikipedia/Bergen_County,_New_Jersey/content.txt"
+  ]
+}

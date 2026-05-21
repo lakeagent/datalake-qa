@@ -1,0 +1,112 @@
+{
+    "question": "For the NYC high school that ranked in the top 7 by overall score in all three school years: 2006-07 and 2009-11, find the neighborhood named after this high school. Finally report the New York village where the builder of the earliest constructed bridge that connects this neighborhood with the mainland is buried. Your response should be in the format [Answer].",
+    "answer": "Sleepy Hollow",
+    "nodes": {
+        "1": {
+            "source": "datagov/2006-2007-school-progress-report/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2006-2007-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nimport re\n\nschool_col = \"SCHOOL\"\noverall_col = [c for c in df.columns if \"OVERALL SCORE\" in c.upper()][0]\nlevel_col_candidates = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()]\nlevel_col = level_col_candidates[0] if level_col_candidates else None\n\nfiltered = df.copy()\nif level_col is not None:\n    filtered = filtered[filtered[level_col].astype(str).str.contains(\"High\", case=False, na=False)]\n\nfiltered[overall_col] = pd.to_numeric(filtered[overall_col], errors=\"coerce\")\nfiltered = filtered.sort_values(overall_col, ascending=False)\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\nanswer = filtered[school_col].dropna().astype(str).head(7).map(normalize_school).tolist()\n",
+            "subquestion": "Which high schools were in the top 7 by overall score in 2006-07?",
+            "answer": [
+                "Manhattan Bridges High School",
+                "Bedford Academy High School",
+                "Marble Hill High School for International Studies",
+                "High School for Contemporary Arts",
+                "Bronx Aerospace High School",
+                "Eleanor Roosevelt High School",
+                "Bronx Academy of Letters"
+            ]
+        },
+        "2": {
+            "source": "datagov/2009-2010-school-progress-report/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2009-2010-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nimport re\n\nschool_col = \"SCHOOL\"\noverall_col = [c for c in df.columns if \"OVERALL SCORE\" in c.upper()][0]\nlevel_col_candidates = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()]\nlevel_col = level_col_candidates[0] if level_col_candidates else None\n\nfiltered = df.copy()\nif level_col is not None:\n    filtered = filtered[filtered[level_col].astype(str).str.contains(\"High\", case=False, na=False)]\n\nfiltered[overall_col] = pd.to_numeric(filtered[overall_col], errors=\"coerce\")\nfiltered = filtered.sort_values(overall_col, ascending=False)\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\nanswer = filtered[school_col].dropna().astype(str).head(7).map(normalize_school).tolist()\n",
+            "subquestion": "Which high schools were in the top 7 by overall score in 2009-10?",
+            "answer": [
+                "Theatre Arts Production Company School",
+                "Brooklyn International High School",
+                "Williamsburg Preparatory School",
+                "Marble Hill High School for International Studies",
+                "Williamsburg High School for Architecture and Design",
+                "Manhattan Village Academy",
+                "High School for Violin and Dance"
+            ]
+        },
+        "3": {
+            "source": "datagov/2010-2011-school-progress-report/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2010-2011-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nimport re\n\nschool_col = \"SCHOOL\"\noverall_col = [c for c in df.columns if \"OVERALL SCORE\" in c.upper()][0]\nlevel_col = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()][0]\n\nfiltered = df[df[level_col].astype(str).str.contains(\"High\", case=False, na=False)].copy()\nfiltered = filtered[~filtered[school_col].astype(str).str.contains(r\",\\s*The\\s*$\", na=False, regex=True)]\nfiltered[overall_col] = pd.to_numeric(filtered[overall_col], errors=\"coerce\")\nfiltered = filtered.sort_values(overall_col, ascending=False)\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\nanswer = filtered[school_col].dropna().astype(str).head(7).map(normalize_school).tolist()\n",
+            "subquestion": "Which high schools were in the top 7 by overall score in 2010-11?",
+            "answer": [
+                "Brooklyn International High School",
+                "Manhattan Village Academy",
+                "It Takes a Village Academy",
+                "Williamsburg High School for Architecture and Design",
+                "Manhattan Bridges High School",
+                "Academy of Finance and Enterprise",
+                "Marble Hill High School for International Studies"
+            ]
+        },
+        "4": {
+            "source": "wikipedia/Marble_Hill,_Manhattan/content.txt",
+            "fact": "King's Bridge was built in 1693 by Frederick Philipse, a Frisian-born merchant, at Marble Hill near what is now West 230th Street in the Bronx.",
+            "subquestion": "Who built the earliest constructed bridge that connects <hop 1 answer> with the mainland?",
+            "answer": "Frederick Philipse"
+        },
+        "5": {
+            "source": "wikipedia/Frederick_Philipse/content.txt",
+            "fact": "Frederick Philipse died in 1702 and is buried with his two wives in the crypt of the Old Dutch Church of Sleepy Hollow.",
+            "subquestion": "In which village is <hop 2 answer> buried?",
+            "answer": "Sleepy Hollow"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Marble_Hill,_Manhattan/content.txt",
+        "wikipedia/Frederick_Philipse/content.txt",
+        "datagov/2006-2007-school-progress-report/files/rows.txt",
+        "datagov/2006-2007-school-progress-report/signed-metadata.txt",
+        "datagov/2006-2007-school-progress-report/files/2006-07_School_Progress_Report.xlsx",
+        "datagov/2009-2010-school-progress-report/files/rows.txt",
+        "datagov/2009-2010-school-progress-report/signed-metadata.txt",
+        "datagov/2009-2010-school-progress-report/files/School_Progress_Reports_-_All_Schools_2009-10.xlsx",
+        "datagov/2010-2011-school-progress-report/files/rows.txt",
+        "datagov/2010-2011-school-progress-report/signed-metadata.txt",
+        "datagov/2010-2011-school-progress-report/files/School_Progress_Report_2010-2011.xlsx"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: In 2006-07, the top 7 NYC high schools by overall score were: Manhattan Bridges (104.4), Bedford Academy (103.6), Marble Hill (98.13), Contemporary Arts (96.05), Bronx Aerospace (93.65), Eleanor Roosevelt (86.41), Bronx Academy of Letters (85.38).",
+                "Node 2: In 2009-10, the top 7 NYC high schools by overall score were: Theatre Arts Production Company (106.3), Brooklyn International (103.0), Williamsburg Prep (101.7), Marble Hill (100.5), Williamsburg Architecture (100.2), Manhattan Village Academy (96.6), Violin and Dance (95.8).",
+                "Node 3: In 2010-11, the top 7 NYC high schools by overall score were: Brooklyn International (102.1), Manhattan Village Academy (99.0), It Takes a Village Academy (98.9), Williamsburg Architecture (94.5), Manhattan Bridges (90.4), Academy of Finance (89.5), Marble Hill (88.7).",
+                "Hop result: <node_1 answer> ∩ <node_2 answer> ∩ <node_3 answer> = [\"Marble Hill High School for International Studies\"]."
+            ],
+            "answer": "Marble Hill High School for International Studies"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: King's Bridge was built in 1693 by Frederick Philipse, a Frisian-born merchant, at Marble Hill near what is now West 230th Street in the Bronx.",
+                "Hop result: report <node_4 answer> as this hop answer."
+            ],
+            "answer": "Frederick Philipse"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Frederick Philipse died in 1702 and is buried with his two wives in the crypt of the Old Dutch Church of Sleepy Hollow.",
+                "Hop result: report <node_5 answer> as the final answer."
+            ],
+            "answer": "Sleepy Hollow"
+        }
+    ]
+}

@@ -1,0 +1,144 @@
+{
+    "question": "Among DC wards 7 and 8, identify which ward had the higher average 311 service requests from 2019 through 2020. Who represents that ward on the DC Council? This council member earned a graduate degree from a university whose flagship building is a National Historic Landmark. Among the founder of the university and the person the flagship building is named after, in what year was the earlier-born individual born? Please return the year only. Your response should be in the format [Answer].",
+    "answer": "1735",
+    "nodes": {
+        "1": {
+            "source": "datagov/311-city-service-requests-in-2019/files/data.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/311-city-service-requests-in-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\nward_col = \"properties.WARD\"\nresult = (\n    df[df[ward_col].isin([\"7\", \"8\", 7, 8])]\n    .groupby(ward_col)\n    .size()\n    .reset_index(name=\"request_count\")\n)\nresult[ward_col] = result[ward_col].astype(str)\nresult = result.sort_values(\"request_count\", ascending=False).reset_index(drop=True)\nanswer = [f\"Ward {row[ward_col]} ({row['request_count']:,})\" for _, row in result.iterrows()]",
+            "subquestion": "For 2019, how many 311 service requests were recorded in Ward 7 and Ward 8?",
+            "answer": [
+                "Ward 7 (42,226)",
+                "Ward 8 (34,959)"
+            ]
+        },
+        "2": {
+            "source": "datagov/311-city-service-requests-in-2020/files/data.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/311-city-service-requests-in-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\nward_col = \"properties.WARD\"\nresult = (\n    df[df[ward_col].isin([\"7\", \"8\", 7, 8])]\n    .groupby(ward_col)\n    .size()\n    .reset_index(name=\"request_count\")\n)\nresult[ward_col] = result[ward_col].astype(str)\nresult = result.sort_values(\"request_count\", ascending=False).reset_index(drop=True)\nanswer = [f\"Ward {row[ward_col]} ({row['request_count']:,})\" for _, row in result.iterrows()]",
+            "subquestion": "For 2020, how many 311 service requests were recorded in Ward 7 and Ward 8?",
+            "answer": [
+                "Ward 8 (37,124)",
+                "Ward 7 (36,113)"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+            "fact": "Ward 7 Councilmember: Wendell Felder",
+            "subquestion": "Who represents <hop 1 answer> on the DC Council?",
+            "answer": "Wendell Felder"
+        },
+        "4": {
+            "source": "wikipedia/Wendell_Felder/content.txt",
+            "fact": "received a B.S. from Bowie State University and a M.A. from Georgetown University",
+            "subquestion": "Which university did <hop 2 answer> attend for graduate studies?",
+            "answer": "Georgetown University"
+        },
+        "5": {
+            "source": "wikipedia/Georgetown_University/content.txt",
+            "fact": "Founded by Bishop John Carroll in 1789,",
+            "subquestion": "Who founded <hop 3 answer>?",
+            "answer": "John Carroll"
+        },
+        "6": {
+            "source": "wikipedia/Patrick_Francis_Healy/content.txt",
+            "fact": "The university's flagship building, Healy Hall, bears his name.",
+            "subquestion": "Who is the flagship building of <hop 3 answer>, a National Historic Landmark, named after?",
+            "answer": "Patrick Francis Healy"
+        },
+        "7": {
+            "source": "wikipedia/John_Carroll_(archbishop_of_Baltimore)/content.txt",
+            "fact": "John Carroll (January 8, 1735 – December 3, 1815)",
+            "subquestion": "In what year was <node 5 answer> born?",
+            "answer": "1735"
+        },
+        "8": {
+            "source": "wikipedia/Patrick_Francis_Healy/content.txt",
+            "fact": "Patrick Francis Healy (February 27, 1834 – January 10, 1910)",
+            "subquestion": "In what year was <node 6 answer> born?",
+            "answer": "1834"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+        "wikipedia/Wendell_Felder/content.txt",
+        "wikipedia/Georgetown_University/content.txt",
+        "wikipedia/Patrick_Francis_Healy/content.txt",
+        "wikipedia/John_Carroll_(archbishop_of_Baltimore)/content.txt",
+        "datagov/311-city-service-requests-in-2019/files/data.txt",
+        "datagov/311-city-service-requests-in-2019/signed-metadata.txt",
+        "datagov/311-city-service-requests-in-2019/files/10.arcgis-layer.json",
+        "datagov/311-city-service-requests-in-2020/files/data.txt",
+        "datagov/311-city-service-requests-in-2020/signed-metadata.txt",
+        "datagov/311-city-service-requests-in-2020/files/11.arcgis-layer.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "title": "Compare The Two Wards",
+            "reasoning": [
+                "Node 1 retrieves the 2019 311 request counts for Ward 7 and Ward 8.",
+                "Node 2 retrieves the 2020 311 request counts for Ward 7 and Ward 8.",
+                "Hop result: averaging the two years shows `Ward 7` has the higher average 311 service requests."
+            ],
+            "answer": "Ward 7"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "title": "Identify The Councilmember",
+            "reasoning": [
+                "Node 3 retrieves the DC Council representative for `<hop 1 answer>`.",
+                "Hop result: `Wendell Felder`."
+            ],
+            "answer": "Wendell Felder"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "title": "Identify The Graduate University",
+            "reasoning": [
+                "Node 4 retrieves the university where `<hop 2 answer>` earned a graduate degree.",
+                "Hop result: `Georgetown University`."
+            ],
+            "answer": "Georgetown University"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5,
+                6
+            ],
+            "title": "Retrieve The Two Historical Figures",
+            "reasoning": [
+                "Node 5 retrieves the founder of `<hop 3 answer>`.",
+                "Node 6 retrieves the person after whom the flagship National Historic Landmark building of `<hop 3 answer>` is named.",
+                "Hop result: `John Carroll` and `Patrick Francis Healy`."
+            ],
+            "answer": [
+                "John Carroll",
+                "Patrick Francis Healy"
+            ]
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7,
+                8
+            ],
+            "title": "Compare Birth Years",
+            "reasoning": [
+                "Node 7 retrieves the birth year of `<node 5 answer>` as `1735`.",
+                "Node 8 retrieves the birth year of `<node 6 answer>` as `1834`.",
+                "Hop result: the earlier-born individual was born in `1735`."
+            ],
+            "answer": 1735
+        }
+    ]
+}

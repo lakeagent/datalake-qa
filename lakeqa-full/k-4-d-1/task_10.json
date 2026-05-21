@@ -1,0 +1,91 @@
+{
+  "question": "Start with the Texas education service center region that had the most school districts in the 2021-2022 school year. In the county within that region with the largest number of unique school nutrition sites in 2022-2023, find the city with the most active home-based child care food program sites in 2022-2023. What is the Köppen climate classification of that city? Return only the classification code in the format [Answer].",
+  "answer": "Cfa",
+  "nodes": {
+    "1": {
+      "source": "datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['State', 'Region', 'District'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['State', 'Region', 'District'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['State'] = df['State'].astype(str).str.strip()\ndf['Region'] = df['Region'].astype(str).str.strip()\ndf['District'] = df['District'].astype(str).str.strip()\nfiltered = df[\n    df['State'].eq('TX')\n    & df['Region'].ne('')\n    & df['District'].ne('')\n].copy()\nranked = (\n    filtered.groupby('Region', as_index=False)['District']\n    .nunique()\n    .sort_values(['District', 'Region'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'District'] > ranked.loc[1, 'District']\nanswer = str(ranked.loc[0, 'Region'])\n",
+      "subquestion": "Which Texas education service center region had the most school districts in the 2021-2022 school year?",
+      "answer": "10"
+    },
+    "2": {
+      "source": "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2022-2023/files/rows.txt",
+      "fact": "import json\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2022-2023/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_1_answer = '10'\n\nif os.path.exists(local_path):\n    raw_text = open(local_path, 'r', encoding='utf-8').read()\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    raw_text = obj['Body'].read().decode('utf-8')\n\nobj = json.loads(raw_text)\ncols = [col['name'] for col in obj['meta']['view']['columns']][8:]\nrows = [row[8:] for row in obj['data']]\ndf = pd.DataFrame(rows, columns=cols)\n\ndf['ESC'] = df['ESC'].astype(str).str.strip()\ndf['SiteCounty'] = df['SiteCounty'].astype(str).str.strip()\ndf['CEID'] = df['CEID'].astype(str).str.strip()\ndf['SiteID'] = df['SiteID'].astype(str).str.strip()\ndf['site_key'] = df['CEID'] + '|' + df['SiteID']\nfiltered = df[\n    df['ESC'].eq(node_1_answer)\n    & df['SiteCounty'].ne('')\n    & df['CEID'].ne('')\n    & df['SiteID'].ne('')\n].copy()\nranked = (\n    filtered.groupby('SiteCounty', as_index=False)['site_key']\n    .nunique()\n    .sort_values(['site_key', 'SiteCounty'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'site_key'] > ranked.loc[1, 'site_key']\nanswer = str(ranked.loc[0, 'SiteCounty']).title()\n",
+      "subquestion": "Within Texas education service center region <hop 1 answer>, which county had the largest number of unique school nutrition sites in 2022-2023?",
+      "answer": "Dallas"
+    },
+    "3": {
+      "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_2_answer = 'Dallas'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['CEStatus', 'SiteStatus', 'SiteCounty', 'SiteStreetAddressCity', 'SiteID'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['CEStatus', 'SiteStatus', 'SiteCounty', 'SiteStreetAddressCity', 'SiteID'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['CEStatus'] = df['CEStatus'].astype(str).str.strip()\ndf['SiteStatus'] = df['SiteStatus'].astype(str).str.strip()\ndf['SiteCounty'] = df['SiteCounty'].astype(str).str.strip()\ndf['SiteStreetAddressCity'] = df['SiteStreetAddressCity'].astype(str).str.strip()\ndf['SiteID'] = df['SiteID'].astype(str).str.strip()\ndf['city_norm'] = df['SiteStreetAddressCity'].str.upper()\nfiltered = df[\n    df['CEStatus'].eq('ACTIVE')\n    & df['SiteStatus'].eq('ACTIVE')\n    & df['SiteCounty'].str.upper().eq(str(node_2_answer).upper())\n    & df['SiteID'].ne('')\n    & df['city_norm'].ne('')\n].copy()\nranked = (\n    filtered.groupby('city_norm', as_index=False)['SiteID']\n    .nunique()\n    .sort_values(['SiteID', 'city_norm'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'SiteID'] > ranked.loc[1, 'SiteID']\nanswer = str(ranked.loc[0, 'city_norm']).title()\n",
+      "subquestion": "In the county from <hop 2 answer>, which city had the most active home-based child care food program sites in 2022-2023?",
+      "answer": "Dallas"
+    },
+    "4": {
+      "source": "wikipedia/Dallas/content.txt",
+      "fact": "Dallas has a humid subtropical climate (Köppen climate classification: Cfa, Trewartha: Cfhk) characteristic of the Southern Plains of the United States.",
+      "subquestion": "What is the Köppen climate classification of <hop 3 answer>?",
+      "answer": "Cfa"
+    }
+  },
+  "datasets_used": [
+    "datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/files/rows.txt",
+    "datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/signed-metadata.txt",
+    "datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/files/6dh5-cse4.publisher-view.json",
+    "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2022-2023/files/rows.txt",
+    "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2022-2023/signed-metadata.txt",
+    "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2022-2023/files/t9bs-zxkh.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/rows.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/eyah-a2pn.publisher-view.json",
+    "wikipedia/Dallas/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the 2021-2022 Texas superintendent salary report by district, education service center region 10 has the most school districts.",
+        "Region 10 contains 115 districts, ahead of region 07 with 101, so the winner is unique.",
+        "Hop result: 10."
+      ],
+      "answer": "10"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Within Texas education service center region <hop 1 answer>, Dallas County has the most distinct school nutrition sites in 2022-2023.",
+        "Dallas has 701 distinct sites, ahead of Collin with 271, so the winner is unique.",
+        "Hop result: Dallas."
+      ],
+      "answer": "Dallas"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: In the county from <hop 2 answer>, Dallas has the most active home-based child care food program sites in 2022-2023.",
+        "Dallas has 67 active sites, ahead of Garland with 42, so the winner is unique.",
+        "Hop result: Dallas."
+      ],
+      "answer": "Dallas"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: The Köppen climate classification of <hop 3 answer> is Cfa.",
+        "Hop result: Cfa."
+      ],
+      "answer": "Cfa"
+    }
+  ]
+}

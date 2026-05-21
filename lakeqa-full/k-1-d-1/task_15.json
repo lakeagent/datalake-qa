@@ -1,0 +1,30 @@
+{
+    "question": "Which year from 2011-2015 has the lowest total air passengers from port authority of New York and New Jersey airports? Your response should be in the format [Answer].",
+    "answer": "2011",
+    "nodes": {
+        "1": {
+            "source": "datagov/air-passenger-traffic-per-month-port-authority-of-ny-nj-beginning-1977/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/air-passenger-traffic-per-month-port-authority-of-ny-nj-beginning-1977/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Total Passengers\"] = pd.to_numeric(df[\"Total Passengers\"], errors=\"coerce\")\nfiltered = df[df[\"Year\"].between(2011, 2015)].copy()\nyearly_totals = filtered.groupby(\"Year\", dropna=True)[\"Total Passengers\"].sum()\nanswer = str(int(yearly_totals.idxmin()))\n",
+            "subquestion": "Which year from 2011-2015 has the lowest total air passengers from port authority of New York and New Jersey airports?",
+            "answer": "2011"
+        }
+    },
+    "datasets_used": [
+        "datagov/air-passenger-traffic-per-month-port-authority-of-ny-nj-beginning-1977/files/rows.txt",
+        "datagov/air-passenger-traffic-per-month-port-authority-of-ny-nj-beginning-1977/signed-metadata.txt",
+        "datagov/air-passenger-traffic-per-month-port-authority-of-ny-nj-beginning-1977/files/8pkr-4b7t.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter to 2011-2015, sum `Total Passengers` by `Year` across all airports and months, and select the year with the smallest total. The answer is 2011.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2011"
+        }
+    ]
+}

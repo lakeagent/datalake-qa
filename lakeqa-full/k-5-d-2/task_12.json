@@ -1,0 +1,128 @@
+{
+    "question": "Erie County and Monroe County are the top two non-NYC New York counties by total mental health service recipients from 2017 to 2018. The county seat with the earlier incorporation date between these two is located at the terminus of a canal. What was the 2018 violent crime rate per 100,000 population in the county that contains the city at this canal's other terminus? Please return the numeric rate only. Your response should be in the format [Answer].",
+    "answer": "359.8",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Erie_County,_New_York/content.txt",
+            "fact": "The county seat is Buffalo",
+            "subquestion": "What is the county seat of Erie County, New York?",
+            "answer": "Buffalo"
+        },
+        "2": {
+            "source": "wikipedia/Monroe_County,_New_York/content.txt",
+            "fact": "Its county seat and largest city is Rochester.",
+            "subquestion": "What is the county seat of Monroe County, New York?",
+            "answer": "Rochester"
+        },
+        "3": {
+            "source": "wikipedia/Buffalo,_New_York/content.txt",
+            "fact": "Buffalo was selected as the terminus of the Erie Canal in 1825, which led to its incorporation in 1832",
+            "subquestion": "When was <node 1 answer> incorporated as a city?",
+            "answer": "1832"
+        },
+        "4": {
+            "source": "wikipedia/Rochester,_New_York/content.txt",
+            "fact": "By 1830, Rochester's population had grown to 9,200, page 36 and in 1834, it was rechartered as a city.",
+            "subquestion": "When was <node 2 answer> rechartered or incorporated as a city?",
+            "answer": "1834"
+        },
+        "5": {
+            "source": "wikipedia/Erie_Canal/content.txt",
+            "fact": "The original canal was  long, from Albany on the Hudson to Buffalo on Lake Erie.",
+            "subquestion": "What city was at the Erie Canal's other terminus from <hop 2 answer> on the original canal?",
+            "answer": "Albany"
+        },
+        "6": {
+            "source": "wikipedia/Albany,_New_York/content.txt",
+            "fact": "Albany ( ) is the capital city of the U.S. state of New York, and the county seat of – and most populous city in – Albany County.",
+            "subquestion": "What county is <hop 3 answer> in?",
+            "answer": "Albany County"
+        },
+        "7": {
+            "source": "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df.loc[(df[\"County\"] == \"Albany\") & (df[\"Year\"] == 2018), [\"County\", \"Year\", \"Violent Rate\"]].reset_index(drop=True)\nanswer = filtered.iloc[0][\"Violent Rate\"]",
+            "subquestion": "What was the 2018 violent crime rate per 100,000 population for <hop 4 answer>?",
+            "answer": 359.8
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Erie_County,_New_York/content.txt",
+        "wikipedia/Monroe_County,_New_York/content.txt",
+        "wikipedia/Buffalo,_New_York/content.txt",
+        "wikipedia/Rochester,_New_York/content.txt",
+        "wikipedia/Erie_Canal/content.txt",
+        "wikipedia/Albany,_New_York/content.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/signed-metadata.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/DCJS_IndexCrimeRatesByCounty_DataDictionary.pdf"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "title": "Retrieve The Two County Seats",
+            "reasoning": [
+                "Node 1 retrieves the county seat of Erie County, New York.",
+                "Node 2 retrieves the county seat of Monroe County, New York.",
+                "Hop result: `Buffalo` and `Rochester`."
+            ],
+            "answer": [
+                "Buffalo",
+                "Rochester"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "title": "Compare Incorporation Years",
+            "reasoning": [
+                "Node 3 retrieves the city incorporation year of `<node 1 answer>` as `1832` and also identifies it as an Erie Canal terminus.",
+                "Node 4 retrieves the city recharter/incorporation year of `<node 2 answer>` as `1834`.",
+                "Hop result: `Buffalo` is the earlier-incorporated city, and the canal is the `Erie Canal`."
+            ],
+            "answer": "Buffalo / Erie Canal"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "title": "Find The Other Terminus",
+            "reasoning": [
+                "Node 5 retrieves the city at the Erie Canal's other terminus from `<hop 2 answer>`.",
+                "Hop result: `Albany`."
+            ],
+            "answer": "Albany"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "title": "Find The County",
+            "reasoning": [
+                "Node 6 retrieves the county containing `<hop 3 answer>`.",
+                "Hop result: `Albany County`."
+            ],
+            "answer": "Albany County"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "title": "Read The Violent Crime Rate",
+            "reasoning": [
+                "Node 7 retrieves `Violent Rate` where `County == \"Albany\"` and `Year == 2018`.",
+                "Hop result: `359.8`."
+            ],
+            "answer": 359.8
+        }
+    ]
+}

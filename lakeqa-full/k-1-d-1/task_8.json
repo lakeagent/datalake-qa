@@ -1,0 +1,30 @@
+{
+    "question": "Which year from 2005-2010 has the lowest average Mega Ball? Your response should be in the format [Answer].",
+    "answer": "2007",
+    "nodes": {
+        "1": {
+            "source": "datagov/lottery-mega-millions-winning-numbers-beginning-2002/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/lottery-mega-millions-winning-numbers-beginning-2002/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=None, engine=\"python\")\n\n\ndf[\"draw_year\"] = pd.to_datetime(df[\"Draw Date\"], errors=\"coerce\").dt.year\ndf[\"Mega Ball\"] = pd.to_numeric(df[\"Mega Ball\"], errors=\"coerce\")\nfiltered = df[df[\"draw_year\"].between(2005, 2010)]\nyearly_avg = filtered.groupby(\"draw_year\", dropna=True)[\"Mega Ball\"].mean()\nanswer = str(int(yearly_avg.idxmin()))\n",
+            "subquestion": "Which year from 2005-2010 has the lowest average Mega Ball?",
+            "answer": "2007"
+        }
+    },
+    "datasets_used": [
+        "datagov/lottery-mega-millions-winning-numbers-beginning-2002/files/rows.txt",
+        "datagov/lottery-mega-millions-winning-numbers-beginning-2002/signed-metadata.txt",
+        "datagov/lottery-mega-millions-winning-numbers-beginning-2002/files/5xaw-6ayf.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Parse `Draw Date` into `draw_year`, filter rows where `draw_year` is between 2005 and 2010, compute the mean of `Mega Ball` for each `draw_year`, and select the year with the lowest average.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2007"
+        }
+    ]
+}

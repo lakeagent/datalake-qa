@@ -1,0 +1,47 @@
+{
+  "question": "Start with the Oklahoma county that has the most listings in the public library directory. How many counties border that county? Please return only the number in the format [Answer].",
+  "answer": 7,
+  "nodes": {
+    "1": {
+      "source": "datagov/oklahoma-public-library-directory-c11a9/files/data-oklahoma-public-library-directory.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/oklahoma-public-library-directory-c11a9/files/data-oklahoma-public-library-directory.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['county_norm'] = df['COUNTY'].astype(str).str.strip().str.upper()\ncounty_counts = df.groupby('county_norm', dropna=True).size().sort_values(ascending=False)\nanswer = str(county_counts.idxmax()).title()\n",
+      "subquestion": "Which Oklahoma county has the most listings in the public library directory?",
+      "answer": "Tulsa"
+    },
+    "2": {
+      "source": "wikipedia/Tulsa_County,_Oklahoma/content.txt",
+      "fact": "Adjacent counties\n Washington County (north)\n Rogers County (northeast)\n Wagoner County (southeast)\n Okmulgee County (south)\n Creek County (west)\n Pawnee County (northwest)\n Osage County (northwest)",
+      "subquestion": "How many counties border <hop 1 answer> County, Oklahoma?",
+      "answer": 7
+    }
+  },
+  "datasets_used": [
+    "datagov/oklahoma-public-library-directory-c11a9/files/data-oklahoma-public-library-directory.txt",
+    "datagov/oklahoma-public-library-directory-c11a9/signed-metadata.txt",
+    "wikipedia/Tulsa_County,_Oklahoma/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the Oklahoma public library directory, Tulsa County has the most listings with 27, ahead of Oklahoma County with 20.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "Tulsa"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Tulsa County borders Washington, Rogers, Wagoner, Okmulgee, Creek, Pawnee, and Osage counties.",
+        "Hop result: 7 bordering counties."
+      ],
+      "answer": 7
+    }
+  ]
+}

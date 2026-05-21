@@ -1,0 +1,69 @@
+{
+    "question": "For Pittsburgh International Airport's March 2019 scheduled traffic report, find the destination with the most seats and map it to its city and state. What ZIP code in that destination city/state has the largest land area? Please return the ZIP code only. Your response should be in the format [Answer].",
+    "answer": "30349",
+    "nodes": {
+        "1": {
+            "source": "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt'\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\ndf[\"Seats March 2019\"] = pd.to_numeric(df[\"Seats March 2019\"], errors=\"coerce\")\ngrouped = (\n    df.groupby([\"Destination\", \"Destination Code\"], dropna=True)[\"Seats March 2019\"]\n    .sum()\n    .sort_values(ascending=False)\n)\n(top_destination, top_code) = grouped.index[0]\nanswer = f\"{str(top_destination).strip()} ({str(top_code).strip()})\"\n",
+            "subquestion": "For Pittsburgh International Airport's March 2019 scheduled traffic report, which destination had the most seats?",
+            "answer": "Atlanta (ATL)"
+        },
+        "2": {
+            "source": "datagov/airports-5e97a/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/airports-5e97a/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nnode_1_answer = \"Atlanta (ATL)\"\ncode = str(node_1_answer).split(\"(\")[-1].replace(\")\", \"\").strip().upper()\n\nfiltered = df[df[\"Loc_Id\"].astype(str).str.strip().str.upper().eq(code)]\ncity = str(filtered.iloc[0][\"City\"]).strip().title()\nstate = str(filtered.iloc[0][\"State_Post\"]).strip().upper()\nanswer = f\"{city}, {state}\"\n",
+            "subquestion": "What city and state correspond to the destination from node 1?",
+            "answer": "Atlanta, GA"
+        },
+        "3": {
+            "source": "datagov/boundaries-us-zip-codes/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/boundaries-us-zip-codes/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nnode_2_answer = \"Atlanta, GA\"\ncity = str(node_2_answer).split(\",\")[0].strip().upper()\nstate = str(node_2_answer).split(\",\")[1].strip().upper()\n\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.upper().eq(city)\n    & df[\"STATE\"].astype(str).str.strip().str.upper().eq(state)\n].copy()\nfiltered[\"SQMI\"] = pd.to_numeric(filtered[\"SQMI\"], errors=\"coerce\")\nzip_code = str(filtered.loc[filtered[\"SQMI\"].idxmax(), \"ZIPCODE\"]).strip()\nanswer = zip_code[:-2] if zip_code.endswith(\".0\") else zip_code\n",
+            "subquestion": "What ZIP code in the city and state from node 2 has the largest land area?",
+            "answer": "30349"
+        }
+    },
+    "datasets_used": [
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/signed-metadata.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pit-scheduled-traffic-report-data-dictionary.txt",
+        "datagov/airports-5e97a/files/rows.txt",
+        "datagov/airports-5e97a/signed-metadata.txt",
+        "datagov/airports-5e97a/files/kfcv-nyy3.txt",
+        "datagov/boundaries-us-zip-codes/files/rows.txt",
+        "datagov/boundaries-us-zip-codes/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Group rows by `Destination` and `Destination Code`, sum `Seats March 2019` within each group, and select the destination-code pair with the largest total.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Atlanta (ATL)"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Extract the airport code from the upstream answer, filter rows where `Loc_Id` matches that code, and read `City` and `State_Post` from the matching entry.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Atlanta, GA"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `CITY` equals the upstream city and `STATE` equals the upstream state, then select the `ZIPCODE` from the row with the maximum `SQMI`.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "30349"
+        }
+    ]
+}

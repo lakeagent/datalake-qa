@@ -1,0 +1,60 @@
+{
+  "question": "Which public educational institution in the 2021-2022 Texas School Nutrition Program was both managed by a food service management company and received the highest total reimbursement? In 2009, what rating did that institution receive from the Texas Education Agency? Return only the rating in the format [Answer].",
+  "answer": "academically acceptable",
+  "nodes": {
+    "1": {
+      "source": "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['TypeOfAgency'] = df['TypeOfAgency'].astype(str).str.strip()\ndf['TypeOfOrg'] = df['TypeOfOrg'].astype(str).str.strip()\ndf['CEID'] = df['CEID'].astype(str).str.strip()\ndf['CEName'] = df['CEName'].astype(str).str.strip()\ndf['TotalReimbursement'] = pd.to_numeric(df['TotalReimbursement'], errors='coerce').fillna(0)\n\npublic = df[(df['TypeOfAgency'] == 'Educational Institution') & (df['TypeOfOrg'] == 'Public')].copy()\nagg = public.groupby(['CEID', 'CEName'], as_index=False)['TotalReimbursement'].sum()\nagg = agg.sort_values(['TotalReimbursement', 'CEID'], ascending=[False, True]).head(5)\n\nanswer = '; '.join(\n    f\"{row.CEID} | {row.CEName} | {row.TotalReimbursement:.2f}\"\n    for row in agg.itertuples()\n)\n",
+      "subquestion": "Which five public educational institutions received the most total reimbursement in the 2021-2022 Texas School Nutrition Program?",
+      "answer": "00654 | BEAUMONT ISD | 9950303.79; 00531 | SHELDON ISD | 5443732.14; 00565 | EDCOUCH-ELSA ISD | 3115644.79; 00569 | MERCEDES ISD | 2764431.65; 00916 | LIVINGSTON ISD | 2564634.59"
+    },
+    "2": {
+      "source": "datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['TypeOfAgency'] = df['TypeOfAgency'].astype(str).str.strip()\ndf['TypeOfOrg'] = df['TypeOfOrg'].astype(str).str.strip()\ndf['FsmcManaged'] = df['FsmcManaged'].astype(str).str.strip()\ndf['CEID'] = df['CEID'].astype(str).str.strip()\n\npublic_fsmc = sorted(\n    df[(df['TypeOfAgency'] == 'Educational Institution') & (df['TypeOfOrg'] == 'Public') & (df['FsmcManaged'] == 'Y')]['CEID']\n    .dropna()\n    .unique()\n    .tolist()\n)\n\nanswer = ', '.join(public_fsmc)\n",
+      "subquestion": "Which public educational institutions in the 2021-2022 Texas School Nutrition Program were managed by a food service management company? Return their IDs.",
+      "answer": "00002, 00005, 00006, 00022, 00027, 00029, 00031, 00032, 00078, 00107, 00109, 00129, 00131, 00142, 00143, 00145, 00154, 00163, 00171, 00187, 00200, 00201, 00204, 00214, 00215, 00222, 00231, 00238, 00239, 00240, 00242, 00275, 00277, 00280, 00282, 00285, 00289, 00291, 00297, 00298, 00301, 00304, 00315, 00320, 00332, 00335, 00345, 00381, 00385, 00394, 00395, 00396, 00407, 00410, 00426, 00428, 00452, 00456, 00467, 00521, 00523, 00534, 00536, 00549, 00551, 00552, 00582, 00591, 00592, 00594, 00607, 00612, 00621, 00625, 00637, 00656, 00658, 00660, 00661, 00663, 00668, 00672, 00673, 00676, 00683, 00685, 00688, 00689, 00693, 00712, 00713, 00714, 00724, 00733, 00741, 00751, 00754, 00755, 00756, 00758, 00772, 00782, 00783, 00789, 00793, 00794, 00795, 00800, 00803, 00807, 00808, 00812, 00845, 00860, 00861, 00867, 00873, 00874, 00884, 00894, 00905, 00906, 00907, 00914, 00916, 00918, 00920, 00921, 00925, 00946, 00956, 00967, 00970, 00976, 00980, 00986, 00991, 01020, 01022, 01025, 01027, 01029, 01040, 01041, 01054, 01069, 01072, 01073, 01076, 01096, 01098, 01100, 01112, 01113, 01115, 01127, 01130, 01138, 01144, 01148, 01150, 01151, 01152, 01153, 01154, 01156, 01158, 01183"
+    },
+    "3": {
+      "source": "wikipedia/Livingston_Independent_School_District/content.txt",
+      "fact": "In 2009, the school district was rated \"academically acceptable\" by the Texas Education Agency.",
+      "subquestion": "In 2009, what rating did <hop 1 answer> receive from the Texas Education Agency?",
+      "answer": "academically acceptable"
+    }
+  },
+  "datasets_used": [
+    "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/files/rows.txt",
+    "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/signed-metadata.txt",
+    "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/files/9bfr-4jjm.txt",
+    "datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/files/rows.txt",
+    "datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/signed-metadata.txt",
+    "datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/files/hwx2-yfy5.txt",
+    "wikipedia/Livingston_Independent_School_District/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: The top five public educational institutions by total meal reimbursement in 2021-2022 were 00654 (Beaumont ISD), 00531 (Sheldon ISD), 00565 (Edcouch-Elsa ISD), 00569 (Mercedes ISD), and 00916 (Livingston ISD).",
+        "Node 2: The FSMC-managed public educational institution CEID set contains 168 members, including 00916 but excluding 00654, 00531, 00565, and 00569.",
+        "Intersecting the CEIDs in node 1 with node 2 leaves a single winner: 00916 | LIVINGSTON ISD.",
+        "Hop result: 00916 | LIVINGSTON ISD."
+      ],
+      "answer": "00916 | LIVINGSTON ISD"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: The source says the school district was rated academically acceptable by the Texas Education Agency in 2009.",
+        "Hop result: academically acceptable."
+      ],
+      "answer": "academically acceptable"
+    }
+  ]
+}

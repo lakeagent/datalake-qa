@@ -1,0 +1,30 @@
+{
+    "question": "Which year from 2005-2010 has the highest suicide death rate for all persons? Your response should be in the format [Answer].",
+    "answer": "2010",
+    "nodes": {
+        "1": {
+            "source": "datagov/death-rates-for-suicide-by-sex-race-hispanic-origin-and-age-united-states-020c1/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/death-rates-for-suicide-by-sex-race-hispanic-origin-and-age-united-states-020c1/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"YEAR\"] = pd.to_numeric(df[\"YEAR\"], errors=\"coerce\")\ndf[\"ESTIMATE\"] = pd.to_numeric(df[\"ESTIMATE\"], errors=\"coerce\")\nfiltered = df[df[\"YEAR\"].between(2005, 2010) & df[\"STUB_NAME\"].eq(\"Total\") & df[\"STUB_LABEL\"].eq(\"All persons\")].copy()\nyearly_averages = filtered.groupby(\"YEAR\", dropna=True)[\"ESTIMATE\"].mean()\nanswer = str(int(yearly_averages.idxmax()))\n",
+            "subquestion": "Which year from 2005-2010 has the highest suicide death rate for all persons?",
+            "answer": "2010"
+        }
+    },
+    "datasets_used": [
+        "datagov/death-rates-for-suicide-by-sex-race-hispanic-origin-and-age-united-states-020c1/files/rows.txt",
+        "datagov/death-rates-for-suicide-by-sex-race-hispanic-origin-and-age-united-states-020c1/signed-metadata.txt",
+        "datagov/death-rates-for-suicide-by-sex-race-hispanic-origin-and-age-united-states-020c1/files/9j2v-jamp.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter to `STUB_NAME` = `Total` and `STUB_LABEL` = `All persons`, average `ESTIMATE` by `YEAR` within 2005-2010, and select the year with the largest average. The answer is 2010.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2010"
+        }
+    ]
+}

@@ -1,0 +1,166 @@
+{
+    "question": "What US city had the highest average percentages of adults age 18 and older who were obese, after accounting for differences in age, in 2014 and 2016? Also, can you find me the person who founded a company sold to JP Morgan to create the corporation that founded this city. Then derive the city this person is based in and report the average expenditure for the city's Police Bureau in 2017 and 2018? Please return only the average expenditure rounded to the nearest integer. Your response should be in the format [Answer].",
+    "answer": "99357947",
+    "nodes": {
+        "1": {
+            "source": "datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = df[\n    (df[\"Year\"] == 2014)\n    & (df[\"GeographicLevel\"] == \"City\")\n    & (df[\"Measure\"] == \"Obesity among adults aged >=18 Years\")\n    & (df[\"Data_Value_Type\"] == \"Age-adjusted prevalence\")\n][[\"StateDesc\", \"CityName\", \"Data_Value\"]].sort_values([\"Data_Value\", \"StateDesc\", \"CityName\"], ascending=[False, True, True]).reset_index(drop=True)\n\nanswer = {\n    f\"{row.CityName}, {row.StateDesc}\": float(row.Data_Value)\n    for row in result.itertuples(index=False)\n}",
+            "subquestion": "What are the city-level percentages of adults age 18 and older who were obese, after accounting for differences in age, in 2014?",
+            "answer": {
+                "Dayton, Ohio": 47.2,
+                "Gary, Indiana": 46.9,
+                "Detroit, Michigan": 45.2,
+                "Youngstown, Ohio": 43.8,
+                "Macon, Georgia": 42.9,
+                "Flint, Michigan": 42.7,
+                "Camden, New Jersey": 42.2,
+                "Cleveland, Ohio": 42.1,
+                "Reading, Pennsylvania": 41.7,
+                "Kalamazoo, Michigan": 41.2
+            },
+            "limit": 10
+        },
+        "2": {
+            "source": "datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = df[\n    (df[\"Year\"] == 2016)\n    & (df[\"GeographicLevel\"] == \"City\")\n    & (df[\"Measure\"] == \"Obesity among adults aged >=18 Years\")\n    & (df[\"Data_Value_Type\"] == \"Age-adjusted prevalence\")\n][[\"StateDesc\", \"CityName\", \"Data_Value\"]].sort_values([\"Data_Value\", \"StateDesc\", \"CityName\"], ascending=[False, True, True]).reset_index(drop=True)\n\nanswer = {\n    f\"{row.CityName}, {row.StateDesc}\": float(row.Data_Value)\n    for row in result.itertuples(index=False)\n}",
+            "subquestion": "What are the city-level percentages of adults age 18 and older who were obese, after accounting for differences in age, in 2016?",
+            "answer": {
+                "Gary, Indiana": 49.0,
+                "Detroit, Michigan": 47.4,
+                "Flint, Michigan": 45.4,
+                "Jackson, Mississippi": 44.5,
+                "Brownsville, Texas": 44.4,
+                "Camden, New Jersey": 44.1,
+                "Macon, Georgia": 44.0,
+                "Kansas City, Kansas": 43.8,
+                "Dayton, Ohio": 43.5,
+                "Shreveport, Louisiana": 43.4
+            },
+            "limit": 10
+        },
+        "3": {
+            "source": "wikipedia/Gary,_Indiana/content.txt",
+            "fact": "Gary, Indiana, was founded in 1906 by the U.S. Steel corporation as the home for its new plant, Gary Works.",
+            "subquestion": "What corporation founded <hop 1 answer>?",
+            "answer": "U.S. Steel Corporation"
+        },
+        "4": {
+            "source": "wikipedia/U.S._Steel/content.txt",
+            "fact": "In 1901, J. P. Morgan created U.S. Steel by merging Carnegie Steel, Federal Steel, and National Steel",
+            "subquestion": "Which company did J. P. Morgan merge with Federal Steel and National Steel to create <node 3 answer>?",
+            "answer": "Carnegie Steel Company"
+        },
+        "5": {
+            "source": "wikipedia/Carnegie_Steel_Company/content.txt",
+            "fact": "Carnegie Steel Company was a steel-producing company primarily created by Andrew Carnegie",
+            "subquestion": "Who founded <node 4 answer>?",
+            "answer": "Andrew Carnegie"
+        },
+        "6": {
+            "source": "wikipedia/Andrew_Carnegie/content.txt",
+            "fact": "He immigrated to what is now Pittsburgh, Pennsylvania, with his parents in 1848",
+            "subquestion": "Which city was <node 5 answer> based in?",
+            "answer": "Pittsburgh, Pennsylvania"
+        },
+        "7": {
+            "source": "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2017-operating.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2017-operating.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = round(float(df[\n    (df[\"Year\"] == 2017)\n    & (df[\"Type\"] == \"Expenditure\")\n    & (df[\"Department\"] == \"PS - POLICE BUREAU\")\n][\"Amount\"].sum()), 2)",
+            "subquestion": "What is the total 2017 expenditure for the Police Bureau of <node 6 answer>?",
+            "answer": 98453962.68
+        },
+        "8": {
+            "source": "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2018-operating.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2018-operating.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = round(float(df[\n    (df[\"Year\"] == 2018)\n    & (df[\"Type\"] == \"Expenditure\")\n    & (df[\"Department\"] == \"PS - POLICE BUREAU\")\n][\"Amount\"].sum()), 2)",
+            "subquestion": "What is the total 2018 expenditure for the Police Bureau of <node 6 answer>?",
+            "answer": 100261931.64
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Year` = 2014, `GeographicLevel` = `City`, `Measure` = `Obesity among adults aged >=18 Years`, and `Data_Value_Type` = `Age-adjusted prevalence`, then return city-level `Data_Value` values from the 2016 release dataset.",
+                "Node 2: Apply the same `GeographicLevel`, `Measure`, and `Data_Value_Type` filters with `Year` = 2016 to the 2018 release dataset, then return city-level `Data_Value` values.",
+                "Hop result: average the obesity prevalence values for cities that appear in both node outputs; Gary, Indiana has the highest cross-release average."
+            ],
+            "answer": "Gary, Indiana"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: <hop 1 answer> was founded by U.S. Steel Corporation.",
+                "Hop result: <node 3 answer>"
+            ],
+            "answer": "U.S. Steel Corporation"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: J. P. Morgan merged Carnegie Steel with Federal Steel and National Steel to create <hop 2 answer>.",
+                "Hop result: <node 4 answer>"
+            ],
+            "answer": "Carnegie Steel Company"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: <hop 3 answer> was created by Andrew Carnegie.",
+                "Hop result: <node 5 answer>"
+            ],
+            "answer": "Andrew Carnegie"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: <hop 4 answer> was based in Pittsburgh, Pennsylvania.",
+                "Hop result: <node 6 answer>"
+            ],
+            "answer": "Pittsburgh, Pennsylvania"
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: Filter rows where `Year` = 2017, `Type` = `Expenditure`, and `Department` = `PS - POLICE BUREAU`, then sum `Amount` for <hop 5 answer>'s 2017 operating budget dataset.",
+                "Node 8: Filter rows where `Year` = 2018, `Type` = `Expenditure`, and `Department` = `PS - POLICE BUREAU`, then sum `Amount` for <hop 5 answer>'s 2018 operating budget dataset.",
+                "Hop result: average 98,453,962.68 and 100,261,931.64, then round to the nearest integer = 99,357,947."
+            ],
+            "answer": 99357947
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Gary,_Indiana/content.txt",
+        "wikipedia/U.S._Steel/content.txt",
+        "wikipedia/Carnegie_Steel_Company/content.txt",
+        "wikipedia/Andrew_Carnegie/content.txt",
+        "datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt",
+        "datagov/500-cities-local-data-for-better-health-2016-release/signed-metadata.txt",
+        "datagov/500-cities-local-data-for-better-health-2016-release/files/9z78-nsfp.publisher-view.json",
+        "datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt",
+        "datagov/500-cities-local-data-for-better-health-2018-release/signed-metadata.txt",
+        "datagov/500-cities-local-data-for-better-health-2018-release/files/rja3-32tc.txt",
+        "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2017-operating.txt",
+        "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2018-operating.txt",
+        "datagov/2011-2023-city-of-pittsburgh-operating-budget/signed-metadata.txt",
+        "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2012-operating.txt"
+    ]
+}

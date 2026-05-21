@@ -1,0 +1,71 @@
+{
+    "question": "Hawaii noncandidate committees have sent money to vendors in many states since 2008. Take the states that come in 4th through 8th place when those states are sorted by the typical size of the payments they received. Then take the states that come in 4th through 8th place when U.S. states are sorted by how much their overdose death rate, adjusted for differences in age, varied from 1999 through 2018. One state appears in both groups. How many beneficiaries in that state were in the broadest coverage category in the last month of 2022? Break ties alphabetically by state name. Respond with [Answer].",
+    "answer": 1711719,
+    "nodes": {
+        "1": {
+            "source": "datagov/expenditures-made-by-hawaii-noncandidate-committees-from-january-1-2008-through-decembe-31/files/ncschb2.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/expenditures-made-by-hawaii-noncandidate-committees-from-january-1-2008-through-decembe-31/files/ncschb2.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_name_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\nstate_metric = (\n    df.dropna(subset=[\"State\", \"Amount\"])\n      .groupby(\"State\", as_index=False)[\"Amount\"]\n      .median()\n)\nstate_metric = state_metric[state_metric[\"State\"].isin(state_name_map)]\nstate_metric[\"state\"] = state_metric[\"State\"].map(state_name_map)\nranked = state_metric.sort_values([\"Amount\", \"state\"], ascending=[False, True], kind=\"mergesort\")\nanswer = ranked.iloc[3:8][\"state\"].tolist()",
+            "subquestion": "Hawaii noncandidate committees have made payments to vendors in many states since 2008. If you sort those states by the typical size of the payments they received, which states come in 4th through 8th place? Break ties alphabetically by state name.",
+            "answer": [
+                "Idaho",
+                "Maine",
+                "Kentucky",
+                "Rhode Island",
+                "Nevada"
+            ]
+        },
+        "2": {
+            "source": "datagov/nchs-drug-poisoning-mortality-by-state-united-states/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nchs-drug-poisoning-mortality-by-state-united-states/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_metric = (\n    df[\n        df[\"State\"].notna()\n        & (df[\"State\"] != \"United States\")\n        & (df[\"State\"] != \"District of Columbia\")\n        & df[\"Age-adjusted Rate\"].notna()\n    ]\n    .groupby(\"State\", as_index=False)[\"Age-adjusted Rate\"]\n    .std(ddof=1)\n)\n\nranked = state_metric.sort_values([\"Age-adjusted Rate\", \"State\"], ascending=[False, True], kind=\"mergesort\")\nanswer = ranked.iloc[3:8][\"State\"].tolist()",
+            "subquestion": "From 1999 through 2018, which states come in 4th through 8th place if you sort them by how much their overdose death rate, adjusted for differences in age, varied over time? Break ties alphabetically by state name.",
+            "answer": [
+                "Delaware",
+                "Pennsylvania",
+                "Kentucky",
+                "Maryland",
+                "Massachusetts"
+            ]
+        },
+        "3": {
+            "source": "datagov/benefit-package-for-medicaid-and-chip-beneficiaries-by-year-4b672/files/BenefitPackage-anul.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/benefit-package-for-medicaid-and-chip-beneficiaries-by-year-4b672/files/BenefitPackage-anul.txt\"\nstate_name = \"Kentucky\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"State\"] == state_name)\n    & (pd.to_numeric(df[\"Year\"], errors=\"coerce\") == 2022)\n    & (df[\"BenefitPackage\"] == \"Full-scope\")\n].copy()\nfiltered[\"CountLastMonthEnrollment\"] = pd.to_numeric(filtered[\"CountLastMonthEnrollment\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\n\nanswer = int(filtered.iloc[0][\"CountLastMonthEnrollment\"])",
+            "subquestion": "In 2022, how many beneficiaries in <hop 1 answer> were in the broadest coverage category in the final month of the year?",
+            "answer": 1711719
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Group rows by `State`, compute the median `Amount` for each state, map state abbreviations to full state names, sort by median amount descending and state ascending to break ties alphabetically, and take ranks 4 through 8.",
+                "Node 2: Exclude non-state aggregates such as `United States` and `District of Columbia`, group by `State` to compute the sample standard deviation of `Age-adjusted Rate`, sort by standard deviation descending and state ascending to break ties alphabetically, and take ranks 4 through 8.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Kentucky."
+            ],
+            "answer": "Kentucky"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `State` = <hop 1 answer>, `Year` = `2022`, and `BenefitPackage` = `Full-scope`, convert `CountLastMonthEnrollment` to numeric after removing commas, and report the final-month enrollment count.",
+                "Hop result: Kentucky had 1711719 beneficiaries with a full-scope benefit package in the final month of 2022."
+            ],
+            "answer": 1711719
+        }
+    ],
+    "datasets_used": [
+        "datagov/expenditures-made-by-hawaii-noncandidate-committees-from-january-1-2008-through-decembe-31/files/ncschb2.txt",
+        "datagov/expenditures-made-by-hawaii-noncandidate-committees-from-january-1-2008-through-decembe-31/signed-metadata.txt",
+        "datagov/nchs-drug-poisoning-mortality-by-state-united-states/files/rows.txt",
+        "datagov/nchs-drug-poisoning-mortality-by-state-united-states/signed-metadata.txt",
+        "datagov/benefit-package-for-medicaid-and-chip-beneficiaries-by-year-4b672/files/BenefitPackage-anul.txt",
+        "datagov/benefit-package-for-medicaid-and-chip-beneficiaries-by-year-4b672/signed-metadata.txt",
+        "datagov/benefit-package-for-medicaid-and-chip-beneficiaries-by-year-4b672/files/enrollment-puf-benefit-package-by-year-data-dictionary.json"
+    ]
+}

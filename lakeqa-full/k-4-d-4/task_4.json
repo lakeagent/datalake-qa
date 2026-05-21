@@ -1,0 +1,199 @@
+{
+    "question": "Among Providence hospital properties, only one met the following criteria: it had an assessed value consistently between $6.9 million and $7.3 million from 2015 through 2018, and it is neither an Ivy League university nor named after an incorporated Rhode Island city. The benefactor associated with this property was named in honor of another person. Who was that person's grandfather? Your response should be in the format [Answer].",
+    "answer": "James Brown",
+    "nodes": {
+        "1": {
+            "source": "datagov/2015-property-tax-roll/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/2015-property-tax-roll/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nanswer = (\n    df.loc[(df['Total_Assessment'] >= 6900000) & (df['Total_Assessment'] <= 7300000), 'Plat-Lot-Unit']\n    .drop_duplicates()\n    .sort_values()\n    .tolist()\n)",
+            "subquestion": "Which Providence properties had total assessment between $6.9 million and $7.3 million in 2015?",
+            "answer": [
+                "000-0001-0003",
+                "004-0261-0000",
+                "016-0633-0000",
+                "023-0772-LL01",
+                "024-0613-0000",
+                "025-0346-REVO",
+                "033-0381-0000",
+                "034-0381-0000",
+                "068-0638-0000"
+            ]
+        },
+        "2": {
+            "source": "datagov/2016-property-tax-roll/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/2016-property-tax-roll/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nanswer = (\n    df.loc[(df['Total_Assessment'] >= 6900000) & (df['Total_Assessment'] <= 7300000), 'Plat-Lot-Unit']\n    .drop_duplicates()\n    .sort_values()\n    .tolist()\n)",
+            "subquestion": "Which Providence properties had total assessment between $6.9 million and $7.3 million in 2016?",
+            "answer": [
+                "000-0001-0003",
+                "010-0718-00EX",
+                "012-0486-0000",
+                "015-0480-0000",
+                "016-0239-0000",
+                "016-0633-0000",
+                "017-0262-0000",
+                "017-0655-0000",
+                "022-0342-LB01",
+                "023-0772-LL01",
+                "025-0443-0000",
+                "029-0538-0000",
+                "039-0236-0000",
+                "046-0629-0000",
+                "065-0978-0001",
+                "067-0539-0000",
+                "076-0528-8LAW",
+                "109-0369-0000"
+            ]
+        },
+        "3": {
+            "source": "datagov/2017-property-tax-roll/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/2017-property-tax-roll/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nanswer = (\n    df.loc[(df['Total Assessment'] >= 6900000) & (df['Total Assessment'] <= 7300000), 'Plat-Lot-Unit']\n    .drop_duplicates()\n    .sort_values()\n    .tolist()\n)",
+            "subquestion": "Which Providence properties had total assessment between $6.9 million and $7.3 million in 2017?",
+            "answer": [
+                "000-0001-0003",
+                "010-0718-00EX",
+                "012-0486-0000",
+                "015-0480-0000",
+                "016-0239-0000",
+                "016-0633-0000",
+                "017-0262-0000",
+                "017-0655-0000",
+                "022-0342-LB01",
+                "023-0772-LL01",
+                "023-0997-0000",
+                "025-0440-8LAW",
+                "025-0443-0000",
+                "029-0538-0000",
+                "039-0236-0000",
+                "046-0629-0000",
+                "065-0978-0001",
+                "067-0539-0000",
+                "109-0369-0000"
+            ]
+        },
+        "4": {
+            "source": "datagov/2018-property-tax-roll/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/2018-property-tax-roll/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nanswer = (\n    df.loc[(df['Total Assessment'] >= 6900000) & (df['Total Assessment'] <= 7300000), 'Plat-Lot-Unit']\n    .drop_duplicates()\n    .sort_values()\n    .tolist()\n)",
+            "subquestion": "Which Providence properties had total assessment between $6.9 million and $7.3 million in 2018?",
+            "answer": [
+                "000-0001-0003",
+                "010-0718-00EX",
+                "012-0486-0000",
+                "015-0480-0000",
+                "016-0239-0000",
+                "016-0633-0000",
+                "017-0262-0000",
+                "017-0655-0000",
+                "022-0342-LB01",
+                "023-0772-LL01",
+                "023-0997-0000",
+                "024-0631-0000",
+                "025-0440-8LAW",
+                "025-0443-0000",
+                "029-0538-0000",
+                "039-0236-0000",
+                "046-0629-0000",
+                "065-0978-0001",
+                "067-0539-0000",
+                "091-0655-0001",
+                "109-0369-0000"
+            ]
+        },
+        "5": {
+            "source": "datagov/national-incorporated-places-and-counties/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/national-incorporated-places-and-counties/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\ncandidates = ['City of Providence', 'RI Hospital', 'Brown University']\nanswer = (\n    df.loc[(df['State Name'] == 'Rhode Island') & df['Name'].isin(candidates), 'Name']\n    .drop_duplicates()\n    .sort_values()\n    .tolist()\n)",
+            "subquestion": "Among the Providence properties from <hop 1 answer>, which have owner names that match incorporated places in Rhode Island according to the national-incorporated-places dataset?",
+            "answer": [
+                "City of Providence"
+            ]
+        },
+        "6": {
+            "source": "wikipedia/Brown_University/content.txt",
+            "fact": "Brown University is a private Ivy League research university in Providence, Rhode Island. It was founded in 1764 and is one of nine colonial colleges chartered before the American Revolution.",
+            "subquestion": "Is the property owned by 'Brown University' an Ivy League university?",
+            "answer": "Yes, Brown University is an Ivy League university"
+        },
+        "7": {
+            "source": "wikipedia/Moses_Brown_Ives/content.txt",
+            "fact": "Moses Brown Ives was a businessman and philanthropist from Providence, Rhode Island who was named after Moses Brown. Upon his death, he created a bequest which was used to provide some of the early funding for the creation of Rhode Island Hospital in 1863.",
+            "subquestion": "Who created a bequest that provided early funding for <hop 2 answer>?",
+            "answer": "Moses Brown Ives"
+        },
+        "8": {
+            "source": "wikipedia/Moses_Brown/content.txt",
+            "fact": "Moses Brown (September 23, 1738 - September 6, 1836) was a Rhode Island Quaker, abolitionist, and philanthropist. He was the co-founder of Brown University. His grandfather was Baptist minister James Brown (1666-1732), one of the earliest settlers of Providence.",
+            "subquestion": "Who was the grandfather of the person after whom <hop 3 answer> was named?",
+            "answer": "James Brown"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Brown_University/content.txt",
+        "wikipedia/Moses_Brown_Ives/content.txt",
+        "wikipedia/Moses_Brown/content.txt",
+        "datagov/2015-property-tax-roll/files/rows.txt",
+        "datagov/2015-property-tax-roll/signed-metadata.txt",
+        "datagov/2016-property-tax-roll/files/rows.txt",
+        "datagov/2016-property-tax-roll/signed-metadata.txt",
+        "datagov/2017-property-tax-roll/files/rows.txt",
+        "datagov/2017-property-tax-roll/signed-metadata.txt",
+        "datagov/2018-property-tax-roll/files/rows.txt",
+        "datagov/2018-property-tax-roll/signed-metadata.txt",
+        "datagov/national-incorporated-places-and-counties/files/rows.txt",
+        "datagov/national-incorporated-places-and-counties/signed-metadata.txt",
+        "datagov/national-incorporated-places-and-counties/files/djvt-gf3t.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Filter Providence properties where `Total_Assessment` is between $6.9 million and $7.3 million in 2015 and return the qualifying `Plat-Lot-Unit` values.",
+                "Node 2: Filter Providence properties where `Total_Assessment` is between $6.9 million and $7.3 million in 2016 and return the qualifying `Plat-Lot-Unit` values.",
+                "Node 3: Filter Providence properties where `Total_Assessment` is between $6.9 million and $7.3 million in 2017 and return the qualifying `Plat-Lot-Unit` values.",
+                "Node 4: Filter Providence properties where `Total_Assessment` is between $6.9 million and $7.3 million in 2018 and return the qualifying `Plat-Lot-Unit` values.",
+                "Hop result: intersect the four yearly property sets; the recurring candidate properties are 000-0001-0003, 016-0633-0000, and 023-0772-LL01."
+            ],
+            "answer": [
+                "000-0001-0003",
+                "016-0633-0000",
+                "023-0772-LL01"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Among <hop 1 answer>, the only property whose owner name matches an incorporated Rhode Island place is `City of Providence`, so exclude that property.",
+                "Node 6: Brown University is an Ivy League university, so exclude the property owned by Brown University.",
+                "Hop result: after excluding the incorporated-place property and the Ivy League property, the remaining property is Rhode Island Hospital."
+            ],
+            "answer": "Rhode Island Hospital"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: The benefactor who created a bequest providing early funding for <hop 2 answer> was Moses Brown Ives, and he was named after Moses Brown."
+            ],
+            "answer": "Moses Brown"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: The grandfather of <hop 3 answer> was James Brown."
+            ],
+            "answer": "James Brown"
+        }
+    ]
+}

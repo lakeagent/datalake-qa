@@ -1,0 +1,162 @@
+{
+    "question": "I'm analyzing the DC Ward that had the lowest average crime count from 2018 to 2021. Find the neighborhoods in this ward that share the same name with other wards, and the counties they border. Report the highest rank of the average household income for those counties in 2020. Your response should be in the format [Answer].",
+    "answer": "20",
+    "nodes": {
+        "1": {
+            "source": "datagov/crime-incidents-in-2018/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/crime-incidents-in-2018/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.loads(obj['Body'].read())\ndf = pd.DataFrame(feature['properties'] for feature in payload['features'])\ncounts = df['WARD'].astype(str).str.strip().value_counts().sort_index(key=lambda s: s.astype(int))\nanswer = {f'Ward {ward}': int(count) for ward, count in counts.items()}",
+            "subquestion": "Which DC Ward had the lowest average total crime count across 2018-2021?",
+            "answer": {
+                "Ward 1": 4734,
+                "Ward 2": 6634,
+                "Ward 3": 1930,
+                "Ward 4": 3136,
+                "Ward 5": 5191,
+                "Ward 6": 4335,
+                "Ward 7": 4514,
+                "Ward 8": 3372
+            }
+        },
+        "2": {
+            "source": "datagov/crime-incidents-in-2019/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/crime-incidents-in-2019/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.loads(obj['Body'].read())\ndf = pd.DataFrame(feature['properties'] for feature in payload['features'])\ncounts = df['WARD'].astype(str).str.strip().value_counts().sort_index(key=lambda s: s.astype(int))\nanswer = {f'Ward {ward}': int(count) for ward, count in counts.items()}",
+            "subquestion": "Which DC Ward had the lowest average total crime count across 2018-2021?",
+            "answer": {
+                "Ward 1": 4826,
+                "Ward 2": 7478,
+                "Ward 3": 1952,
+                "Ward 4": 2942,
+                "Ward 5": 5256,
+                "Ward 6": 4325,
+                "Ward 7": 4179,
+                "Ward 8": 3011
+            }
+        },
+        "3": {
+            "source": "datagov/crime-incidents-in-2020/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/crime-incidents-in-2020/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.loads(obj['Body'].read())\ndf = pd.DataFrame(feature['properties'] for feature in payload['features'])\ncounts = df['WARD'].astype(str).str.strip().value_counts().sort_index(key=lambda s: s.astype(int))\nanswer = {f'Ward {ward}': int(count) for ward, count in counts.items()}",
+            "subquestion": "Which DC Ward had the lowest average total crime count across 2018-2021?",
+            "answer": {
+                "Ward 1": 3542,
+                "Ward 2": 4685,
+                "Ward 3": 1709,
+                "Ward 4": 2703,
+                "Ward 5": 4394,
+                "Ward 6": 3815,
+                "Ward 7": 4148,
+                "Ward 8": 2935
+            }
+        },
+        "4": {
+            "source": "datagov/crime-incidents-in-2021/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/crime-incidents-in-2021/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.loads(obj['Body'].read())\ndf = pd.DataFrame(feature['properties'] for feature in payload['features'])\ncounts = df['WARD'].astype(str).str.strip().value_counts().sort_index(key=lambda s: s.astype(int))\nanswer = {f'Ward {ward}': int(count) for ward, count in counts.items()}",
+            "subquestion": "Which DC Ward had the lowest average total crime count across 2018-2021?",
+            "answer": {
+                "Ward 1": 4195,
+                "Ward 2": 5360,
+                "Ward 3": 1440,
+                "Ward 4": 2576,
+                "Ward 5": 4415,
+                "Ward 6": 3799,
+                "Ward 7": 3585,
+                "Ward 8": 2926
+            }
+        },
+        "5": {
+            "source": "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+            "fact": "In the Neighborhoods in Washington, D.C. list, Ward 3 neighborhoods are: American University Park, Berkley, Cathedral Heights, Chevy Chase, Cleveland Park, Colony Hill, Forest Hills, Foxhall, Friendship Heights, Glover Park, Kent, Massachusetts Heights, McLean Gardens, North Cleveland Park, Observatory Circle, The Palisades, Potomac Heights, Spring Valley, Tenleytown, Wakefield, Wesley Heights, Woodland Normanstone, and Woodley Park.",
+            "subquestion": "In Ward 3 (<aggregation of nodes 1-4>), which neighborhoods share the same name with other wards?",
+            "answer": "Chevy Chase"
+        },
+        "6": {
+            "source": "wikipedia/Chevy_Chase_(Washington,_D.C.)/content.txt",
+            "fact": "Chevy Chase is a neighborhood in northwest Washington, D.C. It borders Chevy Chase, Maryland.",
+            "subquestion": "Which Maryland area borders the Ward 3 neighborhood identified in node 5? (Lookup: Chevy Chase (Washington, D.C.) article line stating it borders Chevy Chase, Maryland.)",
+            "answer": "Chevy Chase, Maryland"
+        },
+        "7": {
+            "source": "wikipedia/Chevy_Chase,_Maryland/content.txt",
+            "fact": "Chevy Chase is the colloquial name of an area that includes a town, several incorporated villages, and an unincorporated census-designated place in southern Montgomery County, Maryland; and one adjoining neighborhood in northwest Washington, D.C.",
+            "subquestion": "Which Maryland county contains Chevy Chase, Maryland? (Lookup: Chevy Chase, Maryland article line describing the area in southern Montgomery County.)",
+            "answer": "Montgomery County"
+        },
+        "8": {
+            "source": "wikipedia/Montgomery_County,_Maryland/content.txt",
+            "fact": "The average household income in Montgomery County is the 20th-highest among U.S. counties as of 2020.",
+            "subquestion": "What is the rank of the average household income for <node_7 answer> among U.S. counties as of 2020?",
+            "answer": "20"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: In 2018, DC crime incidents by ward (total crimes): Ward 1 (4,734), Ward 2 (6,634), Ward 3 (1,930), Ward 4 (3,136), Ward 5 (5,191), Ward 6 (4,335), Ward 7 (4,514), Ward 8 (3,372).",
+                "Node 2: In 2019, DC crime incidents by ward (total crimes): Ward 1 (4,826), Ward 2 (7,478), Ward 3 (1,952), Ward 4 (2,942), Ward 5 (5,256), Ward 6 (4,325), Ward 7 (4,179), Ward 8 (3,011).",
+                "Node 3: In 2020, DC crime incidents by ward (total crimes): Ward 1 (3,542), Ward 2 (4,685), Ward 3 (1,709), Ward 4 (2,703), Ward 5 (4,394), Ward 6 (3,815), Ward 7 (4,148), Ward 8 (2,935).",
+                "Node 4: In 2021, DC crime incidents by ward (total crimes): Ward 1 (4,195), Ward 2 (5,360), Ward 3 (1,440), Ward 4 (2,576), Ward 5 (4,415), Ward 6 (3,799), Ward 7 (3,585), Ward 8 (2,926).",
+                "Derive hop 1 answer using nodes 1, 2, 3, 4: Nodes 1-4 ask for ward-level crime totals in each year from 2018 to 2021; combining these yearly totals identifies Ward 3 as the lowest-average ward. Hop answer: Ward 3."
+            ],
+            "answer": "Ward 3"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In the Neighborhoods in Washington, D.C. list, Ward 3 neighborhoods are: American University Park, Berkley, Cathedral Heights, Chevy Chase, Cleveland Park, Colony Hill, Forest Hills, Foxhall, Friendship Heights, Glover Park, Kent, Massachusetts Heights, McLean Gardens, North Cleveland Park, Observatory Circle, The Palisades, Potomac Heights, Spring Valley, Tenleytown, Wakefield, Wesley Heights, Woodland Normanstone, and Woodley Park.",
+                "Derive hop 2 answer using node 5: Using the Ward 3 neighborhood list from hop 1, node 5 identifies Chevy Chase as the relevant shared-name neighborhood. Hop answer: Chevy Chase."
+            ],
+            "answer": "Chevy Chase"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 6: Chevy Chase (/ˈtʃɛviː tʃeɪs/) is a neighborhood in northwest Washington, D.C. It borders Chevy Chase, Maryland.",
+                "Node 7: Chevy Chase is the colloquial name of an area that includes a town, several incorporated villages, and an unincorporated census-designated place in southern Montgomery County, Maryland; and one adjoining neighborhood in northwest Washington, D.C.",
+                "Derive hop 3 answer using nodes 6 and 7: Node 6 resolves the Ward 3 neighborhood from hop 2 to Chevy Chase, Maryland, and node 7 maps that Maryland area to Montgomery County. Hop answer: Montgomery County."
+            ],
+            "answer": "Montgomery County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: The average household income in Montgomery County is the 20th-highest among U.S. counties as of 2020.",
+                "Derive hop 4 answer from node 8: Node 8 depends on hop 3 and asks for Montgomery County's 2020 U.S. county household-income rank; this value is the final answer. Hop answer: 20."
+            ],
+            "answer": "20"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+        "wikipedia/Chevy_Chase_(Washington,_D.C.)/content.txt",
+        "wikipedia/Chevy_Chase,_Maryland/content.txt",
+        "wikipedia/Montgomery_County,_Maryland/content.txt",
+        "datagov/crime-incidents-in-2018/files/data.txt",
+        "datagov/crime-incidents-in-2018/signed-metadata.txt",
+        "datagov/crime-incidents-in-2018/files/0.arcgis-layer.json",
+        "datagov/crime-incidents-in-2019/files/data.txt",
+        "datagov/crime-incidents-in-2019/signed-metadata.txt",
+        "datagov/crime-incidents-in-2019/files/1.arcgis-layer.json",
+        "datagov/crime-incidents-in-2020/files/data.txt",
+        "datagov/crime-incidents-in-2020/signed-metadata.txt",
+        "datagov/crime-incidents-in-2020/files/2.arcgis-layer.json",
+        "datagov/crime-incidents-in-2021/files/data.txt",
+        "datagov/crime-incidents-in-2021/signed-metadata.txt",
+        "datagov/crime-incidents-in-2021/files/3.arcgis-layer.json"
+    ]
+}

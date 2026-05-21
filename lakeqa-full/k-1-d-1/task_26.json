@@ -1,0 +1,30 @@
+{
+    "question": "Which year from 2011-2016 has the lowest teen birth rate for females ages 15-19 across all races in the United States? Your response should be in the format [Answer].",
+    "answer": "2016",
+    "nodes": {
+        "1": {
+            "source": "datagov/nchs-teen-birth-rates-for-females-by-age-group-race-and-hispanic-origin-united-states/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/nchs-teen-birth-rates-for-females-by-age-group-race-and-hispanic-origin-united-states/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Birth Rate\"] = pd.to_numeric(df[\"Birth Rate\"], errors=\"coerce\")\nfiltered = df[df[\"Year\"].between(2011, 2016) & df[\"Race or Hispanic Origin\"].eq(\"All Races\") & df[\"Age Group\"].eq(\"15-19 Years\")].copy()\nranked = filtered.sort_values([\"Birth Rate\", \"Year\"], ascending=[True, True], kind=\"mergesort\")\nanswer = str(int(ranked.iloc[0][\"Year\"]))\n",
+            "subquestion": "Which year from 2011-2016 has the lowest teen birth rate for females ages 15-19 across all races in the United States?",
+            "answer": "2016"
+        }
+    },
+    "datasets_used": [
+        "datagov/nchs-teen-birth-rates-for-females-by-age-group-race-and-hispanic-origin-united-states/files/rows.txt",
+        "datagov/nchs-teen-birth-rates-for-females-by-age-group-race-and-hispanic-origin-united-states/signed-metadata.txt",
+        "datagov/nchs-teen-birth-rates-for-females-by-age-group-race-and-hispanic-origin-united-states/files/e8kx-wbww.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter to `Race or Hispanic Origin` = `All Races` and `Age Group` = `15-19 Years` within 2011-2016, then select the year with the smallest `Birth Rate`. The answer is 2016.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2016"
+        }
+    ]
+}

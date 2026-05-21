@@ -1,0 +1,48 @@
+{
+  "question": "Which applicant company appears most often among cancelled or withdrawn construction permits in DC in 2024? Which company owns that applicant company? Return only the company name in the format [Answer].",
+  "answer": "Exelon",
+  "nodes": {
+    "1": {
+      "source": "datagov/construction-permits-in-2024/files/data.txt",
+      "fact": "import json\nimport os\nfrom collections import Counter\n\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/construction-permits-in-2024/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:\n        text = f.read()\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    text = obj['Body'].read().decode('utf-8', errors='ignore')\nrows = json.loads(text)['features']\n\ncounter = Counter()\nfor feature in rows:\n    row = feature.get('properties', {})\n    if str(row.get('STATUS', '')).strip() != 'Cancel/Withdrawn':\n        continue\n    applicant = str(row.get('APPLICANTCOMPANYNAME', '')).strip()\n    if applicant and applicant.upper() not in {'N/A', 'NA', 'NONE', 'NULL'}:\n        counter[applicant] += 1\n\nanswer = sorted(counter.items(), key=lambda item: (-item[1], item[0]))[0][0]\n",
+      "subquestion": "Which applicant company appears most often among cancelled or withdrawn construction permits in DC in 2024?",
+      "answer": "Potomac Electric Power Company"
+    },
+    "2": {
+      "source": "wikipedia/Pepco/content.txt",
+      "fact": "The Potomac Electric Power Company (PEPCO) is an American utility company that supplies electric power to the city of Washington, D.C., and to surrounding communities in Maryland. It is owned by Exelon.",
+      "subquestion": "Which company owns <hop 1 answer>?",
+      "answer": "Exelon"
+    }
+  },
+  "datasets_used": [
+    "datagov/construction-permits-in-2024/files/data.txt",
+    "datagov/construction-permits-in-2024/signed-metadata.txt",
+    "datagov/construction-permits-in-2024/files/44.arcgis-layer.json",
+    "wikipedia/Pepco/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the 2024 DC construction permits data, Potomac Electric Power Company is the most frequent applicant company among records with status Cancel/Withdrawn, with 88 permits.",
+        "Hop result: Potomac Electric Power Company."
+      ],
+      "answer": "Potomac Electric Power Company"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: The source says the Potomac Electric Power Company is owned by Exelon.",
+        "Hop result: Exelon."
+      ],
+      "answer": "Exelon"
+    }
+  ]
+}

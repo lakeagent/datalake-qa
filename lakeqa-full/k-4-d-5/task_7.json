@@ -1,0 +1,145 @@
+{
+    "question": "Which three years had the most Texas award recipients seriously injured in the line of duty with last name Phipps? For each of those years A, B, and C, define a state's most important drug as the drug with the highest reimbursed amount per unit among drugs with at least 1,000 prescriptions, and define dependence as the share of all reimbursed amount tied to that most important drug. Which states ranked 6th through 8th in A, 36th through 38th in B, and 21st through 23rd in C? For the state appearing in all three answers, which counties had the 2nd to 6th lowest net growth in taxable sales in Q4 from 2022 to 2023? Among those counties, what is the difference between the largest and smallest listed water areas, in square miles? Please return only the number in the format [Answer].",
+    "answer": 13.367,
+    "nodes": {
+        "1": {
+            "source": "datagov/star-of-texas-award-recipients-2004-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/star-of-texas-award-recipients-2004-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[\n    df['Recipient Last Name'].eq('Phipps')\n    & df['Critical Incident Type'].eq('Seriously injured in the line of duty')\n    & df['Award Year'].ne('')\n].copy()\ncounts = filtered.groupby('Award Year', as_index=False).size()\ncounts['AwardYear_num'] = pd.to_numeric(counts['Award Year'], errors='coerce')\nmax_count = counts['size'].max()\nranked = counts[counts['size'].eq(max_count)].sort_values(['AwardYear_num', 'Award Year'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = ', '.join(ranked['Award Year'].tolist())\n",
+            "subquestion": "Which three years had the most Texas award recipients seriously injured in the line of duty with last name Phipps?",
+            "answer": "2012, 2019, 2021"
+        },
+        "2": {
+            "source": "datagov/state-drug-utilization-data-2012-3d87d/files/StateDrugUtilizationData2012.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/state-drug-utilization-data-2012-3d87d/files/StateDrugUtilizationData2012.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['State', 'Product Name', 'Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed'])\n\nstate_map = {'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'}\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf = df[df['State'].isin(state_map) & df['Product Name'].ne('')].copy()\nfor col in ['Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace(',', '', regex=False), errors='coerce')\nall_drugs = df.groupby(['State', 'Product Name'], as_index=False).agg(\n    units=('Units Reimbursed_num', 'sum'),\n    rx=('Number of Prescriptions_num', 'sum'),\n    amt=('Total Amount Reimbursed_num', 'sum')\n)\nall_drugs = all_drugs[all_drugs['units'].gt(0) & all_drugs['amt'].gt(0)].copy()\nstate_totals = all_drugs.groupby('State', as_index=False).agg(total_amt=('amt', 'sum'))\nqualified = all_drugs[all_drugs['rx'].ge(1000)].copy()\nqualified['amt_per_unit'] = qualified['amt'] / qualified['units']\nimportant = qualified.sort_values(['amt_per_unit', 'Product Name'], ascending=[False, True], kind='mergesort').groupby('State', as_index=False).head(1)\nranked = important.merge(state_totals, on='State', how='left')\nranked['dependence_score'] = ranked['amt'] / ranked['total_amt']\nranked['StateName'] = ranked['State'].map(state_map)\nranked = ranked.sort_values(['dependence_score', 'StateName'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = ', '.join(ranked.iloc[5:8]['StateName'].tolist())\n",
+            "subquestion": "Define a state's most important drug as the drug with the highest reimbursed amount per unit among drugs with at least 1,000 prescriptions, and define dependence as the share of all reimbursed amount tied to that most important drug. Which states ranked 6th through 8th highest by dependence in the first year of <hop 1 answer>?",
+            "answer": "Indiana, Iowa, Colorado"
+        },
+        "3": {
+            "source": "datagov/state-drug-utilization-data-2019/files/StateDrugUtilizationData2019.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/state-drug-utilization-data-2019/files/StateDrugUtilizationData2019.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['State', 'Product Name', 'Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed'])\n\nstate_map = {'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'}\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf = df[df['State'].isin(state_map) & df['Product Name'].ne('')].copy()\nfor col in ['Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace(',', '', regex=False), errors='coerce')\nall_drugs = df.groupby(['State', 'Product Name'], as_index=False).agg(\n    units=('Units Reimbursed_num', 'sum'),\n    rx=('Number of Prescriptions_num', 'sum'),\n    amt=('Total Amount Reimbursed_num', 'sum')\n)\nall_drugs = all_drugs[all_drugs['units'].gt(0) & all_drugs['amt'].gt(0)].copy()\nstate_totals = all_drugs.groupby('State', as_index=False).agg(total_amt=('amt', 'sum'))\nqualified = all_drugs[all_drugs['rx'].ge(1000)].copy()\nqualified['amt_per_unit'] = qualified['amt'] / qualified['units']\nimportant = qualified.sort_values(['amt_per_unit', 'Product Name'], ascending=[False, True], kind='mergesort').groupby('State', as_index=False).head(1)\nranked = important.merge(state_totals, on='State', how='left')\nranked['dependence_score'] = ranked['amt'] / ranked['total_amt']\nranked['StateName'] = ranked['State'].map(state_map)\nranked = ranked.sort_values(['dependence_score', 'StateName'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = ', '.join(ranked.iloc[35:38]['StateName'].tolist())\n",
+            "subquestion": "Define a state's most important drug as the drug with the highest reimbursed amount per unit among drugs with at least 1,000 prescriptions, and define dependence as the share of all reimbursed amount tied to that most important drug. Which states ranked 36th through 38th highest by dependence in the second year of <hop 1 answer>?",
+            "answer": "Minnesota, Iowa, Michigan"
+        },
+        "4": {
+            "source": "datagov/state-drug-utilization-data-2021-f9419/files/StateDrugUtilizationData2021.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/state-drug-utilization-data-2021-f9419/files/StateDrugUtilizationData2021.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['State', 'Product Name', 'Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed'])\n\nstate_map = {'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'}\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf = df[df['State'].isin(state_map) & df['Product Name'].ne('')].copy()\nfor col in ['Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace(',', '', regex=False), errors='coerce')\nall_drugs = df.groupby(['State', 'Product Name'], as_index=False).agg(\n    units=('Units Reimbursed_num', 'sum'),\n    rx=('Number of Prescriptions_num', 'sum'),\n    amt=('Total Amount Reimbursed_num', 'sum')\n)\nall_drugs = all_drugs[all_drugs['units'].gt(0) & all_drugs['amt'].gt(0)].copy()\nstate_totals = all_drugs.groupby('State', as_index=False).agg(total_amt=('amt', 'sum'))\nqualified = all_drugs[all_drugs['rx'].ge(1000)].copy()\nqualified['amt_per_unit'] = qualified['amt'] / qualified['units']\nimportant = qualified.sort_values(['amt_per_unit', 'Product Name'], ascending=[False, True], kind='mergesort').groupby('State', as_index=False).head(1)\nranked = important.merge(state_totals, on='State', how='left')\nranked['dependence_score'] = ranked['amt'] / ranked['total_amt']\nranked['StateName'] = ranked['State'].map(state_map)\nranked = ranked.sort_values(['dependence_score', 'StateName'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = ', '.join(ranked.iloc[20:23]['StateName'].tolist())\n",
+            "subquestion": "Define a state's most important drug as the drug with the highest reimbursed amount per unit among drugs with at least 1,000 prescriptions, and define dependence as the share of all reimbursed amount tied to that most important drug. Which states ranked 21st through 23rd highest by dependence in the third year of <hop 1 answer>?",
+            "answer": "North Dakota, Iowa, New Mexico"
+        },
+        "5": {
+            "source": "datagov/quarterly-retail-sales-tax-data-by-county-and-city/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/quarterly-retail-sales-tax-data-by-county-and-city/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['sales_num'] = pd.to_numeric(df['Taxable Sales'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nfiltered = df[\n    df['Quarter Ending'].isin(['06/30/2022', '06/30/2023'])\n    & df['County'].ne('')\n    & df['sales_num'].notna()\n].copy()\ncounty = filtered.groupby(['County', 'Quarter Ending'], as_index=False)['sales_num'].sum()\npivoted = county.pivot(index='County', columns='Quarter Ending', values='sales_num').reset_index()\npivoted = pivoted[pivoted['06/30/2022'].notna() & pivoted['06/30/2023'].notna()].copy()\npivoted['net_growth'] = pivoted['06/30/2023'] - pivoted['06/30/2022']\nranked = pivoted.sort_values(['net_growth', 'County'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = ', '.join(ranked.iloc[1:6]['County'].tolist())\n",
+            "subquestion": "For <hop 2 answer>, which counties had the 2nd to 6th lowest net growth in taxable sales in Q4 from 2022 to 2023?",
+            "answer": "Floyd, Clayton, Clay, Sioux, Palo Alto"
+        },
+        "6": {
+            "source": "wikipedia/Floyd_County,_Iowa/content.txt",
+            "fact": "Floyd County has a listed water area of 0.8 square miles.",
+            "subquestion": "What is the listed water area of the first county in <hop 3 answer>, in square miles?",
+            "answer": 0.8
+        },
+        "7": {
+            "source": "wikipedia/Clayton_County,_Iowa/content.txt",
+            "fact": "Clayton County has a listed water area of 14.167 square miles.",
+            "subquestion": "What is the listed water area of the second county in <hop 3 answer>, in square miles?",
+            "answer": 14.167
+        },
+        "8": {
+            "source": "wikipedia/Clay_County,_Iowa/content.txt",
+            "fact": "Clay County has a listed water area of 5.4 square miles.",
+            "subquestion": "What is the listed water area of the third county in <hop 3 answer>, in square miles?",
+            "answer": 5.4
+        },
+        "9": {
+            "source": "wikipedia/Sioux_County,_Iowa/content.txt",
+            "fact": "Sioux County has a listed water area of 1.082 square miles.",
+            "subquestion": "What is the listed water area of the fourth county in <hop 3 answer>, in square miles?",
+            "answer": 1.082
+        },
+        "10": {
+            "source": "wikipedia/Palo_Alto_County,_Iowa/content.txt",
+            "fact": "Palo Alto County has a listed water area of 5.6 square miles.",
+            "subquestion": "What is the listed water area of the fifth county in <hop 3 answer>, in square miles?",
+            "answer": 5.6
+        }
+    },
+    "datasets_used": [
+        "datagov/star-of-texas-award-recipients-2004-2021/files/rows.txt",
+        "datagov/star-of-texas-award-recipients-2004-2021/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2012-3d87d/files/StateDrugUtilizationData2012.txt",
+        "datagov/state-drug-utilization-data-2012-3d87d/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2012-3d87d/files/state-drug-utilization-data-dictionary.json",
+        "datagov/state-drug-utilization-data-2019/files/StateDrugUtilizationData2019.txt",
+        "datagov/state-drug-utilization-data-2019/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2019/files/state-drug-utilization-data-dictionary.json",
+        "datagov/state-drug-utilization-data-2021-f9419/files/StateDrugUtilizationData2021.txt",
+        "datagov/state-drug-utilization-data-2021-f9419/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2021-f9419/files/state-drug-utilization-data-dictionary.json",
+        "datagov/quarterly-retail-sales-tax-data-by-county-and-city/files/rows.txt",
+        "datagov/quarterly-retail-sales-tax-data-by-county-and-city/signed-metadata.txt",
+        "datagov/quarterly-retail-sales-tax-data-by-county-and-city/files/55fz-vque.publisher-view.json",
+        "wikipedia/Floyd_County,_Iowa/content.txt",
+        "wikipedia/Clayton_County,_Iowa/content.txt",
+        "wikipedia/Clay_County,_Iowa/content.txt",
+        "wikipedia/Sioux_County,_Iowa/content.txt",
+        "wikipedia/Palo_Alto_County,_Iowa/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter Star of Texas recipients to last name `Phipps`, critical incident type `Seriously injured in the line of duty`, and nonempty `Award Year`.",
+                "Hop result: the maximum yearly count is tied across 2012, 2019, and 2021."
+            ],
+            "answer": "2012, 2019, 2021"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Nodes 2-4: For each year in <hop 1 answer>, aggregate drug records by `State` and `Product Name`; require at least `1000` prescriptions and compute reimbursed amount per unit from `Total Amount Reimbursed` and `Units Reimbursed`.",
+                "For each state, keep the qualifying product with the highest reimbursed amount per unit, compute dependence as that product's share of all reimbursed amount, and rank states by dependence.",
+                "Node 2 returns Indiana, Iowa, and Colorado for the first year ranks 6-8.",
+                "Node 3 returns Minnesota, Iowa, and Michigan for the second year ranks 36-38.",
+                "Node 4 returns North Dakota, Iowa, and New Mexico for the third year ranks 21-23.",
+                "Hop result: the only state appearing in all three answers is Iowa."
+            ],
+            "answer": "Iowa"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: For <hop 2 answer>, aggregate `Taxable Sales` by county for the Q4 quarter endings `06/30/2022` and `06/30/2023`.",
+                "Compute net growth as fiscal-2023 Q4 taxable sales minus fiscal-2022 Q4 taxable sales, then sort counties from lowest to highest net growth.",
+                "Hop result: the counties ranked 2nd through 6th lowest are Floyd, Clayton, Clay, Sioux, and Palo Alto."
+            ],
+            "answer": "Floyd, Clayton, Clay, Sioux, Palo Alto"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6,
+                7,
+                8,
+                9,
+                10
+            ],
+            "reasoning": [
+                "Nodes 6-10: The listed water areas for the counties in <hop 3 answer> are `0.8`, `14.167`, `5.4`, `1.082`, and `5.6` square miles, in order.",
+                "The largest value is `14.167`; the smallest value is `0.8`.",
+                "Hop result: `14.167 - 0.8 = 13.367` square miles."
+            ],
+            "answer": 13.367
+        }
+    ]
+}

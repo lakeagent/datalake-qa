@@ -1,0 +1,198 @@
+{
+    "question": "Find the state containing the headquatar of the online platform supporting MITx developed by in partnership with Harvard, consider counties that are in the top 3 by public schools, in the top 3 by private schools, and in the top 3 by school district offices. Using postsecondary institution counts for those counties, identify the single county with the most postsecondary institutions. For that county, compute (public schools - private schools) + (school district offices - postsecondary institutions). Give the final answer as an integer.",
+    "answer": "314",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Massachusetts_Institute_of_Technology/content.txt",
+            "fact": "The \"edX\" online platform supporting MITx was initially developed in partnership with Harvard and its analogous \"Harvardx\" initiative.",
+            "subquestion": "What is the name of the online platform supporting MITx that was initially developed by MIT in partnership with Harvard?",
+            "answer": "EdX"
+        },
+        "2": {
+            "source": "wikipedia/EdX/content.txt",
+            "fact": "Entrance to EdX HQ in Cambridge, Massachusetts. (before it was privatized)",
+            "subquestion": "<hop 1 answer> HQ is in what city?",
+            "answer": "Cambridge"
+        },
+        "3": {
+            "source": "wikipedia/Cambridge,_Massachusetts/content.txt",
+            "fact": "Cambridge ( ) is a city in Middlesex County, Massachusetts, United States.",
+            "subquestion": "<hop 2 answer> is a city in which county?",
+            "answer": "Middlesex County"
+        },
+        "4": {
+            "source": "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+            "fact": "import json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\n\nrows = [\n    feature[\"properties\"]\n    for feature in data[\"features\"]\n    if feature[\"properties\"].get(\"CITY\") == \"Cambridge\"\n    and feature[\"properties\"].get(\"NMCNTY\") == \"Middlesex County\"\n]\n\nresult = sorted({row[\"STFIP\"] for row in rows})\nanswer = result[0] if len(result) == 1 else result",
+            "subquestion": "In the school district office listings, entries with CITY='<hop 2 answer>' and NMCNTY='<hop 3 answer>' share what two-digit state FIPS code (STFIP)?",
+            "answer": "25"
+        },
+        "5": {
+            "source": "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+            "fact": "import json\nfrom collections import Counter\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\n\nrows = [\n    feature[\"properties\"]\n    for feature in data[\"features\"]\n    if feature[\"properties\"].get(\"STFIP\") == \"25\"\n]\n\ncounty_counts = Counter(row[\"NMCNTY\"] for row in rows)\nresult = sorted(county_counts.items(), key=lambda x: (-x[1], x[0]))\nanswer = \"; \".join(county for county, _ in result[:3])",
+            "subquestion": "For STFIP='<node_4 answer>', which 3 county names have the most public schools? Return the county names separated by '; '.",
+            "answer": "Middlesex County; Worcester County; Essex County"
+        },
+        "6": {
+            "source": "datagov/private-school-locations-2019-20-ee873/files/data.txt",
+            "fact": "import json\nfrom collections import Counter\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-2019-20-ee873/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\n\nrows = [\n    feature[\"properties\"]\n    for feature in data[\"features\"]\n    if feature[\"properties\"].get(\"STFIP\") == \"25\"\n]\n\ncounty_counts = Counter(row[\"NMCNTY\"] for row in rows)\nresult = sorted(county_counts.items(), key=lambda x: (-x[1], x[0]))\nanswer = \"; \".join(county for county, _ in result[:3])",
+            "subquestion": "For STFIP='<node_4 answer>', which 3 county names have the most private schools? Return the county names separated by '; '.",
+            "answer": "Middlesex County; Norfolk County; Worcester County"
+        },
+        "7": {
+            "source": "datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt",
+            "fact": "import json\nfrom collections import Counter\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\n\nrows = [\n    feature[\"properties\"]\n    for feature in data[\"features\"]\n    if feature[\"properties\"].get(\"STFIP\") == \"25\"\n]\n\ncounty_counts = Counter(row[\"NMCNTY\"] for row in rows)\nresult = sorted(county_counts.items(), key=lambda x: (-x[1], x[0]))\nanswer = \"; \".join(county for county, _ in result[:3])",
+            "subquestion": "For STFIP='<node_4 answer>', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+            "answer": "Middlesex County; Worcester County; Essex County"
+        },
+        "8": {
+            "source": "datagov/postsecondary-school-locations-current-40ae1/files/nces::postsecondary-school-locations-current-1.txt",
+            "fact": "import xml.etree.ElementTree as ET\nfrom collections import Counter\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-40ae1/files/nces::postsecondary-school-locations-current-1.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\nroot = ET.fromstring(obj[\"Body\"].read())\nns = {\"k\": \"http://www.opengis.net/kml/2.2\"}\n\nrows = []\nfor placemark in root.findall(\".//k:Placemark\", ns):\n    row = {}\n    for simple_data in placemark.findall('.//k:SimpleData', ns):\n        row[simple_data.attrib.get(\"name\")] = simple_data.text\n    if row.get(\"STFIP\") == \"25\":\n        rows.append(row)\n\ncounty_counts = Counter(row[\"NMCNTY\"] for row in rows)\ncandidates = {\"Middlesex County\", \"Worcester County\"}\ncandidate_counts = {county: county_counts[county] for county in candidates}\nanswer = max(candidate_counts.items(), key=lambda x: (x[1], x[0]))[0]",
+            "subquestion": "Among the counties in <hop 5 answer>, which single county has the most postsecondary institutions in STFIP='<node_4 answer>'? Answer with the county name including the word 'County'.",
+            "answer": "Middlesex County"
+        },
+        "9": {
+            "source": "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+            "fact": "import json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\n\nrows = [\n    feature[\"properties\"]\n    for feature in data[\"features\"]\n    if feature[\"properties\"].get(\"STFIP\") == \"25\"\n    and feature[\"properties\"].get(\"NMCNTY\") == \"Middlesex County\"\n]\n\nanswer = len(rows)",
+            "subquestion": "How many public schools have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 382
+        },
+        "10": {
+            "source": "datagov/private-school-locations-2019-20-ee873/files/data.txt",
+            "fact": "import json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-2019-20-ee873/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\n\nrows = [\n    feature[\"properties\"]\n    for feature in data[\"features\"]\n    if feature[\"properties\"].get(\"STFIP\") == \"25\"\n    and feature[\"properties\"].get(\"NMCNTY\") == \"Middlesex County\"\n]\n\nanswer = len(rows)",
+            "subquestion": "How many private schools have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 114
+        },
+        "11": {
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\n\nrows = [\n    feature[\"properties\"]\n    for feature in data[\"features\"]\n    if feature[\"properties\"].get(\"STFIP\") == \"25\"\n    and feature[\"properties\"].get(\"NMCNTY\") == \"Middlesex County\"\n]\n\nanswer = len(rows)",
+            "subquestion": "How many school district offices have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 76
+        },
+        "12": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\n\nrows = [\n    feature[\"properties\"]\n    for feature in data[\"features\"]\n    if feature[\"properties\"].get(\"STFIP\") == \"25\"\n    and feature[\"properties\"].get(\"NMCNTY\") == \"Middlesex County\"\n]\n\nanswer = len(rows)",
+            "subquestion": "How many postsecondary institutions have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 30
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Read the online platform supporting MITx that MIT initially developed in partnership with Harvard from the cited Wikipedia source.",
+                "Hop result: the platform is EdX."
+            ],
+            "answer": "EdX"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Read the city where <hop 1 answer> is headquartered from the cited Wikipedia source.",
+                "Hop result: the city is Cambridge."
+            ],
+            "answer": "Cambridge"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Read the county containing <hop 2 answer> from the cited Wikipedia source.",
+                "Hop result: the county is Middlesex County."
+            ],
+            "answer": "Middlesex County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3 establishes that <hop 2 answer> is in the U.S. state of Massachusetts.",
+                "Node 4 maps the city/county pair `<hop 2 answer>`, `<hop 3 answer>` to the shared two-digit state FIPS code `25`, which is the dataset key needed for the downstream statewide queries.",
+                "Hop result: the relevant state is Massachusetts, queried downstream via `STFIP` 25."
+            ],
+            "answer": "Massachusetts"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5,
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 5: For `STFIP` = `25`, count public schools by county and keep the top three county names.",
+                "Node 6: For `STFIP` = `25`, count private schools by county and keep the top three county names.",
+                "Node 7: For `STFIP` = `25`, count school district offices by county and keep the top three county names.",
+                "Hop result: intersect the three top-three county sets; the shared counties are Middlesex County and Worcester County."
+            ],
+            "answer": [
+                "Middlesex County",
+                "Worcester County"
+            ]
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: For `STFIP` = `25`, count postsecondary institutions by county, restrict to the counties in <hop 5 answer>, and keep the county with the highest count.",
+                "Hop result: the county is Middlesex County."
+            ],
+            "answer": "Middlesex County"
+        },
+        {
+            "hop": 7,
+            "node_ids": [
+                9,
+                10,
+                11,
+                12
+            ],
+            "reasoning": [
+                "Node 9: For `STFIP` = `25` and `NMCNTY` = <hop 6 answer>, count public schools.",
+                "Node 10: For `STFIP` = `25` and `NMCNTY` = <hop 6 answer>, count private schools.",
+                "Node 11: For `STFIP` = `25` and `NMCNTY` = <hop 6 answer>, count school district offices.",
+                "Node 12: For `STFIP` = `25` and `NMCNTY` = <hop 6 answer>, count postsecondary institutions.",
+                "Hop result: compute `(382 - 114) + (76 - 30) = 314`."
+            ],
+            "answer": 314
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Massachusetts_Institute_of_Technology/content.txt",
+        "wikipedia/EdX/content.txt",
+        "wikipedia/Cambridge,_Massachusetts/content.txt",
+        "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+        "datagov/school-district-office-locations-current-d848f/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-d848f/files/0.arcgis-layer.json",
+        "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+        "datagov/public-school-locations-2018-19-42360/signed-metadata.txt",
+        "datagov/public-school-locations-2018-19-42360/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-2019-20-ee873/files/data.txt",
+        "datagov/private-school-locations-2019-20-ee873/signed-metadata.txt",
+        "datagov/private-school-locations-2019-20-ee873/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt",
+        "datagov/school-district-office-locations-2022-23/signed-metadata.txt",
+        "datagov/school-district-office-locations-2022-23/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-current-40ae1/files/nces::postsecondary-school-locations-current-1.txt",
+        "datagov/postsecondary-school-locations-current-40ae1/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-40ae1/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt"
+    ]
+}

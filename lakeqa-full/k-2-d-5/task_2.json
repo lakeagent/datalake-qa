@@ -1,0 +1,167 @@
+{
+  "question": "Among Texas counties that were in the top five for average capital outlay spending from 2018 to 2021, how many have a county seat with the same name as the county? Return only the number in the format [Answer].",
+  "answer": 1,
+  "nodes": {
+    "1": {
+      "source": "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-state-expenditures-by-county-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nmask = ((df[\"Fiscal Year\"] == 2018) & df[\"County\"].notna() & (df[\"County\"].astype(str).str.strip() != \"\") & df[\"Major Spending Category\"].astype(str).str.contains(\"CAPITAL OUTLAY\", na=False))\nanswer = (df.loc[mask].groupby(\"County\")[\"Amount\"].sum().sort_values(ascending=False).round(2).to_dict())",
+      "subquestion": "What were the FY2018 capital outlay expenditure totals by Texas county?",
+      "answer": {
+        "HARRIS": 1303630847.3,
+        "DALLAS": 838316444.65,
+        "TRAVIS": 427160745.36,
+        "MONTGOMERY": 424383088.05,
+        "BEXAR": 269462082.97,
+        "TARRANT": 195326742.86,
+        "DENTON": 186170844.17,
+        "HAYS": 180311763.03,
+        "NUECES": 180007685.62,
+        "EL PASO": 123694754.23
+      },
+      "limit": 10
+    },
+    "2": {
+      "source": "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-state-expenditures-by-county-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nmask = ((df[\"Fiscal Year\"] == 2019) & df[\"County\"].notna() & (df[\"County\"].astype(str).str.strip() != \"\") & df[\"Major Spending Category\"].astype(str).str.contains(\"CAPITAL OUTLAY\", na=False))\nanswer = (df.loc[mask].groupby(\"County\")[\"Amount\"].sum().sort_values(ascending=False).round(2).to_dict())",
+      "subquestion": "What were the FY2019 capital outlay expenditure totals by Texas county?",
+      "answer": {
+        "HARRIS": 1391779835.06,
+        "DALLAS": 827510409.8,
+        "TRAVIS": 614936080.37,
+        "MONTGOMERY": 416744287.28,
+        "BEXAR": 302940592.72,
+        "DENTON": 260841655.76,
+        "NUECES": 243549894.71,
+        "TARRANT": 180443982.39,
+        "WILLIAMSON": 162099329.96,
+        "HAYS": 154023926.62
+      },
+      "limit": 10
+    },
+    "3": {
+      "source": "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-state-expenditures-by-county-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nmask = ((df[\"Fiscal Year\"] == 2020) & df[\"County\"].notna() & (df[\"County\"].astype(str).str.strip() != \"\") & df[\"Major Spending Category\"].astype(str).str.contains(\"CAPITAL OUTLAY\", na=False))\nanswer = (df.loc[mask].groupby(\"County\")[\"Amount\"].sum().sort_values(ascending=False).round(2).to_dict())",
+      "subquestion": "What were the FY2020 capital outlay expenditure totals by Texas county?",
+      "answer": {
+        "HARRIS": 1663151150.96,
+        "DALLAS": 1324261419.12,
+        "TRAVIS": 821945717.49,
+        "MONTGOMERY": 612813968.49,
+        "BEXAR": 494340352.72,
+        "DENTON": 355805325.9,
+        "NUECES": 350680573.97,
+        "HAYS": 251859833.02,
+        "TARRANT": 189569631.26,
+        "MCLENNAN": 171511743.04
+      },
+      "limit": 10
+    },
+    "4": {
+      "source": "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-state-expenditures-by-county-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nmask = ((df[\"Fiscal Year\"] == 2021) & df[\"County\"].notna() & (df[\"County\"].astype(str).str.strip() != \"\") & df[\"Major Spending Category\"].astype(str).str.contains(\"CAPITAL OUTLAY\", na=False))\nanswer = (df.loc[mask].groupby(\"County\")[\"Amount\"].sum().sort_values(ascending=False).round(2).to_dict())",
+      "subquestion": "What were the FY2021 capital outlay expenditure totals by Texas county?",
+      "answer": {
+        "HARRIS": 1741663003.68,
+        "DALLAS": 1171406639.17,
+        "TRAVIS": 774601022.23,
+        "MONTGOMERY": 705433711.03,
+        "BEXAR": 596386366.99,
+        "DENTON": 412077419.13,
+        "HAYS": 242238383.67,
+        "TARRANT": 228788736.63,
+        "NUECES": 165289397.9,
+        "EL PASO": 144869614.83
+      },
+      "limit": 10
+    },
+    "5": {
+      "source": "wikipedia/Harris_County,_Texas/content.txt",
+      "fact": "Its county seat is Houston, the most populous city in Texas and the fourth-most populous city in the United States.",
+      "subquestion": "As of 2025, what is the county seat of the county ranked first in <hop 1 answer>?",
+      "answer": "Houston"
+    },
+    "6": {
+      "source": "wikipedia/Dallas_County,_Texas/content.txt",
+      "fact": "Its county seat is Dallas, the third-most populous city in Texas and the ninth-most populous city in the United States.",
+      "subquestion": "As of 2025, what is the county seat of the county ranked second in <hop 1 answer>?",
+      "answer": "Dallas"
+    },
+    "7": {
+      "source": "wikipedia/Travis_County,_Texas/content.txt",
+      "fact": "Its county seat and most populous city is Austin, the state's capital.",
+      "subquestion": "As of 2025, what is the county seat of the county ranked third in <hop 1 answer>?",
+      "answer": "Austin"
+    },
+    "8": {
+      "source": "wikipedia/Montgomery_County,_Texas/content.txt",
+      "fact": "Its county seat is Conroe.",
+      "subquestion": "As of 2025, what is the county seat of the county ranked fourth in <hop 1 answer>?",
+      "answer": "Conroe"
+    },
+    "9": {
+      "source": "wikipedia/Bexar_County,_Texas/content.txt",
+      "fact": "It is in South Texas and its county seat is San Antonio.",
+      "subquestion": "As of 2025, what is the county seat of the county ranked fifth in <hop 1 answer>?",
+      "answer": "San Antonio"
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Harris_County,_Texas/content.txt",
+    "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2018/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2018/files/f2iw-dtqt.txt",
+    "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2019/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2019/files/2x5x-m677.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2020/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/aact-g69n.publisher-view.json",
+    "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2021/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2021/files/tup7-smjg.publisher-view.json",
+    "wikipedia/Dallas_County,_Texas/content.txt",
+    "wikipedia/Travis_County,_Texas/content.txt",
+    "wikipedia/Montgomery_County,_Texas/content.txt",
+    "wikipedia/Bexar_County,_Texas/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: For FY2018, group rows by `County`, sum `Amount`, and keep the full `County` -> capital outlay total mapping.",
+        "Node 2: For FY2019, group rows by `County`, sum `Amount`, and keep the full `County` -> capital outlay total mapping.",
+        "Node 3: For FY2020, group rows by `County`, sum `Amount`, and keep the full `County` -> capital outlay total mapping.",
+        "Node 4: For FY2021, group rows by `County`, sum `Amount`, and keep the full `County` -> capital outlay total mapping.",
+        "Hop result: compare the cross-year average capital outlay total for each county using the full per-year county mappings from nodes 1-4; in descending order, the top five counties are `HARRIS`, `DALLAS`, `TRAVIS`, `MONTGOMERY`, and `BEXAR`."
+      ],
+      "answer": [
+        "HARRIS",
+        "DALLAS",
+        "TRAVIS",
+        "MONTGOMERY",
+        "BEXAR"
+      ]
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "reasoning": [
+        "Nodes 5-9 provide the county seats for the five counties in <hop 1 answer>, in the same order.",
+        "Only Dallas County has a county seat with the same name as the county, so the count is 1."
+      ],
+      "answer": 1
+    }
+  ]
+}

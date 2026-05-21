@@ -1,0 +1,67 @@
+{
+  "question": "Start with the Oklahoma county that has the most listings in the public library directory. Then find the city in that county with the highest total number of units across multi-family developments funded by the Oklahoma Housing Finance Agency. As of 2025, how many counties covers that city? Please return only the number in the format [Answer].",
+  "answer": 4,
+  "nodes": {
+    "1": {
+      "source": "datagov/oklahoma-public-library-directory-c11a9/files/data-oklahoma-public-library-directory.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/oklahoma-public-library-directory-c11a9/files/data-oklahoma-public-library-directory.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['county_norm'] = df['COUNTY'].astype(str).str.strip().str.upper()\ncounty_counts = df.groupby('county_norm', dropna=True).size().sort_values(ascending=False)\nanswer = str(county_counts.idxmax()).title()\n",
+      "subquestion": "Which Oklahoma county has the most listings in the public library directory?",
+      "answer": "Tulsa"
+    },
+    "2": {
+      "source": "datagov/oklahoma-housing-finance-agency-funded-developments-in-service/files/t-ohfa-funded-multi-family-developments.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/oklahoma-housing-finance-agency-funded-developments-in-service/files/t-ohfa-funded-multi-family-developments.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_1_answer = 'Tulsa'\ndf['county_norm'] = df['COUNTY'].astype(str).str.strip().str.upper()\ndf['city_norm'] = df['Location 1'].astype(str).str.extract(r'\\n([^\\n,]+),\\s*OK\\s+\\d{5}', expand=False).astype(str).str.strip().str.upper()\ndf['units'] = pd.to_numeric(df['Total # units'], errors='coerce')\nfiltered = df[df['county_norm'].eq(str(node_1_answer).strip().upper())].copy()\ncity_totals = filtered.groupby('city_norm', dropna=True)['units'].sum().sort_values(ascending=False)\nanswer = str(city_totals.idxmax()).title()\n",
+      "subquestion": "Within <hop 1 answer> County, which city has the highest total number of units across multi-family developments funded by the Oklahoma Housing Finance Agency?",
+      "answer": "Tulsa"
+    },
+    "3": {
+      "source": "wikipedia/Tulsa,_Oklahoma/content.txt",
+      "fact": "Tulsa ( ) is the second-most-populous city in the U.S. state of Oklahoma and the 48th-most populous city in the United States. The population was 413,066 as of the 2020 census. It is the principal municipality of the Tulsa metropolitan area, a region with 1.06 million residents. The city serves as the county seat of Tulsa County, the most densely populated county in Oklahoma, with urban development extending into Osage, Rogers and Wagoner counties.\n\nTulsa was settled between 1828 and 1836 by the Lochapoka band of Creek Native Americans, and was formally incorporated in 1898. Most of Tulsa is still part of the territory of the Muscogee (Creek) Nation. Northwest Tulsa lies in the Osage Nation whereas North Tulsa is within the Cherokee Nation.\n\nHistorically, a robust energy sector fueled Tulsa's economy; however, today the city has diversified and leading sectors include finance, aviation, telecommunications, and technology. Two institutions of higher education within the city have sports teams at the NCAA Division I level: the University of Tulsa and Oral Roberts University. In addition, the University of Oklahoma has a secondary campus at the Tulsa Schusterman Center, and Oklahoma State University has a secondary campus located in downtown Tulsa. For most of the 20th century, the city held the nickname \"Oil Capital of the World\" and played a major role as one of the most important hubs for the American oil industry.\n\nIt is situated on the Arkansas River in the western foothills of the Ozark Mountains, south of the Osage Hills (which extend into Northwest Tulsa) in northeast Oklahoma, a region of the state known as \"Green Country\". Considered the cultural and arts center of Oklahoma, Tulsa houses two accredited art museums, full-time professional opera and ballet companies, and one of the nation's largest concentrations of art deco architecture.",
+      "subquestion": "As of 2025, how many counties contain parts of <hop 2 answer>, Oklahoma?",
+      "answer": 4
+    }
+  },
+  "datasets_used": [
+    "datagov/oklahoma-public-library-directory-c11a9/files/data-oklahoma-public-library-directory.txt",
+    "datagov/oklahoma-public-library-directory-c11a9/signed-metadata.txt",
+    "datagov/oklahoma-housing-finance-agency-funded-developments-in-service/files/t-ohfa-funded-multi-family-developments.txt",
+    "datagov/oklahoma-housing-finance-agency-funded-developments-in-service/signed-metadata.txt",
+    "datagov/oklahoma-housing-finance-agency-funded-developments-in-service/files/data-oklahoma-housing-finance-agency-funded-developments-in-service.txt",
+    "wikipedia/Tulsa,_Oklahoma/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the Oklahoma public library directory, Tulsa County has the most listings with 27, ahead of Oklahoma County with 20.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "Tulsa"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Within Tulsa County, Tulsa has the largest total number of OHFA-funded development units, with 5,142 units.",
+        "Hop result: <node_2 answer>"
+      ],
+      "answer": "Tulsa"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: Tulsa serves as the county seat of Tulsa County, and urban development extends into Osage, Rogers, and Wagoner counties.",
+        "Hop result: Tulsa, Osage, Rogers, and Wagoner make 4 counties."
+      ],
+      "answer": 4
+    }
+  ]
+}

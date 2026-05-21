@@ -1,0 +1,48 @@
+{
+    "question": "Which year from 2005-2010 has the highest total number of murders in Maryland. After finding that, how many hurricanes occurred in that year's Atlantic hurricane season? Your response should be in the format [Answer].",
+    "answer": "6",
+    "nodes": {
+        "1": {
+            "source": "datagov/violent-crime-property-crime-by-county-1975-to-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/violent-crime-property-crime-by-county-1975-to-present/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=None, engine=\"python\")\n\n\ndf[\"YEAR\"] = pd.to_numeric(df[\"YEAR\"], errors=\"coerce\")\ndf[\"MURDER\"] = pd.to_numeric(df[\"MURDER\"], errors=\"coerce\")\nfiltered = df[df[\"YEAR\"].between(2005, 2010)]\nyearly_totals = filtered.groupby(\"YEAR\", dropna=True)[\"MURDER\"].sum()\nanswer = str(int(yearly_totals.idxmax()))\n",
+            "subquestion": "Which year from 2005-2010 has the highest total number of murders in Maryland?",
+            "answer": "2007"
+        },
+        "2": {
+            "source": "wikipedia/2007_Atlantic_hurricane_season/content.txt",
+            "fact": "It produced 17 tropical cyclones, 15 tropical storms, six hurricanes, and two major hurricanes.",
+            "subquestion": "How many hurricanes occurred in the <hop 1 answer> Atlantic hurricane season?",
+            "answer": "6"
+        }
+    },
+    "datasets_used": [
+        "datagov/violent-crime-property-crime-by-county-1975-to-present/files/rows.txt",
+        "datagov/violent-crime-property-crime-by-county-1975-to-present/signed-metadata.txt",
+        "datagov/violent-crime-property-crime-by-county-1975-to-present/files/Crime_in_Maryland_2023_Uniform_Crime_Report.pdf",
+        "wikipedia/2007_Atlantic_hurricane_season/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Sum `MURDER` counts by `YEAR` from 2005 to 2010 and select the year with the highest total. The peak year is 2007.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2007"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: 6 hurricanes occurred in the 2007 Atlantic hurricane season.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "6"
+        }
+    ]
+}

@@ -1,0 +1,71 @@
+{
+    "question": "I'm researching a state that ranks 7th through 11th on both of these lists: states ordered by how often babies under 1 were recorded as abuse or neglect victims for every 1,000 children that age in the most recent federal fiscal year covered by the file, and states ordered by the total federal funding tied to Medicaid's temporary COVID-19 testing coverage for uninsured people after adding all quarterly filings from 2020 through 2023. Break any ties alphabetically when identifying the state. After finding it, how many calls came into its Medicaid and CHIP call center in February 2024? Respond with [Answer].",
+    "answer": 416910,
+    "nodes": {
+        "1": {
+            "source": "datagov/child-victims-by-age/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/child-victims-by-age/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nrate_col = \"<1 Rate per 1,000 Children\"\nranked = (\n    df.loc[df[rate_col].notna(), [\"State\", rate_col]]\n      .sort_values([rate_col, \"State\"], ascending=[False, True])\n      .reset_index(drop=True)\n)\nanswer = ranked.iloc[6:11][\"State\"].tolist()",
+            "subquestion": "Across U.S. states in the most recent federal fiscal year covered by the file, which states rank 7th through 11th when ordered by how often babies under 1 were recorded as abuse or neglect victims for every 1,000 children that age, breaking ties alphabetically?",
+            "answer": [
+                "Louisiana",
+                "Iowa",
+                "Rhode Island",
+                "South Carolina",
+                "Massachusetts"
+            ]
+        },
+        "2": {
+            "source": "datagov/medicaid-cms-64-ffcra-increased-fmap-expenditure/files/Medicaid-CMS-64-FFCRA-Increased-FMAP-Expenditure-02202024.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/medicaid-cms-64-ffcra-increased-fmap-expenditure/files/Medicaid-CMS-64-FFCRA-Increased-FMAP-Expenditure-02202024.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nvalue_col = \"Total Federal Share Section 6004: COVID-19 Testing Group MAP Expenditures (100% Federal Match)\"\nstate_col = \"State\"\nvalid_states = {\n    \"Alabama\", \"Alaska\", \"Arizona\", \"Arkansas\", \"California\", \"Colorado\", \"Connecticut\", \"Delaware\",\n    \"Florida\", \"Georgia\", \"Hawaii\", \"Idaho\", \"Illinois\", \"Indiana\", \"Iowa\", \"Kansas\", \"Kentucky\",\n    \"Louisiana\", \"Maine\", \"Maryland\", \"Massachusetts\", \"Michigan\", \"Minnesota\", \"Mississippi\",\n    \"Missouri\", \"Montana\", \"Nebraska\", \"Nevada\", \"New Hampshire\", \"New Jersey\", \"New Mexico\",\n    \"New York\", \"North Carolina\", \"North Dakota\", \"Ohio\", \"Oklahoma\", \"Oregon\", \"Pennsylvania\",\n    \"Rhode Island\", \"South Carolina\", \"South Dakota\", \"Tennessee\", \"Texas\", \"Utah\", \"Vermont\",\n    \"Virginia\", \"Washington\", \"West Virginia\", \"Wisconsin\", \"Wyoming\"\n}\n\ndf[value_col] = pd.to_numeric(df[value_col].astype(str).str.replace(\",\", \"\", regex=False).str.strip(), errors=\"coerce\")\nranked = (\n    df.loc[df[state_col].isin(valid_states)]\n      .groupby(state_col, as_index=False)[value_col]\n      .sum()\n      .sort_values([value_col, state_col], ascending=[False, True])\n      .reset_index(drop=True)\n)\nanswer = ranked.iloc[6:11][state_col].tolist()",
+            "subquestion": "Which states rank 7th through 11th, breaking ties alphabetically, when ordered by the total federal funding tied to Medicaid's temporary COVID-19 testing coverage for uninsured people after adding all quarterly filings from 2020 through 2023?",
+            "answer": [
+                "New Hampshire",
+                "Maine",
+                "Louisiana",
+                "Minnesota",
+                "New Mexico"
+            ]
+        },
+        "3": {
+            "source": "datagov/medicaid-and-chip-caa-reporting-metrics-62cca/files/medicaid-chip-caa-reporting-metrics-long-table-may-2024-release.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/medicaid-and-chip-caa-reporting-metrics-62cca/files/medicaid-chip-caa-reporting-metrics-long-table-may-2024-release.txt\"\nstate_code = \"LA\"\nmetric_name = \"Total call center volume (number of calls)\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf.columns = [c.strip() for c in df.columns]\n\nfiltered = df[\n    (df[\"State\"].astype(str).str.strip() == state_code)\n    & (pd.to_numeric(df[\"Reporting period\"], errors=\"coerce\") == 202402)\n    & (df[\"Metric name\"].astype(str).str.strip() == metric_name)\n].copy()\nfiltered[\"Value\"] = pd.to_numeric(filtered[\"Value\"], errors=\"coerce\")\n\nanswer = int(filtered.iloc[0][\"Value\"])",
+            "subquestion": "In February 2024, how many calls came into <hop 1 answer>'s Medicaid and CHIP call center?",
+            "answer": 416910
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Sort states by `<1 Rate per 1,000 Children>` descending and `State` ascending to break ties alphabetically, and take ranks 7 through 11.",
+                "Node 2: Convert `Total Federal Share Section 6004: COVID-19 Testing Group MAP Expenditures (100% Federal Match)` to numeric, keep valid U.S. states, group by `State` to sum total reimbursement across all quarterly reports, sort by total reimbursement descending and state ascending to break ties alphabetically, and take ranks 7 through 11.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Louisiana."
+            ],
+            "answer": "Louisiana"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `State` = `LA`, `Reporting period` = `202402`, and `Metric name` = `Total call center volume (number of calls)`, convert `Value` to numeric, and report the call count.",
+                "Hop result: Louisiana's Medicaid and CHIP call center received 416910 calls in February 2024."
+            ],
+            "answer": 416910
+        }
+    ],
+    "datasets_used": [
+        "datagov/child-victims-by-age/files/rows.txt",
+        "datagov/child-victims-by-age/signed-metadata.txt",
+        "datagov/child-victims-by-age/files/xn3e-yyaj.publisher-view.json",
+        "datagov/medicaid-cms-64-ffcra-increased-fmap-expenditure/files/Medicaid-CMS-64-FFCRA-Increased-FMAP-Expenditure-02202024.txt",
+        "datagov/medicaid-cms-64-ffcra-increased-fmap-expenditure/signed-metadata.txt",
+        "datagov/medicaid-and-chip-caa-reporting-metrics-62cca/files/medicaid-chip-caa-reporting-metrics-long-table-may-2024-release.txt",
+        "datagov/medicaid-and-chip-caa-reporting-metrics-62cca/signed-metadata.txt"
+    ]
+}

@@ -1,0 +1,29 @@
+{
+    "question": "Which year from 2011-2016 has the highest average unemployment rate for ages 16-19 across U.S. states? Your response should be in the format [Answer].",
+    "answer": "2012",
+    "nodes": {
+        "1": {
+            "source": "datagov/unemployment-rate-by-age-groups/files/unemployment_rate_by_age_groups.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/unemployment-rate-by-age-groups/files/unemployment_rate_by_age_groups.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Age 16-19\"] = pd.to_numeric(df[\"Age 16-19\"], errors=\"coerce\")\nfiltered = df[df[\"Year\"].between(2011, 2016) & df[\"Area Type\"].eq(\"State\")].copy()\nyearly_averages = filtered.groupby(\"Year\", dropna=True)[\"Age 16-19\"].mean()\nanswer = str(int(yearly_averages.idxmax()))\n",
+            "subquestion": "Which year from 2011-2016 has the highest average unemployment rate for ages 16-19 across U.S. states?",
+            "answer": "2012"
+        }
+    },
+    "datasets_used": [
+        "datagov/unemployment-rate-by-age-groups/files/unemployment_rate_by_age_groups.txt",
+        "datagov/unemployment-rate-by-age-groups/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter to `Area Type` = `State`, average `Age 16-19` by `Year` within 2011-2016, and select the year with the largest average. The answer is 2012.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2012"
+        }
+    ]
+}

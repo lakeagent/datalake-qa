@@ -1,0 +1,97 @@
+{
+    "question": "For the city where the Florida Department of Education is headquartered, identify the county from private-school records, then subtract the number of postsecondary institutions from the number of public schools in that city and county in school year 2022-2023. What is that difference per acre at the Big Bend-area natural and cultural history museum in that city? Round your answer to one decimal. Your response should be in the format [Answer].",
+    "answer": "1.0",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Florida_Department_of_Education/content.txt",
+            "fact": "The Florida Department of Education is headquartered in Tallahassee.",
+            "subquestion": "In which city is the Florida Department of Education headquartered?",
+            "answer": "Tallahassee"
+        },
+        "2": {
+            "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Tallahassee'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2021-2022')\n]\nanswer = filtered[\"NMCNTY\"].dropna().astype(str).str.strip().iloc[0]\n",
+            "subquestion": "In school year 2021-2022, among private schools located in the city of <node_1 answer>, what is the county name?",
+            "answer": "Leon County"
+        },
+        "3": {
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-current-23297/files/data-oyCYxF.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Tallahassee'\nnode_2_answer = 'Leon County'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n].copy()\nfiltered = filtered[filtered[\"NMCNTY\"].astype(str).str.strip().str.lower().eq(str(node_2_answer).strip().lower())]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In school year 2022-2023, how many public schools are located in the city of <node_1 answer> in <node_2 answer>?",
+            "answer": "61"
+        },
+        "4": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Tallahassee'\nnode_2_answer = 'Leon County'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n].copy()\nfiltered = filtered[filtered[\"NMCNTY\"].astype(str).str.strip().str.lower().eq(str(node_2_answer).strip().lower())]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In school year 2022-2023, how many postsecondary institutions are located in the city of <node_1 answer> in <node_2 answer>?",
+            "answer": "8"
+        },
+        "5": {
+            "source": "wikipedia/Tallahassee_Museum/content.txt",
+            "fact": "The stated purpose of the Tallahassee Museum is \"to educate the residents of and visitors to the Big Bend area about the region's natural and cultural history, from the nineteenth century until the present.\" The museum was moved to its current 52-acre location in 1962. Computation: 53 / 52 = 1.0192, which rounds to 1.0.",
+            "subquestion": "What is <hop 3 answer> per acre at the Big Bend-area natural and cultural history museum in <hop 1 answer>? Round your answer to one decimal.",
+            "answer": "1.0"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Florida_Department_of_Education/content.txt",
+        "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+        "datagov/private-school-locations-current-f7d96/signed-metadata.txt",
+        "datagov/private-school-locations-current-f7d96/files/0.arcgis-layer.json",
+        "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+        "datagov/public-school-locations-current-23297/signed-metadata.txt",
+        "datagov/public-school-locations-current-23297/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt",
+        "wikipedia/Tallahassee_Museum/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Tallahassee is where the Florida Department of Education is headquartered.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Tallahassee"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `CITY` is <hop 1 answer> and `SCHOOLYEAR` is 2021-2022, then take the first non-null value in `NMCNTY`.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Leon County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `CITY` is <hop 1 answer>, `SCHOOLYEAR` is 2022-2023, and `NMCNTY` is <hop 2 answer>, then count the remaining records.",
+                "Node 4: Filter rows where `CITY` is <hop 1 answer>, `SCHOOLYEAR` is 2022-2023, and `NMCNTY` is <hop 2 answer>, then count the remaining records.",
+                "Hop result: <node_3 answer> - <node_4 answer> = 61 - 8 = 53."
+            ],
+            "answer": "53"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Divide <hop 3 answer> by the acreage of the Big Bend-area natural and cultural history museum in <hop 1 answer>, and round to one decimal.",
+                "Hop result: <node_5 answer>"
+            ],
+            "answer": "1.0"
+        }
+    ]
+}

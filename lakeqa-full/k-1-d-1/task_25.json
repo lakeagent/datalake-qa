@@ -1,0 +1,30 @@
+{
+    "question": "Which year from 2011-2016 has the highest total passenger count across Los Angeles International Airport (LAX) terminals? Your response should be in the format [Answer].",
+    "answer": "2016",
+    "nodes": {
+        "1": {
+            "source": "datagov/los-angeles-international-airport-passenger-traffic-by-terminal/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/los-angeles-international-airport-passenger-traffic-by-terminal/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_datetime(df[\"ReportPeriod\"], format=\"%m/%d/%Y %I:%M:%S %p\", errors=\"coerce\").dt.year\ndf[\"Passenger_Count\"] = pd.to_numeric(df[\"Passenger_Count\"], errors=\"coerce\")\nfiltered = df[df[\"Year\"].between(2011, 2016)].copy()\nyearly_totals = filtered.groupby(\"Year\", dropna=True)[\"Passenger_Count\"].sum()\nanswer = str(int(yearly_totals.idxmax()))\n",
+            "subquestion": "Which year from 2011-2016 has the highest total passenger count across Los Angeles International Airport (LAX) terminals?",
+            "answer": "2016"
+        }
+    },
+    "datasets_used": [
+        "datagov/los-angeles-international-airport-passenger-traffic-by-terminal/files/rows.txt",
+        "datagov/los-angeles-international-airport-passenger-traffic-by-terminal/signed-metadata.txt",
+        "datagov/los-angeles-international-airport-passenger-traffic-by-terminal/files/g3qu-7q2u.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Group records by year parsed from `ReportPeriod`, sum `Passenger_Count` within 2011-2016, and select the year with the largest total. The answer is 2016.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2016"
+        }
+    ]
+}

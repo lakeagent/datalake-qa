@@ -1,0 +1,66 @@
+{
+  "question": "In 2019 data reported by the Los Angeles Police Department, find the geo area with the most moving-traffic arrests. For that area, compare the founding or opening years of the area itself, its public airport, and the public high school named after it. What is the difference between the latest and earliest of those years? Your response should be in the format [Answer].",
+  "answer": 17,
+  "nodes": {
+    "1": {
+      "source": "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = \"datagov/arrest-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\n\ncounts = {}\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"Arrest Date\", \"Area Name\", \"Charge Group Description\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    filtered = chunk[\n        chunk[\"Arrest Date\"].astype(str).str.contains(\"2019\", na=False)\n        & chunk[\"Charge Group Description\"].astype(str).str.strip().str.lower().eq(\"moving traffic violations\")\n    ]\n    vc = filtered[\"Area Name\"].astype(str).str.strip().value_counts()\n    for area, cnt in vc.items():\n        counts[area] = counts.get(area, 0) + int(cnt)\nanswer = str(max(counts, key=counts.get))\n",
+      "subquestion": "In 2019 arrest data, which area has the most arrests in the charge group \"Moving Traffic Violations\"?",
+      "answer": "Van Nuys"
+    },
+    "2": {
+      "source": "wikipedia/Van_Nuys/content.txt",
+      "fact": "Van Nuys was founded in 1911.",
+      "subquestion": "In what year was <hop 1 answer> founded?",
+      "answer": 1911
+    },
+    "3": {
+      "source": "wikipedia/Van_Nuys_Airport/content.txt",
+      "fact": "The airport opened as Metropolitan Airport on December 17, 1928.",
+      "subquestion": "In what year did the public airport in <hop 1 answer> open?",
+      "answer": 1928
+    },
+    "4": {
+      "source": "wikipedia/Van_Nuys_High_School/content.txt",
+      "fact": "Van Nuys High School opened in 1914.",
+      "subquestion": "In what year did the public high school named after <hop 1 answer> open?",
+      "answer": 1914
+    }
+  },
+  "datasets_used": [
+    "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+    "datagov/arrest-data-from-2010-to-2019/signed-metadata.txt",
+    "datagov/arrest-data-from-2010-to-2019/files/yru6-6re4.publisher-view.json",
+    "wikipedia/Van_Nuys/content.txt",
+    "wikipedia/Van_Nuys_Airport/content.txt",
+    "wikipedia/Van_Nuys_High_School/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In 2019, the area with the most arrests in the charge group \"Moving Traffic Violations\" is Van Nuys (455 arrests).",
+        "Derive hop 1 answer using node 1."
+      ],
+      "answer": "Van Nuys"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 2: <hop 1 answer> was founded in `1911`.",
+        "Node 3: The public airport in <hop 1 answer> opened in `1928`.",
+        "Node 4: The public high school named after <hop 1 answer> opened in `1914`.",
+        "Derive hop 2 answer using nodes 2, 3, and 4: The latest year is `1928` and the earliest is `1911`; compute `1928 - 1911 = 17`. Hop answer: 17."
+      ],
+      "answer": 17
+    }
+  ]
+}

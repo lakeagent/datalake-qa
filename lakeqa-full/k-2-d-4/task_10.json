@@ -1,0 +1,76 @@
+{
+  "question": "In 2023, which U.S. state had the 5th highest diesel fuel tax rate? Among the U.S. states bordering that state, how many are in New England? Please return only the number in the format [Answer].",
+  "answer": 2,
+  "nodes": {
+    "1": {
+      "source": "datagov/tax-rates-by-motor-fuel-and-state/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/tax-rates-by-motor-fuel-and-state/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"rate_num\"] = pd.to_numeric(df[\"rate\"], errors=\"coerce\")\nfiltered = df[\n    df[\"MMFR_year\"].eq(\"2023\")\n    & df[\"fuel_type\"].eq(\"Diesel\")\n    & df[\"rate_num\"].notna()\n].copy()\nranked = filtered.sort_values([\"rate_num\", \"state\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = str(ranked.iloc[4][\"state\"])\n",
+      "subquestion": "In 2023, for diesel fuel, which U.S. state had the 5th highest tax rate?",
+      "answer": "Connecticut"
+    },
+    "2": {
+      "source": "wikipedia/Connecticut/content.txt",
+      "fact": "It borders Rhode Island to the east, Massachusetts to the north, New York to the west, and Long Island Sound to the south.",
+      "subquestion": "Which U.S. states border <hop 1 answer>?",
+      "answer": "Rhode Island; Massachusetts; New York"
+    },
+    "3": {
+      "source": "wikipedia/Rhode_Island/content.txt",
+      "fact": "Rhode Island ( ) is a state in the New England region of the Northeastern United States.",
+      "subquestion": "Which region contains Rhode Island, a U.S. state bordering <hop 1 answer>?",
+      "answer": "New England"
+    },
+    "4": {
+      "source": "wikipedia/Massachusetts/content.txt",
+      "fact": "Massachusetts (  ;  ), officially the Commonwealth of Massachusetts, is a state in the New England region of the Northeastern United States.",
+      "subquestion": "Which region contains Massachusetts, a U.S. state bordering <hop 1 answer>?",
+      "answer": "New England"
+    },
+    "5": {
+      "source": "wikipedia/New_York_(state)/content.txt",
+      "fact": "New York, also called New York State, is a state in the northeastern United States.",
+      "subquestion": "Which region contains New York, a U.S. state bordering <hop 1 answer>?",
+      "answer": "northeastern United States"
+    }
+  },
+  "datasets_used": [
+    "datagov/tax-rates-by-motor-fuel-and-state/files/rows.txt",
+    "datagov/tax-rates-by-motor-fuel-and-state/signed-metadata.txt",
+    "datagov/tax-rates-by-motor-fuel-and-state/files/e5cn-ri8q.txt",
+    "wikipedia/Connecticut/content.txt",
+    "wikipedia/Rhode_Island/content.txt",
+    "wikipedia/Massachusetts/content.txt",
+    "wikipedia/New_York_(state)/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the motor fuel tax dataset, filter to 2023 diesel fuel records and rank states by tax rate descending, breaking ties alphabetically.",
+        "The state with the 5th-highest diesel tax rate is Connecticut.",
+        "Hop result: Connecticut."
+      ],
+      "answer": "Connecticut"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 2: The U.S. states bordering <hop 1 answer> are Rhode Island, Massachusetts, and New York.",
+        "Node 3: Rhode Island is in New England.",
+        "Node 4: Massachusetts is in New England.",
+        "Node 5: New York is in the northeastern United States, not New England.",
+        "Hop result: 2."
+      ],
+      "answer": 2
+    }
+  ]
+}

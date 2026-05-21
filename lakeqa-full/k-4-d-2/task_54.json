@@ -1,0 +1,122 @@
+{
+  "question": "Among Willacy, Comal, Atascosa, and Victoria counties in Texas, keep those with at least one child death linked to abuse or neglect and at least three child death investigations not linked to that cause between 2018 and 2022. From the remaining counties, find the one that appears both among the two counties with the highest estimated 2021 fatal-overdose rates and among the two counties with the lowest estimated 2016 fatal-overdose rate ranges, then identify that county's seat. How many years apart were the establishment and permanent degree-granting status of the four-year public university there? Your response should be in the format [Answer].",
+  "answer": 10,
+  "nodes": {
+    "1": {
+      "source": "datagov/ocs-1-1-abuse-neglect-related-texas-child-fatalities-fy2013-fy2022/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/ocs-1-1-abuse-neglect-related-texas-child-fatalities-fy2013-fy2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounties = [\"Willacy\", \"Comal\", \"Atascosa\", \"Victoria\"]\nfiltered = df[df[\"County\"].isin(counties) & df[\"Fiscal Year\"].between(2018, 2022)]\nanswer = (\n    filtered.groupby(\"County\", as_index=False)[\"Abuse Neglect Fatalities\"]\n    .sum()\n)\nanswer = answer[answer[\"Abuse Neglect Fatalities\"] >= 1]\nanswer = answer.sort_values([\"Abuse Neglect Fatalities\", \"County\"], ascending=[False, True])[\"County\"].tolist()\n",
+      "subquestion": "Among Willacy, Comal, Atascosa, and Victoria counties, which had at least 1 child death linked to abuse or neglect (2018-2022)?",
+      "answer": [
+        "Victoria",
+        "Comal",
+        "Willacy"
+      ]
+    },
+    "2": {
+      "source": "datagov/ocs-1-2-non-abuse-neglect-related-texas-child-fatality-investigations-fy2013-fy2022/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/ocs-1-2-non-abuse-neglect-related-texas-child-fatality-investigations-fy2013-fy2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounties = [\"Willacy\", \"Comal\", \"Atascosa\", \"Victoria\"]\nfiltered = df[df[\"County\"].isin(counties) & df[\"Fiscal Year\"].between(2018, 2022)]\nanswer = (\n    filtered.groupby(\"County\", as_index=False)[\"Non-Abuse/Neglect Fatalities Investigated\"]\n    .sum()\n)\nanswer = answer[answer[\"Non-Abuse/Neglect Fatalities Investigated\"] >= 3]\nanswer = answer.sort_values([\"Non-Abuse/Neglect Fatalities Investigated\", \"County\"], ascending=[False, True])[\"County\"].tolist()\n",
+      "subquestion": "Among Willacy, Comal, Atascosa, and Victoria counties, which had at least 3 child deaths linked to non-abuse/neglect (2018-2022)?",
+      "answer": [
+        "Comal",
+        "Victoria",
+        "Atascosa",
+        "Willacy"
+      ]
+    },
+    "3": {
+      "source": "datagov/nchs-drug-poisoning-mortality-by-county-united-states/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nchs-drug-poisoning-mortality-by-county-united-states/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounties = [\"Comal County, TX\", \"Victoria County, TX\", \"Willacy County, TX\"]\nanswer = df[\n    (df[\"Year\"] == 2021)\n    & (df[\"State\"] == \"Texas\")\n    & (df[\"County\"].isin(counties))\n][[\"County\", \"Model-based Death Rate\"]]\nanswer = answer.sort_values([\"Model-based Death Rate\", \"County\"], ascending=[False, True])[\"County\"].head(2).tolist()\n",
+      "subquestion": "Among the counties in <hop 1 answer>, which two had the highest estimated 2021 fatal-overdose rates? These estimates come from a hierarchical Bayesian model with spatial and temporal random effects.",
+      "answer": [
+        "Victoria County, TX",
+        "Comal County, TX"
+      ]
+    },
+    "4": {
+      "source": "datagov/nchs-drug-poisoning-mortality-by-county-united-states-20278/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nchs-drug-poisoning-mortality-by-county-united-states-20278/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounties = [\"Comal County, TX\", \"Victoria County, TX\", \"Willacy County, TX\"]\ncategory_col = \"Estimated Age-adjusted Death Rate, 16 Categories (in ranges)\"\nanswer = df[\n    (df[\"Year\"] == 2016)\n    & (df[\"State\"] == \"Texas\")\n    & (df[\"County\"].isin(counties))\n][[\"County\", category_col]].copy()\nanswer[\"lower_bound\"] = answer[category_col].str.split(\"-\").str[0].astype(float)\nanswer = answer.sort_values([\"lower_bound\", \"County\"], ascending=[True, True])[\"County\"].head(2).tolist()\n",
+      "subquestion": "Among the counties in <hop 1 answer>, which two had the lowest estimated 2016 fatal-overdose rate ranges after accounting for differences in population age structure, using the lower bound of each reported range for comparison? These estimates come from a two-stage model that first estimates the chance of any such death and then estimates the death-rate level.",
+      "answer": [
+        "Willacy County, TX",
+        "Victoria County, TX"
+      ]
+    },
+    "5": {
+      "source": "wikipedia/Victoria_County,_Texas/content.txt",
+      "fact": "Victoria County's county seat is Victoria.",
+      "subquestion": "What is the county seat of <hop 2 answer> County, Texas?",
+      "answer": "Victoria"
+    },
+    "6": {
+      "source": "wikipedia/Texas_A&M_University–Victoria/content.txt",
+      "fact": "Texas A&M University-Victoria is a public university in Victoria, Texas, United States. It is part of the Texas A&M University System. Its campus spans  in Victoria and was established in 1973.\n\nHistory\n\n University of Houston System (1973–2025) \nThe University of Houston–Victoria began as an effort in the late 1960s by the local community to bring a higher learning institution to Victoria. In 1971, the Coordinating Board of Texas College and University System created an off-campus center of the University of Houston known as the University of Houston Victoria Center.Bill analysis lrl.texas.gov p.4 One hundred students enrolled at the center in its inaugural semester of spring 1973.\n\nIn April 1983, the Texas legislature passed Senate Bill 235, which granted the institution permanent degree-granting status in the state of Texas",
+      "subquestion": "Which years mark the establishment and permanent degree-granting status of the four-year public university in <hop 3 answer>?",
+      "answer": {
+        "established": 1973,
+        "degree_granting_status": 1983
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `County` is in {Willacy, Comal, Atascosa, Victoria} and `Fiscal Year` is between 2018 and 2022, sum `Abuse Neglect Fatalities` by `County`, and keep counties with totals at least 1.",
+        "Node 2: Filter rows where `County` is in {Willacy, Comal, Atascosa, Victoria} and `Fiscal Year` is between 2018 and 2022, sum `Non-Abuse/Neglect Fatalities Investigated` by `County`, and keep counties with totals at least 3.",
+        "Hop result: intersection = Willacy, Comal, Victoria"
+      ],
+      "answer": "Willacy, Comal, Victoria"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 3: Filter rows where `Year` is 2021, `State` is Texas, and `County` is in {Comal County, TX, Victoria County, TX, Willacy County, TX}, sort by `Model-based Death Rate` descending, and keep the top 2 `County` values.",
+        "Node 4: Filter rows where `Year` is 2016, `State` is Texas, and `County` is in {Comal County, TX, Victoria County, TX, Willacy County, TX}, extract the first number in `Estimated Age-adjusted Death Rate, 16 Categories (in ranges)` as the lower end of each rate range, sort ascending by that value, and keep the top 2 `County` values.",
+        "Hop result: intersection = Victoria"
+      ],
+      "answer": "Victoria"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: Victoria is the county seat of <hop 2 answer> County, Texas.",
+        "Hop result: Victoria"
+      ],
+      "answer": "Victoria"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: The four-year public university in <hop 3 answer> was established in `1973` and received permanent degree-granting status in `1983`.",
+        "Hop result: `1983 - 1973 = 10`."
+      ],
+      "answer": 10
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/Victoria_County,_Texas/content.txt",
+    "datagov/ocs-1-1-abuse-neglect-related-texas-child-fatalities-fy2013-fy2022/files/rows.txt",
+    "datagov/ocs-1-2-non-abuse-neglect-related-texas-child-fatality-investigations-fy2013-fy2022/files/rows.txt",
+    "datagov/nchs-drug-poisoning-mortality-by-county-united-states/files/rows.txt",
+    "datagov/nchs-drug-poisoning-mortality-by-county-united-states-20278/files/rows.txt",
+    "datagov/ocs-1-1-abuse-neglect-related-texas-child-fatalities-fy2013-fy2022/signed-metadata.txt",
+    "datagov/ocs-1-2-non-abuse-neglect-related-texas-child-fatality-investigations-fy2013-fy2022/signed-metadata.txt",
+    "datagov/nchs-drug-poisoning-mortality-by-county-united-states/signed-metadata.txt",
+    "datagov/nchs-drug-poisoning-mortality-by-county-united-states-20278/signed-metadata.txt",
+    "wikipedia/Texas_A&M_University–Victoria/content.txt"
+  ]
+}

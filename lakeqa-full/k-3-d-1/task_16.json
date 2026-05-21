@@ -1,0 +1,69 @@
+{
+  "question": "In Austin, start with the ZIP code that had the most multifamily properties without a recent audit on file. In that ZIP code, find the council district containing the affordable housing property with the most total units. As of 2025, how many years passed between the first council member's start date and the current council member's start date for that Austin City Council district? Please return only the number in the format [Answer].",
+  "answer": 8,
+  "nodes": {
+    "1": {
+      "source": "datagov/2019-multifamily-ecad/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2019-multifamily-ecad/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Current ECAD Status', 'Zip Code'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Current ECAD Status', 'Zip Code'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['Current ECAD Status'] = df['Current ECAD Status'].astype(str).str.strip()\ndf['zip5'] = df['Zip Code'].astype(str).str.extract(r'(\\d{5})', expand=False)\nfiltered = df[\n    df['Current ECAD Status'].eq('No Recent Audit on file')\n    & df['zip5'].notna()\n].copy()\nranked = (\n    filtered.groupby('zip5', as_index=False)\n    .size()\n    .sort_values(['size', 'zip5'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'size'] > ranked.loc[1, 'size']\nanswer = str(ranked.loc[0, 'zip5'])\n",
+      "subquestion": "Which Austin ZIP code had the most multifamily properties without a recent audit on file?",
+      "answer": "78705"
+    },
+    "2": {
+      "source": "datagov/comprehensive-affordable-housing-directory/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/comprehensive-affordable-housing-directory/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nnode_1_answer = '78705'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Property Name', 'Zip Code', 'Council District', 'Total Units'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Property Name', 'Zip Code', 'Council District', 'Total Units'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['Property Name'] = df['Property Name'].astype(str).str.strip()\ndf['Zip Code'] = df['Zip Code'].astype(str).str.extract(r'(\\d{5})', expand=False)\ndf['Council District'] = df['Council District'].astype(str).str.strip()\ndf['Total Units'] = pd.to_numeric(df['Total Units'], errors='coerce')\nfiltered = df[\n    df['Zip Code'].eq(node_1_answer)\n    & df['Property Name'].ne('')\n    & df['Council District'].ne('')\n    & df['Total Units'].notna()\n].copy()\nranked = (\n    filtered.sort_values(['Total Units', 'Property Name'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'Total Units'] > ranked.loc[1, 'Total Units']\nanswer = str(ranked.loc[0, 'Council District'])\n",
+      "subquestion": "In the ZIP code from node 1, which council district contained the affordable housing property with the most total units?",
+      "answer": "9"
+    },
+    "3": {
+      "source": "wikipedia/Austin_City_Council/content.txt",
+      "fact": "District 9\nThe Austin City Council 9th district covers central Austin, including Downtown, The University of Texas, Travis Heights, Hyde Park, and Mueller.\n\nThe current councillor is Zohaib \"Zo\" Qadri, who has represented the district since 2023. He is a member of the Democratic Party.\n\n List of city councillors from District 9 \nAssumed officeLeft officeDistrict 9Party affiliationJanuary 2015January 2023Kathie TovoDemocraticJanuary 2023IncumbentZohaib \"Zo\" QadriDemocratic",
+      "subquestion": "As of 2025, how many years passed between the first council member's start date and the current council member's start date for Austin City Council District <hop 2 answer>?",
+      "answer": 8
+    }
+  },
+  "datasets_used": [
+    "datagov/2019-multifamily-ecad/files/rows.txt",
+    "datagov/2019-multifamily-ecad/signed-metadata.txt",
+    "datagov/2019-multifamily-ecad/files/feiy-7jhe.txt",
+    "datagov/comprehensive-affordable-housing-directory/files/rows.txt",
+    "datagov/comprehensive-affordable-housing-directory/signed-metadata.txt",
+    "wikipedia/Austin_City_Council/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the Austin multifamily ECAD file, ZIP code 78705 has the most properties whose current ECAD status is No Recent Audit on file.",
+        "The full-file count is 58 properties in 78705, ahead of 34 in 78704 and 28 in 78758, so the winner is unique.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "78705"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Within ZIP code 78705 in the Austin affordable housing directory, The Mark at Austin has the most total units at 962.",
+        "That property is in council district 9, ahead of the next-largest 78705 property, The Standard at Austin, with 911 units.",
+        "Hop result: <node_2 answer>"
+      ],
+      "answer": "9"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: For Austin City Council District 9, the first councillor took office in January 2015 and the incumbent councillor took office in January 2023.",
+        "Hop result: 2023 - 2015 = 8 years."
+      ],
+      "answer": 8
+    }
+  ]
+}

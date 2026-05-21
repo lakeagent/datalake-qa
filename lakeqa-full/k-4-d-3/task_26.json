@@ -1,0 +1,118 @@
+{
+    "question": "Which 10 years had the largest total amount of new land set aside for protection across all state programs? In those years, which three years had the most housing permits in Fairfield County before 2016? In the first, second, and third years of those three years, define a more engaging school as one with higher participation among teachers and parents, which five schools are the most engaging? Among all those schools, which schools had the 3rd to 7th best overall ratings between school year of 2005-06 and 2009-10 where we treat schools that are well-developed as the best ones? Across all schools, how many people in total graduated in June after 4-year education from 2005 to 2009? Please return only the number in the format [Answer].",
+    "answer": "37465",
+    "nodes": {
+        "1": {
+            "source": "datagov/agriculture-preservation-acreage-programs/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/agriculture-preservation-acreage-programs/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\ndf = df.rename(columns={df.columns[0]: 'Program'})\nfor col in df.columns[1:]:\n    df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '', regex=False), errors='coerce').fillna(0)\nyears = [str(year) for year in range(2012, 2023)]\nfiltered = df[df['Program'].astype(str).str.strip().ne('Cummulative Acres')].copy()\ntotals = pd.DataFrame({'Year': years, 'combined_acres': [filtered[year].sum() for year in years]})\nranked = totals.sort_values(['combined_acres', 'Year'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked['Year'].head(10).tolist())\n",
+            "subquestion": "Which 10 years had the largest total amount of new land set aside for protection across all state programs?",
+            "answer": "2018; 2015; 2014; 2021; 2022; 2012; 2017; 2013; 2016; 2019"
+        },
+        "2": {
+            "source": "datagov/annual-housing-permit-data-by-town-1990-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/annual-housing-permit-data-by-town-1990-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = '2018; 2015; 2014; 2021; 2022; 2012; 2017; 2013; 2016; 2019'\ncandidate_years = [part.strip() for part in node_1_answer.split(';') if part.strip() and int(part.strip()) < 2016]\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor year in [str(y) for y in range(1990, 2024)]:\n    if year in df.columns:\n        df[year] = pd.to_numeric(df[year].astype(str).str.replace(',', '', regex=False), errors='coerce').fillna(0)\nfiltered = df[df['County'].fillna('').astype(str).str.strip().eq('Fairfield') & df['Town'].fillna('').astype(str).str.strip().ne('Connecticut')].copy()\ntotals = pd.DataFrame({'Year': candidate_years, 'permits': [filtered[year].sum() for year in candidate_years]})\nranked = totals.sort_values(['permits', 'Year'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked['Year'].head(3).tolist())\n",
+            "subquestion": "In <node_1 answer>, which three years had the most housing permits in Fairfield County before 2016?",
+            "answer": "2015; 2013; 2012"
+        },
+        "3": {
+            "source": "datagov/2014-2015-parent-school-survey-data/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2014-2015-parent-school-survey-data/files/rows.txt'\nqr_source = 'datagov/2005-2012-quality-review/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_2_answer = '2015; 2013; 2012'\ntarget_year = node_2_answer.split(';')[0].strip()\nassert target_year == '2015'\nqr = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=qr_source)['Body'].read()), dtype=str, low_memory=False)\nqr_dbns = set(qr[qr['School Year'].isin(['SY05-06', 'SY06-07', 'SY07-08', 'SY08-09', 'SY09-10'])]['DBN'].dropna().astype(str))\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\ndf = df[df['DBN'].astype(str).str.strip().ne('dbn')].copy()\nfor col in ['Total Parent \\nResponse Rate', 'Total Teacher Response Rate', 'Total Student Response Rate']:\n    df[col] = pd.to_numeric(df[col], errors='coerce') / 100.0\ndf = df[df['Total Student Response Rate'].notna() & df['DBN'].isin(qr_dbns)].copy()\ndf['avg_parent_teacher'] = (df['Total Parent \\nResponse Rate'] + df['Total Teacher Response Rate']) / 2\nranked = df.sort_values(['avg_parent_teacher', 'Total Student Response Rate', 'DBN'], ascending=[False, False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked['DBN'] + ' ' + ranked['School Name']).head(5).tolist())\n",
+            "subquestion": "In the first year of <node_2 answer>, define a more engaging school as one with higher participation among teachers and parents,which five schools are the most engaging?",
+            "answer": "20K104 P.S./I.S. 104 The Fort Hamilton School; 16K035 M.S. 035 Stephen Decatur; 30Q235 Academy for New Americans; 04M013 J.H.S. 013 Jackie Robinson; 24Q264 Academy of Finance and Enterprise"
+        },
+        "4": {
+            "source": "datagov/2013-nyc-school-survey/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2013-nyc-school-survey/files/rows.txt'\nqr_source = 'datagov/2005-2012-quality-review/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_2_answer = '2015; 2013; 2012'\ntarget_year = node_2_answer.split(';')[1].strip()\nassert target_year == '2013'\nqr = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=qr_source)['Body'].read()), dtype=str, low_memory=False)\nqr_dbns = set(qr[qr['School Year'].isin(['SY05-06', 'SY06-07', 'SY07-08', 'SY08-09', 'SY09-10'])]['DBN'].dropna().astype(str))\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\ndf = df[df['DBN'].astype(str).str.strip().ne('dbn')].copy()\nfor col in ['Total Parent \\nResponse Rate (%)', 'Total Teacher Response Rate (%)', 'Total Student Response Rate (%)']:\n    df[col] = pd.to_numeric(df[col], errors='coerce') / 100.0\ndf = df[df['Total Student Response Rate (%)'].notna() & df['DBN'].isin(qr_dbns)].copy()\ndf['avg_parent_teacher'] = (df['Total Parent \\nResponse Rate (%)'] + df['Total Teacher Response Rate (%)']) / 2\nranked = df.sort_values(['avg_parent_teacher', 'Total Student Response Rate (%)', 'DBN'], ascending=[False, False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked['DBN'] + ' ' + ranked['School Name']).head(5).tolist())\n",
+            "subquestion": "In the second year of <node_2 answer>, define a more engaging school as one with higher participation among teachers and parents,which five schools are the most engaging?",
+            "answer": "31R034 I.S. 034 Tottenville; 30Q235 Academy for New Americans; 24Q113 P.S. 113 Isaac Chauncey; 16K035 M.S. 035 Stephen Decatur; 04M171 P.S. 171 Patrick Henry"
+        },
+        "5": {
+            "source": "datagov/2012-d75-school-survey-data/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2012-d75-school-survey-data/files/rows.txt'\nqr_source = 'datagov/2005-2012-quality-review/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_2_answer = '2015; 2013; 2012'\ntarget_year = node_2_answer.split(';')[2].strip()\nassert target_year == '2012'\nqr = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=qr_source)['Body'].read()), dtype=str, low_memory=False)\nqr_dbns = set(qr[qr['School Year'].isin(['SY05-06', 'SY06-07', 'SY07-08', 'SY08-09', 'SY09-10'])]['DBN'].dropna().astype(str))\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in ['Total Parent Response Rate', 'Total Teacher Response Rate', 'Total Student Response Rate']:\n    df[col] = pd.to_numeric(df[col], errors='coerce')\ndf = df[df['Total Student Response Rate'].notna() & df['DBN'].isin(qr_dbns)].copy()\ndf['avg_parent_teacher'] = (df['Total Parent Response Rate'] + df['Total Teacher Response Rate']) / 2\nranked = df.sort_values(['avg_parent_teacher', 'Total Student Response Rate', 'DBN'], ascending=[False, False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked['DBN'] + ' ' + ranked['School Name']).head(5).tolist())\n",
+            "subquestion": "In the third year of <node_2 answer>, define a more engaging school as one with higher participation among teachers and parents,which five schools are the most engaging?",
+            "answer": "75M079 P.S. M079 - Horan School; 75M169 P.S. M169 - Robert F. Kennedy; 75K771 P.S. K771; 75K036 P.S. 36; 75R721 The Richard H. Hungerford School"
+        },
+        "6": {
+            "source": "datagov/2005-2012-quality-review/files/rows.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2005-2012-quality-review/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_3_answer = '20K104 P.S./I.S. 104 The Fort Hamilton School; 16K035 M.S. 035 Stephen Decatur; 30Q235 Academy for New Americans; 04M013 J.H.S. 013 Jackie Robinson; 24Q264 Academy of Finance and Enterprise'\nnode_4_answer = '31R034 I.S. 034 Tottenville; 30Q235 Academy for New Americans; 24Q113 P.S. 113 Isaac Chauncey; 16K035 M.S. 035 Stephen Decatur; 04M171 P.S. 171 Patrick Henry'\nnode_5_answer = '75M079 P.S. M079 - Horan School; 75M169 P.S. M169 - Robert F. Kennedy; 75K771 P.S. K771; 75K036 P.S. 36; 75R721 The Richard H. Hungerford School'\ndef parse_items(text):\n    out = {}\n    for part in [p.strip() for p in text.split(';') if p.strip()]:\n        dbn, name = part.split(' ', 1)\n        out[dbn] = name\n    return out\nname_map = {}\nfor txt in [node_3_answer, node_4_answer, node_5_answer]:\n    name_map.update(parse_items(txt))\ntarget_dbns = sorted(name_map)\ncommunity_dbns = [dbn for dbn in target_dbns if dbn[:2].isdigit() and 1 <= int(dbn[:2]) <= 32]\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfiltered = df[df['DBN'].isin(community_dbns) & df['School Year'].isin(['SY05-06', 'SY06-07', 'SY07-08', 'SY08-09', 'SY09-10'])].copy()\nfiltered['score'] = filtered['Overall Rating'].map({'WD': 3, 'P': 2, 'U': 1})\nranked = filtered.groupby('DBN', as_index=False).agg(total_score=('score', 'sum'), mean_score=('score', 'mean'), rated_years=('score', 'size'))\nranked = ranked.sort_values(['total_score', 'mean_score', 'rated_years', 'DBN'], ascending=[False, False, False, True], kind='mergesort').reset_index(drop=True)\npicked = ranked.iloc[2:7]['DBN'].tolist()\nanswer = '; '.join([f'{dbn} {name_map[dbn]}' for dbn in picked])\n",
+            "subquestion": "Among schools in <node_3 answer>, <node_4 answer>, and <node_5 answer>, which schools had the 3rd to 7th best overall ratings between school year of 2005-06 and 2009-10? We treat schools that are well-developed as the best ones.?",
+            "answer": "04M171 P.S. 171 Patrick Henry; 31R034 I.S. 034 Tottenville; 24Q113 P.S. 113 Isaac Chauncey; 30Q235 Academy for New Americans; 04M013 J.H.S. 013 Jackie Robinson"
+        },
+        "7": {
+            "source": "datagov/2005-2015-graduation-rates-district-all/files/rows.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2005-2015-graduation-rates-district-all/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_6_answer = '04M171 P.S. 171 Patrick Henry; 31R034 I.S. 034 Tottenville; 24Q113 P.S. 113 Isaac Chauncey; 30Q235 Academy for New Americans; 04M013 J.H.S. 013 Jackie Robinson'\ndbns = sorted(set(re.findall(r'\\b\\d{2}[A-Z]\\d{3}\\b', node_6_answer)))\ndistricts = sorted({str(int(dbn[:2])) for dbn in dbns})\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\ndf['District'] = df['District'].astype(str).str.strip()\ndf['Cohort Year'] = pd.to_numeric(df['Cohort Year'], errors='coerce')\ndf['Total Grads #'] = pd.to_numeric(df['Total Grads #'], errors='coerce')\nfiltered = df[df['District'].isin(districts) & df['Cohort Category'].eq('4 Year  June') & df['Cohort Year'].between(2005, 2009, inclusive='both')].copy()\nanswer = str(int(filtered['Total Grads #'].sum()))\n",
+            "subquestion": "Across all schools in <node_6 answer>, from 2005 to 2009, how many people in total graduated in June after 4-year education?",
+            "answer": "37465"
+        }
+    },
+    "datasets_used": [
+        "datagov/agriculture-preservation-acreage-programs/files/rows.txt",
+        "datagov/agriculture-preservation-acreage-programs/signed-metadata.txt",
+        "datagov/annual-housing-permit-data-by-town-1990-2021/files/rows.txt",
+        "datagov/annual-housing-permit-data-by-town-1990-2021/signed-metadata.txt",
+        "datagov/annual-housing-permit-data-by-town-1990-2021/files/stm9-38x4.publisher-view.json",
+        "datagov/2014-2015-parent-school-survey-data/files/rows.txt",
+        "datagov/2014-2015-parent-school-survey-data/signed-metadata.txt",
+        "datagov/2014-2015-parent-school-survey-data/files/2017_-_2018_NYC_School_Survey_Parent_Data_DD.xlsx",
+        "datagov/2013-nyc-school-survey/files/rows.txt",
+        "datagov/2013-nyc-school-survey/signed-metadata.txt",
+        "datagov/2013-nyc-school-survey/files/School_Survey_Data_Dictionary.xls",
+        "datagov/2012-d75-school-survey-data/files/rows.txt",
+        "datagov/2012-d75-school-survey-data/signed-metadata.txt",
+        "datagov/2012-d75-school-survey-data/files/2012_NYC_School_Survey_Public_Data_File_D75.xlsx",
+        "datagov/2005-2012-quality-review/files/rows.txt",
+        "datagov/2005-2012-quality-review/signed-metadata.txt",
+        "datagov/2005-2012-quality-review/files/quality_review_dd.xlsx",
+        "datagov/2005-2015-graduation-rates-district-all/files/rows.txt",
+        "datagov/2005-2015-graduation-rates-district-all/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1 sums annual preserved acreage across all non-cumulative program rows for fiscal years 2012-2022 and returns the top 10 years.",
+                "Node 2 restricts those years to the pre-2016 subset and uses Fairfield County town permit totals to keep the top three years."
+            ],
+            "answer": "2015; 2013; 2012"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 3 uses the survey release tied to 2015 and ranks schools by the average of parent and teacher response rates, breaking ties by student response rate.",
+                "Node 4 applies the same engagement rule to the 2013 survey release.",
+                "Node 5 applies the same engagement rule to the 2012 D75 survey release."
+            ],
+            "answer": "20K104 P.S./I.S. 104 The Fort Hamilton School; 16K035 M.S. 035 Stephen Decatur; 30Q235 Academy for New Americans; 04M013 J.H.S. 013 Jackie Robinson; 24Q264 Academy of Finance and Enterprise; 31R034 I.S. 034 Tottenville; 30Q235 Academy for New Americans; 24Q113 P.S. 113 Isaac Chauncey; 16K035 M.S. 035 Stephen Decatur; 04M171 P.S. 171 Patrick Henry; 75M079 P.S. M079 - Horan School; 75M169 P.S. M169 - Robert F. Kennedy; 75K771 P.S. K771; 75K036 P.S. 36; 75R721 The Richard H. Hungerford School"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6 takes the union of schools from nodes 3-5, keeps only the community-district DBNs, maps quality-review ratings as WD=3, P=2, U=1, and sums those scores over SY05-06 through SY09-10.",
+                "Sorting by total score, then mean score, then number of rated years gives the 3rd through 7th ranked schools."
+            ],
+            "answer": "04M171 P.S. 171 Patrick Henry; 31R034 I.S. 034 Tottenville; 24Q113 P.S. 113 Isaac Chauncey; 30Q235 Academy for New Americans; 04M013 J.H.S. 013 Jackie Robinson"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7 converts those five DBNs into the unique numbered districts 4, 24, 30, and 31, then sums Total Grads # for Cohort Category 4 Year June across Cohort Years 2005-2009."
+            ],
+            "answer": "37465"
+        }
+    ]
+}

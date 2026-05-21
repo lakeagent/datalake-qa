@@ -1,0 +1,95 @@
+{
+    "question": "Gary, Indiana was founded by a corporation created by J. P. Morgan when he merged Federal Steel and National Steel with another company. Who founded that company, where was he based, and what was the average Police Bureau expenditure in that city in 2017 and 2018? Please return only the average expenditure rounded to the nearest integer. Your response should be in the format [Answer].",
+    "answer": "99357947",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Gary,_Indiana/content.txt",
+            "fact": "Gary, Indiana was founded in 1906 by the U.S. Steel corporation as the home for its new plant, Gary Works.",
+            "subquestion": "What corporation founded Gary, Indiana?",
+            "answer": "U.S. Steel Corporation"
+        },
+        "2": {
+            "source": "wikipedia/U.S._Steel/content.txt",
+            "fact": "In 1901, J. P. Morgan created U.S. Steel by merging Carnegie Steel, Federal Steel, and National Steel.",
+            "subquestion": "Which company did J. P. Morgan merge with Federal Steel and National Steel to create <hop 1 answer>?",
+            "answer": "Carnegie Steel Company"
+        },
+        "3": {
+            "source": "wikipedia/Carnegie_Steel_Company/content.txt",
+            "fact": "Carnegie Steel Company was a steel-producing company primarily created by Andrew Carnegie to manage businesses at steel mills in the Pittsburgh, Pennsylvania area.",
+            "subquestion": "Who founded <hop 2 answer>?",
+            "answer": "Andrew Carnegie"
+        },
+        "4": {
+            "source": "wikipedia/Andrew_Carnegie/content.txt",
+            "fact": "Andrew Carnegie immigrated to Pittsburgh, Pennsylvania, with his parents in 1848. He built Pittsburgh's Carnegie Steel Company, which he sold to J.P. Morgan in 1901.",
+            "subquestion": "Where was <hop 3 answer> based?",
+            "answer": "Pittsburgh, Pennsylvania"
+        },
+        "5": {
+            "source": "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2017-operating.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2017-operating.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = round(df.loc[\n    (df[\"Year\"] == 2017)\n    & (df[\"Type\"] == \"Expenditure\")\n    & (df[\"Department\"] == \"PS - POLICE BUREAU\"),\n    \"Amount\",\n].sum(), 2)",
+            "subquestion": "In <hop 4 answer>, what was the total 2017 expenditure for the Police Bureau?",
+            "answer": 98453962.68
+        },
+        "6": {
+            "source": "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2018-operating.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2018-operating.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = round(df.loc[\n    (df[\"Year\"] == 2018)\n    & (df[\"Type\"] == \"Expenditure\")\n    & (df[\"Department\"] == \"PS - POLICE BUREAU\"),\n    \"Amount\",\n].sum(), 2)",
+            "subquestion": "In <hop 4 answer>, what was the total 2018 expenditure for the Police Bureau?",
+            "answer": 100261931.64
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Gary,_Indiana/content.txt",
+        "wikipedia/U.S._Steel/content.txt",
+        "wikipedia/Carnegie_Steel_Company/content.txt",
+        "wikipedia/Andrew_Carnegie/content.txt",
+        "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2017-operating.txt",
+        "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2018-operating.txt",
+        "datagov/2011-2023-city-of-pittsburgh-operating-budget/signed-metadata.txt",
+        "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2012-operating.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "question": "What corporation founded Gary, Indiana?",
+            "answer": "U.S. Steel Corporation"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "question": "Which company did J. P. Morgan merge with Federal Steel and National Steel to create U.S. Steel Corporation?",
+            "answer": "Carnegie Steel Company"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "question": "Who founded Carnegie Steel Company?",
+            "answer": "Andrew Carnegie"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "question": "Where was Andrew Carnegie based?",
+            "answer": "Pittsburgh, Pennsylvania"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5,
+                6
+            ],
+            "question": "What was the average Police Bureau expenditure in Pittsburgh, Pennsylvania in 2017 and 2018?",
+            "answer": 99357947
+        }
+    ]
+}

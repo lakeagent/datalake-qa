@@ -1,0 +1,130 @@
+{
+    "question": "In each of the fiscal years of 2018-19, 2019-20, and 2020-21, which five counties submitted their reports the latest? Then consider all counties that appear in the three years, and define a good hospital is one with as low mortality rate as possible under the condition of having at least 2 'Better' ratings. With such definition, find the top 50 best hospitals, and among all those counties in the three years, which county has at least one hospital in the top 50 hospital list? In that county, in which year was the all-cause unexpectedly 30-day rehospitalized rate the 4th lowest? In the school year starting in that year in New York, define an acceptable school as one with zero major crimes and zero violent crimes. Among all acceptable schools, which 10 schools have the highest number of non-criminal incidents, breaking ties alphabetically? Rank all New York schools by the number of AP scores 3 and 3+ divided by total exams taken in 2010. For all those ten schools, what is their best statewide rank? Please return only the number in the format [Answer].",
+    "answer": "6",
+    "nodes": {
+        "1": {
+            "source": "datagov/counties-that-filed-late-or-failed-to-file-fy-2018-19-ftrs-edcdb/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/counties-that-filed-late-or-failed-to-file-fy-2018-19-ftrs-edcdb/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"County\"] = df[\"County\"].fillna(\"\").str.strip()\ndf[\"Date Report Submitted\"] = pd.to_datetime(df[\"Date Report Submitted\"], errors=\"coerce\")\nranked = df.sort_values([\"Date Report Submitted\", \"County\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.head(5)[\"County\"].tolist())\n",
+            "subquestion": "In the fiscal year of 2018-19, which five counties submitted their financial transactions reports the latest?",
+            "answer": "Tuolumne, Humboldt, Mendocino, Inyo, Yuba"
+        },
+        "2": {
+            "source": "datagov/counties-that-filed-late-or-failed-to-file-fy-2019-20-ftrs-bd5d9/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/counties-that-filed-late-or-failed-to-file-fy-2019-20-ftrs-bd5d9/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"County\"] = df[\"County\"].fillna(\"\").str.strip()\ndf[\"Date Report Submitted\"] = pd.to_datetime(df[\"Date Report Submitted\"], errors=\"coerce\")\nranked = df.sort_values([\"Date Report Submitted\", \"County\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.head(5)[\"County\"].tolist())\n",
+            "subquestion": "In the fiscal year of 2019-20, which five counties submitted their financial transactions reports the latest?",
+            "answer": "Humboldt, Inyo, Tuolumne, Mendocino, Yuba"
+        },
+        "3": {
+            "source": "datagov/counties-that-filed-late-or-failed-to-file-fy-2020-21-ftrs-232c4/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/counties-that-filed-late-or-failed-to-file-fy-2020-21-ftrs-232c4/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"County\"] = df[\"County\"].fillna(\"\").str.strip()\ndf[\"Date Report Submitted\"] = pd.to_datetime(df[\"Date Report Submitted\"], errors=\"coerce\")\nranked = df.sort_values([\"Date Report Submitted\", \"County\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.head(5)[\"County\"].tolist())\n",
+            "subquestion": "In the fiscal year of 2020-21, which five counties submitted their financial transactions reports the latest?",
+            "answer": "Humboldt, Mendocino, Lassen, Tuolumne, Inyo"
+        },
+        "4": {
+            "source": "datagov/california-hospital-inpatient-mortality-rates-and-quality-ratings-63b1a/files/imi_gis_long_2022.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/california-hospital-inpatient-mortality-rates-and-quality-ratings-63b1a/files/imi_gis_long_2022.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_1_answer = \"Tuolumne, Humboldt, Mendocino, Inyo, Yuba\"\nnode_2_answer = \"Humboldt, Inyo, Tuolumne, Mendocino, Yuba\"\nnode_3_answer = \"Humboldt, Mendocino, Lassen, Tuolumne, Inyo\"\nall_counties = []\nfor value in [node_1_answer, node_2_answer, node_3_answer]:\n    all_counties.extend([part.strip() for part in str(value).split(\",\") if part.strip()])\ntarget_counties = sorted(set(all_counties))\n\ndf[\"COUNTY\"] = df[\"COUNTY\"].fillna(\"\").astype(str).str.strip()\ndf[\"HOSPITAL\"] = df[\"HOSPITAL\"].fillna(\"\").astype(str).str.strip()\ndf[\"Hospital Ratings\"] = df[\"Hospital Ratings\"].fillna(\"\").astype(str).str.strip()\ndf[\"mort_num\"] = pd.to_numeric(df[\"Risk Adjuested Mortality Rate\"].astype(str).str.extract(r\"([0-9]+(?:\\\\.[0-9]+)?)\", expand=False), errors=\"coerce\")\nfiltered = df[df[\"Hospital Ratings\"].eq(\"Better\") & df[\"mort_num\"].notna()].copy()\nranked_hospitals = filtered.groupby([\"COUNTY\", \"HOSPITAL\"], as_index=False).agg(\n    avg_mort=(\"mort_num\", \"mean\"),\n    better_rows=(\"Hospital Ratings\", \"size\")\n)\nranked_hospitals = ranked_hospitals[ranked_hospitals[\"better_rows\"].ge(2)].copy()\nranked_hospitals = ranked_hospitals.sort_values(\n    [\"avg_mort\", \"better_rows\", \"COUNTY\", \"HOSPITAL\"],\n    ascending=[True, False, True, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\ntop50 = ranked_hospitals.head(50).copy()\nanswer = \", \".join(sorted(top50[top50[\"COUNTY\"].isin(target_counties)][\"COUNTY\"].drop_duplicates().tolist()))\n",
+            "subquestion": "Define a good hospital is one with as low mortality rate as possible under the condition of having at least 2 'Better' ratings. With such definition, find the top 50 best hospitals in the whole state and among all countries of <node_1 answer>, <node_2 answer>, and <node_3 answer>, which countries have at least one hospital in the top 50 hospital list?",
+            "answer": "Tuolumne"
+        },
+        "5": {
+            "source": "datagov/all-cause-unplanned-30-day-hospital-readmission-rate-california-lghc-indicator-36e12/files/allcauseunplanned30-dayhospitalreadmissionratecalifornia2011_2022.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/all-cause-unplanned-30-day-hospital-readmission-rate-california-lghc-indicator-36e12/files/allcauseunplanned30-dayhospitalreadmissionratecalifornia2011_2022.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf.columns = [str(c).replace(\"\\n\", \" \").strip() for c in df.columns]\nnode_4_answer = \"Tuolumne\"\nfiltered = df[df[\"County\"].fillna(\"\").astype(str).str.strip().eq(str(node_4_answer).strip())].copy()\nfor col in [\"30-day Readmission Rate (ICD-9)\", \"30-day Readmission Rate (ICD-10)\"]:\n    filtered[col] = pd.to_numeric(filtered[col].astype(str).str.replace(\"%\", \"\", regex=False), errors=\"coerce\")\nfiltered[\"rate\"] = filtered[\"30-day Readmission Rate (ICD-9)\"].fillna(filtered[\"30-day Readmission Rate (ICD-10)\"])\nfiltered[\"Year_num\"] = pd.to_numeric(filtered[\"Year\"], errors=\"coerce\")\nranked = filtered.sort_values([\"rate\", \"Year_num\"], ascending=[True, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = str(ranked.iloc[3][\"Year\"])\n",
+            "subquestion": "In <node_4 answer>, in which year was the all-cause unexpectedly 30-day rehospitalized rate the 4th lowest?",
+            "answer": "2014"
+        },
+        "6": {
+            "source": "datagov/2010-2016-school-safety-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2010-2016-school-safety-report/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_5_answer = \"2014\"\ndf[\"School Year\"] = df[\"School Year\"].fillna(\"\").astype(str).str.strip()\ndf[\"DBN\"] = df[\"DBN\"].fillna(\"\").astype(str).str.strip()\ndf[\"Location Name\"] = df[\"Location Name\"].fillna(\"\").astype(str).str.strip()\nfor col in [\"Major N\", \"Vio N\", \"NoCrim N\"]:\n    df[col] = df[col].replace({\"N/A\": None, \"#N/A\": None, \"\": None})\n    df[col + \"_num\"] = pd.to_numeric(df[col], errors=\"coerce\")\n\ntarget_school_year = f\"{int(str(node_5_answer).strip())}-{str(int(str(node_5_answer).strip()) + 1)[-2:]}\"\nfiltered = df[\n    df[\"School Year\"].eq(target_school_year)\n    & df[\"DBN\"].ne(\"\")\n    & df[\"Major N_num\"].eq(0)\n    & df[\"Vio N_num\"].eq(0)\n    & df[\"NoCrim N_num\"].notna()\n].copy()\nranked = filtered.sort_values([\"NoCrim N_num\", \"Location Name\", \"DBN\"], ascending=[False, True, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.head(10)[\"Location Name\"].tolist())\n",
+            "subquestion": "In the school year starting in <node_5 answer>, define an acceptable school as one with zero major crimes and zero violent crimes. Among all acceptable schools, which 10 schools have the highest number of non-criminal incidents, breaking ties alphabetically?",
+            "answer": "Bronx High School of Science, Edward A. Reynolds West Side High School, High School of Telecommunication Arts and Technol, In-Tech Academy (M.S. / High School 368), Liberation Diploma Plus, P.S. 036 Margaret Douglas, J.H.S. 220 John J. Pershing, P.S. 106 Parkchester, P.S. 284 Lew Wallace, P186X Walter J. Damrosch School"
+        },
+        "7": {
+            "source": "datagov/2010-ap-college-board-school-level-results/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2010-ap-college-board-school-level-results/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_6_answer = \"Bronx High School of Science, Edward A. Reynolds West Side High School, High School of  Telecommunication Arts and Technol, In-Tech Academy (M.S. / High School 368), Liberation Diploma Plus, P.S. 036 Margaret Douglas, J.H.S. 220 John J. Pershing, P.S. 106 Parkchester, P.S. 284 Lew Wallace, P186X Walter J. Damrosch School\"\ntarget_schools = [part.strip() for part in str(node_6_answer).split(\",\") if part.strip()]\ndbn_map = {\n    \"Bronx High School of Science\": \"10X445\",\n    \"Edward A. Reynolds West Side High School\": \"03M505\",\n    \"High School of  Telecommunication Arts and Technol\": \"20K485\",\n    \"In-Tech Academy (M.S. / High School 368)\": \"10X368\",\n    \"Liberation Diploma Plus\": \"21K728\",\n    \"P.S. 036 Margaret Douglas\": \"05M036\",\n    \"J.H.S. 220 John J. Pershing\": \"20K220\",\n    \"P.S. 106 Parkchester\": \"11X106\",\n    \"P.S. 284 Lew Wallace\": \"23K284\",\n    \"P186X Walter J. Damrosch School\": \"75X186\",\n}\nrecords = pd.DataFrame([{\"canonical_name\": name, \"DBN\": dbn_map[name]} for name in target_schools if name in dbn_map])\n\ndf[\"DBN\"] = df[\"DBN\"].fillna(\"\").astype(str).str.strip()\ndf[\"SchoolName\"] = df[\"SchoolName\"].fillna(\"\").astype(str).str.strip()\nfor col in [\"Total Exams Taken\", \"Number of Exams with scores 3 4 or 5\"]:\n    df[col] = pd.to_numeric(df[col].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[(df[\"DBN\"].ne(\"\")) & df[\"Total Exams Taken\"].notna() & df[\"Number of Exams with scores 3 4 or 5\"].notna() & df[\"Total Exams Taken\"].gt(0)].copy()\nfiltered[\"quality\"] = filtered[\"Number of Exams with scores 3 4 or 5\"] / filtered[\"Total Exams Taken\"]\nranked = filtered.sort_values([\"quality\", \"SchoolName\", \"DBN\"], ascending=[False, True, True], kind=\"mergesort\").reset_index(drop=True)\nranked[\"rank\"] = range(1, len(ranked) + 1)\nmerged = records.merge(ranked[[\"DBN\", \"rank\"]], on=\"DBN\", how=\"left\")\nanswer = str(int(merged[\"rank\"].min()))\n",
+            "subquestion": "Rank all New York schools by the number of AP scores 3 and 3+ divided by total exams taken in 2010. For all the 10 schools in <node_6 answer>, what is the best statewide rank?",
+            "answer": "6"
+        }
+    },
+    "datasets_used": [
+        "datagov/counties-that-filed-late-or-failed-to-file-fy-2018-19-ftrs-edcdb/files/rows.txt",
+        "datagov/counties-that-filed-late-or-failed-to-file-fy-2018-19-ftrs-edcdb/signed-metadata.txt",
+        "datagov/counties-that-filed-late-or-failed-to-file-fy-2019-20-ftrs-bd5d9/files/rows.txt",
+        "datagov/counties-that-filed-late-or-failed-to-file-fy-2019-20-ftrs-bd5d9/signed-metadata.txt",
+        "datagov/counties-that-filed-late-or-failed-to-file-fy-2020-21-ftrs-232c4/files/rows.txt",
+        "datagov/counties-that-filed-late-or-failed-to-file-fy-2020-21-ftrs-232c4/signed-metadata.txt",
+        "datagov/california-hospital-inpatient-mortality-rates-and-quality-ratings-63b1a/files/imi_gis_long_2022.txt",
+        "datagov/california-hospital-inpatient-mortality-rates-and-quality-ratings-63b1a/signed-metadata.txt",
+        "datagov/california-hospital-inpatient-mortality-rates-and-quality-ratings-63b1a/files/ca-oshpd-ahrq-imi-long-1015.txt",
+        "datagov/all-cause-unplanned-30-day-hospital-readmission-rate-california-lghc-indicator-36e12/files/allcauseunplanned30-dayhospitalreadmissionratecalifornia2011_2022.txt",
+        "datagov/all-cause-unplanned-30-day-hospital-readmission-rate-california-lghc-indicator-36e12/signed-metadata.txt",
+        "datagov/2010-2016-school-safety-report/files/rows.txt",
+        "datagov/2010-2016-school-safety-report/signed-metadata.txt",
+        "datagov/2010-2016-school-safety-report/files/qybk-bjjc.publisher-view.json",
+        "datagov/2010-ap-college-board-school-level-results/files/rows.txt",
+        "datagov/2010-ap-college-board-school-level-results/signed-metadata.txt",
+        "datagov/2010-ap-college-board-school-level-results/files/AP_Results.xlsx"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: In FY 2018-19, the five latest counties are Tuolumne, Humboldt, Mendocino, Inyo, and Yuba, ordered by submission date descending and then alphabetically to break ties.",
+                "Node 2: In FY 2019-20, the five latest counties are Humboldt, Inyo, Tuolumne, Mendocino, and Yuba.",
+                "Node 3: In FY 2020-21, the five latest counties are Humboldt, Mendocino, Lassen, Tuolumne, and Inyo.",
+                "Hop result: <node_1 answer>; <node_2 answer>; <node_3 answer>"
+            ],
+            "answer": "Tuolumne, Humboldt, Mendocino, Inyo, Yuba; Humboldt, Inyo, Tuolumne, Mendocino, Yuba; Humboldt, Mendocino, Lassen, Tuolumne, Inyo"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Take the union of counties appearing in nodes 1-3, which is Humboldt, Inyo, Lassen, Mendocino, Tuolumne, and Yuba.",
+                "In the California hospital mortality dataset, define good hospitals as hospitals with at least 2 Better-rated records, then rank them by lower average risk-adjusted mortality rate and by more Better-rated records.",
+                "Among the top 50 hospitals under that rule, only Tuolumne is one of the counties from nodes 1-3."
+            ],
+            "answer": "Tuolumne"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: For Tuolumne, sort the annual all-cause unplanned 30-day hospital readmission rates in ascending order, breaking ties by earlier year.",
+                "The 4th lowest such year is 2014."
+            ],
+            "answer": "2014"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Convert <node_5 answer> = 2014 into the school year 2014-15.",
+                "In the 2014-15 school safety report, keep schools with zero major crimes and zero violent crimes, then sort by non-criminal incidents descending and alphabetically to break ties.",
+                "The top 10 acceptable schools are Bronx High School of Science, Edward A. Reynolds West Side High School, High School of  Telecommunication Arts and Technol, In-Tech Academy (M.S. / High School 368), Liberation Diploma Plus, P.S. 036 Margaret Douglas, J.H.S. 220 John J. Pershing, P.S. 106 Parkchester, P.S. 284 Lew Wallace, and P186X Walter J. Damrosch School."
+            ],
+            "answer": "Bronx High School of Science, Edward A. Reynolds West Side High School, High School of  Telecommunication Arts and Technol, In-Tech Academy (M.S. / High School 368), Liberation Diploma Plus, P.S. 036 Margaret Douglas, J.H.S. 220 John J. Pershing, P.S. 106 Parkchester, P.S. 284 Lew Wallace, P186X Walter J. Damrosch School"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: In the 2010 AP school-level results, rank schools statewide by Number of Exams with scores 3 4 or 5 divided by Total Exams Taken, breaking ties by school name and DBN.",
+                "Among the schools from node 6 that appear in the AP dataset, Bronx High School of Science ranks highest, at rank 6."
+            ],
+            "answer": "6"
+        }
+    ]
+}

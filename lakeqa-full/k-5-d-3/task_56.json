@@ -1,0 +1,133 @@
+{
+  "question": "Among California physicians with a reported primary practice area and a five-digit address ZIP code, find the most common practice area in June 2019. Take that practice area's two highest-count ZIP codes. For each ZIP, find the most common patient-care hours, telemedicine hours, and years-since-licensure among physicians there. Add the three counts for each ZIP and determine which ZIP has the greater total. Use that ZIP's city/state to find its Medicare joint-replacement metropolitan area and counties. In those counties, which Medicare-certified skilled nursing facility had the most skilled-nursing-facility beds in 2021? Write your answer as [ANSWER].",
+  "answer": "ST. FRANCIS CONVALESCENT PAVILION",
+  "nodes": {
+    "1": {
+      "source": "datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/mdsurvey_primaryareaofpractice.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/mdsurvey_primaryareaofpractice.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['AddressofRecordZIPCode', 'SnapshotDate', 'PrimaryAreaOfPractice', 'CountOfLicensees'])\n\ndf['snapshot_date'] = pd.to_datetime(df['SnapshotDate'], errors='coerce')\nlatest_snapshot = df['snapshot_date'].max()\nfiltered = df[df['snapshot_date'].eq(latest_snapshot)].copy()\nfiltered['zip5'] = filtered['AddressofRecordZIPCode'].astype(str).str.extract(r'^(\\d{5})$', expand=False)\nfiltered['count'] = pd.to_numeric(filtered['CountOfLicensees'], errors='coerce')\nreported = filtered[\n    filtered['zip5'].notna()\n    & filtered['PrimaryAreaOfPractice'].astype(str).str.strip().ne('No Response')\n].copy()\narea_counts = reported.groupby('PrimaryAreaOfPractice', dropna=True)['count'].sum().sort_values(ascending=False)\nmax_total = area_counts.iloc[0]\narea_winners = area_counts[area_counts.eq(max_total)]\nif len(area_winners) != 1:\n    raise ValueError('Expected a unique primary practice area winner')\npractice_area = str(area_winners.index[0]).strip()\nzip_counts = reported[reported['PrimaryAreaOfPractice'].astype(str).str.strip().eq(practice_area)].groupby('zip5', dropna=True)['count'].sum().sort_values(ascending=False)\ntop_two = zip_counts.head(2)\nif len(top_two) != 2:\n    raise ValueError('Expected at least two ZIP candidates')\nanswer = f'{practice_area}; candidates: {top_two.index[0]} ({int(top_two.iloc[0])}), {top_two.index[1]} ({int(top_two.iloc[1])})'\n",
+      "subquestion": "Among California physicians with a reported primary practice area and a five-digit address ZIP code, which practice area had the most licensees in June 2019? Within that practice area, which two ZIP codes had the most licensees, and how many licensees did each have?",
+      "answer": "Internal Medicine; candidates: 94143 (192), 94115 (175)"
+    },
+    "2": {
+      "source": "datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/mdsurvey_patientcareactivity.txt",
+      "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/mdsurvey_patientcareactivity.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['AddressofRecordZIPCode', 'SnapshotDate', 'PatientCareActivity', 'CountOfLicensees'])\n\nnode_1_answer = 'Internal Medicine; candidates: 94143 (192), 94115 (175)'\ncandidate_zips = re.findall(r'(\\d{5}) \\(', node_1_answer)\ndf['snapshot_date'] = pd.to_datetime(df['SnapshotDate'], errors='coerce')\nlatest_snapshot = df['snapshot_date'].max()\ndf['zip5'] = df['AddressofRecordZIPCode'].astype(str).str.extract(r'^(\\d{5})$', expand=False)\ndf['count'] = pd.to_numeric(df['CountOfLicensees'], errors='coerce')\nfiltered = df[df['snapshot_date'].eq(latest_snapshot) & df['zip5'].isin(candidate_zips)].copy()\ncounts = filtered.groupby(['zip5', 'PatientCareActivity'], dropna=True)['count'].sum().reset_index()\ntop_by_zip = counts.sort_values(['zip5', 'count'], ascending=[True, False]).groupby('zip5', as_index=False).head(1)\nif len(top_by_zip) != len(candidate_zips):\n    raise ValueError('Expected a top patient-care hours range for each candidate ZIP')\nparts = []\nfor zip_code in candidate_zips:\n    row = top_by_zip[top_by_zip['zip5'].eq(zip_code)].iloc[0]\n    parts.append(f\"{zip_code}: Patient care activity: {str(row['PatientCareActivity']).strip()}, {int(row['count'])}\")\nanswer = '; '.join(parts)\n",
+      "subquestion": "For each ZIP code from node 1, which reported patient-care hours answer includes the most physicians, and how many physicians are in it?",
+      "answer": "94143: Patient care activity: 40+ Hours, 707; 94115: Patient care activity: 40+ Hours, 447"
+    },
+    "3": {
+      "source": "datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/mdsurvey_telemedicineactivity.txt",
+      "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/mdsurvey_telemedicineactivity.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['AddressofRecordZIPCode', 'SnapshotDate', 'TelemedicineActivity', 'CountOfLicensees'])\n\nnode_1_answer = 'Internal Medicine; candidates: 94143 (192), 94115 (175)'\ncandidate_zips = re.findall(r'(\\d{5}) \\(', node_1_answer)\ndf['snapshot_date'] = pd.to_datetime(df['SnapshotDate'], errors='coerce')\nlatest_snapshot = df['snapshot_date'].max()\ndf['zip5'] = df['AddressofRecordZIPCode'].astype(str).str.extract(r'^(\\d{5})$', expand=False)\ndf['count'] = pd.to_numeric(df['CountOfLicensees'], errors='coerce')\nfiltered = df[df['snapshot_date'].eq(latest_snapshot) & df['zip5'].isin(candidate_zips)].copy()\ncounts = filtered.groupby(['zip5', 'TelemedicineActivity'], dropna=True)['count'].sum().reset_index()\ntop_by_zip = counts.sort_values(['zip5', 'count'], ascending=[True, False]).groupby('zip5', as_index=False).head(1)\nif len(top_by_zip) != len(candidate_zips):\n    raise ValueError('Expected a top telemedicine-hours range for each candidate ZIP')\nparts = []\nfor zip_code in candidate_zips:\n    row = top_by_zip[top_by_zip['zip5'].eq(zip_code)].iloc[0]\n    parts.append(f\"{zip_code}: Telemedicine activity: {str(row['TelemedicineActivity']).strip()}, {int(row['count'])}\")\nanswer = '; '.join(parts)\n",
+      "subquestion": "For each ZIP code from node 1, which reported telemedicine-hours answer includes the most physicians, and how many physicians are in it?",
+      "answer": "94143: Telemedicine activity: No Response, 517; 94115: Telemedicine activity: No Response, 260"
+    },
+    "4": {
+      "source": "datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/mdsurvey_yearslicensed.txt",
+      "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/mdsurvey_yearslicensed.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['AddressofRecordZIPCode', 'SnapshotDate', 'YearsLicensed', 'CountOfLicensees'])\n\nnode_1_answer = 'Internal Medicine; candidates: 94143 (192), 94115 (175)'\ncandidate_zips = re.findall(r'(\\d{5}) \\(', node_1_answer)\ndf['snapshot_date'] = pd.to_datetime(df['SnapshotDate'], errors='coerce')\nlatest_snapshot = df['snapshot_date'].max()\ndf['zip5'] = df['AddressofRecordZIPCode'].astype(str).str.extract(r'^(\\d{5})$', expand=False)\ndf['count'] = pd.to_numeric(df['CountOfLicensees'], errors='coerce')\nfiltered = df[df['snapshot_date'].eq(latest_snapshot) & df['zip5'].isin(candidate_zips)].copy()\ncounts = filtered.groupby(['zip5', 'YearsLicensed'], dropna=True)['count'].sum().reset_index()\ntop_by_zip = counts.sort_values(['zip5', 'count'], ascending=[True, False]).groupby('zip5', as_index=False).head(1)\nif len(top_by_zip) != len(candidate_zips):\n    raise ValueError('Expected a top years-since-licensure range for each candidate ZIP')\nparts = []\nfor zip_code in candidate_zips:\n    row = top_by_zip[top_by_zip['zip5'].eq(zip_code)].iloc[0]\n    parts.append(f\"{zip_code}: Years licensed: {str(row['YearsLicensed']).strip()}, {int(row['count'])}\")\nanswer = '; '.join(parts)\n",
+      "subquestion": "For each ZIP code from node 1, which years-since-licensure range includes the most physicians, and how many physicians are in it?",
+      "answer": "94143: Years licensed: 0-4 Years, 990; 94115: Years licensed: 0-4 Years, 274"
+    },
+    "5": {
+      "source": "datagov/boundaries-us-zip-codes/files/rows.txt",
+      "fact": "import csv\nimport re\nimport sys\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nnode_2_answer = '94143: Patient care activity: 40+ Hours, 707; 94115: Patient care activity: 40+ Hours, 447'\nnode_3_answer = '94143: Telemedicine activity: No Response, 517; 94115: Telemedicine activity: No Response, 260'\nnode_4_answer = '94143: Years licensed: 0-4 Years, 990; 94115: Years licensed: 0-4 Years, 274'\nprofile_answers = [node_2_answer, node_3_answer, node_4_answer]\n\nscores = {}\nfor value in profile_answers:\n    for segment in value.split(';'):\n        segment = segment.strip()\n        zip_code = segment.split(':', 1)[0].strip()\n        count_match = re.search(r', (\\d+)$', segment)\n        if count_match is None:\n            raise ValueError('Expected each ZIP profile segment to end with a count')\n        scores[zip_code] = scores.get(zip_code, 0) + int(count_match.group(1))\nmax_score = max(scores.values())\nwinners = [zip_code for zip_code, score in scores.items() if score == max_score]\nif len(winners) != 1:\n    raise ValueError('Expected a unique ZIP with the largest combined profile count')\nzip_code = winners[0]\n\nsource = 'datagov/boundaries-us-zip-codes/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ncsv.field_size_limit(sys.maxsize)\nlines = obj['Body'].iter_lines()\nheader = next(lines).decode('utf-8')\ncolumns = next(csv.reader([header]))\ncolumn_index = {name: index for index, name in enumerate(columns)}\nmatched = None\nfor line in lines:\n    text = line.decode('utf-8')\n    if zip_code not in text:\n        continue\n    row = next(csv.reader([text]))\n    if row[column_index['ZIPCODE']].strip() == zip_code:\n        matched = row\n        break\nif matched is None:\n    raise ValueError('Expected a ZIP boundary row')\ncity = matched[column_index['CITY']].strip().title()\nstate = matched[column_index['STATE']].strip().upper()\nanswer = f'{zip_code}, total {int(max_score)}; {city}, {state}'\n",
+      "subquestion": "Add the three counts from node 2, node 3, and node 4 for each ZIP. Which ZIP has the larger total, and what city/state does it belong to?",
+      "answer": "94143, total 2214; San Francisco, CA"
+    },
+    "6": {
+      "source": "datagov/comprehensive-care-for-joint-replacement-model-metropolitan-statistical-areas-500f8/files/Comprehensive_Care_for_Joint_Replacement_Model__Metropolitan_Statistical_Areas__MSAs_.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/comprehensive-care-for-joint-replacement-model-metropolitan-statistical-areas-500f8/files/Comprehensive_Care_for_Joint_Replacement_Model__Metropolitan_Statistical_Areas__MSAs_.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['MSA', 'MSA Title', 'Counties'])\n\nnode_5_answer = '94143, total 2214; San Francisco, CA'\ncity_state = node_5_answer.split(';')[-1].strip()\ncity, state = [part.strip() for part in city_state.rsplit(',', 1)]\nfiltered = df[\n    df['MSA Title'].astype(str).str.contains(city, case=False, regex=False, na=False)\n    & df['MSA Title'].astype(str).str.endswith(f', {state}', na=False)\n].copy()\nif len(filtered) != 1:\n    raise ValueError('Expected a unique Medicare joint-replacement MSA containing the city')\nrow = filtered.iloc[0]\nanswer = f\"{str(row['MSA']).strip()}, {str(row['MSA Title']).strip()}; counties: {str(row['Counties']).strip()}\"\n",
+      "subquestion": "Which Medicare joint-replacement metropolitan area code and title contain the city from node 5, and which counties are included in that area?",
+      "answer": "41860, San Francisco-Oakland-Hayward, CA; counties: Alameda County, Contra Costa County, San Francisco County, San Mateo County, Marin County"
+    },
+    "7": {
+      "source": "datagov/skilled-nursing-facility-cost-report-cd2b7/files/CostReportsnf_Final_21.txt",
+      "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/skilled-nursing-facility-cost-report-cd2b7/files/CostReportsnf_Final_21.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['Facility Name', 'State Code', 'County', 'SNF Number of Beds'])\n\nnode_6_answer = '41860, San Francisco-Oakland-Hayward, CA; counties: Alameda County, Contra Costa County, San Francisco County, San Mateo County, Marin County'\ncounty_text = node_6_answer.split('counties:', 1)[1]\ncounties = [re.sub(r'\\s+County$', '', part.strip(), flags=re.IGNORECASE).upper() for part in county_text.split(',')]\ndf['state'] = df['State Code'].astype(str).str.strip().str.upper()\ndf['county'] = df['County'].astype(str).str.strip().str.upper()\ndf['snf_beds'] = pd.to_numeric(df['SNF Number of Beds'], errors='coerce')\nfiltered = df[df['state'].eq('CA') & df['county'].isin(counties)].dropna(subset=['snf_beds']).copy()\nmax_beds = filtered['snf_beds'].max()\nwinners = filtered[filtered['snf_beds'].eq(max_beds)].copy()\nif len(winners) != 1:\n    raise ValueError('Expected a unique skilled nursing facility with the most SNF beds')\nanswer = str(winners.iloc[0]['Facility Name']).strip()\n",
+      "subquestion": "In the counties from node 6, which Medicare-certified skilled nursing facility had the most skilled-nursing-facility beds in 2021?",
+      "answer": "ST. FRANCIS CONVALESCENT PAVILION"
+    }
+  },
+  "datasets_used": [
+    "datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/mdsurvey_primaryareaofpractice.txt",
+    "datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/mdsurvey_patientcareactivity.txt",
+    "datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/mdsurvey_telemedicineactivity.txt",
+    "datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/mdsurvey_yearslicensed.txt",
+    "datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/signed-metadata.txt",
+    "datagov/boundaries-us-zip-codes/files/rows.txt",
+    "datagov/boundaries-us-zip-codes/signed-metadata.txt",
+    "datagov/boundaries-us-zip-codes/files/columns.txt",
+    "datagov/boundaries-us-zip-codes/files/24mx-z6v2.publisher-view.json",
+    "datagov/boundaries-us-zip-codes/files/24mx-z6v2.txt",
+    "datagov/comprehensive-care-for-joint-replacement-model-metropolitan-statistical-areas-500f8/files/Comprehensive_Care_for_Joint_Replacement_Model__Metropolitan_Statistical_Areas__MSAs_.txt",
+    "datagov/comprehensive-care-for-joint-replacement-model-metropolitan-statistical-areas-500f8/signed-metadata.txt",
+    "datagov/comprehensive-care-for-joint-replacement-model-metropolitan-statistical-areas-500f8/files/data-viewer.txt",
+    "datagov/comprehensive-care-for-joint-replacement-model-metropolitan-statistical-areas-500f8/files/comprehensive-care-for-joint-replacement-model-msa-data-dictionary.txt",
+    "datagov/comprehensive-care-for-joint-replacement-model-metropolitan-statistical-areas-500f8/files/comprehensive-care-for-joint-replacement-model-metropolitan-statistical-areas.txt",
+    "datagov/skilled-nursing-facility-cost-report-cd2b7/files/CostReportsnf_Final_21.txt",
+    "datagov/skilled-nursing-facility-cost-report-cd2b7/signed-metadata.txt",
+    "datagov/skilled-nursing-facility-cost-report-cd2b7/files/data-viewer.txt",
+    "datagov/skilled-nursing-facility-cost-report-cd2b7/files/skilled-nursing-facility-cost-report.txt",
+    "datagov/physician-survey-licensee-responses-by-address-of-record-zip-code-e5aa8/files/physician-survey-licensee-responses-by-address-of-record-zip-code_datastore-fields.json"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Among June 2019 California physician survey rows with reported primary practice areas and five-digit address ZIPs, Internal Medicine is the highest-count practice area.",
+        "For Internal Medicine, the two highest-count address ZIPs are 94143 with 192 licensees and 94115 with 175 licensees.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "Internal Medicine; candidates: 94143 (192), 94115 (175)"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 2: ZIP 94143 has 707 physicians in its leading patient-care hours answer, and ZIP 94115 has 447.",
+        "Node 3: ZIP 94143 has 517 physicians in its leading telemedicine-hours answer, and ZIP 94115 has 260.",
+        "Node 4: ZIP 94143 has 990 physicians in its leading years-since-licensure range, and ZIP 94115 has 274.",
+        "Adding the three counts by ZIP gives 94143 a combined count of 2214 and 94115 a combined count of 981.",
+        "Hop result: 94143, total 2214"
+      ],
+      "answer": "94143, total 2214"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: After adding the profile counts from nodes 2-4, ZIP 94143 has the larger combined count, and it maps to San Francisco, CA.",
+        "Hop result: <node_5 answer>"
+      ],
+      "answer": "94143, total 2214; San Francisco, CA"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: The Medicare joint-replacement metropolitan area containing San Francisco, CA is MSA 41860, San Francisco-Oakland-Hayward, CA, whose counties are Alameda, Contra Costa, San Francisco, San Mateo, and Marin.",
+        "Hop result: <node_6 answer>"
+      ],
+      "answer": "41860, San Francisco-Oakland-Hayward, CA; counties: Alameda County, Contra Costa County, San Francisco County, San Mateo County, Marin County"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: Among California skilled nursing facilities in the counties from node 6, ST. FRANCIS CONVALESCENT PAVILION has the most reported skilled-nursing-facility beds in the 2021 Medicare cost reports.",
+        "Hop result: <node_7 answer>"
+      ],
+      "answer": "ST. FRANCIS CONVALESCENT PAVILION"
+    }
+  ]
+}

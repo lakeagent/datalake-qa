@@ -1,0 +1,115 @@
+{
+  "question": "Find the California cities satisfying both criteria: (1) older adults with major tooth loss above 19% in 2016, and (2) adults with frequent poor mental health above 15% in 2017. Find the county that each city is in. As of 2025, which of those counties has more incorporated cities? Return the county name only. Your response should be in the format [Answer].",
+  "answer": "Los Angeles County",
+  "nodes": {
+    "1": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2016-release/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/500-cities-city-level-data-gis-friendly-format-2016-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[(df[\"StateAbbr\"] == \"CA\") & (df[\"TEETHLOST_CrudePrev\"] > 19), [\"PlaceName\", \"TEETHLOST_CrudePrev\"]]\n    .sort_values([\"TEETHLOST_CrudePrev\", \"PlaceName\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = result[\"PlaceName\"].tolist()",
+      "subquestion": "Which California cities had the unadjusted percentage of older adults with major tooth loss above 19% in 2016?",
+      "answer": [
+        "San Bernardino",
+        "Compton"
+      ]
+    },
+    "2": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[(df[\"StateAbbr\"] == \"CA\") & (df[\"MHLTH_CrudePrev\"] > 15), [\"PlaceName\", \"MHLTH_CrudePrev\"]]\n    .sort_values([\"PlaceName\", \"MHLTH_CrudePrev\"], ascending=[True, False])\n    .reset_index(drop=True)\n)\nanswer = result[\"PlaceName\"].tolist()",
+      "subquestion": "Which California cities had the unadjusted percentage of adults with frequent poor mental health above 15% in 2017?",
+      "answer": [
+        "Compton",
+        "Hesperia",
+        "Lynwood",
+        "Merced",
+        "Perris",
+        "Salinas",
+        "San Bernardino",
+        "Santa Ana",
+        "Santa Maria",
+        "South Gate"
+      ]
+    },
+    "3": {
+      "source": "wikipedia/Compton,_California/content.txt",
+      "fact": "Compton is a city located in the Gateway Cities region of southern Los Angeles County, California, United States",
+      "subquestion": "What county is Compton from <hop 1 answer> in?",
+      "answer": "Los Angeles County"
+    },
+    "4": {
+      "source": "wikipedia/San_Bernardino,_California/content.txt",
+      "fact": "San Bernardino ( ) is a city in and the county seat of San Bernardino County, California, United States.",
+      "subquestion": "What county is San Bernardino from <hop 1 answer> in?",
+      "answer": "San Bernardino County"
+    },
+    "5": {
+      "source": "wikipedia/Los_Angeles_County,_California/content.txt",
+      "fact": "Incorporated cities 88. There are 88 incorporated cities in Los Angeles County.",
+      "subquestion": "As of 2025, how many incorporated cities are in the first county from <hop 2 answer>?",
+      "answer": 88
+    },
+    "6": {
+      "source": "wikipedia/San_Bernardino_County,_California/content.txt",
+      "fact": "The San Bernardino County Fire Protection District provides fire protection and emergency medical services to the unincorporated parts of the county and 24 incorporated cities.",
+      "subquestion": "As of 2025, how many incorporated cities are in the second county from <hop 2 answer>?",
+      "answer": 24
+    }
+  },
+  "datasets_used": [
+    "datagov/500-cities-city-level-data-gis-friendly-format-2016-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2016-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2016-release/files/k56w-7tny.publisher-view.json",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/djk3-k3zs.txt",
+    "wikipedia/Compton,_California/content.txt",
+    "wikipedia/San_Bernardino,_California/content.txt",
+    "wikipedia/Los_Angeles_County,_California/content.txt",
+    "wikipedia/San_Bernardino_County,_California/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `StateAbbr` = `CA` and `TEETHLOST_CrudePrev > 19`, then keep `PlaceName`.",
+        "Node 2: Filter rows where `StateAbbr` = `CA` and `MHLTH_CrudePrev > 15`, then keep `PlaceName`.",
+        "Hop result: intersect the city outputs from nodes 1 and 2. The qualifying cities are Compton and San Bernardino."
+      ],
+      "answer": [
+        "Compton",
+        "San Bernardino"
+      ],
+      "hop": 1
+    },
+    {
+      "node_ids": [
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 3: Identify the county for Compton from <hop 1 answer>.",
+        "Node 4: Identify the county for San Bernardino from <hop 1 answer>.",
+        "Hop result: the counties are Los Angeles County and San Bernardino County."
+      ],
+      "answer": [
+        "Los Angeles County",
+        "San Bernardino County"
+      ],
+      "hop": 2
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5: The first county from <hop 2 answer> has 88 incorporated cities.",
+        "Node 6: The second county from <hop 2 answer> has 24 incorporated cities.",
+        "Hop result: 88 is greater than 24, so the answer is `Los Angeles County`."
+      ],
+      "answer": "Los Angeles County"
+    }
+  ]
+}

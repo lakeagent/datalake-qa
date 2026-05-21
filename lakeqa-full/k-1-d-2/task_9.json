@@ -1,0 +1,55 @@
+{
+    "question": "Which state appears in both of these groups: states that had poor behavioral-health care results in 2020, with at least five measures among the worst 25% of reported state results and average performance at least 5 points worse than the median reported state result for those measures, and states that had at least 10% of their counties in 2021 with utility-scale solar generation potential in the highest 20% among U.S. counties and satisfying at least two of these conditions: (1) the county unemployment rate was in the highest 20% among U.S. counties, (2) the county met the 0.2 threshold for concentration of census block groups with high low-income rates, or (3) the county met the 0.2 threshold for concentration of census block groups with high rates of residents without a high school diploma? Respond with [Answer].",
+    "answer": "Texas",
+    "nodes": {
+        "1": {
+            "source": "datagov/2020-child-and-adult-health-care-quality-measures-quality/files/2020-child-and-adult-health-care-quality-measures.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2020-child-and-adult-health-care-quality-measures-quality/files/2020-child-and-adult-health-care-quality-measures.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"Domain\"] == \"Behavioral Health Care\")\n    & (df[\"Rate Used in Calculating State Mean and Median\"] == \"Yes\")\n].copy()\n\nfor col in [\"State Rate\", \"Median\", \"Bottom Quartile\", \"Top Quartile\"]:\n    filtered[col] = pd.to_numeric(filtered[col], errors=\"coerce\")\n\nfiltered = filtered.dropna(subset=[\"State\", \"Measure Type\", \"State Rate\", \"Median\", \"Bottom Quartile\", \"Top Quartile\"])\n\nhigher_is_better = filtered[\"Measure Type\"] == \"Higher rates are better for this measure\"\nfiltered[\"gap_vs_median\"] = filtered[\"State Rate\"] - filtered[\"Median\"]\nfiltered.loc[~higher_is_better, \"gap_vs_median\"] = filtered.loc[~higher_is_better, \"Median\"] - filtered.loc[~higher_is_better, \"State Rate\"]\n\nfiltered[\"is_weak\"] = False\nfiltered.loc[higher_is_better, \"is_weak\"] = filtered.loc[higher_is_better, \"State Rate\"] <= filtered.loc[higher_is_better, \"Bottom Quartile\"]\nfiltered.loc[~higher_is_better, \"is_weak\"] = filtered.loc[~higher_is_better, \"State Rate\"] >= filtered.loc[~higher_is_better, \"Top Quartile\"]\n\nresult = (\n    filtered.groupby(\"State\", as_index=False)\n    .agg(\n        weak_count=(\"is_weak\", \"sum\"),\n        avg_direction_adjusted_gap_vs_median=(\"gap_vs_median\", \"mean\"),\n        measure_count=(\"State\", \"size\"),\n    )\n)\n\nresult = result[\n    (result[\"weak_count\"] >= 5)\n    & (result[\"avg_direction_adjusted_gap_vs_median\"] <= -5)\n].sort_values(\"State\").reset_index(drop=True)\n\nanswer = result[\"State\"].tolist()",
+            "subquestion": "Which states had poor behavioral-health care results in 2020, with at least five measures among the worst 25% of reported state results and average performance at least 5 points worse than the median reported state result for those measures?",
+            "answer": [
+                "District of Columbia",
+                "Illinois",
+                "Mississippi",
+                "Oklahoma",
+                "South Dakota",
+                "Texas",
+                "Wyoming"
+            ]
+        },
+        "2": {
+            "source": "datagov/equitable-energy-investment-prioritization-data-set-9af9d/files/Equitable%20Energy%20Investment%20Prioritization%20%28EEIP%29%20Data%20set_10_14_21.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/equitable-energy-investment-prioritization-data-set-9af9d/files/Equitable%20Energy%20Investment%20Prioritization%20%28EEIP%29%20Data%20set_10_14_21.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfor col in [\"utilitypv_techpot_quint\", \"unemployment_quint\", \"lowincome_indicator\", \"lessthanhs_indicator\"]:\n    df[col] = pd.to_numeric(df[col], errors=\"coerce\")\n\nstress_flag_count = (\n    (df[\"unemployment_quint\"] == 5).astype(int)\n    + (df[\"lowincome_indicator\"] >= 0.2).astype(int)\n    + (df[\"lessthanhs_indicator\"] >= 0.2).astype(int)\n)\n\ndf[\"is_high_need_high_solar\"] = (df[\"utilitypv_techpot_quint\"] == 5) & (stress_flag_count >= 2)\n\nresult = (\n    df.groupby(\"state\", as_index=False)\n    .agg(\n        eligible_counties=(\"is_high_need_high_solar\", \"sum\"),\n        total_counties=(\"state\", \"size\"),\n    )\n)\nresult[\"eligible_share\"] = result[\"eligible_counties\"] / result[\"total_counties\"]\n\nresult = result[result[\"eligible_share\"] >= 0.1].sort_values(\"state\").reset_index(drop=True)\n\nanswer = result[\"state\"].tolist()",
+            "subquestion": "Which states had at least 10% of their counties in 2021 with utility-scale solar generation potential in the highest 20% among U.S. counties and satisfying at least two of these conditions: (1) the county unemployment rate was in the highest 20% among U.S. counties, (2) the county met the 0.2 threshold for concentration of census block groups with high low-income rates, or (3) the county met the 0.2 threshold for concentration of census block groups with high rates of residents without a high school diploma?",
+            "answer": [
+                "AZ",
+                "CA",
+                "NM",
+                "TX",
+                "WA"
+            ]
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Domain` = `Behavioral Health Care` and `Rate Used in Calculating State Mean and Median` = `Yes`, convert `State Rate`, `Median`, `Bottom Quartile`, and `Top Quartile` to numeric, compute each state's weak-measure count and average direction-adjusted gap versus the median, and keep states with at least 5 weak measures and average gap at most -5.",
+                "Node 2: Convert `utilitypv_techpot_quint`, `unemployment_quint`, `lowincome_indicator`, and `lessthanhs_indicator` to numeric, flag counties with utility-scale solar technical potential quintile 5 and at least two qualifying socioeconomic stress flags, compute each state's share of qualifying counties, and keep states with eligible share at least 0.1.",
+                "Hop result: semantic intersection of <node 1 answer> and the full-state-name equivalents of <node 2 answer> = Texas."
+            ],
+            "answer": "Texas"
+        }
+    ],
+    "datasets_used": [
+        "datagov/2020-child-and-adult-health-care-quality-measures-quality/files/2020-child-and-adult-health-care-quality-measures.txt",
+        "datagov/2020-child-and-adult-health-care-quality-measures-quality/signed-metadata.txt",
+        "datagov/2020-child-and-adult-health-care-quality-measures-quality/files/quality-measures-2019-2022-data-dictionary.json",
+        "datagov/equitable-energy-investment-prioritization-data-set-9af9d/files/Equitable%20Energy%20Investment%20Prioritization%20%28EEIP%29%20Data%20set_10_14_21.txt",
+        "datagov/equitable-energy-investment-prioritization-data-set-9af9d/signed-metadata.txt",
+        "datagov/equitable-energy-investment-prioritization-data-set-9af9d/files/Equitable%20Energy%20Investment%20Prioritization%20%28EEIP%29%20Data%20set_1_18_22.txt"
+    ]
+}

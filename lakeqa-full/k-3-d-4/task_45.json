@@ -1,0 +1,179 @@
+{
+  "question": "Which Texas counties had between 700 and 4,600 people entering the state prison system in each fiscal year from 2019 to 2022, and which of those counties had 2020 census population under 900,000? Across the remaining counties, how many national protected areas are there? Your response should be in the format [Answer].",
+  "answer": 5,
+  "nodes": {
+    "1": {
+      "source": "datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty = df[\"County\"].astype(str).str.strip()\ncounts = county[county.ne(\"\") & county.ne(\"Nan\")].value_counts()\nanswer = counts[counts.between(700, 4600)].index.tolist()",
+      "subquestion": "Which Texas counties had TDCJ criminal intakes between 700 and 4,600 in FY 2019?",
+      "answer": [
+        "Bexar",
+        "Hidalgo",
+        "Travis",
+        "El Paso",
+        "Montgomery",
+        "McLennan",
+        "Collin",
+        "Smith",
+        "Galveston",
+        "Jefferson",
+        "Taylor",
+        "Nueces",
+        "Brazoria",
+        "Ector",
+        "Johnson",
+        "Bell",
+        "Lubbock",
+        "Denton"
+      ]
+    },
+    "2": {
+      "source": "datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty = df[\"County\"].astype(str).str.strip()\ncounts = county[county.ne(\"\") & county.ne(\"Nan\")].value_counts()\nanswer = counts[counts.between(700, 4600)].index.tolist()",
+      "subquestion": "Which Texas counties had TDCJ criminal intakes between 700 and 4,600 in FY 2020?",
+      "answer": [
+        "Harris",
+        "Tarrant",
+        "Dallas",
+        "Bexar",
+        "Hidalgo",
+        "Travis",
+        "Montgomery",
+        "McLennan",
+        "El Paso"
+      ]
+    },
+    "3": {
+      "source": "datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty = df[\"County\"].astype(str).str.strip()\ncounts = county[county.ne(\"\") & county.ne(\"Nan\")].value_counts()\nanswer = counts[counts.between(700, 4600)].index.tolist()",
+      "subquestion": "Which Texas counties had TDCJ criminal intakes between 700 and 4,600 in FY 2021?",
+      "answer": [
+        "Dallas",
+        "Tarrant",
+        "Bexar",
+        "Hidalgo",
+        "Collin",
+        "Smith",
+        "Montgomery",
+        "El Paso",
+        "Travis"
+      ]
+    },
+    "4": {
+      "source": "datagov/texas-department-of-criminal-justice-receives-fy-2022/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty = df[\"County\"].astype(str).str.strip()\ncounts = county[county.ne(\"\") & county.ne(\"Nan\")].value_counts()\nanswer = counts[counts.between(700, 4600)].index.tolist()",
+      "subquestion": "Which Texas counties had TDCJ criminal intakes between 700 and 4,600 in FY 2022?",
+      "answer": [
+        "Tarrant",
+        "Dallas",
+        "Bexar",
+        "Hidalgo",
+        "Montgomery",
+        "Smith",
+        "Jefferson",
+        "Collin",
+        "McLennan",
+        "El Paso",
+        "Johnson"
+      ]
+    },
+    "5": {
+      "source": "datagov/2020-census-redistricting-data-all-texas-counties/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/2020-census-redistricting-data-all-texas-counties/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ncandidates = [\"Bexar\", \"El Paso\", \"Hidalgo\", \"Montgomery\"]\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nsumlev = pd.to_numeric(df[\"SUMLEV\"], errors=\"coerce\")\ncounty = df[\"BASENAME\"].astype(str).str.strip()\npopulation = pd.to_numeric(df[\"POP100\"], errors=\"coerce\")\nanswer = [\n    name\n    for name in candidates\n    if (sumlev.eq(50) & county.eq(name) & population.lt(900000)).any()\n]",
+      "subquestion": "Which counties from <hop 1 answer> had 2020 census population under 900,000?",
+      "answer": [
+        "El Paso",
+        "Hidalgo",
+        "Montgomery"
+      ]
+    },
+    "6": {
+      "source": "wikipedia/El_Paso_County,_Texas/content.txt",
+      "fact": "National protected areas in El Paso County are Chamizal National Memorial and El Camino Real de Tierra Adentro National Historic Trail (part).",
+      "subquestion": "For this county from <hop 2 answer>, how many national protected areas are there?",
+      "answer": {
+        "county": "El Paso County",
+        "national_protected_area_count": 2
+      }
+    },
+    "7": {
+      "source": "wikipedia/Hidalgo_County,_Texas/content.txt",
+      "fact": "National protected areas in Hidalgo County are Lower Rio Grande Valley National Wildlife Refuge (part) and Santa Ana National Wildlife Refuge.",
+      "subquestion": "For this county from <hop 2 answer>, how many national protected areas are there?",
+      "answer": {
+        "county": "Hidalgo County",
+        "national_protected_area_count": 2
+      }
+    },
+    "8": {
+      "source": "wikipedia/Montgomery_County,_Texas/content.txt",
+      "fact": "The national protected area in Montgomery County is Sam Houston National Forest (partial).",
+      "subquestion": "For this county from <hop 2 answer>, how many national protected areas are there?",
+      "answer": {
+        "county": "Montgomery County",
+        "national_protected_area_count": 1
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: FY 2019 TDCJ intake counts between 700 and 4,600 include Bexar, Hidalgo, Travis, El Paso, Montgomery, and others.",
+        "Node 2: FY 2020 TDCJ intake counts between 700 and 4,600 include Harris, Tarrant, Dallas, Bexar, Hidalgo, Travis, Montgomery, McLennan, and El Paso.",
+        "Node 3: FY 2021 TDCJ intake counts between 700 and 4,600 include Dallas, Tarrant, Bexar, Hidalgo, Collin, Smith, Montgomery, El Paso, and Travis.",
+        "Node 4: FY 2022 TDCJ intake counts between 700 and 4,600 include Tarrant, Dallas, Bexar, Hidalgo, Montgomery, Smith, Jefferson, Collin, McLennan, El Paso, and Johnson.",
+        "Derive hop 1 answer using nodes 1, 2, 3, 4: intersecting the yearly county sets leaves Bexar, El Paso, Hidalgo, and Montgomery. Hop answer: Bexar, El Paso, Hidalgo, Montgomery."
+      ],
+      "answer": "Bexar, El Paso, Hidalgo, Montgomery"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: From <hop 1 answer>, the counties with 2020 census population under 900,000 are El Paso, Hidalgo, and Montgomery.",
+        "Derive hop 2 answer from node 5: apply the population-under-900,000 filter to <hop 1 answer>. Hop answer: El Paso, Hidalgo, Montgomery."
+      ],
+      "answer": "El Paso, Hidalgo, Montgomery"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        6,
+        7,
+        8
+      ],
+      "reasoning": [
+        "Node 6: El Paso County from <hop 2 answer> has `2` named national protected areas.",
+        "Node 7: Hidalgo County from <hop 2 answer> has `2` named national protected areas.",
+        "Node 8: Montgomery County from <hop 2 answer> has `1` named national protected area.",
+        "Derive hop 3 answer using nodes 6, 7, 8: `2 + 2 + 1 = 5`. Hop answer: 5."
+      ],
+      "answer": 5
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/El_Paso_County,_Texas/content.txt",
+    "wikipedia/Montgomery_County,_Texas/content.txt",
+    "wikipedia/Hidalgo_County,_Texas/content.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2019/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2020/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2021/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2022/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2022/signed-metadata.txt",
+    "datagov/2020-census-redistricting-data-all-texas-counties/files/rows.txt",
+    "datagov/2020-census-redistricting-data-all-texas-counties/signed-metadata.txt",
+    "datagov/2020-census-redistricting-data-all-texas-counties/files/2020Census_PL94_171Redistricting_StatesTechDoc_English.pdf"
+  ]
+}

@@ -1,0 +1,106 @@
+{
+    "question": "In the 2014-15 school year of Washington, which top 5 schools had the largest low-income students amount that are expected to take Biology graduation test, which top 5 schools had the most low-income students who are left schools after 7 years, and which top 5 schools had the most low-income students enrolled? Among the schools that appear in at least two of those three answers, how many school districts operate more than one of those schools? Please return only the number in the format [Answer].",
+    "answer": 2,
+    "nodes": {
+        "1": {
+            "source": "datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[\n    df['OrganizationLevel'].eq('School')\n    & df['StudentGroup'].eq('Low-Income')\n    & df['TestSubject'].eq('Biology')\n    & df['GradeLevel'].eq('All Grades')\n    & df['Suppression'].ne('Yes')\n].copy()\nfiltered['expected_num'] = pd.to_numeric(filtered['Count of Students Expected to Test'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = filtered.sort_values(['expected_num', 'SchoolCode'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked.iloc[0:5]['SchoolCode'] + ' ' + ranked.iloc[0:5]['SchoolName']).tolist())\n",
+            "subquestion": "In the 2014-15 school year of Washington, which top 5 schools had the largest low-income students amount that are expected to take Biology graduation test?",
+            "answer": "2116 Davis High School; 5164 Chiawana Senior High School; 3206 Eisenhower High School; 2917 Pasco Senior High School; 3688 Mariner High School"
+        },
+        "2": {
+            "source": "datagov/report-card-graduation-2014-15/files/rows.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/report-card-graduation-2014-15/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = json.loads(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read().decode('utf-8'))\ncols_meta = obj['meta']['view']['columns']\nstart_idx = next(i for i, col in enumerate(cols_meta) if col.get('dataTypeName') != 'meta_data')\ncolumns = [col['name'] for col in cols_meta[start_idx:]]\ndf = pd.DataFrame([row[start_idx:start_idx + len(columns)] for row in obj['data']], columns=columns)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[\n    df['OrganizationLevel'].eq('School')\n    & df['StudentGroup'].eq('Low-Income')\n    & df['Cohort'].eq('Seven year')\n    & df['Suppression'].ne('Yes')\n].copy()\nfiltered['graduate_num'] = pd.to_numeric(filtered['Graduate'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = filtered.sort_values(['graduate_num', 'SchoolCode'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked.iloc[0:5]['SchoolCode'] + ' ' + ranked.iloc[0:5]['SchoolName']).tolist())\n",
+            "subquestion": "In the 2014-15 school year of Washington, which top 5 schools had the most low-income students who are left schools after 7 years?",
+            "answer": "2959 Sunnyside High School; 2917 Pasco Senior High School; 5164 Chiawana Senior High School; 2116 Davis High School; 3688 Mariner High School"
+        },
+        "3": {
+            "source": "datagov/report-card-enrollment-2014-15-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/report-card-enrollment-2014-15-school-year/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[df['OrganizationLevel'].eq('School') & df['GradeLevel'].eq('All Grades')].copy()\nfiltered['low_income_num'] = pd.to_numeric(filtered['Low-Income'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = filtered.sort_values(['low_income_num', 'SchoolCode'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked.iloc[0:5]['SchoolCode'] + ' ' + ranked.iloc[0:5]['SchoolName']).tolist())\n",
+            "subquestion": "In the 2014-15 school year of Washington, which top 5 schools had the most low-income students enrolled?",
+            "answer": "2116 Davis High School; 5164 Chiawana Senior High School; 2797 Kent-Meridian High School; 3206 Eisenhower High School; 2917 Pasco Senior High School"
+        },
+        "4": {
+            "source": "wikipedia/A.C._Davis_High_School_(Washington)/content.txt",
+            "fact": "A.C. Davis High School is in the Yakima School District.",
+            "subquestion": "Which school district operates the first school in <hop 1 answer>?",
+            "answer": "Yakima School District"
+        },
+        "5": {
+            "source": "wikipedia/Chiawana_High_School/content.txt",
+            "fact": "Chiawana High School is the second traditional high school of Pasco School District #1.",
+            "subquestion": "Which school district operates the second school in <hop 1 answer>?",
+            "answer": "Pasco School District"
+        },
+        "6": {
+            "source": "wikipedia/Eisenhower_High_School_(Yakima,_Washington)/content.txt",
+            "fact": "Eisenhower High School is in the Yakima School District.",
+            "subquestion": "Which school district operates the third school in <hop 1 answer>?",
+            "answer": "Yakima School District"
+        },
+        "7": {
+            "source": "wikipedia/Pasco_High_School_(Washington)/content.txt",
+            "fact": "Pasco High School is in the Pasco School District.",
+            "subquestion": "Which school district operates the fourth school in <hop 1 answer>?",
+            "answer": "Pasco School District"
+        },
+        "8": {
+            "source": "wikipedia/Mariner_High_School_(Everett,_Washington)/content.txt",
+            "fact": "Mariner High School is in the Mukilteo School District.",
+            "subquestion": "Which school district operates the fifth school in <hop 1 answer>?",
+            "answer": "Mukilteo School District"
+        }
+    },
+    "datasets_used": [
+        "datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt",
+        "datagov/report-card-assessment-data-2014-15-school-year/signed-metadata.txt",
+        "datagov/report-card-assessment-data-2014-15-school-year/files/jjrr-uy75.txt",
+        "datagov/report-card-graduation-2014-15/files/rows.txt",
+        "datagov/report-card-graduation-2014-15/signed-metadata.txt",
+        "datagov/report-card-enrollment-2014-15-school-year/files/rows.txt",
+        "datagov/report-card-enrollment-2014-15-school-year/signed-metadata.txt",
+        "datagov/report-card-enrollment-2014-15-school-year/files/i9gq-g35m.publisher-view.json",
+        "wikipedia/A.C._Davis_High_School_(Washington)/content.txt",
+        "wikipedia/Chiawana_High_School/content.txt",
+        "wikipedia/Eisenhower_High_School_(Yakima,_Washington)/content.txt",
+        "wikipedia/Pasco_High_School_(Washington)/content.txt",
+        "wikipedia/Mariner_High_School_(Everett,_Washington)/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1 ranks schools by low-income Biology expected-test counts in 2014-15 and returns Davis, Chiawana, Eisenhower, Pasco, and Mariner.",
+                "Node 2 ranks schools by low-income seven-year graduates in 2014-15 and returns Sunnyside, Pasco, Chiawana, Davis, and Mariner.",
+                "Node 3 ranks schools by total low-income enrollment in 2014-15 and returns Davis, Chiawana, Kent-Meridian, Eisenhower, and Pasco.",
+                "The schools that appear in at least two of those three answers are Davis, Chiawana, Eisenhower, Pasco, and Mariner."
+            ],
+            "answer": "2116 Davis High School; 5164 Chiawana Senior High School; 3206 Eisenhower High School; 2917 Pasco Senior High School; 3688 Mariner High School"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4,
+                5,
+                6,
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 4: The first school in <hop 1 answer> is operated by Yakima School District.",
+                "Node 5: The second school in <hop 1 answer> is operated by Pasco School District.",
+                "Node 6: The third school in <hop 1 answer> is operated by Yakima School District.",
+                "Node 7: The fourth school in <hop 1 answer> is operated by Pasco School District.",
+                "Node 8: The fifth school in <hop 1 answer> is operated by Mukilteo School District.",
+                "Yakima School District and Pasco School District each operate more than one of the schools, while Mukilteo School District operates one.",
+                "Therefore, the final answer is 2."
+            ],
+            "answer": 2
+        }
+    ]
+}

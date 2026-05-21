@@ -1,0 +1,153 @@
+{
+    "question": "First identify the California hospital that satisfies both of these conditions: at least 250 TAVR hospital cases with an Average mortality rating in 2022, and at least 35,000 ambulatory surgery encounters in 2019. Then, for that hospital, find the county with the highest total of homeless inpatient encounters broken down by age. What is the county seat of that county? For that city, take the three health-outcome measures with the highest crude prevalence values in 2021, and the health-outcome measures with crude prevalence values from 15 up to but not including 23 in 2022. Which measure appears in both sets? According to that measure's Wikipedia article, what measurement is used to determine whether a person falls into that category? Return the measurement name only. Your response should be in the format [Answer].",
+    "answer": "Body mass index (BMI)",
+    "nodes": {
+        "1": {
+            "source": "datagov/california-hospital-ratings-for-transcatheter-aortic-valve-replacement-tavr-procedures/files/2022-tavr-hospital-performance-ratings.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/california-hospital-ratings-for-transcatheter-aortic-valve-replacement-tavr-procedures/files/2022-tavr-hospital-performance-ratings.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\n\ndef normalize_text(value):\n    value = str(value).replace(\"\\n\", \" \").replace(\"\\x96\", \"-\").replace(\"\\x97\", \"-\").replace(\"–\", \"-\").replace(\"—\", \"-\").strip()\n    value = re.sub(r\"\\s+\", \" \", value)\n    return \"\" if value.lower() == \"nan\" else value\n\n\ndef normalize_name(value):\n    value = normalize_text(value)\n    return value.replace(\"Cedars - Sinai Medical Center\", \"Cedars-Sinai Medical Center\")\n\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf.columns = [normalize_text(column) for column in df.columns]\nfor column in df.columns:\n    if df[column].dtype == object:\n        df[column] = df[column].map(normalize_text)\n\ndf[\"Hospital\"] = df[\"Hospital\"].map(normalize_name)\ndf[\"Total Hospital TAVR Cases\"] = pd.to_numeric(df[\"Total Hospital TAVR Cases\"], errors=\"coerce\")\n\nmortality = df[df[\"Performance Measure\"].eq(\"TAVR In-hospital/30-day Mortality\")].copy()\nanswer = sorted(\n    mortality.loc[\n        mortality[\"Total Hospital TAVR Cases\"].ge(250)\n        & mortality[\"Performance Rating\"].eq(\"Average\"),\n        \"Hospital\"\n    ].tolist()\n)",
+            "subquestion": "Which California hospitals had at least 250 TAVR cases and an Average mortality rating in 2022?",
+            "answer": [
+                "Cedars-Sinai Medical Center",
+                "Kaiser Foundation Hospital - San Francisco",
+                "Mercy General Hospital",
+                "Scripps Memorial Hospital - La Jolla",
+                "Stanford Health Care"
+            ]
+        },
+        "2": {
+            "source": "datagov/effects-of-covid-19-on-hospital-utilization-trends-636d2/files/hospital-utilization-trends.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/effects-of-covid-19-on-hospital-utilization-trends-636d2/files/hospital-utilization-trends.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\n\ndef normalize_text(value):\n    value = str(value).replace(\"\\n\", \" \").replace(\"\\x96\", \"-\").replace(\"\\x97\", \"-\").replace(\"–\", \"-\").replace(\"—\", \"-\").strip()\n    value = re.sub(r\"\\s+\", \" \", value)\n    return \"\" if value.lower() == \"nan\" else value\n\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf.columns = [normalize_text(column) for column in df.columns]\nfor column in df.columns:\n    if df[column].dtype == object:\n        df[column] = df[column].map(normalize_text)\n\ndf[\"Count\"] = pd.to_numeric(df[\"Count\"], errors=\"coerce\")\ndf[\"year\"] = df[\"Date\"].str[-2:].map(lambda value: 2000 + int(value) if str(value).isdigit() else None)\n\nranked = (\n    df.groupby([\"Facility Name\", \"Setting\", \"year\"], dropna=False)[\"Count\"]\n    .sum()\n    .reset_index()\n)\n\nanswer = sorted(\n    ranked.loc[\n        ranked[\"Setting\"].eq(\"Ambulatory Surgery\")\n        & ranked[\"year\"].eq(2019)\n        & ranked[\"Count\"].ge(35000),\n        \"Facility Name\"\n    ].tolist()\n)",
+            "subquestion": "Which hospitals had at least 35,000 ambulatory surgery encounters in 2019?",
+            "answer": [
+                "Stanford Health Care",
+                "UC San Diego Health Hillcrest - Hillcrest Medical Center",
+                "UCSF Medical Center"
+            ]
+        },
+        "3": {
+            "source": "datagov/hospital-encounters-for-homeless-patients-79a6f/files/2019-2020-homeless-hospital-encounters-age-race-sex-expected-payer-by-facility.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/hospital-encounters-for-homeless-patients-79a6f/files/2019-2020-homeless-hospital-encounters-age-race-sex-expected-payer-by-facility.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\n\ndef normalize_text(value):\n    value = str(value).replace(\"\\n\", \" \").replace(\"\\x96\", \"-\").replace(\"\\x97\", \"-\").replace(\"–\", \"-\").replace(\"—\", \"-\").strip()\n    value = re.sub(r\"\\s+\", \" \", value)\n    return \"\" if value.lower() == \"nan\" else value\n\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf.columns = [normalize_text(column) for column in df.columns]\nfor column in df.columns:\n    if df[column].dtype == object:\n        df[column] = df[column].map(normalize_text)\n\ndf[\"Encounters\"] = pd.to_numeric(df[\"Encounters\"], errors=\"coerce\")\n\ncounty_totals = (\n    df[\n        df[\"FacilityName\"].eq(\"Stanford Health Care\")\n        & df[\"EncounterType\"].eq(\"Inpatient Hospitalizations\")\n        & df[\"HomelessIndicator\"].eq(\"Homeless\")\n        & df[\"Demographic\"].eq(\"Age\")\n    ]\n    .groupby(\"HospitalCounty\")[\"Encounters\"]\n    .sum()\n    .sort_values(ascending=False)\n)\n\nanswer = county_totals.index[0] + \" County\"",
+            "subquestion": "For the hospital from <hop 1 answer>, which county had the highest total of homeless inpatient encounters broken down by age?",
+            "answer": "Santa Clara County"
+        },
+        "4": {
+            "source": "wikipedia/Santa_Clara_County,_California/content.txt",
+            "fact": "The Santa Clara County article states that the county seat and largest city is San Jose.",
+            "subquestion": "What is the county seat of <hop 2 answer>?",
+            "answer": "San Jose"
+        },
+        "5": {
+            "source": "datagov/places-local-data-for-better-health-place-data-2021-release-06a9b/files/rows.txt",
+            "fact": "import io\nimport csv\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/places-local-data-for-better-health-place-data-2021-release-06a9b/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\nclient = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\nreader = csv.DictReader(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\nrows = []\nfor row in reader:\n    if row[\"StateAbbr\"].strip() != \"CA\" or row[\"LocationName\"].strip() != \"San Jose\":\n        continue\n    if row[\"Data_Value_Type\"].strip() != \"Crude prevalence\" or row[\"Category\"].strip() != \"Health Outcomes\":\n        continue\n    value = row[\"Data_Value\"].strip()\n    if value:\n        rows.append((row[\"Short_Question_Text\"].strip(), float(value)))\n\nrows.sort(key=lambda item: (-item[1], item[0]))\nanswer = [measure for measure, _ in rows[:3]]",
+            "subquestion": "For the city from <hop 3 answer>, which three health-outcome measures had the highest crude prevalence values in 2021?",
+            "answer": [
+                "High Cholesterol",
+                "High Blood Pressure",
+                "Obesity"
+            ]
+        },
+        "6": {
+            "source": "datagov/places-local-data-for-better-health-place-data-2022-release/files/rows.txt",
+            "fact": "import io\nimport csv\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/places-local-data-for-better-health-place-data-2022-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\nclient = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\nreader = csv.DictReader(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\nanswer = []\nfor row in reader:\n    if row[\"StateAbbr\"].strip() != \"CA\" or row[\"LocationName\"].strip() != \"San Jose\":\n        continue\n    if row[\"Data_Value_Type\"].strip() != \"Crude prevalence\" or row[\"Category\"].strip() != \"Health Outcomes\":\n        continue\n    value = row[\"Data_Value\"].strip()\n    if not value:\n        continue\n    value = float(value)\n    if 15 <= value < 23:\n        answer.append((row[\"Short_Question_Text\"].strip(), value))\n\nanswer = [measure for measure, _ in sorted(answer, key=lambda item: (-item[1], item[0]))]",
+            "subquestion": "For the city from <hop 3 answer>, which health-outcome measures had crude prevalence values of at least 15 but below 23 in 2022?",
+            "answer": [
+                "Obesity",
+                "Arthritis"
+            ]
+        },
+        "7": {
+            "source": "wikipedia/Obesity/content.txt",
+            "fact": "The Obesity article states that people are classified as obese when their body mass index (BMI) is over the obesity threshold.",
+            "subquestion": "For the measure in <hop 4 answer>, what measurement is used to determine whether a person falls into that category?",
+            "answer": "Body mass index (BMI)"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Santa_Clara_County,_California/content.txt",
+        "wikipedia/Obesity/content.txt",
+        "datagov/california-hospital-ratings-for-transcatheter-aortic-valve-replacement-tavr-procedures/files/2022-tavr-hospital-performance-ratings.txt",
+        "datagov/california-hospital-ratings-for-transcatheter-aortic-valve-replacement-tavr-procedures/signed-metadata.txt",
+        "datagov/effects-of-covid-19-on-hospital-utilization-trends-636d2/files/hospital-utilization-trends.txt",
+        "datagov/effects-of-covid-19-on-hospital-utilization-trends-636d2/signed-metadata.txt",
+        "datagov/effects-of-covid-19-on-hospital-utilization-trends-636d2/files/in-hospital-mortality-trends-by-diagnosis-type.txt",
+        "datagov/hospital-encounters-for-homeless-patients-79a6f/files/2019-2020-homeless-hospital-encounters-age-race-sex-expected-payer-by-facility.txt",
+        "datagov/hospital-encounters-for-homeless-patients-79a6f/signed-metadata.txt",
+        "datagov/hospital-encounters-for-homeless-patients-79a6f/files/data-dictionary-homeless-hospital-encounters-age-race-sex-expected-payer-by-facility.txt",
+        "datagov/places-local-data-for-better-health-place-data-2021-release-06a9b/files/rows.txt",
+        "datagov/places-local-data-for-better-health-place-data-2021-release-06a9b/signed-metadata.txt",
+        "datagov/places-local-data-for-better-health-place-data-2021-release-06a9b/files/q8ig-wwk9.txt",
+        "datagov/places-local-data-for-better-health-place-data-2022-release/files/rows.txt",
+        "datagov/places-local-data-for-better-health-place-data-2022-release/signed-metadata.txt",
+        "datagov/places-local-data-for-better-health-place-data-2022-release/files/epbn-9bv3.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "title": "Identify The Hospital",
+            "reasoning": [
+                "Node 1: In the 2022 TAVR mortality rows, keep hospitals with `Total Hospital TAVR Cases >= 250` and `Performance Rating = Average`.",
+                "Node 2: In the utilization trends table, sum `Count` by `Facility Name`, `Setting`, and parsed year, then keep hospitals with `Setting = Ambulatory Surgery`, `year = 2019`, and `Count >= 35000`.",
+                "Necessity check: omitting node 1 leaves 3 hospitals: `Stanford Health Care`, `UC San Diego Health Hillcrest - Hillcrest Medical Center`, and `UCSF Medical Center`.",
+                "Necessity check: omitting node 2 leaves 5 hospitals: `Cedars-Sinai Medical Center`, `Kaiser Foundation Hospital - San Francisco`, `Mercy General Hospital`, `Scripps Memorial Hospital - La Jolla`, and `Stanford Health Care`.",
+                "Hop result: intersect the two analytical candidate sets from nodes 1 and 2. The only hospital that satisfies both conditions is `Stanford Health Care`."
+            ],
+            "answer": "Stanford Health Care"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "title": "Rank The County",
+            "reasoning": [
+                "Node 3: In the homeless-hospital-encounter table, filter to `FacilityName = <hop 1 answer>`, `EncounterType = Inpatient Hospitalizations`, `HomelessIndicator = Homeless`, and `Demographic = Age`, then sum `Encounters` by `HospitalCounty` and rank descending.",
+                "Hop result: `Santa Clara County` ranks first with `1131` homeless inpatient age-sliced encounters."
+            ],
+            "answer": "Santa Clara County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "title": "Find The County Seat",
+            "reasoning": [
+                "Node 4: The Santa Clara County article states that the county seat is `San Jose`.",
+                "Hop result: `San Jose`."
+            ],
+            "answer": "San Jose"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5,
+                6
+            ],
+            "title": "Identify The Shared Measure",
+            "reasoning": [
+                "Node 5: In the 2021 PLACES place-data release, filter to `StateAbbr = CA`, `LocationName = <hop 3 answer>`, `Category = Health Outcomes`, and `Data_Value_Type = Crude prevalence`, then rank `Data_Value` descending and keep the top three measures.",
+                "Node 6: In the 2022 PLACES place-data release, filter to `StateAbbr = CA`, `LocationName = <hop 3 answer>`, `Category = Health Outcomes`, and `Data_Value_Type = Crude prevalence`, then keep measures with `15 <= Data_Value < 23`.",
+                "Necessity check: omitting node 5 leaves 2 candidate measures: `Obesity` and `Arthritis`.",
+                "Necessity check: omitting node 6 leaves 3 candidate measures: `High Cholesterol`, `High Blood Pressure`, and `Obesity`.",
+                "Hop result: intersect the two candidate sets from nodes 5 and 6. The only shared measure is `Obesity`."
+            ],
+            "answer": "Obesity"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "title": "Read The Classification Metric",
+            "reasoning": [
+                "Node 7: The Wikipedia article for `<hop 4 answer>` states that people are classified as obese using `body mass index (BMI)`.",
+                "Hop result: `Body mass index (BMI)`."
+            ],
+            "answer": "Body mass index (BMI)"
+        }
+    ]
+}

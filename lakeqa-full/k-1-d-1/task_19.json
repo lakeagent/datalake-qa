@@ -1,0 +1,30 @@
+{
+    "question": "Which year from 2011-2016 has the lowest number of births in United States? Your response should be in the format [Answer].",
+    "answer": "2013",
+    "nodes": {
+        "1": {
+            "source": "datagov/nchs-births-and-general-fertility-rates-united-states/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/nchs-births-and-general-fertility-rates-united-states/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Birth Number\"] = pd.to_numeric(df[\"Birth Number\"], errors=\"coerce\")\nfiltered = df[df[\"Year\"].between(2011, 2016)].copy()\nranked = filtered.sort_values([\"Birth Number\", \"Year\"], ascending=[True, True], kind=\"mergesort\")\nanswer = str(int(ranked.iloc[0][\"Year\"]))\n",
+            "subquestion": "Which year from 2011-2016 has the lowest number of births in United States?",
+            "answer": "2013"
+        }
+    },
+    "datasets_used": [
+        "datagov/nchs-births-and-general-fertility-rates-united-states/files/rows.txt",
+        "datagov/nchs-births-and-general-fertility-rates-united-states/signed-metadata.txt",
+        "datagov/nchs-births-and-general-fertility-rates-united-states/files/e6fc-ccez.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter to 2011-2016 and select the year with the smallest `Birth Number`. The answer is 2013.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2013"
+        }
+    ]
+}

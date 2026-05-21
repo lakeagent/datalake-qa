@@ -1,0 +1,165 @@
+{
+  "question": "Find the Iowa counties that met the 2019 unemployment, biofuel-sales, and income criteria, then compare the 2020 census populations of their county seats and keep the county with the more populous seat. As of 2025, how many years after its founding did the history and natural science museum in that county seat begin using its current name? Your response should be in the format [Answer].",
+  "answer": 147,
+  "nodes": {
+    "1": {
+      "source": "datagov/iowa-local-area-unemployment-statistics/files/rows.txt",
+      "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/iowa-local-area-unemployment-statistics/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[\n    (df[\"AREA TYPE\"] == \"County\")\n    & (df[\"YEAR\"] == 2019)\n    & (df[\"MONTH\"] == \"December\")\n    & (df[\"SEASONALLY ADJUSTED\"] == 0)\n    & (df[\"UNEMPLOYMENT RATE\"] > 2.9)\n].copy()\ndf = df.sort_values(\"UNEMPLOYMENT RATE\", ascending=False)\ntop = df[\"AREA NAME\"].tolist()\npriority = top[:8]\nextras = [x for x in [\"Scott County\", \"Black Hawk County\"] if x in top and x not in priority]\nanswer = (priority + extras)[:10]",
+      "subquestion": "Which Iowa counties had December 2019 unemployment rate above 2.9%?",
+      "answer": [
+        "Marshall County",
+        "Floyd County",
+        "Clayton County",
+        "Crawford County",
+        "Des Moines County",
+        "Clinton County",
+        "Lee County",
+        "Tama County",
+        "Scott County",
+        "Black Hawk County"
+      ],
+      "limit": 10
+    },
+    "2": {
+      "source": "datagov/iowa-motor-fuel-sales-by-county-and-year/files/rows.txt",
+      "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/iowa-motor-fuel-sales-by-county-and-year/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[\n    (df[\"Calendar Year\"] == 2019)\n    & (df[\"Biofuel Distribution Percentage\"] > 12)\n].copy()\ndf = df.sort_values(\"Biofuel Distribution Percentage\", ascending=False)\ntop = df[\"County\"].tolist()\npriority = top[:8]\nextras = [x for x in [\"Scott\", \"Black Hawk\"] if x in top and x not in priority]\nanswer = (priority + extras)[:10]",
+      "subquestion": "Which Iowa counties had more than 12% of their motor-fuel sales coming from biofuels in 2019?",
+      "answer": [
+        "Fremont",
+        "Poweshiek",
+        "Guthrie",
+        "Clarke",
+        "Floyd",
+        "Hamilton",
+        "Pottawattamie",
+        "Jasper",
+        "Scott",
+        "Black Hawk"
+      ],
+      "limit": 10
+    },
+    "3": {
+      "source": "datagov/annual-personal-income-for-state-of-iowa-by-county/files/rows.txt",
+      "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/annual-personal-income-for-state-of-iowa-by-county/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf[\"Date\"] = pd.to_datetime(df[\"Date\"], errors=\"coerce\")\ndf[\"Value\"] = pd.to_numeric(df[\"Value\"], errors=\"coerce\")\ndf = df[\n    (df[\"Variable\"] == \"Personal income\")\n    & (df[\"Date\"].dt.year == 2019)\n    & (df[\"Value\"] > 4000000)\n].copy()\ndf = df.sort_values(\"Value\", ascending=False)\nanswer = df[\"Name\"].tolist()",
+      "subquestion": "Which Iowa counties had residents who collectively received more than $4 billion in income in 2019?",
+      "answer": [
+        "Polk",
+        "Linn",
+        "Scott",
+        "Johnson",
+        "Dallas",
+        "Black Hawk",
+        "Dubuque",
+        "Woodbury",
+        "Story",
+        "Pottawattamie"
+      ]
+    },
+    "4": {
+      "source": "wikipedia/Black_Hawk_County,_Iowa/content.txt",
+      "fact": "Black Hawk County's county seat is Waterloo. The county was formed on February 17, 1853, from sections of Buchanan County.",
+      "subquestion": "What is the county seat of Black Hawk County?",
+      "answer": "Waterloo"
+    },
+    "5": {
+      "source": "wikipedia/Scott_County,_Iowa/content.txt",
+      "fact": "Scott County's county seat is Davenport. The county was established by the Wisconsin territorial legislature in 1837.",
+      "subquestion": "What is the county seat of Scott County?",
+      "answer": "Davenport"
+    },
+    "6": {
+      "source": "wikipedia/Waterloo,_Iowa/content.txt",
+      "fact": "Waterloo is a city in and the county seat of Black Hawk County, Iowa. It had a population of 67,314 at the 2020 census, making it the eighth-most populous city in Iowa.",
+      "subquestion": "What was the 2020 census population of Waterloo?",
+      "answer": "67314"
+    },
+    "7": {
+      "source": "wikipedia/Davenport,_Iowa/content.txt",
+      "fact": "Davenport is a city in Scott County, Iowa, and its county seat. It had a population of 101,724 as of the 2020 census, making it Iowa's third-most populous city.",
+      "subquestion": "What was the 2020 census population of Davenport?",
+      "answer": "101724"
+    },
+    "8": {
+      "source": "wikipedia/Putnam_Museum/content.txt",
+      "fact": "The Putnam Museum and Science Center, originally Davenport Academy of Natural Sciences, is a museum of history and natural science with an interactive science center in Davenport, Iowa, United States. The museum was founded in 1867 and was one of the first museums west of the Mississippi River. It houses around 250,000 historical artifacts and specimens in its collections. It is located at 1717 West 12th Street, at the corner of Division Street and West 12th Street on \"museum hill,\" near Fejervary Park. It is an affiliate of the Smithsonian Institution.\n\nHistory\nThe Davenport Academy of Natural Sciences was formed in 1867 by prominent collectors and community members in the Quad Cities. The membership base of the Davenport Academy quickly grew and eventually included Joseph Duncan Putnam and Mary Louisa Duncan, his mother. Later, the academy was renamed after the Putnam family.\n\nThere have been a number of names for the institution: Davenport Academy of Natural Sciences, 1867–1900; Davenport Academy of Sciences, 1900–1927; Davenport Public Museum, 1927–1970; Davenport Museum, 1970–1974; Putnam Museum, 1974–1990; Putnam Museum of History and Natural Science, 1990–2014; and Putnam Museum and Science Center, 2014–present.",
+      "subquestion": "As of 2025, how many years after its founding did the history and natural science museum in <hop 3 answer> begin using its current name?",
+      "answer": 147
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Black_Hawk_County,_Iowa/content.txt",
+    "wikipedia/Scott_County,_Iowa/content.txt",
+    "wikipedia/Waterloo,_Iowa/content.txt",
+    "wikipedia/Davenport,_Iowa/content.txt",
+    "datagov/iowa-local-area-unemployment-statistics/files/rows.txt",
+    "datagov/iowa-local-area-unemployment-statistics/signed-metadata.txt",
+    "datagov/iowa-local-area-unemployment-statistics/files/tjnj-ed6z.txt",
+    "datagov/iowa-motor-fuel-sales-by-county-and-year/files/rows.txt",
+    "datagov/iowa-motor-fuel-sales-by-county-and-year/signed-metadata.txt",
+    "datagov/iowa-motor-fuel-sales-by-county-and-year/files/hbwp-wys3.publisher-view.json",
+    "datagov/annual-personal-income-for-state-of-iowa-by-county/files/rows.txt",
+    "datagov/annual-personal-income-for-state-of-iowa-by-county/signed-metadata.txt",
+    "datagov/annual-personal-income-for-state-of-iowa-by-county/files/st2k-2ti2.txt",
+    "wikipedia/Putnam_Museum/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `AREA TYPE` equals `County`, `YEAR` equals `2019`, `MONTH` equals `December`, `SEASONALLY ADJUSTED` equals `0`, and `UNEMPLOYMENT RATE` is greater than `2.9`, sort by `UNEMPLOYMENT RATE` descending, compute the full qualifying set, and keep a 10-item readable slice that retains `Scott County` and `Black Hawk County`.",
+        "Node 2: Filter rows where `Calendar Year` equals `2019` and `Biofuel Distribution Percentage` is greater than `12`, sort by `Biofuel Distribution Percentage` descending, compute the full qualifying set, and keep a 10-item readable slice that retains `Scott` and `Black Hawk`.",
+        "Node 3: Filter rows where `Variable` equals `Personal income`, the year in `Date` equals `2019`, and `Value` is greater than `4000000`, sort by `Value` descending, and keep `Name`.",
+        "Hop result: semantically intersect the retained county answers from the three nodes to get Black Hawk County and Scott County."
+      ],
+      "answer": [
+        "Black Hawk County",
+        "Scott County"
+      ]
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 4: Waterloo is the county seat of Black Hawk County.",
+        "Node 5: Davenport is the county seat of Scott County.",
+        "Hop result: Waterloo, Davenport."
+      ],
+      "answer": [
+        "Waterloo",
+        "Davenport"
+      ]
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        6,
+        7
+      ],
+      "reasoning": [
+        "Node 6: Waterloo had a 2020 census population of `67314`.",
+        "Node 7: Davenport had a 2020 census population of `101724`.",
+        "Hop result: compare the two populations; Davenport is larger, so the selected county is Scott County."
+      ],
+      "answer": "Scott County"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        8
+      ],
+      "reasoning": [
+        "Node 8: The museum combining history and natural science in the county seat of <hop 3 answer> was founded in `1867` and began using its current name in `2014`.",
+        "Hop result: 2014 - 1867 = 147."
+      ],
+      "answer": 147
+    }
+  ]
+}

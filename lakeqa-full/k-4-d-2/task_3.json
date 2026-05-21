@@ -1,0 +1,96 @@
+{
+    "question": "I'm analyzing data for the Austin City Council district represented by Zohaib Qadri. Starting from the year when the Austin City Council voted on approving a legal settlement in the Claudia Ford case against the City of Austin, identify which police sector had the highest number of searches in that district that year. Then, what is the ratio of the total number of dispatch incidents in that sector compared to the number of public schools in Austin? Round that to the nearest integer. Your response should be in the format [Answer].",
+    "answer": "113",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Austin_City_Council/content.txt",
+            "fact": "The Austin City Council article lists Zohaib 'Zo' Qadri as the council member for District 9.",
+            "subquestion": "Zohaib Qadri represents which Austin City Council district?",
+            "answer": "9"
+        },
+        "2": {
+            "source": "datagov/city-of-austin-council-voting-record/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/city-of-austin-council-voting-record/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\"\\t\", header=None, names=[\"value\"], low_memory=False)\n\nlines = df[\"value\"].astype(str).tolist()\nstart_mask = pd.Series(lines).str.fullmatch(r\"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\")\nstart_idx = start_mask[start_mask].index.tolist()\nrecords = []\nfor i, start in enumerate(start_idx):\n    end = start_idx[i + 1] if i + 1 < len(start_idx) else len(lines)\n    chunk = lines[start:end]\n    if len(chunk) < 10:\n        continue\n    records.append({\n        \"meeting_date\": chunk[0],\n        \"meeting_type\": chunk[1],\n        \"item_number\": chunk[2],\n        \"item_text\": \"\\n\".join(chunk[3:-7]).strip(),\n        \"voter_title\": chunk[-7],\n        \"member_name\": chunk[-6],\n        \"council_district\": chunk[-5],\n        \"vote\": chunk[-4],\n        \"notes\": chunk[-3],\n        \"agenda_item_id\": chunk[-2],\n        \"vote_record_id\": chunk[-1],\n    })\n\nrecords = pd.DataFrame(records)\nrecords[\"meeting_date\"] = pd.to_datetime(records[\"meeting_date\"])\ntext_match = \"Approve a settlement in Claudia Ford v. City of Austin, Cause No. D-1-GN-19-004771 in the 250th District Court, Travis County, Texas.\"\nanswer = records.loc[records[\"item_text\"] == text_match, \"meeting_date\"].min().isoformat()",
+            "subquestion": "In the Austin City Council voting record, on what date did the council vote on approving a legal settlement in the Claudia Ford case against the City of Austin?",
+            "answer": "2023-02-23T00:00:00"
+        },
+        "3": {
+            "source": "datagov/apd-searches-by-type/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/apd-searches-by-type/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"Occurred Year\"] == 2023) & (df[\"Council District\"] == 9)]\nanswer = filtered.groupby(\"Sector\").size().sort_values(ascending=False).index[0]\nprint(answer)",
+            "subquestion": "In the year of <node_2 answer>, within council district <node_1 answer>, which sector has the most searches?",
+            "answer": "George"
+        },
+        "4": {
+            "source": "datagov/apd-computer-aided-dispatch-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/apd-computer-aided-dispatch-incidents/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"Response Year\"] == 2023) & (df[\"Sector\"] == \"George\")]\nanswer = len(filtered)\nprint(answer)",
+            "subquestion": "In the year of <node_2 answer> (Response Year), how many dispatch incidents occurred in sector <node_3 answer>?",
+            "answer": "31517"
+        },
+        "5": {
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-current-23297/files/data-oyCYxF.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.DataFrame(json.load(io.BytesIO(obj[\"Body\"].read()))[\"features\"])\nproperties = pd.json_normalize(df[\"properties\"])\n\nanswer = len(properties[(properties[\"STATE\"] == \"TX\") & (properties[\"CITY\"] == \"AUSTIN\")])\nprint(answer)",
+            "subquestion": "Within city AUSTIN and state TX, how many public schools are listed?",
+            "answer": "279"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: 9 is the Austin City Council district represented by Zohaib \"Zo\" Qadri."
+            ],
+            "answer": "9"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Parse meeting records, filter rows where `item_text` matches approving a legal settlement in the Claudia Ford case against the City of Austin, and select the earliest `meeting_date`."
+            ],
+            "answer": "2023-02-23T00:00:00"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `Occurred Year` equals the year from <hop 2 answer> and `Council District` equals <hop 1 answer>, count records by `Sector`, and select the most common `Sector`."
+            ],
+            "answer": "George"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 4: Filter rows where `Response Year` equals the year from <hop 2 answer> and `Sector` equals <hop 3 answer>, then count matching incidents.",
+                "Node 5: Filter rows where `STATE` equals `TX` and `CITY` equals `AUSTIN`, then count matching schools.",
+                "Hop result: round(31517 / 279) = 113."
+            ],
+            "answer": "113"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Austin_City_Council/content.txt",
+        "datagov/city-of-austin-council-voting-record/files/rows.txt",
+        "datagov/city-of-austin-council-voting-record/signed-metadata.txt",
+        "datagov/city-of-austin-council-voting-record/files/3c89-i35a.publisher-view.json",
+        "datagov/apd-searches-by-type/files/rows.txt",
+        "datagov/apd-searches-by-type/signed-metadata.txt",
+        "datagov/apd-searches-by-type/files/j8ta-6rms.publisher-view.json",
+        "datagov/apd-computer-aided-dispatch-incidents/files/rows.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/signed-metadata.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/files/22de-7rzg.publisher-view.json",
+        "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+        "datagov/public-school-locations-current-23297/signed-metadata.txt",
+        "datagov/public-school-locations-current-23297/files/0.arcgis-layer.json"
+    ]
+}

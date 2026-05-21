@@ -1,0 +1,130 @@
+{
+    "question": "In the school year of 2017-2018, which 10 preschools had the most students enrolled, the widest variety of reported ethnicities, and the closest balance between girls and boys? Which 10 districts had the most students enrolled and the strongest English and Math performance? Which 10 high schools had the most students enrolled and the strongest English and Math performance? Looking across those schools and districts together, which two school years combined the strongest attendance and English proficiency averages? In those two years and among those 10 high schools,which two schools had the most student emergency transports? In those two schools, which schools had the highest number of graduates and graduation rate in 2015? For those schools, what is the total number of emergent trips made for students with disabilities? Please return only the number in the format [Answer].",
+    "answer": "116",
+    "nodes": {
+        "1": {
+            "source": "datagov/2017-2018-diversity-report-pre-kindergarten/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2017-2018-diversity-report-pre-kindergarten/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['enroll_num'] = pd.to_numeric(df['Total Enrollment (Half Day & Full Day)'], errors='coerce')\ndf['female_num'] = pd.to_numeric(df['%Female'].str.replace('%', '', regex=False), errors='coerce')\neth_pct_cols = []\nfor col in ['%Asian', '%Black', '%Hispanic', '%Other', '%White']:\n    df[col + '_num'] = pd.to_numeric(df[col].str.replace('%', '', regex=False), errors='coerce')\n    eth_pct_cols.append(col + '_num')\nranked = df[df['enroll_num'].notna()].copy()\nranked['reported_groups'] = ranked[eth_pct_cols].notna().sum(axis=1)\nranked['gender_gap'] = (ranked['female_num'] - 50).abs()\nranked['enroll_rank'] = ranked['enroll_num'].rank(method='min', ascending=False)\nranked['groups_rank'] = ranked['reported_groups'].rank(method='min', ascending=False)\nranked['gender_rank'] = ranked['gender_gap'].rank(method='min', ascending=True)\nranked['score'] = ranked['enroll_rank'] + ranked['groups_rank'] + ranked['gender_rank']\nranked = ranked.sort_values(['score', 'enroll_rank', 'groups_rank', 'gender_rank', 'School Name'], ascending=[True, True, True, True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[:10]['School Name'].tolist())\n",
+            "subquestion": "In the shcool year of 2017-2018, if we define a well-balanced school as having the most students, the widest variety of ethnicities, and a near-perfect 50/50 gender split. Which 10 preschools perform best?",
+            "answer": "Garden School; Belmont Community Day Care Center; BRONX HOUSE 1; Pre-K Center At Bishop Ford School Site; District 20 Pre-K Center at 21 Bay 11th Street; Ivy Day School; A to Z Center Too, Inc.; Queens Explorers Elementary School; District 29 Pre-K Center at 168-42 Jamaica Avenue; Brooklyn's Daily Discovery Pre-K Center at 2202 60th Street"
+        },
+        "2": {
+            "source": "datagov/2017-2018-diversity-report-k-8-district/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2017-2018-diversity-report-k-8-district/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nranked = df[df['Category'].eq('All Students')].copy()\nfor col in ['Total Enrollment', 'ELA %L3+L4', 'Math %L3+L4']:\n    ranked[col + '_num'] = pd.to_numeric(ranked[col].str.replace('%', '', regex=False), errors='coerce')\nranked = ranked[ranked[['Total Enrollment_num', 'ELA %L3+L4_num', 'Math %L3+L4_num']].notna().all(axis=1)].copy()\nranked['enroll_rank'] = ranked['Total Enrollment_num'].rank(method='min', ascending=False)\nranked['ela_rank'] = ranked['ELA %L3+L4_num'].rank(method='min', ascending=False)\nranked['math_rank'] = ranked['Math %L3+L4_num'].rank(method='min', ascending=False)\nranked['score'] = ranked['enroll_rank'] + ranked['ela_rank'] + ranked['math_rank']\nranked = ranked.sort_values(['score', 'ela_rank', 'math_rank', 'enroll_rank', 'District'], ascending=[True, True, True, True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[:10]['District'].tolist())\n",
+            "subquestion": "In the school year of 2017-2018, which 10 districts had the most students enrolled in and highest passing rates in both English and Math?",
+            "answer": "2; 20; 25; 26; 15; 30; 31; 21; 24; 28"
+        },
+        "3": {
+            "source": "datagov/2017-2018-diversity-report-9-12-school/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2017-2018-diversity-report-9-12-school/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nranked = df[df['Category'].eq('All Students')].copy()\nfor col in ['Total Enrollment', 'ELA %L3+L4', 'Math %L3+L4']:\n    ranked[col + '_num'] = pd.to_numeric(ranked[col].str.replace('%', '', regex=False), errors='coerce')\nranked = ranked[ranked[['Total Enrollment_num', 'ELA %L3+L4_num', 'Math %L3+L4_num']].notna().all(axis=1)].copy()\nranked['enroll_rank'] = ranked['Total Enrollment_num'].rank(method='min', ascending=False)\nranked['ela_rank'] = ranked['ELA %L3+L4_num'].rank(method='min', ascending=False)\nranked['math_rank'] = ranked['Math %L3+L4_num'].rank(method='min', ascending=False)\nranked['score'] = ranked['enroll_rank'] + ranked['ela_rank'] + ranked['math_rank']\nranked = ranked.sort_values(['score', 'ela_rank', 'math_rank', 'enroll_rank', 'DBN'], ascending=[True, True, True, True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked.iloc[:10]['DBN'] + ' ' + ranked.iloc[:10]['School Name']).tolist())\n",
+            "subquestion": "In the school year of 2017-2018, which 10 high schools had the most students enrolled in and the highest passing rates in both English and Math?",
+            "answer": "13K430 Brooklyn Technical High School; 02M475 Stuyvesant High School; 10X445 The Bronx High School of Science; 31R605 Staten Island Technical High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a; 25Q525 Townsend Harris High School; 03M479 Beacon High School; 22K405 Midwood High School; 14K449 Brooklyn Latin School, The; 24Q299 Bard High School Early College Queens"
+        },
+        "4": {
+            "source": "datagov/school-quality-reports-data/files/rows.txt",
+            "fact": "import io\nimport csv\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/school-quality-reports-data/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = \"Garden School; Belmont Community Day Care Center; BRONX HOUSE 1; Pre-K Center At Bishop Ford School Site; District 20 Pre-K Center at 21 Bay 11th Street; Ivy Day School; A to Z Center Too, Inc.; Queens Explorers Elementary School; District 29 Pre-K Center at 168-42 Jamaica Avenue; Brooklyn's Daily Discovery Pre-K Center at 2202 60th Street\"\nnode_2_answer = '2; 20; 25; 26; 15; 30; 31; 21; 24; 28'\nnode_3_answer = \"13K430 Brooklyn Technical High School; 02M475 Stuyvesant High School; 10X445 The Bronx High School of Science; 31R605 Staten Island Technical High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a; 25Q525 Townsend Harris High School; 03M479 Beacon High School; 22K405 Midwood High School; 14K449 Brooklyn Latin School, The; 24Q299 Bard High School Early College Queens\"\npre_k_names = [part.strip() for part in node_1_answer.split(';') if part.strip()]\ndistricts = [part.strip().zfill(2) for part in node_2_answer.split(';') if part.strip()]\nhs_dbns = sorted(set(re.findall(r\"\\b\\d{2}[A-Z]\\d{3}\\b\", node_3_answer)))\nyear_conds = [f\"s.\\\"School Year\\\" = '{year}'\" for year in ['2015', '2016']]\nmetric_conds = [\n    \"s.\\\"Metric Variable Name\\\" = 'chronic_absent_ems_all'\",\n    \"s.\\\"Metric Variable Name\\\" = 'chronic_absent_hs_all'\",\n    \"s.\\\"Metric Variable Name\\\" = 'prof_pct_ela_all'\"\n]\nentity_conds = []\nfor name in pre_k_names:\n    safe_name = name.replace(\"'\", \"''\")\n    entity_conds.append(f\"s.\\\"School Name\\\" = '{safe_name}'\")\nfor dbn in hs_dbns:\n    entity_conds.append(f\"s.\\\"District, Borough and School Number (DBN)\\\" = '{dbn}'\")\nfor district in districts:\n    entity_conds.append(f\"s.\\\"District, Borough and School Number (DBN)\\\" LIKE '{district}%'\")\nexpr = (\n    'SELECT s.\"School Year\", s.\"Metric Variable Name\", s.\"Metric Value\" '\n    'FROM S3Object s WHERE (' + ' OR '.join(entity_conds) + ') '\n    'AND (' + ' OR '.join(year_conds) + ') '\n    'AND (' + ' OR '.join(metric_conds) + ')'\n)\nresp = boto3.client('s3').select_object_content(\n    Bucket=bucket,\n    Key=source,\n    ExpressionType='SQL',\n    Expression=expr,\n    InputSerialization={'CSV': {'FileHeaderInfo': 'USE'}},\n    OutputSerialization={'CSV': {}}\n)\nchunks = []\nfor event in resp['Payload']:\n    if 'Records' in event:\n        chunks.append(event['Records']['Payload'])\nrows = list(csv.reader(io.StringIO(b''.join(chunks).decode('utf-8', errors='replace'))))\ndf = pd.DataFrame(rows, columns=['School Year', 'Metric Variable Name', 'Metric Value'])\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['Metric Value_num'] = pd.to_numeric(df['Metric Value'], errors='coerce')\ndf = df[df['Metric Value_num'].notna()].copy()\ndf['metric_group'] = df['Metric Variable Name'].map({\n    'chronic_absent_ems_all': 'good_attendance',\n    'chronic_absent_hs_all': 'good_attendance',\n    'prof_pct_ela_all': 'ela_proficiency'\n})\ndf = df[df['metric_group'].notna()].copy()\nranked = df.groupby(['School Year', 'metric_group'], as_index=False)['Metric Value_num'].mean()\nranked = ranked.pivot(index='School Year', columns='metric_group', values='Metric Value_num').reset_index()\nranked['combined'] = ranked['good_attendance'] + ranked['ela_proficiency']\nranked = ranked.sort_values(['combined', 'School Year'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked['School Year'].tolist())\n",
+            "subquestion": "For the schools in <node_1 answer> and <node_3 answer>, and the districts in <node_2 answer>, which two school years had the highest average attendance rates and the highest average English proficiency rates?",
+            "answer": "2016; 2015"
+        },
+        "5": {
+            "source": "datagov/2015-2016-ems-transports-final-student-date-of-birth/files/rows.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2015-2016-ems-transports-final-student-date-of-birth/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_3_answer = \"13K430 Brooklyn Technical High School; 02M475 Stuyvesant High School; 10X445 The Bronx High School of Science; 31R605 Staten Island Technical High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a; 25Q525 Townsend Harris High School; 03M479 Beacon High School; 22K405 Midwood High School; 14K449 Brooklyn Latin School, The; 24Q299 Bard High School Early College Queens\"\nnode_4_answer = '2016; 2015'\nhs_dbns = sorted(set(re.findall(r\"\\b\\d{2}[A-Z]\\d{3}\\b\", node_3_answer)))\nyears = [part.strip() for part in node_4_answer.split(';') if part.strip()]\nassert years == ['2016', '2015']\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['TOTAL EMS TRANSPORTS_num'] = pd.to_numeric(df['TOTAL EMS TRANSPORTS'].replace({'R': None, '*': None, '': None}), errors='coerce')\nranked = df[df['DBN'].isin(hs_dbns) & df['TOTAL EMS TRANSPORTS_num'].notna()].copy()\nranked = ranked.sort_values(['TOTAL EMS TRANSPORTS_num', 'DBN'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked['DBN'] + ' ' + ranked['LOCATION NAME']).tolist())\n",
+            "subquestion": "In <node_4 answer>, which the high schools in <node_3 answer> had the most student emergency transports?",
+            "answer": "13K430 Brooklyn Technical High School; 10X445 Bronx High School of Science; 02M475 Stuyvesant High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a; 22K405 Midwood High School; 14K449 Brooklyn Latin School, The; 25Q525 Townsend Harris High School; 31R605 Staten Island Technical High School"
+        },
+        "6": {
+            "source": "datagov/2005-2019-graduation-rates-all/files/rows.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2005-2019-graduation-rates-all/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_4_answer = '2016; 2015'\nnode_5_answer = \"13K430 Brooklyn Technical High School; 10X445 Bronx High School of Science; 02M475 Stuyvesant High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a; 22K405 Midwood High School; 14K449 Brooklyn Latin School, The; 25Q525 Townsend Harris High School; 31R605 Staten Island Technical High School\"\ntarget_year = min(int(part.strip()) for part in node_4_answer.split(';') if part.strip())\ntarget_dbns = sorted(set(re.findall(r\"\\b\\d{2}[A-Z]\\d{3}\\b\", node_5_answer)))\nname_map = {}\nfor part in [p.strip() for p in node_5_answer.split(';') if p.strip()]:\n    dbn, name = part.split(' ', 1)\n    name_map[dbn] = name\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in ['Cohort Year', '# Grads', '% Grads']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace('%', '', regex=False), errors='coerce')\nranked = df[df['DBN'].isin(target_dbns) & df['Category'].eq('All Students') & df['Cohort'].eq('4 year August') & df['Cohort Year_num'].eq(target_year)].copy()\nranked['grads_rank'] = ranked['# Grads_num'].rank(method='min', ascending=False)\nranked['pct_rank'] = ranked['% Grads_num'].rank(method='min', ascending=False)\nranked['score'] = ranked['grads_rank'] + ranked['pct_rank']\nranked = ranked.sort_values(['score', 'grads_rank', 'pct_rank', 'DBN'], ascending=[True, True, True, True], kind='mergesort').reset_index(drop=True)\npicked = ranked.iloc[1:5]['DBN'].tolist()\nanswer = '; '.join([f\"{dbn} {name_map[dbn]}\" for dbn in picked])\n",
+            "subquestion": "Among the schools in <hop 3 answer>, which ones ranked 2nd to 5th for having the best sum of total graduates and high graduation rates in 2015?",
+            "answer": "31R605 Staten Island Technical High School; 13K430 Brooklyn Technical High School; 02M475 Stuyvesant High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a"
+        },
+        "7": {
+            "source": "datagov/2017-2018-ems-transport-final-students-with-disabilities/files/rows.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2017-2018-ems-transport-final-students-with-disabilities/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_6_answer = \"31R605 Staten Island Technical High School; 13K430 Brooklyn Technical High School; 02M475 Stuyvesant High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a\"\ntarget_dbns = sorted(set(re.findall(r\"\\b\\d{2}[A-Z]\\d{3}\\b\", node_6_answer)))\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['Transport Total_num'] = pd.to_numeric(df['Transport Total'].replace({'R': None}), errors='coerce')\nfiltered = df[df['DBN'].isin(target_dbns) & df['Transport Total_num'].notna()].copy()\nanswer = str(int(filtered['Transport Total_num'].sum()))\n",
+            "subquestion": "For the schools in <hop 4 answer>, what is the total number of emergent trips made for students with disabilities?",
+            "answer": "116"
+        }
+    },
+    "datasets_used": [
+        "datagov/2017-2018-diversity-report-pre-kindergarten/files/rows.txt",
+        "datagov/2017-2018-diversity-report-pre-kindergarten/signed-metadata.txt",
+        "datagov/2017-2018-diversity-report-pre-kindergarten/files/2017_-_2018_Diversity_Report_Pre-Kindergarten_DD.xlsx",
+        "datagov/2017-2018-diversity-report-k-8-district/files/rows.txt",
+        "datagov/2017-2018-diversity-report-k-8-district/signed-metadata.txt",
+        "datagov/2017-2018-diversity-report-k-8-district/files/2017_-_2018_Diversity_Report_K-8_District_DD.xlsx",
+        "datagov/2017-2018-diversity-report-9-12-school/files/rows.txt",
+        "datagov/2017-2018-diversity-report-9-12-school/signed-metadata.txt",
+        "datagov/2017-2018-diversity-report-9-12-school/files/2017_-_2018_Diversity_Report_9-12_School_DD.xlsx",
+        "datagov/school-quality-reports-data/files/rows.txt",
+        "datagov/school-quality-reports-data/signed-metadata.txt",
+        "datagov/school-quality-reports-data/files/dnpx-dfnc.txt",
+        "datagov/2015-2016-ems-transports-final-student-date-of-birth/files/rows.txt",
+        "datagov/2015-2016-ems-transports-final-student-date-of-birth/files/2015-2016_EMS_Transports_Final_Student_Date_of_Birth.xlsx",
+        "datagov/2005-2019-graduation-rates-all/files/rows.txt",
+        "datagov/2005-2019-graduation-rates-all/signed-metadata.txt",
+        "datagov/2005-2019-graduation-rates-all/files/organization-of-new-york-state-graduation-reporting.pdf",
+        "datagov/2017-2018-ems-transport-final-students-with-disabilities/files/rows.txt",
+        "datagov/2017-2018-ems-transport-final-students-with-disabilities/signed-metadata.txt",
+        "datagov/2017-2018-ems-transport-final-students-with-disabilities/files/2017-2018_EMS_Transports_Students_with_Disabilities_DD.xlsx"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1 ranks pre-K sites by combining larger enrollment, broader reported ethnicity coverage, and a gender split closer to 50/50, then returns the top 10 school names.",
+                "Node 2 restricts the K-8 district table to All Students and ranks districts by larger enrollment plus stronger ELA and Math Level 3/4 performance, returning 10 district codes.",
+                "Node 3 applies the same larger-enrollment plus stronger ELA/Math Level 3/4 rule to the 9-12 school table and returns the top 10 high schools."
+            ],
+            "answer": "Garden School; Belmont Community Day Care Center; BRONX HOUSE 1; Pre-K Center At Bishop Ford School Site; District 20 Pre-K Center at 21 Bay 11th Street; Ivy Day School; A to Z Center Too, Inc.; Queens Explorers Elementary School; District 29 Pre-K Center at 168-42 Jamaica Avenue; Brooklyn's Daily Discovery Pre-K Center at 2202 60th Street; 2; 20; 25; 26; 15; 30; 31; 21; 24; 28; 13K430 Brooklyn Technical High School; 02M475 Stuyvesant High School; 10X445 The Bronx High School of Science; 31R605 Staten Island Technical High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a; 25Q525 Townsend Harris High School; 03M479 Beacon High School; 22K405 Midwood High School; 14K449 Brooklyn Latin School, The; 24Q299 Bard High School Early College Queens"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4 queries the school-quality report rows for the pre-K school names from Node 1, the district prefixes from Node 2, and the high-school DBNs from Node 3.",
+                "It keeps school years 2015 and 2016 and averages two metrics by year: the share of students with 90%+ attendance and the share of students at Level 3 or 4 in ELA.",
+                "When those two averages are added, 2016 ranks first and 2015 ranks second."
+            ],
+            "answer": "2016; 2015"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5 switches to the 2015-2016 EMS transport-by-birth-year table and, among the standout high schools from Node 3, ranks schools by TOTAL EMS TRANSPORTS for that two-year transport snapshot."
+            ],
+            "answer": "13K430 Brooklyn Technical High School; 10X445 Bronx High School of Science; 02M475 Stuyvesant High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a; 22K405 Midwood High School; 14K449 Brooklyn Latin School, The; 25Q525 Townsend Harris High School; 31R605 Staten Island Technical High School"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6 then moves to the graduation table and, for the earlier of the two school years from Node 4, ranks those schools by combining the number of graduates with the graduation rate in the 4 year August cohort.",
+                "The schools ranked 2nd through 5th are Staten Island Technical High School, Brooklyn Technical High School, Stuyvesant High School, and Fiorello H. LaGuardia High School of Music & Art and Performing Arts."
+            ],
+            "answer": "31R605 Staten Island Technical High School; 13K430 Brooklyn Technical High School; 02M475 Stuyvesant High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7 checks the DBNs from hop 4 in the 2017-2018 EMS disability-status transport table.",
+                "Their non-redacted Transport Total values are 19, 29, 41, and 27, which sum to 116."
+            ],
+            "answer": "116"
+        }
+    ]
+}

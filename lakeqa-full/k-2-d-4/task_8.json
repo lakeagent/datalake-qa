@@ -1,0 +1,111 @@
+{
+  "question": "In the state with two-digit FIPS code 19, which counties rank in the top three for public schools, private schools, and school district offices? For those counties, subtract the combined 2020 census population of their county seats from the combined 2020 census population of the counties. Your response should be in the format [Answer].",
+  "answer": 370857,
+  "nodes": {
+    "1": {
+      "source": "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\nfiltered = df[state_fips.eq(19)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+      "subquestion": "For STFIP='19', which 3 county names have the most public schools? Return the county names separated by '; '.",
+      "answer": "Polk County; Linn County; Scott County"
+    },
+    "2": {
+      "source": "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\nfiltered = df[state_fips.eq(19)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+      "subquestion": "For STFIP='19', which 3 county names have the most private schools? Return the county names separated by '; '.",
+      "answer": "Polk County; Linn County; Sioux County"
+    },
+    "3": {
+      "source": "datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\nfiltered = df[state_fips.eq(19)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+      "subquestion": "For STFIP='19', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+      "answer": "Linn County; Polk County; Pottawattamie County"
+    },
+    "4": {
+      "source": "wikipedia/Linn_County,_Iowa/content.txt",
+      "fact": "As of the 2020 census, the population was 230,299. The county seat is Cedar Rapids.",
+      "subquestion": "For this county from <hop 1 answer>, what was its 2020 census population?",
+      "answer": {
+        "county": "Linn County",
+        "population_2020": 230299
+      }
+    },
+    "5": {
+      "source": "wikipedia/Polk_County,_Iowa/content.txt",
+      "fact": "As of the 2020 census, the population was 492,401. The county seat is Des Moines.",
+      "subquestion": "For this county from <hop 1 answer>, what was its 2020 census population?",
+      "answer": {
+        "county": "Polk County",
+        "population_2020": 492401
+      }
+    },
+    "6": {
+      "source": "wikipedia/Cedar_Rapids,_Iowa/content.txt",
+      "fact": "Cedar Rapids is a city in Linn County, Iowa, United States, and its county seat. The population was 137,710 at the 2020 census.",
+      "subquestion": "For the county seat of this county from <hop 1 answer>, what was its 2020 census population?",
+      "answer": {
+        "county": "Linn County",
+        "county_seat": "Cedar Rapids",
+        "population_2020": 137710
+      }
+    },
+    "7": {
+      "source": "wikipedia/Des_Moines,_Iowa/content.txt",
+      "fact": "Des Moines is the county seat of Polk County. Its population was 214,133 at the 2020 census.",
+      "subquestion": "For the county seat of this county from <hop 1 answer>, what was its 2020 census population?",
+      "answer": {
+        "county": "Polk County",
+        "county_seat": "Des Moines",
+        "population_2020": 214133
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: Using rows where `STFIP='19'`, the three counties with the most public schools are `Polk County`, `Linn County`, and `Scott County`.",
+        "Node 2: Using rows where `STFIP='19'`, the three counties with the most private schools are `Polk County`, `Linn County`, and `Sioux County`.",
+        "Node 3: Using rows where `STFIP='19'`, the three counties with the most school district offices are `Linn County`, `Polk County`, and `Pottawattamie County`.",
+        "Hop result: intersecting node 3 with the union of nodes 1 and 2 yields `Linn County` and `Polk County`."
+      ],
+      "answer": "Linn County and Polk County"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "reasoning": [
+        "Node 4: One county from <hop 1 answer>, `Linn County`, had a 2020 census population of `230,299`.",
+        "Node 5: One county from <hop 1 answer>, `Polk County`, had a 2020 census population of `492,401`.",
+        "Node 6: The county seat of one county from <hop 1 answer>, `Cedar Rapids`, had a 2020 census population of `137,710`.",
+        "Node 7: The county seat of one county from <hop 1 answer>, `Des Moines`, had a 2020 census population of `214,133`.",
+        "Hop result: county populations total `230,299 + 492,401 = 722,700`; county-seat populations total `137,710 + 214,133 = 351,843`; `722,700 - 351,843 = 370,857`."
+      ],
+      "answer": 370857
+    }
+  ],
+  "datasets_used": [
+    "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+    "datagov/public-school-locations-2018-19-42360/signed-metadata.txt",
+    "datagov/public-school-locations-2018-19-42360/files/0.arcgis-layer.json",
+    "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+    "datagov/private-school-locations-2017-18-f49f6/signed-metadata.txt",
+    "datagov/private-school-locations-2017-18-f49f6/files/0.arcgis-layer.json",
+    "datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt",
+    "datagov/school-district-office-locations-2020-21-d8df0/signed-metadata.txt",
+    "datagov/school-district-office-locations-2020-21-d8df0/files/0.arcgis-layer.json",
+    "wikipedia/Linn_County,_Iowa/content.txt",
+    "wikipedia/Polk_County,_Iowa/content.txt",
+    "wikipedia/Cedar_Rapids,_Iowa/content.txt",
+    "wikipedia/Des_Moines,_Iowa/content.txt"
+  ]
+}

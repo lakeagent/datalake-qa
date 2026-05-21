@@ -1,0 +1,154 @@
+{
+  "question": "Identify the Virginia county containing the NASA facility where the equipment used to collect the bare earth elevation data for the 2007 USGS survey of the national monument honoring the U.S. president born in Virginia who held a general officer rank and appears on current U.S. currency was developed. As of 2009, how many more towns did that county have than high schools and K-12 schools in its county public school district? Please return the number only. Your response should be in the format [Answer].",
+  "answer": 10,
+  "nodes": {
+    "1": {
+      "source": "wikipedia/List_of_presidents_of_the_United_States_by_home_state/content.txt",
+      "fact": "Eight: Virginia\n\nPresidentImageHistoric siteGeorge WashingtonGeorge Washington Birthplace National Monument, Colonial Beach, VirginiaJohn AdamsJohn Adams Birthplace, Quincy, MassachusettsJames MadisonBelle Grove Plantation, Port Conway, VirginiaJames MonroeJames Monroe Birthplace Park & Museum, Colonial Beach, VirginiaJohn Quincy AdamsJohn Quincy Adams Birthplace, Quincy, MassachusettsWilliam Henry HarrisonBerkeley Plantation, Charles City County, VirginiaZachary Taylor100pxHare Forest Farm, Orange County, VirginiaZachary Taylor House, Louisville, KentuckyJohn TylerGreenway Plantation, Charles City County, Virginia",
+      "subquestion": "Which U.S. presidents were born in Virginia?",
+      "answer": [
+        "George Washington",
+        "Thomas Jefferson",
+        "James Madison",
+        "James Monroe",
+        "William Henry Harrison",
+        "John Tyler",
+        "Zachary Taylor",
+        "Woodrow Wilson"
+      ]
+    },
+    "2": {
+      "source": "wikipedia/List_of_presidents_of_the_United_States_by_military_rank/content.txt",
+      "fact": "Presidents who held a general officer rank include George Washington, Ulysses S. Grant, Dwight D. Eisenhower, Andrew Jackson, William H. Harrison, Zachary Taylor, James A. Garfield, William Howard Taft, Franklin Pierce, Chester A. Arthur, Andrew Johnson, Rutherford B. Hayes, and Benjamin Harrison.",
+      "subquestion": "Which U.S. presidents held a general officer rank?",
+      "answer": [
+        "George Washington",
+        "Ulysses S. Grant",
+        "Dwight D. Eisenhower",
+        "Andrew Jackson",
+        "William Henry Harrison",
+        "Zachary Taylor",
+        "James A. Garfield",
+        "William Howard Taft",
+        "Franklin Pierce",
+        "Chester A. Arthur",
+        "Andrew Johnson",
+        "Rutherford B. Hayes",
+        "Benjamin Harrison"
+      ]
+    },
+    "3": {
+      "source": "wikipedia/United_States_dollar/content.txt",
+      "fact": "Current U.S. currency portraits include George Washington, Thomas Jefferson, Abraham Lincoln, Andrew Jackson, Ulysses S. Grant, Franklin D. Roosevelt, and John F. Kennedy.",
+      "subquestion": "Which U.S. presidents appear on current U.S. currency?",
+      "answer": [
+        "George Washington",
+        "Thomas Jefferson",
+        "Abraham Lincoln",
+        "Andrew Jackson",
+        "Ulysses S. Grant",
+        "Franklin D. Roosevelt",
+        "John F. Kennedy"
+      ]
+    },
+    "4": {
+      "source": "wikipedia/George_Washington_Birthplace_National_Monument/content.txt",
+      "fact": "The George Washington Birthplace National Monument is a national monument in Westmoreland County, Virginia, commemorating the birthplace of George Washington, who was born there on February 22, 1732.",
+      "subquestion": "Which national monument commemorates the birthplace of <hop 1 answer>?",
+      "answer": "George Washington Birthplace National Monument"
+    },
+    "5": {
+      "source": "datagov/eaarl-topography-george-washington-birthplace-national-monument/files/USGS.cc604b53-f943-4516-a7a2-7d6e3d12beef.txt",
+      "fact": "In 2007, USGS published Open File Report 1179 containing bare earth elevation data for George Washington Birthplace National Monument, collected using the NASA EAARL (Experimental Advanced Airborne Research Lidar) system. The EAARL was developed by NASA at Wallops Flight Facility in Virginia.",
+      "subquestion": "At which NASA facility was equipment used to collect the bare earth elevation data for <hop 2 answer> in USGS's 2007 survey developed?",
+      "answer": "Wallops Flight Facility"
+    },
+    "6": {
+      "source": "wikipedia/Wallops_Island/content.txt",
+      "fact": "Wallops Island is an island in Accomack County, Virginia, and the island is used primarily for the Wallops Flight Facility.",
+      "subquestion": "In which Virginia county is the island used primarily for <hop 3 answer> located?",
+      "answer": "Accomack County"
+    },
+    "7": {
+      "source": "wikipedia/Accomack_County,_Virginia/content.txt",
+      "fact": "Accomack County towns are Accomac, Belle Haven, Bloxom, Chincoteague, Hallwood, Keller, Melfa, Onancock, Onley, Painter, Parksley, Saxis, Tangier, and Wachapreague. As of the 2009 school-district reference cited for the county profile, high schools and K-12 schools in Accomack County Public Schools are Arcadia High School, Chincoteague High School, Nandua High School, and Tangier Combined School.",
+      "subquestion": "As of 2009, how many towns did <hop 4 answer> have, and how many high schools and K-12 schools were in its county public school district?",
+      "answer": {
+        "towns": 14,
+        "high_schools_and_k12_schools": 4
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: The Virginia-born presidents include George Washington, Thomas Jefferson, James Madison, James Monroe, William Henry Harrison, John Tyler, Zachary Taylor, and Woodrow Wilson.",
+        "Node 2: The presidents who held a general officer rank include George Washington, William Henry Harrison, and Zachary Taylor.",
+        "Node 3: The presidents on current U.S. currency include George Washington and Thomas Jefferson.",
+        "Hop result: the president supported across all three nodes is George Washington."
+      ],
+      "answer": "George Washington"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: George Washington Birthplace National Monument commemorates the birthplace of <hop 1 answer>.",
+        "Hop result: George Washington Birthplace National Monument"
+      ],
+      "answer": "George Washington Birthplace National Monument"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: Wallops Flight Facility is where NASA developed the EAARL system used in the 2007 USGS survey of <hop 2 answer>.",
+        "Hop result: Wallops Flight Facility"
+      ],
+      "answer": "Wallops Flight Facility"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: Accomack County is the Virginia county containing Wallops Island, which is used primarily for <hop 3 answer>.",
+        "Hop result: Accomack County"
+      ],
+      "answer": "Accomack County"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: As of 2009, <hop 4 answer> had `14` towns and `4` high schools and K-12 schools in its county public school district.",
+        "Hop result: 14 - 4 = 10"
+      ],
+      "answer": 10
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/List_of_presidents_of_the_United_States_by_home_state/content.txt",
+    "wikipedia/List_of_presidents_of_the_United_States_by_military_rank/content.txt",
+    "wikipedia/United_States_dollar/content.txt",
+    "wikipedia/George_Washington_Birthplace_National_Monument/content.txt",
+    "datagov/eaarl-topography-george-washington-birthplace-national-monument/files/USGS.cc604b53-f943-4516-a7a2-7d6e3d12beef.txt",
+    "datagov/eaarl-topography-george-washington-birthplace-national-monument/signed-metadata.txt",
+    "datagov/eaarl-topography-george-washington-birthplace-national-monument/files/of2007-1179metadata.html",
+    "wikipedia/Wallops_Island/content.txt",
+    "wikipedia/Accomack_County,_Virginia/content.txt"
+  ]
+}

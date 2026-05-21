@@ -1,0 +1,100 @@
+{
+    "question": "Which three years had the most Texas award recipients seriously injured in the line of duty with last name Phipps? For each of those years A, B, and C, define a state's most important drug as the drug with the highest reimbursed amount per unit among drugs with at least 1,000 prescriptions, and define dependence as the share of all reimbursed amount tied to that most important drug. Which states ranked 6th through 8th in A, 36th through 38th in B, and 21st through 23rd in C? For the state appearing in all three answers, how many total seats are in its upper and lower legislative chambers? Please return only the number in the format [Answer].",
+    "answer": 150,
+    "nodes": {
+        "1": {
+            "source": "datagov/star-of-texas-award-recipients-2004-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/star-of-texas-award-recipients-2004-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[\n    df['Recipient Last Name'].eq('Phipps')\n    & df['Critical Incident Type'].eq('Seriously injured in the line of duty')\n    & df['Award Year'].ne('')\n].copy()\ncounts = filtered.groupby('Award Year', as_index=False).size()\ncounts['AwardYear_num'] = pd.to_numeric(counts['Award Year'], errors='coerce')\nmax_count = counts['size'].max()\nranked = counts[counts['size'].eq(max_count)].sort_values(['AwardYear_num', 'Award Year'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = ', '.join(ranked['Award Year'].tolist())\n",
+            "subquestion": "Which three years had the most Texas award recipients seriously injured in the line of duty with last name Phipps?",
+            "answer": "2012, 2019, 2021"
+        },
+        "2": {
+            "source": "datagov/state-drug-utilization-data-2012-3d87d/files/StateDrugUtilizationData2012.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/state-drug-utilization-data-2012-3d87d/files/StateDrugUtilizationData2012.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['State', 'Product Name', 'Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed'])\n\nstate_map = {'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'}\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf = df[df['State'].isin(state_map) & df['Product Name'].ne('')].copy()\nfor col in ['Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace(',', '', regex=False), errors='coerce')\nall_drugs = df.groupby(['State', 'Product Name'], as_index=False).agg(\n    units=('Units Reimbursed_num', 'sum'),\n    rx=('Number of Prescriptions_num', 'sum'),\n    amt=('Total Amount Reimbursed_num', 'sum')\n)\nall_drugs = all_drugs[all_drugs['units'].gt(0) & all_drugs['amt'].gt(0)].copy()\nstate_totals = all_drugs.groupby('State', as_index=False).agg(total_amt=('amt', 'sum'))\nqualified = all_drugs[all_drugs['rx'].ge(1000)].copy()\nqualified['amt_per_unit'] = qualified['amt'] / qualified['units']\nimportant = qualified.sort_values(['amt_per_unit', 'Product Name'], ascending=[False, True], kind='mergesort').groupby('State', as_index=False).head(1)\nranked = important.merge(state_totals, on='State', how='left')\nranked['dependence_score'] = ranked['amt'] / ranked['total_amt']\nranked['StateName'] = ranked['State'].map(state_map)\nranked = ranked.sort_values(['dependence_score', 'StateName'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = ', '.join(ranked.iloc[5:8]['StateName'].tolist())\n",
+            "subquestion": "Define a state's most important drug as the drug with the highest reimbursed amount per unit among drugs with at least 1,000 prescriptions, and define dependence as the share of all reimbursed amount tied to that most important drug. Which states ranked 6th through 8th highest by dependence in the first year of <hop 1 answer>?",
+            "answer": "Indiana, Iowa, Colorado"
+        },
+        "3": {
+            "source": "datagov/state-drug-utilization-data-2019/files/StateDrugUtilizationData2019.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/state-drug-utilization-data-2019/files/StateDrugUtilizationData2019.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['State', 'Product Name', 'Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed'])\n\nstate_map = {'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'}\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf = df[df['State'].isin(state_map) & df['Product Name'].ne('')].copy()\nfor col in ['Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace(',', '', regex=False), errors='coerce')\nall_drugs = df.groupby(['State', 'Product Name'], as_index=False).agg(\n    units=('Units Reimbursed_num', 'sum'),\n    rx=('Number of Prescriptions_num', 'sum'),\n    amt=('Total Amount Reimbursed_num', 'sum')\n)\nall_drugs = all_drugs[all_drugs['units'].gt(0) & all_drugs['amt'].gt(0)].copy()\nstate_totals = all_drugs.groupby('State', as_index=False).agg(total_amt=('amt', 'sum'))\nqualified = all_drugs[all_drugs['rx'].ge(1000)].copy()\nqualified['amt_per_unit'] = qualified['amt'] / qualified['units']\nimportant = qualified.sort_values(['amt_per_unit', 'Product Name'], ascending=[False, True], kind='mergesort').groupby('State', as_index=False).head(1)\nranked = important.merge(state_totals, on='State', how='left')\nranked['dependence_score'] = ranked['amt'] / ranked['total_amt']\nranked['StateName'] = ranked['State'].map(state_map)\nranked = ranked.sort_values(['dependence_score', 'StateName'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = ', '.join(ranked.iloc[35:38]['StateName'].tolist())\n",
+            "subquestion": "Define a state's most important drug as the drug with the highest reimbursed amount per unit among drugs with at least 1,000 prescriptions, and define dependence as the share of all reimbursed amount tied to that most important drug. Which states ranked 36th through 38th highest by dependence in the second year of <hop 1 answer>?",
+            "answer": "Minnesota, Iowa, Michigan"
+        },
+        "4": {
+            "source": "datagov/state-drug-utilization-data-2021-f9419/files/StateDrugUtilizationData2021.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/state-drug-utilization-data-2021-f9419/files/StateDrugUtilizationData2021.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['State', 'Product Name', 'Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed'])\n\nstate_map = {'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'}\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf = df[df['State'].isin(state_map) & df['Product Name'].ne('')].copy()\nfor col in ['Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace(',', '', regex=False), errors='coerce')\nall_drugs = df.groupby(['State', 'Product Name'], as_index=False).agg(\n    units=('Units Reimbursed_num', 'sum'),\n    rx=('Number of Prescriptions_num', 'sum'),\n    amt=('Total Amount Reimbursed_num', 'sum')\n)\nall_drugs = all_drugs[all_drugs['units'].gt(0) & all_drugs['amt'].gt(0)].copy()\nstate_totals = all_drugs.groupby('State', as_index=False).agg(total_amt=('amt', 'sum'))\nqualified = all_drugs[all_drugs['rx'].ge(1000)].copy()\nqualified['amt_per_unit'] = qualified['amt'] / qualified['units']\nimportant = qualified.sort_values(['amt_per_unit', 'Product Name'], ascending=[False, True], kind='mergesort').groupby('State', as_index=False).head(1)\nranked = important.merge(state_totals, on='State', how='left')\nranked['dependence_score'] = ranked['amt'] / ranked['total_amt']\nranked['StateName'] = ranked['State'].map(state_map)\nranked = ranked.sort_values(['dependence_score', 'StateName'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = ', '.join(ranked.iloc[20:23]['StateName'].tolist())\n",
+            "subquestion": "Define a state's most important drug as the drug with the highest reimbursed amount per unit among drugs with at least 1,000 prescriptions, and define dependence as the share of all reimbursed amount tied to that most important drug. Which states ranked 21st through 23rd highest by dependence in the third year of <hop 1 answer>?",
+            "answer": "North Dakota, Iowa, New Mexico"
+        },
+        "5": {
+            "source": "wikipedia/Iowa_Senate/content.txt",
+            "fact": "The Iowa Senate is the upper house of the Iowa General Assembly. There are 50 seats in the Iowa Senate, representing 50 single-member districts across the state of Iowa.",
+            "subquestion": "How many seats are in <hop 2 answer>'s upper legislative chamber?",
+            "answer": 50
+        },
+        "6": {
+            "source": "wikipedia/Iowa_House_of_Representatives/content.txt",
+            "fact": "The Iowa House of Representatives is the lower house of the Iowa General Assembly. There are 100 seats in the Iowa House of Representatives, representing 100 single-member districts across the state.",
+            "subquestion": "How many seats are in <hop 2 answer>'s lower legislative chamber?",
+            "answer": 100
+        }
+    },
+    "datasets_used": [
+        "datagov/star-of-texas-award-recipients-2004-2021/files/rows.txt",
+        "datagov/star-of-texas-award-recipients-2004-2021/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2012-3d87d/files/StateDrugUtilizationData2012.txt",
+        "datagov/state-drug-utilization-data-2012-3d87d/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2012-3d87d/files/state-drug-utilization-data-dictionary.json",
+        "datagov/state-drug-utilization-data-2019/files/StateDrugUtilizationData2019.txt",
+        "datagov/state-drug-utilization-data-2019/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2019/files/state-drug-utilization-data-dictionary.json",
+        "datagov/state-drug-utilization-data-2021-f9419/files/StateDrugUtilizationData2021.txt",
+        "datagov/state-drug-utilization-data-2021-f9419/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2021-f9419/files/state-drug-utilization-data-dictionary.json",
+        "wikipedia/Iowa_Senate/content.txt",
+        "wikipedia/Iowa_House_of_Representatives/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter Star of Texas recipients to last name `Phipps`, critical incident type `Seriously injured in the line of duty`, and nonempty `Award Year`.",
+                "Hop result: the maximum yearly count is tied across 2012, 2019, and 2021."
+            ],
+            "answer": "2012, 2019, 2021"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Nodes 2-4: For each year in <hop 1 answer>, aggregate drug records by `State` and `Product Name`; require at least `1000` prescriptions and compute reimbursed amount per unit from `Total Amount Reimbursed` and `Units Reimbursed`.",
+                "For each state, keep the qualifying product with the highest reimbursed amount per unit, compute dependence as that product's share of all reimbursed amount, and rank states by dependence.",
+                "Node 2 returns Indiana, Iowa, and Colorado for the first year ranks 6-8.",
+                "Node 3 returns Minnesota, Iowa, and Michigan for the second year ranks 36-38.",
+                "Node 4 returns North Dakota, Iowa, and New Mexico for the third year ranks 21-23.",
+                "Hop result: the only state appearing in all three answers is Iowa."
+            ],
+            "answer": "Iowa"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: <hop 2 answer>'s upper legislative chamber has `50` seats.",
+                "Node 6: <hop 2 answer>'s lower legislative chamber has `100` seats.",
+                "Hop result: `50 + 100 = 150` total seats."
+            ],
+            "answer": 150
+        }
+    ]
+}

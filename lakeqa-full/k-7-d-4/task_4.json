@@ -1,0 +1,200 @@
+{
+    "question": "In which city, county, and state is the organization that is co-founded by Luis von Ahn headquartered? In that state, identify the county that ranks in the top four statewide for the number of public schools, private schools, and school district offices. Among the counties that meet these criteria, which one has the most colleges? For that leading county, what is the result if you sum the number of public schools and district offices, and then subtract the total count of colleges and private schools? Give the final answer as an integer.",
+    "answer": "221",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Luis_von_Ahn/content.txt",
+            "fact": "the co-founder and CEO of Duolingo",
+            "subquestion": "Luis von Ahn is the co-founder and CEO of what company?",
+            "answer": "Duolingo"
+        },
+        "2": {
+            "source": "wikipedia/Duolingo/content.txt",
+            "fact": "headquartered in Pittsburgh, Pennsylvania",
+            "subquestion": "<hop 1 answer> is headquartered in what city?",
+            "answer": "Pittsburgh"
+        },
+        "3": {
+            "source": "wikipedia/Pittsburgh/content.txt",
+            "fact": "a city in Allegheny County, Pennsylvania, United States",
+            "subquestion": "<hop 2 answer> is a city in which county?",
+            "answer": "Allegheny County"
+        },
+        "4": {
+            "source": "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+            "fact": "In the school district office listings, there are 32 entry(ies) with CITY='Pittsburgh' and NMCNTY='Allegheny County', and they all use the same two-digit state FIPS code (STFIP): 42.",
+            "subquestion": "In the school district office listings, entries with CITY='<hop 2 answer>' and NMCNTY='<hop 3 answer>' share what two-digit state FIPS code (STFIP)?",
+            "answer": "42"
+        },
+        "5": {
+            "source": "datagov/public-school-locations-2017-18-af716/files/data-PS27VM.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-2017-18-af716/files/data-PS27VM.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(payload[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\ncounty_counts = (\n    df.loc[df[\"STFIP\"] == \"42\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .sort_values(ascending=False)\n)\n\ntop_4 = county_counts.head(4)\nanswer = \"; \".join(top_4.index.tolist())",
+            "subquestion": "For STFIP='<node_4 answer>', which 4 county names have the most public schools? Return the county names separated by '; '.",
+            "answer": "Philadelphia County; Allegheny County; Montgomery County; Bucks County"
+        },
+        "6": {
+            "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(payload[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\ncounty_counts = (\n    df.loc[df[\"STFIP\"] == \"42\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .sort_values(ascending=False)\n)\n\ntop_4 = county_counts.head(4)\nanswer = \"; \".join(top_4.index.tolist())",
+            "subquestion": "For STFIP='<node_4 answer>', which 4 county names have the most private schools? Return the county names separated by '; '.",
+            "answer": "Montgomery County; Philadelphia County; Allegheny County; Lancaster County"
+        },
+        "7": {
+            "source": "datagov/school-district-office-locations-2016-17-9faab/files/data-eFICZC.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-2016-17-9faab/files/data-eFICZC.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(payload[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\ncounty_counts = (\n    df.loc[df[\"STFIP\"] == \"42\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .sort_values(ascending=False)\n)\n\ntop_4 = county_counts.head(4)\nanswer = \"; \".join(top_4.index.tolist())",
+            "subquestion": "For STFIP='<node_4 answer>', which 4 county names have the most school district offices? Return the county names separated by '; '.",
+            "answer": "Philadelphia County; Allegheny County; Montgomery County; Chester County"
+        },
+        "8": {
+            "source": "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(payload[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\ncandidate_counties = [\"Allegheny County\", \"Montgomery County\", \"Philadelphia County\"]\ncounty_counts = (\n    df.loc[(df[\"STFIP\"] == \"42\") & (df[\"NMCNTY\"].isin(candidate_counties))]\n    .groupby(\"NMCNTY\")\n    .size()\n    .sort_values(ascending=False)\n)\n\nanswer = county_counts.index[0]",
+            "subquestion": "Among the counties in <hop 5 answer>, which single county has the most postsecondary institutions in STFIP='<node_4 answer>'? Answer with the county name including the word 'County'.",
+            "answer": "Allegheny County"
+        },
+        "9": {
+            "source": "datagov/public-school-locations-2017-18-af716/files/data-PS27VM.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-2017-18-af716/files/data-PS27VM.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(payload[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nanswer = df.loc[\n    (df[\"STFIP\"] == \"42\") & (df[\"NMCNTY\"] == \"Allegheny County\")\n].shape[0]",
+            "subquestion": "How many public schools have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 290
+        },
+        "10": {
+            "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(payload[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nanswer = df.loc[\n    (df[\"STFIP\"] == \"42\") & (df[\"NMCNTY\"] == \"Allegheny County\")\n].shape[0]",
+            "subquestion": "How many private schools have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 106
+        },
+        "11": {
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(payload[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nanswer = df.loc[\n    (df[\"STFIP\"] == \"42\") & (df[\"NMCNTY\"] == \"Allegheny County\")\n].shape[0]",
+            "subquestion": "How many school district offices have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 76
+        },
+        "12": {
+            "source": "datagov/postsecondary-school-locations-current-40ae1/files/nces::postsecondary-school-locations-current-1.txt",
+            "fact": "import io\nimport xml.etree.ElementTree as ET\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-40ae1/files/nces::postsecondary-school-locations-current-1.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\nroot = ET.parse(io.BytesIO(obj[\"Body\"].read())).getroot()\nns = {\"k\": \"http://www.opengis.net/kml/2.2\"}\nrows = []\nfor placemark in root.findall('.//k:Placemark', ns):\n    row = {sd.attrib.get(\"name\"): sd.text for sd in placemark.findall('.//k:SimpleData', ns)}\n    rows.append(row)\ndf = pd.DataFrame(rows)\n\nanswer = df.loc[\n    (df[\"STFIP\"] == \"42\") & (df[\"NMCNTY\"] == \"Allegheny County\")\n].shape[0]",
+            "subquestion": "How many postsecondary institutions have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 39
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Read the company co-founded by Luis von Ahn from the cited Wikipedia source.",
+                "Hop result: the company is Duolingo."
+            ],
+            "answer": "Duolingo"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Read the headquarters city of <hop 1 answer> from the cited Wikipedia source.",
+                "Hop result: the city is Pittsburgh."
+            ],
+            "answer": "Pittsburgh"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Read the county containing <hop 2 answer> from the cited Pittsburgh Wikipedia source.",
+                "Hop result: the county is Allegheny County."
+            ],
+            "answer": "Allegheny County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 2 provides the headquarters city Pittsburgh, and node 3 provides the county Allegheny County.",
+                "Node 4 maps the city/county pair `<hop 2 answer>`, `<hop 3 answer>` to the shared two-digit state FIPS code `42`, which is the dataset key needed for the downstream statewide queries.",
+                "Hop result: the relevant state is Pennsylvania, queried downstream via `STFIP` 42."
+            ],
+            "answer": "Pennsylvania"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5,
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 5: For `STFIP` = `42`, count public schools by county and keep the top four county names.",
+                "Node 6: For `STFIP` = `42`, count private schools by county and keep the top four county names.",
+                "Node 7: For `STFIP` = `42`, count school district offices by county and keep the top four county names.",
+                "Hop result: intersect the three top-four county sets; the shared counties are Allegheny County, Montgomery County, and Philadelphia County."
+            ],
+            "answer": [
+                "Allegheny County",
+                "Montgomery County",
+                "Philadelphia County"
+            ]
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: For `STFIP` = `42`, count postsecondary institutions by county, restrict to the counties in <hop 5 answer>, and keep the county with the highest count.",
+                "Hop result: the county is Allegheny County."
+            ],
+            "answer": "Allegheny County"
+        },
+        {
+            "hop": 7,
+            "node_ids": [
+                9,
+                10,
+                11,
+                12
+            ],
+            "reasoning": [
+                "Node 9: For `STFIP` = `42` and `NMCNTY` = <hop 6 answer>, count public schools.",
+                "Node 10: For `STFIP` = `42` and `NMCNTY` = <hop 6 answer>, count private schools.",
+                "Node 11: For `STFIP` = `42` and `NMCNTY` = <hop 6 answer>, count school district offices.",
+                "Node 12: For `STFIP` = `42` and `NMCNTY` = <hop 6 answer>, count postsecondary institutions.",
+                "Hop result: compute `(290 + 76) - (106 + 39) = 221`."
+            ],
+            "answer": 221
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Luis_von_Ahn/content.txt",
+        "wikipedia/Duolingo/content.txt",
+        "wikipedia/Pittsburgh/content.txt",
+        "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+        "datagov/school-district-office-locations-current-d848f/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-d848f/files/0.arcgis-layer.json",
+        "datagov/public-school-locations-2017-18-af716/files/data-PS27VM.txt",
+        "datagov/public-school-locations-2017-18-af716/signed-metadata.txt",
+        "datagov/public-school-locations-2017-18-af716/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+        "datagov/private-school-locations-current-f7d96/signed-metadata.txt",
+        "datagov/private-school-locations-current-f7d96/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2016-17-9faab/files/data-eFICZC.txt",
+        "datagov/school-district-office-locations-2016-17-9faab/signed-metadata.txt",
+        "datagov/school-district-office-locations-2016-17-9faab/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+        "datagov/postsecondary-school-locations-2022-23/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2022-23/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-current-40ae1/files/nces::postsecondary-school-locations-current-1.txt",
+        "datagov/postsecondary-school-locations-current-40ae1/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-40ae1/files/0.arcgis-layer.json"
+    ]
+}

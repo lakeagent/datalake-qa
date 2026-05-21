@@ -1,0 +1,96 @@
+{
+  "question": "In the state with two-digit FIPS code 19, find the counties that rank in the top three for public schools, private schools, and school district offices. Among their intersection, select the county with the most postsecondary institutions. For that county, by how many people did the 2023 population estimate exceed the 2020 census population? Your response should be in the format [Answer].",
+  "answer": 12854,
+  "nodes": {
+    "1": {
+      "source": "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\nfiltered = df[state_fips.eq(19)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+      "subquestion": "For STFIP='19', which 3 county names have the most public schools? Return the county names separated by '; '.",
+      "answer": "Polk County; Linn County; Scott County"
+    },
+    "2": {
+      "source": "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\nfiltered = df[state_fips.eq(19)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+      "subquestion": "For STFIP='19', which 3 county names have the most private schools? Return the county names separated by '; '.",
+      "answer": "Polk County; Linn County; Sioux County"
+    },
+    "3": {
+      "source": "datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\nfiltered = df[state_fips.eq(19)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+      "subquestion": "For STFIP='19', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+      "answer": "Linn County; Polk County; Pottawattamie County"
+    },
+    "4": {
+      "source": "datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ncandidate_counties = {\"Linn County\", \"Polk County\"}\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\nfiltered = df[state_fips.eq(19) & county.isin(candidate_counties)].copy()\ncounts = filtered.groupby(county.loc[filtered.index], dropna=True).size()\nanswer = {county_name: int(counts.get(county_name, 0)) for county_name in sorted(candidate_counties)}",
+      "subquestion": "How many postsecondary institutions are in each county from <hop 1 answer> for STFIP='19'?",
+      "answer": {
+        "Linn County": 7,
+        "Polk County": 11
+      }
+    },
+    "5": {
+      "source": "wikipedia/Polk_County,_Iowa/content.txt",
+      "fact": "As of the 2020 census, the population was 492,401, and was estimated to be 505,255 in 2023.",
+      "subquestion": "For <hop 2 answer>, what were the 2020 census population and the 2023 population estimate?",
+      "answer": {
+        "population_2020": 492401,
+        "population_estimate_2023": 505255
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: Using rows where `STFIP='19'`, the three counties with the most public schools are `Polk County`, `Linn County`, and `Scott County`.",
+        "Node 2: Using rows where `STFIP='19'`, the three counties with the most private schools are `Polk County`, `Linn County`, and `Sioux County`.",
+        "Node 3: Using rows where `STFIP='19'`, the three counties with the most school district offices are `Linn County`, `Polk County`, and `Pottawattamie County`.",
+        "Hop result: intersecting node 3 with the union of nodes 1 and 2 yields `Linn County` and `Polk County`."
+      ],
+      "answer": "Linn County and Polk County"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: From <hop 1 answer>, `Linn County` had `7` postsecondary institutions and `Polk County` had `11`.",
+        "Hop result: comparing `7` and `11`, the county with more postsecondary institutions is `Polk County`."
+      ],
+      "answer": "Polk County"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: <hop 2 answer> had a 2020 census population of `492,401` and a 2023 population estimate of `505,255`.",
+        "Hop result: `505,255 - 492,401 = 12,854`."
+      ],
+      "answer": 12854
+    }
+  ],
+  "datasets_used": [
+    "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+    "datagov/public-school-locations-2018-19-42360/signed-metadata.txt",
+    "datagov/public-school-locations-2018-19-42360/files/0.arcgis-layer.json",
+    "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+    "datagov/private-school-locations-2017-18-f49f6/signed-metadata.txt",
+    "datagov/private-school-locations-2017-18-f49f6/files/0.arcgis-layer.json",
+    "datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt",
+    "datagov/school-district-office-locations-2020-21-d8df0/signed-metadata.txt",
+    "datagov/school-district-office-locations-2020-21-d8df0/files/0.arcgis-layer.json",
+    "datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt",
+    "datagov/postsecondary-school-locations-2019-20-64b31/signed-metadata.txt",
+    "datagov/postsecondary-school-locations-2019-20-64b31/files/0.arcgis-layer.json",
+    "wikipedia/Polk_County,_Iowa/content.txt"
+  ]
+}

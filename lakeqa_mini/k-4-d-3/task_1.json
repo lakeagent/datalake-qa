@@ -1,0 +1,126 @@
+{
+  "question": "Can you find me the NYC elementary school in District 15 that ranked 2nd by average performance category score over school years 2010-13. For the neighborhood this elementary school is located in, which park is this neighborhood bounded by? Report the size of this park in arce. Your response should be in the format [Answer].",
+  "answer": "526",
+  "nodes": {
+    "1": {
+      "source": "datagov/2010-2011-school-progress-report/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2010-2011-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nimport re\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\nperf_col = [c for c in df.columns if \"PERFORMANCE CATEGORY SCORE\" in c.upper()][0]\nlevel_col = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()][0]\nschool_col = \"SCHOOL\" if \"SCHOOL\" in df.columns else \"School Name\"\n\nfiltered = df.copy()\nfiltered[\"DISTRICT\"] = pd.to_numeric(filtered[\"DISTRICT\"], errors=\"coerce\")\nfiltered[perf_col] = pd.to_numeric(filtered[perf_col], errors=\"coerce\")\nfiltered = filtered[\n    filtered[\"DISTRICT\"].eq(15)\n    & filtered[level_col].astype(str).str.contains(\"Elementary\", case=False, na=False)\n]\nfiltered[\"_ps_num\"] = filtered[school_col].astype(str).str.extract(r\"P\\.?S\\.?\\s*0*(\\d+)\", expand=False)\nfiltered[\"_ps_num\"] = pd.to_numeric(filtered[\"_ps_num\"], errors=\"coerce\").fillna(-1)\nfiltered = filtered.sort_values([perf_col, \"_ps_num\"], ascending=[False, False])\nlimit = 5\ntop = filtered[[school_col, perf_col]].dropna(subset=[school_col, perf_col]).head(limit).copy()\ntop[school_col] = top[school_col].astype(str).map(normalize_school)\nanswer = {row[school_col]: float(row[perf_col]) for _, row in top.iterrows()}\n",
+      "subquestion": "Which NYC elementary schools in District 15 and their performance category scores in 2010-11?",
+      "answer": {
+        "PS 172 Beacon School of Excellence": 23.5,
+        "The Children's School": 16.8,
+        "PS 321 William Penn": 15.3,
+        "Magnet School for Science & Technology": 14,
+        "PS 130 The Parkside": 13.1
+      },
+      "limit": 5
+    },
+    "2": {
+      "source": "datagov/2011-2012-school-progress-report-all-schools/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2011-2012-school-progress-report-all-schools/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nimport re\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\nperf_col = [c for c in df.columns if \"PERFORMANCE CATEGORY SCORE\" in c.upper()][0]\nlevel_col = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()][0]\nschool_col = \"SCHOOL\" if \"SCHOOL\" in df.columns else \"School Name\"\n\nfiltered = df.copy()\nfiltered[\"DISTRICT\"] = pd.to_numeric(filtered[\"DISTRICT\"], errors=\"coerce\")\nfiltered[perf_col] = pd.to_numeric(filtered[perf_col], errors=\"coerce\")\nfiltered = filtered[\n    filtered[\"DISTRICT\"].eq(15)\n    & filtered[level_col].astype(str).str.contains(\"Elementary\", case=False, na=False)\n]\nfiltered[\"_ps_num\"] = filtered[school_col].astype(str).str.extract(r\"P\\.?S\\.?\\s*0*(\\d+)\", expand=False)\nfiltered[\"_ps_num\"] = pd.to_numeric(filtered[\"_ps_num\"], errors=\"coerce\").fillna(-1)\nfiltered = filtered.sort_values([perf_col, \"_ps_num\"], ascending=[False, False])\nlimit = 5\ntop = filtered[[school_col, perf_col]].dropna(subset=[school_col, perf_col]).head(limit).copy()\ntop[school_col] = top[school_col].astype(str).map(normalize_school)\nanswer = {row[school_col]: float(row[perf_col]) for _, row in top.iterrows()}\n",
+      "subquestion": "Which NYC elementary schools in District 15 and their performance category scores in 2011-12?",
+      "answer": {
+        "PS 172 Beacon School of Excellence": 25,
+        "PS 15 Patrick F. Daly": 22.3,
+        "PS 146": 21.6,
+        "Magnet School of Math, Science and Design Techno": 21.2,
+        "PS 130 The Parkside": 20.5
+      },
+      "limit": 5
+    },
+    "3": {
+      "source": "datagov/2012-2013-citywide-progress-report/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2012-2013-citywide-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nimport re\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\nperf_col = [c for c in df.columns if \"PERFORMANCE CATEGORY SCORE\" in c.upper()][0]\nlevel_col = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()][0]\nschool_col = \"SCHOOL\" if \"SCHOOL\" in df.columns else \"School Name\"\n\nfiltered = df.copy()\nfiltered[\"DISTRICT\"] = pd.to_numeric(filtered[\"DISTRICT\"], errors=\"coerce\")\nfiltered[perf_col] = pd.to_numeric(filtered[perf_col], errors=\"coerce\")\nfiltered = filtered[\n    filtered[\"DISTRICT\"].eq(15)\n    & filtered[level_col].astype(str).str.contains(\"Elementary\", case=False, na=False)\n]\nfiltered[\"_ps_num\"] = filtered[school_col].astype(str).str.extract(r\"P\\.?S\\.?\\s*0*(\\d+)\", expand=False)\nfiltered[\"_ps_num\"] = pd.to_numeric(filtered[\"_ps_num\"], errors=\"coerce\").fillna(-1)\nfiltered = filtered.sort_values([perf_col, \"_ps_num\"], ascending=[False, False])\nlimit = 5\ntop = filtered[[school_col, perf_col]].dropna(subset=[school_col, perf_col]).head(limit).copy()\ntop[school_col] = top[school_col].astype(str).map(normalize_school)\nanswer = {row[school_col]: float(row[perf_col]) for _, row in top.iterrows()}\n",
+      "subquestion": "Which NYC elementary schools in District 15 and their performance category scores in 2012-13?",
+      "answer": {
+        "PS 172 Beacon School of Excellence": 25,
+        "Magnet School of Math, Science and Design Techno": 21.5,
+        "PS 321 William Penn": 18.9,
+        "PS 107 John W. Kimball": 17.8,
+        "PS 39 Henry Bristow": 17.7
+      },
+      "limit": 5
+    },
+    "4": {
+      "source": "datagov/2013-2014-school-locations/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2013-2014-school-locations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nimport re\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s.lower()\n\nhop_1_answer = \"PS 321 William Penn\"\ntarget_norm = normalize_school(hop_1_answer)\ndf[\"_norm_loc\"] = df[\"LOCATION_NAME\"].astype(str).map(normalize_school)\nrow = df[df[\"_norm_loc\"].eq(target_norm)].iloc[0]\nloc_text = str(row.get(\"Location 1\", \"\"))\nmatch = re.search(r\"\\b(\\d{5})(?:-\\d{4})?\\b\", loc_text)\nif match:\n    answer = match.group(1)\nelse:\n    combined = \" \".join(str(v) for v in row.to_dict().values())\n    match2 = re.search(r\"\\b(\\d{5})(?:-\\d{4})?\\b\", combined)\n    answer = match2.group(1) if match2 else \"\"\n",
+      "subquestion": "What is the ZIP code of <hop 1 answer>?",
+      "answer": "11215"
+    },
+    "5": {
+      "source": "wikipedia/Park_Slope/content.txt",
+      "fact": "The neighborhood is named for its location on the western slope of Prospect Park.",
+      "subquestion": "Which park is the neighborhood corresponding to the ZIP code in <hop 2 answer> bounded by?",
+      "answer": "Prospect Park"
+    },
+    "6": {
+      "source": "wikipedia/Prospect_Park_(Brooklyn)/content.txt",
+      "fact": "Prospect Park is a 526-acre (2.13 km2) urban park in the New York City borough of Brooklyn.",
+      "subquestion": "What is the size of <hop 3 answer>? Answer in acres.",
+      "answer": "526"
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Park_Slope/content.txt",
+    "wikipedia/Prospect_Park_(Brooklyn)/content.txt",
+    "datagov/2010-2011-school-progress-report/files/rows.txt",
+    "datagov/2010-2011-school-progress-report/signed-metadata.txt",
+    "datagov/2011-2012-school-progress-report-all-schools/files/rows.txt",
+    "datagov/2011-2012-school-progress-report-all-schools/signed-metadata.txt",
+    "datagov/2012-2013-citywide-progress-report/files/rows.txt",
+    "datagov/2012-2013-citywide-progress-report/signed-metadata.txt",
+    "datagov/2013-2014-school-locations/files/rows.txt",
+    "datagov/2013-2014-school-locations/files/columns.txt",
+    "datagov/2013-2014-school-locations/files/ac4n-c5re.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1, Node 2, and Node 3 each answer the yearly school->score question for District 15 elementary schools; due to limit=5, the stored answers are compact top-5 previews.",
+        "Using the full District 15 elementary performance scores across all three years, rank schools by 3-year average.",
+        "The top two are PS 172 Beacon School of Excellence (1st) and PS 321 William Penn (2nd).",
+        "Hop result: report PS 321 William Penn as the hop answer."
+      ],
+      "answer": "PS 321 William Penn"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: The ZIP code of <hop 1 answer> is 11215.",
+        "Hop result: report <node_4 answer> as this hop answer."
+      ],
+      "answer": "11215"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: The neighborhood corresponding to the ZIP code in <hop 2 answer> is bounded by Prospect Park.",
+        "Hop result: report <node_5 answer> as this hop answer."
+      ],
+      "answer": "Prospect Park"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: <hop 3 answer> is a 526-acre urban park.",
+        "Hop result: report <node_6 answer> as the final answer."
+      ],
+      "answer": "526"
+    }
+  ]
+}

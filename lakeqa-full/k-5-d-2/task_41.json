@@ -1,0 +1,122 @@
+{
+  "question": "In Maryland, find the county or jurisdiction with the most 2020 jobs in professional, scientific, and technical services. Within that county, identify the city tied to the largest total of promised new jobs in state-backed economic-development projects. For that city, consider the valid five-digit ZIP codes that have public-access charging or alternative-fuel station locations, and choose the ZIP code with the most residential home sales in 2021. Between North Bethesda and Brookmont, which community uses that selected ZIP code? Write your answer as [ANSWER].",
+  "answer": "North Bethesda",
+  "nodes": {
+    "1": {
+      "source": "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['Jurisdiction', 'Year', 'Professional, scientific, and technical services'])\n\nfiltered = df[df['Year'].astype(str).str.strip().eq('2020')].copy()\nfiltered = filtered[~filtered['Jurisdiction'].astype(str).str.strip().eq('Maryland')].copy()\nfiltered['jobs'] = pd.to_numeric(filtered['Professional, scientific, and technical services'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = filtered[['Jurisdiction', 'jobs']].dropna().sort_values(['jobs', 'Jurisdiction'], ascending=[False, True])\ntop = ranked.iloc[0]\nanswer = f\"{str(top['Jurisdiction']).strip()}, {int(top['jobs'])}\"\n",
+      "subquestion": "In 2020, which Maryland county or jurisdiction had the most jobs in professional, scientific, and technical services, and how many jobs were there?",
+      "answer": "Montgomery County, 107209"
+    },
+    "2": {
+      "source": "datagov/maryland-commerce-consolidated-finance-tracker-data/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/maryland-commerce-consolidated-finance-tracker-data/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['County', 'City', 'New Jobs'])\n\nnode_1_answer = 'Montgomery County, 107209'\ncounty = str(node_1_answer).split(',')[0].replace(' County', '').strip().upper()\nfiltered = df[df['County'].astype(str).str.strip().str.upper().eq(county)].copy()\nfiltered['new_jobs'] = pd.to_numeric(filtered['New Jobs'].astype(str).str.replace(',', '', regex=False), errors='coerce')\ncity_totals = filtered.groupby('City', dropna=True)['new_jobs'].sum().dropna().sort_values(ascending=False)\ncity = str(city_totals.index[0]).strip()\njobs = int(city_totals.iloc[0])\nanswer = f\"{city}, {jobs}\"\n",
+      "subquestion": "Among Maryland state-backed economic-development projects in the county from <node_1 answer>, which city is tied to the largest total number of promised new jobs, and how many new jobs are listed?",
+      "answer": "Bethesda, 889"
+    },
+    "3": {
+      "source": "datagov/public-electric-vehicle-charging-stations-and-alternative-fuel-stations-in-maryland/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/public-electric-vehicle-charging-stations-and-alternative-fuel-stations-in-maryland/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['City', 'ZipCode', 'Access'])\n\nnode_2_answer = 'Bethesda, 889'\ncity = str(node_2_answer).split(',')[0].strip().upper()\nfiltered = df[\n    df['City'].astype(str).str.strip().str.upper().eq(city)\n    & df['Access'].astype(str).str.strip().str.upper().eq('PUBLIC')\n].copy()\nfiltered['zip5'] = filtered['ZipCode'].astype(str).str.extract(r'^\\s*(\\d{5})\\s*$', expand=False)\nzip_codes = sorted(filtered['zip5'].dropna().unique())\nanswer = '; '.join(zip_codes)\n",
+      "subquestion": "In the city from <node_2 answer>, which valid five-digit ZIP codes have public-access charging or alternative-fuel station locations?",
+      "answer": "20814; 20816"
+    },
+    "4": {
+      "source": "datagov/maryland-total-residential-sales-2010-2022-zip-codes/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/maryland-total-residential-sales-2010-2022-zip-codes/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['Jurisdiction', 'Zip Code', '2021 Residential Sales'])\n\nnode_3_answer = '20814; 20816'\nzip_codes = [z.strip() for z in str(node_3_answer).split(';')]\nfiltered = df[df['Zip Code'].astype(str).str.strip().isin(zip_codes)].copy()\nfiltered['sales_2021'] = pd.to_numeric(filtered['2021 Residential Sales'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = filtered[['Jurisdiction', 'Zip Code', 'sales_2021']].dropna().sort_values(['sales_2021', 'Zip Code'], ascending=[False, True])\ntop = ranked.iloc[0]\nanswer = f\"{str(top['Zip Code']).strip()}, {int(top['sales_2021'])}\"\n",
+      "subquestion": "Among the ZIP codes from <node_3 answer>, which one had the most residential home sales in 2021, and how many sales were recorded?",
+      "answer": "20814, 516"
+    },
+    "5": {
+      "source": "wikipedia/North_Bethesda,_Maryland/content.txt",
+      "fact": "whereas the eastern part of the CDP uses the Kensington address and ZIP code, and the southern regions has the 20814 zip code of Bethesda proper.",
+      "subquestion": "Which ZIP code of Bethesda proper is used by the southern regions of North Bethesda?",
+      "answer": "20814"
+    },
+    "6": {
+      "source": "wikipedia/Brookmont,_Maryland/content.txt",
+      "fact": "Brookmont is often considered part of neighboring Bethesda because it falls within Bethesda's 20816 zip code.",
+      "subquestion": "Which Bethesda ZIP code does Brookmont fall within?",
+      "answer": "20816"
+    }
+  },
+  "datasets_used": [
+    "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/rows.txt",
+    "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/signed-metadata.txt",
+    "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/columns.txt",
+    "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/i5g8-z4ut.txt",
+    "datagov/maryland-commerce-consolidated-finance-tracker-data/files/rows.txt",
+    "datagov/maryland-commerce-consolidated-finance-tracker-data/signed-metadata.txt",
+    "datagov/maryland-commerce-consolidated-finance-tracker-data/files/columns.txt",
+    "datagov/maryland-commerce-consolidated-finance-tracker-data/files/cf3i-xdgb.publisher-view.json",
+    "datagov/maryland-commerce-consolidated-finance-tracker-data/files/cf3i-xdgb.txt",
+    "datagov/public-electric-vehicle-charging-stations-and-alternative-fuel-stations-in-maryland/files/rows.txt",
+    "datagov/public-electric-vehicle-charging-stations-and-alternative-fuel-stations-in-maryland/signed-metadata.txt",
+    "datagov/public-electric-vehicle-charging-stations-and-alternative-fuel-stations-in-maryland/files/columns.txt",
+    "datagov/public-electric-vehicle-charging-stations-and-alternative-fuel-stations-in-maryland/files/843n-d2np.txt",
+    "datagov/maryland-total-residential-sales-2010-2022-zip-codes/files/rows.txt",
+    "datagov/maryland-total-residential-sales-2010-2022-zip-codes/signed-metadata.txt",
+    "datagov/maryland-total-residential-sales-2010-2022-zip-codes/files/columns.txt",
+    "datagov/maryland-total-residential-sales-2010-2022-zip-codes/files/fu5f-43qd.txt",
+    "wikipedia/North_Bethesda,_Maryland/content.txt",
+    "wikipedia/Brookmont,_Maryland/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Among Maryland county-level jurisdictions, Montgomery County has the largest number of 2020 jobs in professional, scientific, and technical services.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "Montgomery County, 107209"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Within Montgomery County state-backed economic-development projects, Bethesda has the largest total of promised new jobs.",
+        "Hop result: <node_2 answer>"
+      ],
+      "answer": "Bethesda, 889"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: In Bethesda, public-access charging or alternative-fuel station locations are found in the valid five-digit ZIP codes 20814 and 20816.",
+        "Hop result: 20814 and 20816"
+      ],
+      "answer": "20814 and 20816"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: Among the ZIP codes from node 3, ZIP code 20814 had the most residential home sales in 2021, with 516 sales.",
+        "Hop result: <node_4 answer>"
+      ],
+      "answer": "20814, 516"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5: The southern regions of North Bethesda use the 20814 ZIP code of Bethesda proper.",
+        "Node 6: Brookmont falls within Bethesda's 20816 ZIP code.",
+        "Hop result: the ZIP code from <hop 4 answer> is 20814, which matches North Bethesda rather than Brookmont."
+      ],
+      "answer": "North Bethesda"
+    }
+  ]
+}

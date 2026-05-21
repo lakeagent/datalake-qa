@@ -1,0 +1,73 @@
+{
+  "question": "Among Harris, Hidalgo, Dallas, and Cameron counties in Texas, identify the two counties with the largest percentage decreases in day care home meal reimbursements from 2018-19 to 2020-21. What is the difference between the areas of the two counties in square miles? Round to the nearest integer. Your response should be in the format [Answer].",
+  "answer": 663,
+  "nodes": {
+    "1": {
+      "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"SiteCounty\"] = df[\"SiteCounty\"].astype(str).str.strip()\ndf = df[df[\"SiteCounty\"].isin([\"HARRIS\", \"HIDALGO\", \"DALLAS\", \"CAMERON\"])].copy()\ndf[\"TotalMealReimbursement\"] = pd.to_numeric(df[\"TotalMealReimbursement\"], errors=\"coerce\")\ncounty_totals = df.groupby(\"SiteCounty\", dropna=True)[\"TotalMealReimbursement\"].sum()\nanswer = {county: round(float(county_totals.loc[county]), 2) for county in county_totals.sort_index().index}\n",
+      "subquestion": "For ProgramYear 2018-2019, what were the total day care home meal reimbursements for Harris, Hidalgo, Dallas, and Cameron counties?",
+      "answer": {
+        "CAMERON": 392489.51,
+        "DALLAS": 2835278.75,
+        "HARRIS": 8757796.13,
+        "HIDALGO": 1202699.73
+      }
+    },
+    "2": {
+      "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"SiteCounty\"] = df[\"SiteCounty\"].astype(str).str.strip()\ndf = df[df[\"SiteCounty\"].isin([\"HARRIS\", \"HIDALGO\", \"DALLAS\", \"CAMERON\"])].copy()\ndf[\"TotalMealReimbursement\"] = pd.to_numeric(df[\"TotalMealReimbursement\"], errors=\"coerce\")\ncounty_totals = df.groupby(\"SiteCounty\", dropna=True)[\"TotalMealReimbursement\"].sum()\nanswer = {county: round(float(county_totals.loc[county]), 2) for county in county_totals.sort_index().index}\n",
+      "subquestion": "For ProgramYear 2020-2021, what were the total day care home meal reimbursements for Harris, Hidalgo, Dallas, and Cameron counties?",
+      "answer": {
+        "CAMERON": 330003.06,
+        "DALLAS": 2393411.26,
+        "HARRIS": 7558597.77,
+        "HIDALGO": 971063.56
+      }
+    },
+    "3": {
+      "source": "wikipedia/List_of_counties_in_Texas/content.txt",
+      "fact": "The list of Texas counties gives Cameron County with county seat Brownsville, established in 1848, population 433,946, and area 906 sq mi; Hidalgo County with county seat Edinburg, established in 1852, population 921,549, and area 1,569 sq mi.",
+      "subquestion": "What areas are listed for the counties in <hop 1 answer>?",
+      "answer": {
+        "Cameron County": 906,
+        "Hidalgo County": 1569
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1 totals (2018-2019): Harris 8,757,796.13; Dallas 2,835,278.75; Hidalgo 1,202,699.73; Cameron 392,489.51",
+        "Node 2 totals (2020-2021): Harris 7,558,597.77; Dallas 2,393,411.26; Hidalgo 971,063.56; Cameron 330,003.06",
+        "Percent decreases: Hidalgo -19.26%, Cameron -15.92%, Dallas -15.58%, Harris -13.69% -> two largest decreases {Hidalgo, Cameron}",
+        "Hop result: Hidalgo, Cameron"
+      ],
+      "answer": "Hidalgo, Cameron"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: The listed areas for the counties in <hop 1 answer> are `906` square miles and `1569` square miles.",
+        "Hop result: `1569 - 906 = 663`."
+      ],
+      "answer": 663
+    }
+  ],
+  "datasets_used": [
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/m3iw-uy6q.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/ymex-tquc.publisher-view.json",
+    "wikipedia/List_of_counties_in_Texas/content.txt"
+  ]
+}

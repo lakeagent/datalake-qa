@@ -1,0 +1,165 @@
+{
+  "question": "I'm researching the Texas counties that ranked in the top five for the average number of sites offering summer meals to children from 2018-2023. In 2022, they also had less than 12% of their population aged 65 or older in data used for planning adult protection service, and more than 3,000 children receiving services intended to keep them safely with their families. For the resulting county, how many district courts are there? Return the number only. Your response should be in the format [Answer].",
+  "answer": 67,
+  "nodes": {
+    "1": {
+      "source": "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-98b1c/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-98b1c/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2018-2019\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+      "subquestion": "What is the full county-level count of sites offering summer meals to children in Texas for 2018-2019?",
+      "answer": {
+        "HARRIS": 1052,
+        "DALLAS": 1014,
+        "HIDALGO": 494,
+        "BEXAR": 411,
+        "TARRANT": 367
+      },
+      "limit": 5
+    },
+    "2": {
+      "source": "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-3651c/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-3651c/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2019-2020\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+      "subquestion": "What is the full county-level count of sites offering summer meals to children in Texas for 2019-2020?",
+      "answer": {
+        "HARRIS": 1919,
+        "DALLAS": 1479,
+        "BEXAR": 1038,
+        "TARRANT": 688,
+        "HIDALGO": 515
+      },
+      "limit": 5
+    },
+    "3": {
+      "source": "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-f6663/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-f6663/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2020-2021\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+      "subquestion": "What is the full county-level count of sites offering summer meals to children in Texas for 2020-2021?",
+      "answer": {
+        "HARRIS": 2674,
+        "DALLAS": 1504,
+        "BEXAR": 1168,
+        "TARRANT": 1033,
+        "HIDALGO": 700
+      },
+      "limit": 5
+    },
+    "4": {
+      "source": "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-a726d/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-a726d/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2021-2022\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+      "subquestion": "What is the full county-level count of sites offering summer meals to children in Texas for 2021-2022?",
+      "answer": {
+        "HARRIS": 1825,
+        "DALLAS": 1545,
+        "BEXAR": 814,
+        "TARRANT": 757,
+        "HIDALGO": 526
+      },
+      "limit": 5
+    },
+    "5": {
+      "source": "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2022-2023\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+      "subquestion": "What is the full county-level count of sites offering summer meals to children in Texas for 2022-2023?",
+      "answer": {
+        "HARRIS": 1016,
+        "DALLAS": 688,
+        "BEXAR": 364,
+        "HIDALGO": 353,
+        "TARRANT": 303
+      },
+      "limit": 5
+    },
+    "6": {
+      "source": "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncandidate_counties = {\"HARRIS\", \"DALLAS\", \"BEXAR\", \"TARRANT\", \"HIDALGO\"}\nyearly = df.loc[df[\"Fiscal Year\"] == 2022, [\"County\", \"65 and older: % of Population\"]].copy()\nyearly[\"County_norm\"] = yearly[\"County\"].astype(str).str.strip().str.upper()\nyearly[\"65 and older: % of Population\"] = pd.to_numeric(yearly[\"65 and older: % of Population\"], errors=\"coerce\")\nresult = (\n    yearly.loc[\n        yearly[\"County_norm\"].isin(candidate_counties)\n        & (yearly[\"65 and older: % of Population\"] < 12),\n        \"County_norm\"\n    ]\n    .drop_duplicates()\n    .sort_values(kind=\"stable\")\n    .tolist()\n)\nanswer = result",
+      "subquestion": "Among <hop 1 answer>, which counties had less than 12% of their population aged 65 or older in 2022, used for planning adult protection service?",
+      "answer": [
+        "DALLAS",
+        "HARRIS"
+      ]
+    },
+    "7": {
+      "source": "datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncandidate_counties = [\"HARRIS\", \"DALLAS\", \"BEXAR\", \"TARRANT\", \"HIDALGO\"]\ndf[\"County_norm\"] = df[\"County\"].astype(str).str.strip().str.upper()\ndf[\"Children served in FBSS Family Preservation Services\"] = pd.to_numeric(\n    df[\"Children served in FBSS Family Preservation Services\"], errors=\"coerce\"\n)\nresult = (\n    df.loc[\n        (df[\"Fiscal Year\"] == 2022)\n        & df[\"County_norm\"].isin(candidate_counties)\n    ]\n    .groupby(\"County_norm\", dropna=False)[\"Children served in FBSS Family Preservation Services\"]\n    .sum(min_count=1)\n    .loc[lambda s: s > 3000]\n    .sort_values(ascending=False, kind=\"stable\")\n    .index\n    .tolist()\n)\nanswer = result",
+      "subquestion": "Among <hop 1 answer>, which counties had more than 3000 children receiving services intended to keep them safely with their families in 2022?",
+      "answer": [
+        "BEXAR",
+        "HARRIS",
+        "TARRANT"
+      ]
+    },
+    "8": {
+      "source": "wikipedia/Harris_County,_Texas/content.txt",
+      "fact": "There are 67 District Courts — 24 Civil, 29 Criminal, 11 Family, and 3 Juvenile — in Harris County; each District Court is randomly assigned cases within their specialization from across Harris County.",
+      "subquestion": "How many district courts are there in <hop 2 answer>?",
+      "answer": 67
+    }
+  },
+  "datasets_used": [
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-98b1c/files/rows.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-98b1c/signed-metadata.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-98b1c/files/aj5s-8pui.publisher-view.json",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-3651c/files/rows.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-3651c/signed-metadata.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-3651c/files/c8jp-i4jb.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-f6663/files/rows.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-f6663/signed-metadata.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-f6663/files/ixpn-g9tj.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-a726d/files/rows.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-a726d/signed-metadata.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra-a726d/files/7ae2-5muh.publisher-view.json",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra/files/rows.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra/signed-metadata.txt",
+    "datagov/summer-meal-programs-all-summer-sites-contact-and-program-participation-information-progra/files/24ie-9cft.txt",
+    "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/rows.txt",
+    "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/signed-metadata.txt",
+    "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/qjby-4sji.publisher-view.json",
+    "datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/files/rows.txt",
+    "datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/signed-metadata.txt",
+    "datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/files/79ya-i5ye.publisher-view.json",
+    "wikipedia/Harris_County,_Texas/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `ProgramYear` equals `2018-2019`, count rows by `SiteCounty`, and keep the full county-level site-count mapping.",
+        "Node 2: Filter rows where `ProgramYear` equals `2019-2020`, count rows by `SiteCounty`, and keep the full county-level site-count mapping.",
+        "Node 3: Filter rows where `ProgramYear` equals `2020-2021`, count rows by `SiteCounty`, and keep the full county-level site-count mapping.",
+        "Node 4: Filter rows where `ProgramYear` equals `2021-2022`, count rows by `SiteCounty`, and keep the full county-level site-count mapping.",
+        "Node 5: Filter rows where `ProgramYear` equals `2022-2023`, count rows by `SiteCounty`, and keep the full county-level site-count mapping.",
+        "Hop result: compute the 2018-2023 average site count for each county shared across nodes 1-5 and keep the top 5 counties = HARRIS, DALLAS, BEXAR, TARRANT, HIDALGO."
+      ],
+      "answer": "HARRIS; DALLAS; BEXAR; TARRANT; HIDALGO"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        6,
+        7
+      ],
+      "reasoning": [
+        "Node 6: Filter 2022 rows to <hop 1 answer>, keep counties where `65 and older: % of Population` is below 12.",
+        "Node 7: Filter 2022 rows to <hop 1 answer>, sum `Children served in FBSS Family Preservation Services` by county, and keep counties above 3000.",
+        "Hop result: semantic intersection of <node 6 answer> and <node 7 answer> = HARRIS."
+      ],
+      "answer": "HARRIS"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        8
+      ],
+      "reasoning": [
+        "Node 8: The source says there are 67 district courts in <hop 2 answer>.",
+        "Hop result: the number of district courts is `67`."
+      ],
+      "answer": 67
+    }
+  ]
+}

@@ -1,0 +1,145 @@
+{
+    "question": "Find the NYC borough that is top two in all three groups: farmers markets that accept SNAP payments through Electronic Benefits Transfer cards and offer Health Bucks coupons, food stores recognized by NYC's Shop Healthy program, and compost drop-off sites. For that borough, find its New York county. Within that county, find the ZIP code with the highest number of farmers markets that accept SNAP food benefits, participate in the Farmers Market Nutrition Program, and accept FreshConnect Checks. Which police precinct patrols the eastern Brooklyn neighborhood whose primary ZIP code is that ZIP code? Please return only the precinct in the format [Answer].",
+    "answer": "73rd Precinct",
+    "nodes": {
+        "1": {
+            "source": "datagov/dohmh-farmers-markets/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/dohmh-farmers-markets/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nfiltered = df[\n    df[\"Accepts EBT\"].astype(str).str.strip().eq(\"Yes\")\n    & df[\"Distributes Health Bucks?\"].astype(str).str.strip().eq(\"Yes\")\n].copy()\nboroughs = filtered[\"Borough\"].astype(str).str.strip().replace(\"\", pd.NA).dropna()\ncounts = boroughs.value_counts()\nanswer = counts.sort_values(ascending=False).head(2).index.tolist()\n",
+            "subquestion": "Which two NYC boroughs have the highest number of farmers markets that both accept SNAP payments through Electronic Benefits Transfer cards and offer Health Bucks coupons for fresh fruits and vegetables?",
+            "answer": [
+                "Brooklyn",
+                "Manhattan"
+            ]
+        },
+        "2": {
+            "source": "datagov/recognized-shop-healthy-stores/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/recognized-shop-healthy-stores/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nboroughs = df[\"Borough\"].astype(str).str.strip().replace(\"\", pd.NA).dropna()\ncounts = boroughs.value_counts()\nanswer = counts.sort_values(ascending=False).head(2).index.tolist()\n",
+            "subquestion": "Which two NYC boroughs have the most food stores recognized by NYC's Shop Healthy program for improving access to healthier foods?",
+            "answer": [
+                "Bronx",
+                "Brooklyn"
+            ]
+        },
+        "3": {
+            "source": "datagov/food-scrap-drop-off-locations-in-nyc/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/food-scrap-drop-off-locations-in-nyc/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nboroughs = df[\"Borough\"].astype(str).str.strip().replace(\"\", pd.NA).dropna()\ncounts = boroughs.value_counts()\nanswer = counts.sort_values(ascending=False).head(2).index.tolist()\n",
+            "subquestion": "Which two NYC boroughs have the most compost drop-off sites where residents can bring food scraps and plant waste?",
+            "answer": [
+                "Manhattan",
+                "Brooklyn"
+            ]
+        },
+        "4": {
+            "source": "datagov/2020-neighborhood-tabulation-areas-ntas-tabular/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2020-neighborhood-tabulation-areas-ntas-tabular/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_1_answer = \"Brooklyn\"\nfiltered = df[df[\"BoroName\"].astype(str).str.strip().str.lower().eq(node_1_answer.lower())]\ncounts = filtered[\"CountyFIPS\"].astype(str).str.strip().replace(\"\", pd.NA).dropna().value_counts()\nanswer = str(counts.idxmax())\n",
+            "subquestion": "For the borough from <hop 1 answer>, what county FIPS code is used for that borough?",
+            "answer": "047"
+        },
+        "5": {
+            "source": "datagov/new-york-state-zip-codes-county-fips-cross-reference/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/new-york-state-zip-codes-county-fips-cross-reference/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_4_answer = \"047\"\nfiltered = df[df[\"County Code\"].astype(str).str.strip().str.zfill(3).eq(node_4_answer.strip())].copy()\ncounts = filtered[\"County Name\"].astype(str).str.strip().replace(\"\", pd.NA).dropna().value_counts()\nanswer = str(counts.idxmax())\n",
+            "subquestion": "Using the county FIPS code from <hop 2 answer>, what New York county name is associated with that code?",
+            "answer": "Kings"
+        },
+        "6": {
+            "source": "datagov/farmers-markets-in-new-york-state/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/farmers-markets-in-new-york-state/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_5_answer = \"Kings\"\nfiltered = df[\n    df[\"County\"].astype(str).str.strip().str.lower().eq(node_5_answer.lower())\n    & df[\"SNAP\"].astype(str).str.strip().str.upper().eq(\"Y\")\n    & df[\"FMNP\"].astype(str).str.strip().str.upper().eq(\"Y\")\n    & df[\"FCC Accepted\"].astype(str).str.strip().str.upper().eq(\"Y\")\n].copy()\ncounts = filtered[\"Zip\"].astype(str).str.strip().replace(\"\", pd.NA).dropna().value_counts()\nanswer = str(counts.idxmax())\n",
+            "subquestion": "Within the county from <hop 3 answer>, which ZIP code has the highest number of farmers markets that accept SNAP food benefits, participate in the Farmers Market Nutrition Program for eligible shoppers, and accept FreshConnect Checks nutrition coupons?",
+            "answer": "11212"
+        },
+        "7": {
+            "source": "wikipedia/Brownsville,_Brooklyn/content.txt",
+            "fact": "Brownsville is a residential neighborhood in eastern Brooklyn in New York City. The neighborhood is bordered by Crown Heights to the northwest; Bedford–Stuyvesant and the subsection of Ocean Hill to the north; East New York to the east; Canarsie to the south; and East Flatbush to the west.\nBrownsville is part of Brooklyn Community District 16, and its primary ZIP Code is 11212. It is patrolled by the 73rd Precinct of the New York City Police Department.",
+            "subquestion": "Which police precinct patrols the eastern Brooklyn neighborhood whose primary ZIP Code is <hop 4 answer>?",
+            "answer": "73rd Precinct"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Count farmers markets that both accept SNAP payment through Electronic Benefits Transfer cards and distribute Health Bucks produce coupons by borough, then keep the top two boroughs.",
+                "Node 2: Count food stores recognized by NYC's Shop Healthy program for improving access to healthier foods by borough, then keep the top two boroughs.",
+                "Node 3: Count compost drop-off sites where residents can bring food scraps and plant waste by borough, then keep the top two boroughs.",
+                "Hop result: intersect the three top-two borough sets; Brooklyn is the only borough present in all three sets."
+            ],
+            "answer": "Brooklyn"
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Filter NYC neighborhood tabulation areas to the borough from <hop 1 answer> and read the county FIPS code used by those rows.",
+                "Hop result: the county FIPS code is 047."
+            ],
+            "answer": "047"
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Filter the New York ZIP-code/county cross-reference to rows whose county code matches <hop 2 answer>, then read the unique county name.",
+                "Hop result: the county name is Kings."
+            ],
+            "answer": "Kings"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Within the county from <hop 3 answer>, filter farmers markets to those that support SNAP food benefits, Farmers Market Nutrition Program benefits for eligible shoppers, and FreshConnect Checks nutrition coupons, then count those markets by ZIP code.",
+                "Hop result: ZIP code 11212 has the highest count."
+            ],
+            "answer": "11212"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Identify the eastern Brooklyn neighborhood whose primary ZIP Code is <hop 4 answer> and retrieve the police precinct that patrols it.",
+                "Hop result: the neighborhood is patrolled by the 73rd Precinct."
+            ],
+            "answer": "73rd Precinct"
+        }
+    ],
+    "datasets_used": [
+        "datagov/dohmh-farmers-markets/files/rows.txt",
+        "datagov/dohmh-farmers-markets/signed-metadata.txt",
+        "datagov/dohmh-farmers-markets/files/archived-source-column-manifest.json",
+        "datagov/recognized-shop-healthy-stores/files/rows.txt",
+        "datagov/recognized-shop-healthy-stores/signed-metadata.txt",
+        "datagov/food-scrap-drop-off-locations-in-nyc/files/rows.txt",
+        "datagov/food-scrap-drop-off-locations-in-nyc/signed-metadata.txt",
+        "datagov/food-scrap-drop-off-locations-in-nyc/files/columns.txt",
+        "datagov/food-scrap-drop-off-locations-in-nyc/files/if26-z6xq.txt",
+        "datagov/2020-neighborhood-tabulation-areas-ntas-tabular/files/rows.txt",
+        "datagov/2020-neighborhood-tabulation-areas-ntas-tabular/signed-metadata.txt",
+        "datagov/2020-neighborhood-tabulation-areas-ntas-tabular/files/columns.txt",
+        "datagov/2020-neighborhood-tabulation-areas-ntas-tabular/files/9nt8-h7nd.txt",
+        "datagov/new-york-state-zip-codes-county-fips-cross-reference/files/rows.txt",
+        "datagov/new-york-state-zip-codes-county-fips-cross-reference/signed-metadata.txt",
+        "datagov/new-york-state-zip-codes-county-fips-cross-reference/files/columns.txt",
+        "datagov/new-york-state-zip-codes-county-fips-cross-reference/files/juva-r6g2.txt",
+        "datagov/farmers-markets-in-new-york-state/files/rows.txt",
+        "datagov/farmers-markets-in-new-york-state/signed-metadata.txt",
+        "datagov/farmers-markets-in-new-york-state/files/columns.txt",
+        "datagov/farmers-markets-in-new-york-state/files/qq4h-8p86.publisher-view.json",
+        "datagov/farmers-markets-in-new-york-state/files/qq4h-8p86.txt",
+        "datagov/dohmh-farmers-markets/files/8vwk-6iz2.publisher-view.json",
+        "datagov/recognized-shop-healthy-stores/files/ud4g-9x9z.publisher-view.json",
+        "wikipedia/Brownsville,_Brooklyn/content.txt"
+    ]
+}

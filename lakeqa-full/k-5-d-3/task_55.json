@@ -1,0 +1,139 @@
+{
+  "question": "For prescriptions dispensed to Connecticut residents, find the quarter with the highest number of private-pay prescriptions. In that quarter, identify the controlled-medicine schedule category with the highest total prescription count, then within that schedule find the highest-count drug classification. For that classification and quarter, identify the highest-count prescriber specialty, patient age group, and Connecticut patient residence. Among Medicare prescription-drug claims in 2022, how many claims for patients in that age group were associated with that specialty in that Connecticut city? Write your answer as [ANSWER].",
+  "answer": "137758",
+  "nodes": {
+    "1": {
+      "source": "datagov/payment-of-prescriptions-new/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/payment-of-prescriptions-new/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['Date', 'Payment Type', 'Prescription Count'])\n\nfiltered = df[df['Payment Type'].astype(str).str.strip().eq('Private Pay')].copy()\nfiltered['count'] = pd.to_numeric(filtered['Prescription Count'], errors='coerce')\ncounts = filtered.groupby('Date', dropna=True)['count'].sum().sort_values(ascending=False)\nquarter = str(counts.index[0])\ncount = int(counts.iloc[0])\nanswer = f'{quarter}, {count}'\n",
+      "subquestion": "For prescriptions dispensed to Connecticut residents, which quarter had the highest number of private-pay prescriptions, and how many were there?",
+      "answer": "2023 Quarter 1, 976736"
+    },
+    "2": {
+      "source": "datagov/controlled-substance-prescriptions-by-drug-schedule-new/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/controlled-substance-prescriptions-by-drug-schedule-new/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['Year', 'Month', 'Schedule II', 'Schedule III', 'Schedule IV', 'Schedule V'])\n\nnode_1_answer = '2023 Quarter 1, 976736'\nquarter = ','.join(str(node_1_answer).split(',')[:-1]).strip()\n\ndef month_to_quarter(value):\n    date = pd.to_datetime(value, format='%B %Y', errors='coerce')\n    if pd.isna(date):\n        return None\n    return f'{date.year} Quarter {((date.month - 1) // 3) + 1}'\n\ndf['quarter'] = df['Month'].map(month_to_quarter)\nschedule_cols = ['Schedule II', 'Schedule III', 'Schedule IV', 'Schedule V']\nfor col in schedule_cols:\n    df[col] = pd.to_numeric(df[col], errors='coerce')\nquarter_totals = df[df['quarter'].eq(quarter)][schedule_cols].sum().sort_values(ascending=False)\nschedule = str(quarter_totals.index[0])\ncount = int(quarter_totals.iloc[0])\nanswer = f'{schedule}, {count}'\n",
+      "subquestion": "For Connecticut residents during the quarter from <node_1 answer>, which schedule category of controlled medicines had the highest total prescription count?",
+      "answer": "Schedule IV, 498910"
+    },
+    "3": {
+      "source": "datagov/schedule-iv-drug-prescriptions-dispensed/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/schedule-iv-drug-prescriptions-dispensed/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['Year', 'Month', 'Drug Classification', 'Prescription Count'])\n\nnode_1_answer = '2023 Quarter 1, 976736'\nnode_2_answer = 'Schedule IV, 498910'\nquarter = ','.join(str(node_1_answer).split(',')[:-1]).strip()\nschedule = str(node_2_answer).split(',')[0].strip()\nif schedule != 'Schedule IV':\n    raise ValueError(f'This source is for Schedule IV, not {schedule}')\n\ndef month_to_quarter(value):\n    date = pd.to_datetime(value, format='%B %Y', errors='coerce')\n    if pd.isna(date):\n        return None\n    return f'{date.year} Quarter {((date.month - 1) // 3) + 1}'\n\ndf['quarter'] = df['Month'].map(month_to_quarter)\nfiltered = df[df['quarter'].eq(quarter)].copy()\nfiltered['count'] = pd.to_numeric(filtered['Prescription Count'], errors='coerce')\ncounts = filtered.groupby('Drug Classification', dropna=True)['count'].sum().sort_values(ascending=False)\nclassification = str(counts.index[0]).strip()\ncount = int(counts.iloc[0])\nanswer = f'{classification}, {count}'\n",
+      "subquestion": "Within the schedule category from <node_2 answer>, which drug classification had the highest prescription count during the quarter from <node_1 answer>?",
+      "answer": "Benzodiazepines (Anxiolytic,Sedativ/Hyp), 228423"
+    },
+    "4": {
+      "source": "datagov/benzodiazepine-prescriptions-by-prescriber-specialty/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/benzodiazepine-prescriptions-by-prescriber-specialty/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['Date', 'Prescriber Specialty', 'Prescription Count'])\n\nnode_1_answer = '2023 Quarter 1, 976736'\nnode_3_answer = 'Benzodiazepines (Anxiolytic,Sedativ/Hyp), 228423'\nquarter = ','.join(str(node_1_answer).split(',')[:-1]).strip()\nclassification = str(node_3_answer).split(',', 1)[0].strip()\nif not classification.lower().startswith('benzodiazepines'):\n    raise ValueError(f'This source is for benzodiazepines, not {classification}')\n\nfiltered = df[df['Date'].astype(str).str.strip().eq(quarter)].copy()\nfiltered['count'] = pd.to_numeric(filtered['Prescription Count'], errors='coerce')\ncounts = filtered.groupby('Prescriber Specialty', dropna=True)['count'].sum().sort_values(ascending=False)\nspecialty = str(counts.index[0]).strip()\ncount = int(counts.iloc[0])\nanswer = f'{specialty}, {count}'\n",
+      "subquestion": "For the drug classification from <node_3 answer>, which prescriber specialty had the highest prescription count during the quarter from <node_1 answer>?",
+      "answer": "Internal Medicine, 84736"
+    },
+    "5": {
+      "source": "datagov/opioid-agonist-benzodiazepine-stimulant-patient-age-group-and-gender/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/opioid-agonist-benzodiazepine-stimulant-patient-age-group-and-gender/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['Date', 'Drug Class', 'Age Group', 'Female', 'Male', 'Unknown', 'Unspecified'])\n\nnode_1_answer = '2023 Quarter 1, 976736'\nnode_3_answer = 'Benzodiazepines (Anxiolytic,Sedativ/Hyp), 228423'\nquarter = ','.join(str(node_1_answer).split(',')[:-1]).strip()\nclassification = str(node_3_answer).split(',', 1)[0].strip()\nif not classification.lower().startswith('benzodiazepines'):\n    raise ValueError(f'This source is for benzodiazepines, not {classification}')\n\nfiltered = df[\n    df['Date'].astype(str).str.strip().eq(quarter)\n    & df['Drug Class'].astype(str).str.strip().eq('Benzodiazepine')\n].copy()\ngender_cols = ['Female', 'Male', 'Unknown', 'Unspecified']\nfor col in gender_cols:\n    filtered[col] = pd.to_numeric(filtered[col], errors='coerce').fillna(0)\ncounts = filtered.groupby('Age Group', dropna=True)[gender_cols].sum()\ncounts['total'] = counts[gender_cols].sum(axis=1)\ncounts = counts['total'].sort_values(ascending=False)\nage_group = str(counts.index[0]).strip()\ncount = int(counts.iloc[0])\nanswer = f'{age_group}, {count}'\n",
+      "subquestion": "For the drug classification from <node_3 answer>, which patient age group had the highest prescription count during the quarter from <node_1 answer>?",
+      "answer": "65+ years old, 59849"
+    },
+    "6": {
+      "source": "datagov/opioid-benzodiazepine-stimulant-naloxone-gabapentin-prescription-count-rate-by-patient-res/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/opioid-benzodiazepine-stimulant-naloxone-gabapentin-prescription-count-rate-by-patient-res/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['Date', 'Patient Residence', 'State', 'Benzodiazepine Prescription Count'])\n\nnode_1_answer = '2023 Quarter 1, 976736'\nnode_3_answer = 'Benzodiazepines (Anxiolytic,Sedativ/Hyp), 228423'\nquarter = ','.join(str(node_1_answer).split(',')[:-1]).strip()\nclassification = str(node_3_answer).split(',', 1)[0].strip()\nif not classification.lower().startswith('benzodiazepines'):\n    raise ValueError(f'This source is for benzodiazepines, not {classification}')\n\nfiltered = df[\n    df['Date'].astype(str).str.strip().eq(quarter)\n    & df['State'].astype(str).str.strip().eq('CT')\n].copy()\nfiltered['count'] = pd.to_numeric(filtered['Benzodiazepine Prescription Count'], errors='coerce')\ntop = filtered.sort_values(['count', 'Patient Residence'], ascending=[False, True]).iloc[0]\ncity = str(top['Patient Residence']).strip()\ncount = int(top['count'])\nanswer = f'{city}, {count}'\n",
+      "subquestion": "For the drug classification from <node_3 answer>, which Connecticut patient residence had the highest prescription count during the quarter from <node_1 answer>?",
+      "answer": "Stamford, 8704"
+    },
+    "7": {
+      "source": "datagov/medicare-part-d-prescribers-by-provider-a2fc0/files/MUP_DPR_RY24_P04_V10_DY22_NPI.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/medicare-part-d-prescribers-by-provider-a2fc0/files/MUP_DPR_RY24_P04_V10_DY22_NPI.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\nusecols = ['Prscrbr_City', 'Prscrbr_State_Abrvtn', 'Prscrbr_Type', 'GE65_Tot_Clms']\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=usecols)\n\nnode_4_answer = 'Internal Medicine, 84736'\nnode_5_answer = '65+ years old, 59849'\nnode_6_answer = 'Stamford, 8704'\nspecialty = ','.join(str(node_4_answer).split(',')[:-1]).strip()\nage_group = ','.join(str(node_5_answer).split(',')[:-1]).strip()\ncity = ','.join(str(node_6_answer).split(',')[:-1]).strip()\nif not age_group.startswith('65+'):\n    raise ValueError(f'This source uses the 65+ Medicare beneficiary claims field, not {age_group}')\n\nfiltered = df[\n    df['Prscrbr_City'].astype(str).str.strip().str.upper().eq(city.upper())\n    & df['Prscrbr_State_Abrvtn'].astype(str).str.strip().eq('CT')\n    & df['Prscrbr_Type'].astype(str).str.strip().eq(specialty)\n].copy()\nfiltered['count'] = pd.to_numeric(filtered['GE65_Tot_Clms'], errors='coerce').fillna(0)\nanswer = str(int(filtered['count'].sum()))\n",
+      "subquestion": "Among Medicare prescription-drug claims in 2022, how many claims for patients in the age group from <node_5 answer> were associated with the specialty from <node_4 answer> in the Connecticut city from <node_6 answer>?",
+      "answer": "137758"
+    }
+  },
+  "datasets_used": [
+    "datagov/payment-of-prescriptions-new/files/rows.txt",
+    "datagov/payment-of-prescriptions-new/signed-metadata.txt",
+    "datagov/payment-of-prescriptions-new/files/columns.txt",
+    "datagov/payment-of-prescriptions-new/files/dj5a-gxkr.txt",
+    "datagov/controlled-substance-prescriptions-by-drug-schedule-new/files/rows.txt",
+    "datagov/controlled-substance-prescriptions-by-drug-schedule-new/signed-metadata.txt",
+    "datagov/controlled-substance-prescriptions-by-drug-schedule-new/files/columns.txt",
+    "datagov/controlled-substance-prescriptions-by-drug-schedule-new/files/6ynn-uiqx.txt",
+    "datagov/schedule-iv-drug-prescriptions-dispensed/files/rows.txt",
+    "datagov/schedule-iv-drug-prescriptions-dispensed/signed-metadata.txt",
+    "datagov/schedule-iv-drug-prescriptions-dispensed/files/columns.txt",
+    "datagov/schedule-iv-drug-prescriptions-dispensed/files/r6ge-6tdq.txt",
+    "datagov/benzodiazepine-prescriptions-by-prescriber-specialty/files/rows.txt",
+    "datagov/benzodiazepine-prescriptions-by-prescriber-specialty/signed-metadata.txt",
+    "datagov/opioid-agonist-benzodiazepine-stimulant-patient-age-group-and-gender/files/rows.txt",
+    "datagov/opioid-agonist-benzodiazepine-stimulant-patient-age-group-and-gender/signed-metadata.txt",
+    "datagov/opioid-agonist-benzodiazepine-stimulant-patient-age-group-and-gender/files/columns.txt",
+    "datagov/opioid-agonist-benzodiazepine-stimulant-patient-age-group-and-gender/files/p378-bxs6.txt",
+    "datagov/opioid-benzodiazepine-stimulant-naloxone-gabapentin-prescription-count-rate-by-patient-res/files/rows.txt",
+    "datagov/opioid-benzodiazepine-stimulant-naloxone-gabapentin-prescription-count-rate-by-patient-res/signed-metadata.txt",
+    "datagov/opioid-benzodiazepine-stimulant-naloxone-gabapentin-prescription-count-rate-by-patient-res/files/columns.txt",
+    "datagov/opioid-benzodiazepine-stimulant-naloxone-gabapentin-prescription-count-rate-by-patient-res/files/4t4v-dqr9.txt",
+    "datagov/medicare-part-d-prescribers-by-provider-a2fc0/files/MUP_DPR_RY24_P04_V10_DY22_NPI.txt",
+    "datagov/medicare-part-d-prescribers-by-provider-a2fc0/signed-metadata.txt",
+    "datagov/medicare-part-d-prescribers-by-provider-a2fc0/files/data-viewer.txt",
+    "datagov/medicare-part-d-prescribers-by-provider-a2fc0/files/medicare-part-d-prescribers-by-provider-data-dictionary.txt",
+    "datagov/medicare-part-d-prescribers-by-provider-a2fc0/files/medicare-part-d-prescribers-by-provider.txt",
+    "datagov/benzodiazepine-prescriptions-by-prescriber-specialty/files/bcdq-u4kp.publisher-view.json"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Private-pay prescription counts are highest in 2023 Quarter 1, with 976736 prescriptions.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "2023 Quarter 1, 976736"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: In 2023 Quarter 1, Schedule IV has the largest controlled-substance prescription total, with 498910 prescriptions.",
+        "Hop result: <node_2 answer>"
+      ],
+      "answer": "Schedule IV, 498910"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: Within Schedule IV in 2023 Quarter 1, Benzodiazepines (Anxiolytic,Sedativ/Hyp) has the largest prescription count, with 228423 prescriptions.",
+        "Hop result: <node_3 answer>"
+      ],
+      "answer": "Benzodiazepines (Anxiolytic,Sedativ/Hyp), 228423"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        4,
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 4: For the selected benzodiazepine classification in 2023 Quarter 1, Internal Medicine is the highest-count prescriber specialty, with 84736 prescriptions.",
+        "Node 5: For the selected benzodiazepine classification in 2023 Quarter 1, the 65+ years old patient age group has the highest prescription count, with 59849 prescriptions.",
+        "Node 6: For the selected benzodiazepine classification in 2023 Quarter 1, Stamford is the Connecticut patient residence with the highest prescription count, with 8704 prescriptions.",
+        "Hop result: <node_4 answer>; <node_5 answer>; <node_6 answer>"
+      ],
+      "answer": "Internal Medicine, 84736; 65+ years old, 59849; Stamford, 8704"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: In 2022 Medicare prescription-drug claims, Internal Medicine prescribers in Stamford, CT had 137758 claims for the 65+ age group.",
+        "Hop result: <node_7 answer>"
+      ],
+      "answer": "137758"
+    }
+  ]
+}

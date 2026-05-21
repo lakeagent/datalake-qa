@@ -1,0 +1,125 @@
+{
+    "question": "I am researching identity thefts in LA. First, identify the year between 2010 and 2019 with the highest number of identity theft incidents in LA. During that peak year, which area recorded the most arrests for moving traffic violations? What is the ratio of identity theft incidents that area had in 2020 to the total number of public schools in the city that area belongs to? Round the answer to the nearest integer. Your response should be in the format [Answer].",
+    "answer": "1",
+    "nodes": {
+        "1": {
+            "source": "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[df[\"Crm Cd Desc\"] == \"THEFT OF IDENTITY\"].copy()\nfiltered[\"year\"] = pd.to_datetime(filtered[\"DATE OCC\"], errors=\"coerce\").dt.year\nanswer = int(filtered.groupby(\"year\").size().idxmax())\nprint(answer)",
+            "subquestion": "From 2010 to 2019, which year has the most Los Angeles incidents with crime description \"THEFT OF IDENTITY\"?",
+            "answer": "2016"
+        },
+        "2": {
+            "source": "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/arrest-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"year\"] = pd.to_datetime(df[\"Arrest Date\"], errors=\"coerce\").dt.year\nfiltered = df[(df[\"year\"] == 2016) & (df[\"Charge Group Description\"] == \"Moving Traffic Violations\")]\nanswer = filtered.groupby(\"Area Name\").size().idxmax()\nprint(answer)",
+            "subquestion": "In <node_1 answer> Los Angeles arrest records, which area has the most arrests in the charge group \"Moving Traffic Violations\"?",
+            "answer": "Van Nuys"
+        },
+        "3": {
+            "source": "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[df[\"Area Name\"] == \"Van Nuys\"]\nanswer = int(filtered[\"Area ID\"].mode().iloc[0])\nprint(answer)",
+            "subquestion": "Using LAPD stop-incident records collected under California's RIPA program, what numeric Area ID corresponds to area name <node_2 answer> (answer as an integer)?",
+            "answer": "9"
+        },
+        "4": {
+            "source": "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[df[\"Crm Cd Desc\"] == \"THEFT OF IDENTITY\"]\nanswer = int(filtered[\"Crm Cd\"].mode().iloc[0])\nprint(answer)",
+            "subquestion": "In Los Angeles crime records, what crime code corresponds to the crime description \"THEFT OF IDENTITY\"? Answer with the crime code only.",
+            "answer": "354"
+        },
+        "5": {
+            "source": "datagov/crime-data-from-2020-to-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-data-from-2020-to-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"year\"] = pd.to_datetime(df[\"DATE OCC\"], errors=\"coerce\").dt.year\nfiltered = df[(df[\"year\"] == 2020) & (df[\"AREA\"] == 9) & (df[\"Crm Cd\"] == 354)]\nanswer = int(len(filtered))\nprint(answer)",
+            "subquestion": "Using the 2020 to present Los Angeles crime records, in 2020 how many incidents with crime code <node_4 answer> occurred in Area ID <node_3 answer>?",
+            "answer": "761"
+        },
+        "6": {
+            "source": "wikipedia/Van_Nuys/content.txt",
+            "fact": "The Van Nuys article states that Van Nuys is a neighborhood in Los Angeles, California.",
+            "subquestion": "Neighborhood <node_2 answer> is in which California city?",
+            "answer": "Los Angeles"
+        },
+        "7": {
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-current-23297/files/data-oyCYxF.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\n\nfiltered = df[(df[\"properties.STATE\"] == \"CA\") & (df[\"properties.CITY\"] == \"Los Angeles\")]\nanswer = int(len(filtered))\nprint(answer)",
+            "subquestion": "In the public school locations data, within city <node_6 answer> and state CA, how many public schools are listed?",
+            "answer": "579"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Crm Cd Desc` equals `THEFT OF IDENTITY`, extract year from `DATE OCC`, count records by year, and select the year with the largest count."
+            ],
+            "answer": "2016"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where year of `Arrest Date` equals <hop 1 answer> and `Charge Group Description` equals `Moving Traffic Violations`, count records by `Area Name`, and select the most common `Area Name`."
+            ],
+            "answer": "Van Nuys"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `Area Name` equals <hop 2 answer>, count records by `Area ID`, and select the most common `Area ID`.",
+                "Node 4: Filter rows where `Crm Cd Desc` equals `THEFT OF IDENTITY` and select the modal `Crm Cd`.",
+                "Hop result: Area ID 9 and crime code 354."
+            ],
+            "answer": "Area ID 9 and crime code 354"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Filter rows where year of `DATE OCC` equals 2020, `AREA` equals the Area ID from <hop 3 answer>, and `Crm Cd` equals the crime code from <hop 3 answer>, then count matching records.",
+                "Node 6: Los Angeles is the city containing Van Nuys.",
+                "Hop result: incident count = 761 and city = Los Angeles."
+            ],
+            "answer": "incident count = 761 and city = Los Angeles"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Filter rows where `properties.STATE` equals `CA` and `properties.CITY` equals the city from <hop 4 answer>, then count matching schools.",
+                "Hop result: round(761 / 579) = 1."
+            ],
+            "answer": "1"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Van_Nuys/content.txt",
+        "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+        "datagov/crime-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/crime-data-from-2010-to-2019/files/63jg-8b9z.txt",
+        "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+        "datagov/arrest-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/arrest-data-from-2010-to-2019/files/yru6-6re4.publisher-view.json",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/signed-metadata.txt",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/5gp9-8nrb.txt",
+        "datagov/crime-data-from-2020-to-present/files/rows.txt",
+        "datagov/crime-data-from-2020-to-present/signed-metadata.txt",
+        "datagov/crime-data-from-2020-to-present/files/2nrs-mtv8.txt",
+        "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+        "datagov/public-school-locations-current-23297/signed-metadata.txt",
+        "datagov/public-school-locations-current-23297/files/0.arcgis-layer.json"
+    ]
+}

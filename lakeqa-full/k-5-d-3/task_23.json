@@ -1,0 +1,145 @@
+{
+    "question": "Among Washington cities that ranked in the top three for crude diabetes prevalence in each city-level GIS release from 2017 through 2019, which had the largest 2024 population? In that city's county, which disease had the higher 2019-2021 age-adjusted mortality rate among adults 35 and older? What was that city's 2017 crude prevalence for that disease? Please return only the prevalence in the format [Answer].",
+    "answer": "5.6",
+    "nodes": {
+        "1": {
+            "source": "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt",
+            "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nwa = df[df['StateAbbr'].astype(str).str.strip().eq('WA')].copy()\nwa['PlaceName'] = wa['PlaceName'].astype(str).str.strip()\nwa['DIABETES_CrudePrev'] = pd.to_numeric(wa['DIABETES_CrudePrev'], errors='coerce')\nranked = (\n    wa[['PlaceName', 'DIABETES_CrudePrev']]\n    .dropna()\n    .sort_values(['DIABETES_CrudePrev', 'PlaceName'], ascending=[False, True])\n    .head(3)\n)\nanswer = '; '.join(ranked['PlaceName'].tolist())\n",
+            "subquestion": "Among Washington cities in the 2017 city-level GIS release, which three had the highest crude diabetes prevalence? Return them as a semicolon-separated list in rank order.",
+            "answer": "Yakima; Tacoma; Kennewick"
+        },
+        "2": {
+            "source": "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt",
+            "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nwa = df[df['StateAbbr'].astype(str).str.strip().eq('WA')].copy()\nwa['PlaceName'] = wa['PlaceName'].astype(str).str.strip()\nwa['DIABETES_CrudePrev'] = pd.to_numeric(wa['DIABETES_CrudePrev'], errors='coerce')\nranked = (\n    wa[['PlaceName', 'DIABETES_CrudePrev']]\n    .dropna()\n    .sort_values(['DIABETES_CrudePrev', 'PlaceName'], ascending=[False, True])\n    .head(3)\n)\nanswer = '; '.join(ranked['PlaceName'].tolist())\n",
+            "subquestion": "Among Washington cities in the 2018 city-level GIS release, which three had the highest crude diabetes prevalence? Return them as a semicolon-separated list in rank order.",
+            "answer": "Yakima; Kennewick; Tacoma"
+        },
+        "3": {
+            "source": "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt",
+            "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nwa = df[df['StateAbbr'].astype(str).str.strip().eq('WA')].copy()\nwa['PlaceName'] = wa['PlaceName'].astype(str).str.strip()\nwa['DIABETES_CrudePrev'] = pd.to_numeric(wa['DIABETES_CrudePrev'], errors='coerce')\nranked = (\n    wa[['PlaceName', 'DIABETES_CrudePrev']]\n    .dropna()\n    .sort_values(['DIABETES_CrudePrev', 'PlaceName'], ascending=[False, True])\n    .head(3)\n)\nanswer = '; '.join(ranked['PlaceName'].tolist())\n",
+            "subquestion": "Among Washington cities in the 2019 city-level GIS release, which three had the highest crude diabetes prevalence? Return them as a semicolon-separated list in rank order.",
+            "answer": "Yakima; Tacoma; Vancouver"
+        },
+        "4": {
+            "source": "datagov/waofm-april-1-population-change-and-rank-by-city-2020-to-present/files/rows.txt",
+            "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/waofm-april-1-population-change-and-rank-by-city-2020-to-present/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_1_answer = 'Yakima; Tacoma; Kennewick'\nnode_2_answer = 'Yakima; Kennewick; Tacoma'\nnode_3_answer = 'Yakima; Tacoma; Vancouver'\ncandidates = sorted(\n    set(x.strip() for x in node_1_answer.split(';') if x.strip())\n    & set(x.strip() for x in node_2_answer.split(';') if x.strip())\n    & set(x.strip() for x in node_3_answer.split(';') if x.strip())\n)\n\ndf['CITY_NAME'] = df['CITY_NAME'].astype(str).str.strip()\ndf = df[df['CITY_NAME'].isin(candidates)].copy()\ndf['POP_2024'] = pd.to_numeric(df['POP_2024'], errors='coerce')\nrow = df.sort_values(['POP_2024', 'CITY_NAME'], ascending=[False, True]).iloc[0]\nanswer = f\"{row['CITY_NAME']}, {int(row['POP_2024'])}\"\n",
+            "subquestion": "Among the Washington cities that appear in the answers to nodes 1, 2, and 3, which had the largest 2024 population? Return the city and population.",
+            "answer": "Tacoma, 225100"
+        },
+        "5": {
+            "source": "datagov/washington-state-cities-and-counties/files/rows.txt",
+            "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/washington-state-cities-and-counties/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_4_answer = 'Tacoma, 225100'\ncity = node_4_answer.split(',')[0].strip()\ndf['CITY NAME'] = df['CITY NAME'].astype(str).str.strip()\nfiltered = df[df['CITY NAME'].eq(city)].copy()\ncounty = str(filtered.iloc[0]['COUNTY NAME']).strip()\nanswer = county if county.lower().endswith('county') else f'{county} County'\n",
+            "subquestion": "In the Washington cities-and-counties crosswalk, which county contains the city in node 4?",
+            "answer": "Pierce County"
+        },
+        "6": {
+            "source": "datagov/heart-disease-mortality-data-among-us-adults-35-by-state-territory-and-county-2019-2021/files/rows.txt",
+            "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/heart-disease-mortality-data-among-us-adults-35-by-state-territory-and-county-2019-2021/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_5_answer = 'Pierce County'\ndf = df[\n    df['LocationAbbr'].astype(str).str.strip().eq('WA')\n    & df['LocationDesc'].astype(str).str.strip().eq(node_5_answer)\n    & df['GeographicLevel'].astype(str).str.strip().eq('County')\n    & df['Stratification1'].astype(str).str.strip().eq('Overall')\n    & df['Stratification2'].astype(str).str.strip().eq('Overall')\n].copy()\ndf['Year'] = pd.to_numeric(df['Year'], errors='coerce')\ndf['Data_Value'] = pd.to_numeric(df['Data_Value'], errors='coerce')\nrow = df.sort_values('Year').iloc[-1]\nanswer = str(round(float(row['Data_Value']), 1))\n",
+            "subquestion": "For the county in node 5, what was the overall 2019-2021 age-adjusted heart-disease mortality rate per 100,000 adults age 35 and older?",
+            "answer": "292.2"
+        },
+        "7": {
+            "source": "datagov/stroke-mortality-data-among-us-adults-35-by-state-territory-and-county-2019-2021/files/rows.txt",
+            "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/stroke-mortality-data-among-us-adults-35-by-state-territory-and-county-2019-2021/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_5_answer = 'Pierce County'\ndf = df[\n    df['LocationAbbr'].astype(str).str.strip().eq('WA')\n    & df['LocationDesc'].astype(str).str.strip().eq(node_5_answer)\n    & df['GeographicLevel'].astype(str).str.strip().eq('County')\n    & df['Stratification1'].astype(str).str.strip().eq('Overall')\n    & df['Stratification2'].astype(str).str.strip().eq('Overall')\n].copy()\ndf['Year'] = pd.to_numeric(df['Year'], errors='coerce')\ndf['Data_Value'] = pd.to_numeric(df['Data_Value'], errors='coerce')\nrow = df.sort_values('Year').iloc[-1]\nanswer = str(round(float(row['Data_Value']), 1))\n",
+            "subquestion": "For the county in node 5, what was the overall 2019-2021 age-adjusted stroke mortality rate per 100,000 adults age 35 and older?",
+            "answer": "84.5"
+        },
+        "8": {
+            "source": "datagov/500-cities-local-data-for-better-health-2019-release/files/rows.txt",
+            "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/500-cities-local-data-for-better-health-2019-release/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_4_answer = 'Tacoma, 225100'\nnode_6_answer = '292.2'\nnode_7_answer = '84.5'\ncity = node_4_answer.split(',')[0].strip()\nheart_rate = float(node_6_answer)\nstroke_rate = float(node_7_answer)\nmeasure_id = 'CHD' if heart_rate > stroke_rate else 'STROKE'\n\ndf = df[\n    df['Year'].astype(str).str.strip().eq('2017')\n    & df['GeographicLevel'].astype(str).str.strip().eq('City')\n    & df['StateAbbr'].astype(str).str.strip().eq('WA')\n    & df['CityName'].astype(str).str.strip().eq(city)\n    & df['MeasureId'].astype(str).str.strip().eq(measure_id)\n    & df['Data_Value_Type'].astype(str).str.strip().eq('Crude prevalence')\n].copy()\ndf['Data_Value'] = pd.to_numeric(df['Data_Value'], errors='coerce')\nanswer = str(round(float(df.iloc[0]['Data_Value']), 1))\n",
+            "subquestion": "For the disease with the higher county mortality rate in nodes 6 and 7, what was the 2017 city-level crude prevalence in the city from node 4?",
+            "answer": "5.6"
+        }
+    },
+    "datasets_used": [
+        "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/signed-metadata.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/djk3-k3zs.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/signed-metadata.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/pf7q-w24q.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/signed-metadata.txt",
+        "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/dxpw-cm5u.publisher-view.json",
+        "datagov/waofm-april-1-population-change-and-rank-by-city-2020-to-present/files/rows.txt",
+        "datagov/waofm-april-1-population-change-and-rank-by-city-2020-to-present/signed-metadata.txt",
+        "datagov/waofm-april-1-population-change-and-rank-by-city-2020-to-present/files/jxb9-mpuu.publisher-view.json",
+        "datagov/washington-state-cities-and-counties/files/rows.txt",
+        "datagov/washington-state-cities-and-counties/signed-metadata.txt",
+        "datagov/washington-state-cities-and-counties/files/g2kf-7usg.publisher-view.json",
+        "datagov/heart-disease-mortality-data-among-us-adults-35-by-state-territory-and-county-2019-2021/files/rows.txt",
+        "datagov/heart-disease-mortality-data-among-us-adults-35-by-state-territory-and-county-2019-2021/signed-metadata.txt",
+        "datagov/heart-disease-mortality-data-among-us-adults-35-by-state-territory-and-county-2019-2021/files/55yu-xksw.txt",
+        "datagov/stroke-mortality-data-among-us-adults-35-by-state-territory-and-county-2019-2021/files/rows.txt",
+        "datagov/stroke-mortality-data-among-us-adults-35-by-state-territory-and-county-2019-2021/signed-metadata.txt",
+        "datagov/stroke-mortality-data-among-us-adults-35-by-state-territory-and-county-2019-2021/files/vutr-sfkh.txt",
+        "datagov/500-cities-local-data-for-better-health-2019-release/files/rows.txt",
+        "datagov/500-cities-local-data-for-better-health-2019-release/signed-metadata.txt",
+        "datagov/500-cities-local-data-for-better-health-2019-release/files/6vp6-wxuq.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: In the 2017 CDC 500 Cities city-level GIS release, the top three Washington cities by crude diabetes prevalence are Yakima (10.9), Tacoma (9.2), and Kennewick (9.0).",
+                "Node 2: In the 2018 release, the top three Washington cities by crude diabetes prevalence are Yakima (11.0), Kennewick (10.1), and Tacoma (9.7).",
+                "Node 3: In the 2019 release, the top three Washington cities by crude diabetes prevalence are Yakima (11.8), Tacoma (10.3), and Vancouver (9.6).",
+                "Intersecting the three top-three lists leaves Tacoma and Yakima as the repeat high-diabetes cities.",
+                "Hop result: Tacoma; Yakima"
+            ],
+            "answer": "Tacoma; Yakima"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Among the repeat high-diabetes cities from hop 1, Tacoma has the larger 2024 population at 225,100, compared with Yakima at 99,370.",
+                "Hop result: Tacoma, 225100"
+            ],
+            "answer": "Tacoma, 225100"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In Washington's city-county crosswalk, Tacoma maps to Pierce County and is not flagged as multi-county.",
+                "Hop result: Pierce County"
+            ],
+            "answer": "Pierce County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 6: In the 2019-2021 county mortality dataset, Pierce County's overall age-adjusted heart-disease mortality rate is 292.2.",
+                "Node 7: In the 2019-2021 county mortality dataset, Pierce County's overall age-adjusted stroke mortality rate is 84.5.",
+                "Comparing the two county mortality rates shows that heart disease mortality is higher than stroke mortality in Pierce County.",
+                "Hop result: Heart disease"
+            ],
+            "answer": "Heart disease"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: In the CDC 500 Cities 2019 local-health release, Tacoma's 2017 city-level crude prevalence for coronary heart disease is 5.6.",
+                "Hop result: 5.6"
+            ],
+            "answer": "5.6"
+        }
+    ]
+}

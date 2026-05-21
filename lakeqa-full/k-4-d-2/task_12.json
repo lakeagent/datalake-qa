@@ -1,0 +1,121 @@
+{
+    "question": "In 2015, which New York county named after a king had a population over 900,000, a firearm rate under 35 per 100,000, total state payments for homeowners' school taxes over $100 million, a total jail population under 1,200, and more than 20 total hate crime incidents? Please report the king's birth year. Your response should be in the format [Answer].",
+    "answer": "1650",
+    "nodes": {
+        "1": {
+            "source": "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = df.loc[\n    (df[\"Year\"] == 2015)\n    & (df[\"Population\"] > 900000)\n    & (df[\"Firearm Rate\"] < 35),\n    \"County\"\n].tolist()\nprint(answer)",
+            "subquestion": "Which NY counties had population greater than 900,000 AND firearm rate less than 35 per 100,000 in 2015?",
+            "answer": [
+                "Nassau County",
+                "Suffolk County",
+                "Westchester County"
+            ]
+        },
+        "2": {
+            "source": "datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nnode_1_counties = [\"Nassau\", \"Suffolk\", \"Westchester\"]\n\nanswer = df.loc[\n    (df[\"Levy Year\"] == 2015)\n    & (df[\"County\"].isin(node_1_counties))\n    & (df[\"Total Amount of Reimbursement \"] > 100000000),\n    \"County\"\n].tolist()\nprint(answer)",
+            "subquestion": "Which of <node_1 answer> had total state payments for homeowners' school taxes greater than $100 million in 2015?",
+            "answer": [
+                "Nassau County",
+                "Suffolk County",
+                "Westchester County"
+            ]
+        },
+        "3": {
+            "source": "datagov/jail-population-by-county-beginning-1997/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/jail-population-by-county-beginning-1997/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncandidate_counties = [\"Nassau\", \"Suffolk\", \"Westchester\"]\ndf_2015 = df[df[\"Year\"] == 2015].copy()\n\ncounty_totals = {}\nfor county in candidate_counties:\n    county_totals[county] = df_2015.loc[\n        df_2015[\"Facility Name (ORI)\"].str.contains(county, case=False, na=False),\n        \"Census\"\n    ].sum()\n\nanswer = [county for county, total in county_totals.items() if total < 1200]\nprint(answer)",
+            "subquestion": "Which of <intersection of node_1, node_2> had a total county jail population less than 1,200 in 2015?",
+            "answer": [
+                "Nassau County",
+                "Westchester County"
+            ]
+        },
+        "4": {
+            "source": "datagov/hate-crimes-by-county-and-bias-type-beginning-2010/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/hate-crimes-by-county-and-bias-type-beginning-2010/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncandidate_counties = [\"Nassau\", \"Suffolk\", \"Westchester\"]\n\ncounty_totals = (\n    df.loc[\n        (df[\"Year\"] == 2015)\n        & (df[\"County\"].isin(candidate_counties)),\n        [\"County\", \"Total Incidents\"]\n    ]\n    .groupby(\"County\", as_index=False)[\"Total Incidents\"]\n    .sum()\n)\n\nanswer = county_totals.loc[county_totals[\"Total Incidents\"] > 20, \"County\"].tolist()\nprint(answer)",
+            "subquestion": "Which of <intersection of node_1, node_2> had more than 20 total hate crime incidents in 2015?",
+            "answer": [
+                "Nassau County",
+                "Suffolk County"
+            ]
+        },
+        "5": {
+            "source": "wikipedia/Nassau_County,_New_York/content.txt",
+            "fact": "The name of Nassau County originated from an old name for Long Island, which was at one time named Nassau, after the Dutch family of King William III of England, the House of Nassau. William III was from the House of Orange-Nassau.",
+            "subquestion": "After which king is <intersection of node_3, node_4> named?",
+            "answer": "William III of England"
+        },
+        "6": {
+            "source": "wikipedia/William_III_of_England/content.txt",
+            "fact": "William III and II (William Henry; 4 November 1650 – 8 March 1702), also known as William of Orange, was the sovereign Prince of Orange from birth. He was born in The Hague in the Dutch Republic on 4 November 1650.",
+            "subquestion": "In what year was <node_5 answer> born?",
+            "answer": "1650"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Year` equals 2015, `Population` is greater than 900000, and `Firearm Rate` is less than 35, then return `County`.",
+                "Node 2: Filter rows where `Levy Year` equals 2015, `County` is in {Nassau, Suffolk, Westchester}, and `Total Amount of Reimbursement ` is greater than 100000000, then return `County`.",
+                "Hop result: intersect the two county lists = Nassau County, Suffolk County, Westchester County"
+            ],
+            "answer": "Nassau County, Suffolk County, Westchester County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `Year` equals 2015, and for each county in <hop 1 answer> sum `Census` over rows whose `Facility Name (ORI)` contains that county name, then keep counties with totals less than 1200.",
+                "Node 4: Filter rows where `Year` equals 2015 and `County` is in <hop 1 answer>, sum `Total Incidents` by `County`, and keep counties with totals greater than 20.",
+                "Hop result: intersect the two filtered county lists = Nassau County"
+            ],
+            "answer": "Nassau County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: William III of England is the king after whom Nassau County is named.",
+                "Hop result: William III of England"
+            ],
+            "answer": "William III of England"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: 1650 is the birth year of William III of England.",
+                "Hop result: 1650"
+            ],
+            "answer": "1650"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Nassau_County,_New_York/content.txt",
+        "wikipedia/William_III_of_England/content.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/signed-metadata.txt",
+        "datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/files/rows.txt",
+        "datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/signed-metadata.txt",
+        "datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/files/vdat-cgbe.txt",
+        "datagov/jail-population-by-county-beginning-1997/files/rows.txt",
+        "datagov/jail-population-by-county-beginning-1997/signed-metadata.txt",
+        "datagov/jail-population-by-county-beginning-1997/files/nymx-kgkn.txt",
+        "datagov/hate-crimes-by-county-and-bias-type-beginning-2010/files/rows.txt",
+        "datagov/hate-crimes-by-county-and-bias-type-beginning-2010/signed-metadata.txt",
+        "datagov/hate-crimes-by-county-and-bias-type-beginning-2010/files/6xda-q7ev.txt"
+    ]
+}

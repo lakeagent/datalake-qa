@@ -1,0 +1,122 @@
+{
+    "question": "In what year was the city founded where the person was born after whom the NYC high school is named that had a 4-year graduation rate of 100% for both the 2009 cohort (according to 2005-2015 graduation rates) AND the 2010 cohort (according to 2005-2019 graduation rates), had a female student percentage greater than 60% in 2011-12 according to the 2011-2016 demographic snapshot, AND had enrollment less than 600 students in 2013-14 according to the 2013-2018 demographic snapshot? Your response should be in the format [Answer].",
+    "answer": "1624",
+    "nodes": {
+        "1": {
+            "source": "datagov/2005-2015-graduation-rates-public-school/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2005-2015-graduation-rates-public-school/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmask = (\n    df[\"Cohort Year\"].astype(str).eq(\"2009\")\n    & df[\"Cohort Category\"].eq(\"4 Year  June\")\n    & df[\"Total Grads   % of cohort\"].eq(\"100.0%\")\n)\n\nanswer = df.loc[mask, \"School\"].drop_duplicates().tolist()",
+            "subquestion": "Which NYC high schools had a 4-year graduation rate of 100% for the 2009 cohort?",
+            "answer": [
+                "Eleanor Roosevelt High School",
+                "Young Women's Leadership School",
+                "High School of American Studies at Lehman College",
+                "Townsend Harris High School",
+                "Scholars' Academy"
+            ]
+        },
+        "2": {
+            "source": "datagov/2005-2019-graduation-rates-all/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2005-2019-graduation-rates-all/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmask = (\n    df[\"Cohort Year\"].astype(str).eq(\"2010\")\n    & df[\"Cohort\"].eq(\"4 year June\")\n    & pd.to_numeric(df[\"% Grads\"], errors=\"coerce\").eq(100.0)\n)\n\nanswer = df.loc[mask, \"School Name\"].drop_duplicates().tolist()",
+            "subquestion": "Which NYC high schools had a 4-year graduation rate of 100% for the 2010 cohort?",
+            "answer": [
+                "Baruch College Campus High School",
+                "Eleanor Roosevelt High School",
+                "Brooklyn College Academy",
+                "Townsend Harris High School",
+                "Scholars' Academy",
+                "Queens High School for the Sciences at York College"
+            ]
+        },
+        "3": {
+            "source": "datagov/2011-2016-demographic-snapshot/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2011-2016-demographic-snapshot/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nintersection_schools = [\n    \"Eleanor Roosevelt High School\",\n    \"Townsend Harris High School\",\n    \"Scholars' Academy\",\n]\n\nfemale_pct = pd.to_numeric(df[\"% Female\"].astype(str).str.rstrip(\"%\"), errors=\"coerce\")\nmask = (\n    df[\"Year\"].eq(\"2011-12\")\n    & df[\"School Name\"].isin(intersection_schools)\n    & female_pct.gt(60)\n)\n\nanswer = df.loc[mask, \"School Name\"].drop_duplicates().tolist()",
+            "subquestion": "Which of <intersection of node_1, node_2> had a female student percentage greater than 60% in 2011-12?",
+            "answer": [
+                "Eleanor Roosevelt High School",
+                "Townsend Harris High School"
+            ]
+        },
+        "4": {
+            "source": "datagov/2013-2018-demographic-snapshot-school/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2013-2018-demographic-snapshot-school/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nintersection_schools = [\n    \"Eleanor Roosevelt High School\",\n    \"Townsend Harris High School\",\n    \"Scholars' Academy\",\n]\n\nmask = (\n    df[\"Year\"].astype(str).eq(\"2013-14\")\n    & df[\"School Name\"].isin(intersection_schools)\n    & pd.to_numeric(df[\"Total Enrollment\"], errors=\"coerce\").lt(600)\n)\n\nanswer = df.loc[mask, \"School Name\"].drop_duplicates().tolist()",
+            "subquestion": "Which of <intersection of node_1, node_2> had enrollment less than 600 students in 2013-14?",
+            "answer": [
+                "Eleanor Roosevelt High School"
+            ]
+        },
+        "5": {
+            "source": "wikipedia/Eleanor_Roosevelt/content.txt",
+            "fact": "Anna Eleanor Roosevelt was born on October 11, 1884, in Manhattan, New York City, to socialites Anna Rebecca Hall and Elliott Roosevelt. She was a niece of President Theodore Roosevelt and became the First Lady of the United States from 1933 to 1945.",
+            "subquestion": "In what city was <intersection of node_3, node_4>'s namesake born?",
+            "answer": "New York City"
+        },
+        "6": {
+            "source": "wikipedia/New_York_City/content.txt",
+            "fact": "A permanent European presence near New York Harbor was established in 1624, making New York the 12th-oldest continuously occupied European-established settlement in the continental United States. In 1625, construction was started on Fort Amsterdam and New Amsterdam on present-day Manhattan Island.",
+            "subquestion": "In what year was <node_5 answer> founded?",
+            "answer": "1624"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Cohort Year` equals `2009`, `Cohort Category` equals `4 Year  June`, and `Total Grads   % of cohort` equals `100.0%`, then return distinct `School` values.",
+                "Node 2: Filter rows where `Cohort Year` equals `2010`, `Cohort` equals `4 year June`, and `% Grads` equals 100.0, then return distinct `School Name` values.",
+                "Hop result: intersect the two school lists = Eleanor Roosevelt High School, Townsend Harris High School, Scholars' Academy"
+            ],
+            "answer": "Eleanor Roosevelt High School, Townsend Harris High School, Scholars' Academy"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Strip `%` from `% Female`, filter rows where `Year` equals `2011-12`, `School Name` is in <hop 1 answer>, and `% Female` is greater than 60, then return distinct `School Name` values.",
+                "Node 4: Filter rows where `Year` equals `2013-14`, `School Name` is in <hop 1 answer>, and `Total Enrollment` is less than 600, then return distinct `School Name` values.",
+                "Hop result: intersect the two filtered school lists = Eleanor Roosevelt High School"
+            ],
+            "answer": "Eleanor Roosevelt High School"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: New York City is where Eleanor Roosevelt was born.",
+                "Hop result: New York City"
+            ],
+            "answer": "New York City"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: 1624 is the year of New York City's permanent European presence.",
+                "Hop result: 1624"
+            ],
+            "answer": "1624"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Eleanor_Roosevelt/content.txt",
+        "wikipedia/New_York_City/content.txt",
+        "datagov/2005-2015-graduation-rates-public-school/files/rows.txt",
+        "datagov/2005-2015-graduation-rates-public-school/signed-metadata.txt",
+        "datagov/2005-2019-graduation-rates-all/files/rows.txt",
+        "datagov/2005-2019-graduation-rates-all/signed-metadata.txt",
+        "datagov/2011-2016-demographic-snapshot/files/rows.txt",
+        "datagov/2011-2016-demographic-snapshot/files/columns.txt",
+        "datagov/2013-2018-demographic-snapshot-school/files/rows.txt",
+        "datagov/2013-2018-demographic-snapshot-school/signed-metadata.txt"
+    ]
+}

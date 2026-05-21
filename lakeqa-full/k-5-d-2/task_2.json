@@ -1,0 +1,140 @@
+{
+    "question": "Find the NYC high school that received an overall A rating in 2010-11 and 2011-12, was also given an A for student graduation and diploma outcomes in 2010-11, and later had the percentage of students considered prepared for college or careers between 98-99% in both 2012 and 2013, with a 2013 graduation rate below 100%. Find the person after whom that school is named, identify the university where he studied, and tell me in what year that university was founded. Your response should be in the format [Answer].",
+    "answer": "1585",
+    "nodes": {
+        "1": {
+            "source": "datagov/2013-2014-doe-high-school-performance-directory/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2013-2014-doe-high-school-performance-directory/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df.loc[\n        (df[\"Progress_Rpt_10-11\"] == \"A\")\n        & (df[\"Student_Perf_10-11\"] == \"A\"),\n        \"DBN\",\n    ]\n    .dropna()\n    .drop_duplicates()\n    .sort_values()\n    .tolist()\n)",
+            "subquestion": "Which NYC high schools received an overall A rating and were also given an A for student graduation and diploma outcomes in 2010-11?",
+            "limit": 10,
+            "answer": [
+                "01M450",
+                "01M539",
+                "02M288",
+                "02M296",
+                "02M298",
+                "02M308",
+                "02M411",
+                "02M412",
+                "02M414",
+                "02M416"
+            ]
+        },
+        "2": {
+            "source": "datagov/2013-2014-doe-high-school-performance-directory/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2013-2014-doe-high-school-performance-directory/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df.loc[df[\"Progress_Rpt_11-12\"] == \"A\", \"DBN\"]\n    .dropna()\n    .drop_duplicates()\n    .sort_values()\n    .tolist()\n)",
+            "subquestion": "Which NYC high schools received an overall A rating in 2011-12?",
+            "limit": 10,
+            "answer": [
+                "01M450",
+                "01M539",
+                "02M288",
+                "02M296",
+                "02M298",
+                "02M303",
+                "02M305",
+                "02M308",
+                "02M407",
+                "02M411"
+            ]
+        },
+        "3": {
+            "source": "datagov/2014-2015-doe-high-school-performance-directory/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2014-2015-doe-high-school-performance-directory/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncollege_career_rate_2012 = pd.to_numeric(df[\"college_career_rate_2012\"].astype(str).str.rstrip(\"%\"), errors=\"coerce\")\ncollege_career_rate_2013 = pd.to_numeric(df[\"college_career_rate_2013\"].astype(str).str.rstrip(\"%\"), errors=\"coerce\")\ngraduation_rate_2013 = pd.to_numeric(df[\"graduation_rate_2013\"].astype(str).str.rstrip(\"%\"), errors=\"coerce\")\n\nfiltered = (\n    df.loc[\n        college_career_rate_2012.between(98, 99, inclusive=\"both\")\n        & college_career_rate_2013.between(98, 99, inclusive=\"both\")\n        & (graduation_rate_2013 < 100),\n        [\"dbn\", \"college_career_rate_2012\", \"college_career_rate_2013\", \"graduation_rate_2013\"],\n    ]\n    .dropna(subset=[\"dbn\"])\n    .drop_duplicates()\n    .sort_values(\"dbn\")\n)\n\nanswer = filtered[\"dbn\"].tolist()\nif len(answer) == 1:\n    answer = answer[0]",
+            "subquestion": "Which NYC high schools had the percentage of students considered prepared for college or careers between 98-99% in both 2012 and 2013, with a 2013 graduation rate below 100%?",
+            "answer": "02M475"
+        },
+        "4": {
+            "source": "datagov/2011-2012-high-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2011-2012-high-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ntarget_dbns = [\"02M475\"]\n\nanswer = (\n    df.loc[df[\"DBN\"].isin(target_dbns), \"School Name\"]\n    .dropna()\n    .drop_duplicates()\n    .tolist()\n)\nif len(answer) == 1:\n    answer = answer[0]",
+            "subquestion": "What is the name of the NYC high school with DBN <hop 1 answer>?",
+            "answer": "Stuyvesant High School"
+        },
+        "5": {
+            "source": "wikipedia/Stuyvesant_High_School/content.txt",
+            "fact": "the new school would be \"designated as the Stuyvesant High School, as being reminiscent of the locality\". Stuyvesant Square, Stuyvesant Street, and later Stuyvesant Town (which was built in 1947) are all near the proposed 15th Street school building. All these locations were named after Peter Stuyvesant",
+            "subquestion": "After whom is <hop 2 answer> named?",
+            "answer": "Peter Stuyvesant"
+        },
+        "6": {
+            "source": "wikipedia/Peter_Stuyvesant/content.txt",
+            "fact": "At the age of 20, Stuyvesant went to the University of Franeker, where he studied languages and philosophy",
+            "subquestion": "Which university did <hop 3 answer> study at?",
+            "answer": "University of Franeker"
+        },
+        "7": {
+            "source": "wikipedia/University_of_Franeker/content.txt",
+            "fact": "The University of Franeker (1585–1811) was a university in Franeker, Friesland, the Netherlands.",
+            "subquestion": "In what year was <hop 4 answer> founded?",
+            "answer": "1585"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Progress_Rpt_10-11` = `A` and `Student_Perf_10-11` = `A`, then keep `DBN`.",
+                "Node 2: Filter rows where `Progress_Rpt_11-12` = `A`, then keep `DBN`.",
+                "Node 3: Filter rows where `college_career_rate_2012` and `college_career_rate_2013` are between 98 and 99 inclusive after stripping `%`, and `graduation_rate_2013` is below 100, then return `dbn`.",
+                "Hop result: intersect the DBN outputs from nodes 1, 2, and 3, and identify the qualifying school DBN."
+            ],
+            "answer": "02M475"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Filter rows where `DBN` = <hop 1 answer>, then read `School Name`."
+            ],
+            "answer": "Stuyvesant High School"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Read who <hop 2 answer> is named after from the cited Wikipedia source."
+            ],
+            "answer": "Peter Stuyvesant"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Read where <hop 3 answer> studied from the cited Wikipedia source."
+            ],
+            "answer": "University of Franeker"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Read the founding year of <hop 4 answer> from the cited Wikipedia source."
+            ],
+            "answer": 1585
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Stuyvesant_High_School/content.txt",
+        "wikipedia/Peter_Stuyvesant/content.txt",
+        "wikipedia/University_of_Franeker/content.txt",
+        "datagov/2013-2014-doe-high-school-performance-directory/files/rows.txt",
+        "datagov/2013-2014-doe-high-school-performance-directory/files/42et-jh9v.txt",
+        "datagov/2014-2015-doe-high-school-performance-directory/files/rows.txt",
+        "datagov/2014-2015-doe-high-school-performance-directory/files/xahu-rkwn.txt",
+        "datagov/2011-2012-high-school-progress-report/files/rows.txt",
+        "datagov/2011-2012-high-school-progress-report/signed-metadata.txt"
+    ]
+}

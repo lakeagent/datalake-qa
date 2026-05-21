@@ -1,0 +1,96 @@
+{
+    "question": "I'm looking into crime trends in the D.C. ward that contains Columbia Heights. What is the most common offense committed there in 2017? Which D.C. ward had the highest number of that specific offense in 2018, and tell me how the number of those incidents in that ward changed from 2019 to 2020. Your final answer shall be an integer (20 incidents - 19 incidents). Your response should be in the format [Answer].",
+    "answer": "-1184",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+            "fact": "Columbia Heights (Washington, D.C.) is part of Ward 1 of Washington, D.C.",
+            "subquestion": "Columbia Heights (Washington, D.C.) is part of which ward of Washington, D.C.?",
+            "answer": "1"
+        },
+        "2": {
+            "source": "datagov/crime-incidents-in-2017/files/data.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2017/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [c.replace(\"properties.\", \"\").replace(\"geometry.\", \"geometry.\") for c in df.columns]\n\nanswer = df.loc[df[\"WARD\"] == \"1\", \"OFFENSE\"].value_counts().idxmax()",
+            "subquestion": "Within Ward <node_1 answer>, which offense is most common?",
+            "answer": "THEFT F/AUTO"
+        },
+        "3": {
+            "source": "datagov/crime-incidents-in-2018/files/data.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2018/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [c.replace(\"properties.\", \"\").replace(\"geometry.\", \"geometry.\") for c in df.columns]\n\nanswer = df.loc[df[\"OFFENSE\"] == \"THEFT F/AUTO\", \"WARD\"].value_counts().idxmax()",
+            "subquestion": "In 2018, which ward has the most <node_2 answer> incidents?",
+            "answer": "2"
+        },
+        "4": {
+            "source": "datagov/crime-incidents-in-2019/files/data.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [c.replace(\"properties.\", \"\").replace(\"geometry.\", \"geometry.\") for c in df.columns]\n\nanswer = int(((df[\"WARD\"] == \"2\") & (df[\"OFFENSE\"] == \"THEFT F/AUTO\")).sum())",
+            "subquestion": "In 2019, how many <node_2 answer> incidents occurred in Ward <node_3 answer>?",
+            "answer": "2431"
+        },
+        "5": {
+            "source": "datagov/crime-incidents-in-2020/files/data.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [c.replace(\"properties.\", \"\").replace(\"geometry.\", \"geometry.\") for c in df.columns]\n\nanswer = int(((df[\"WARD\"] == \"2\") & (df[\"OFFENSE\"] == \"THEFT F/AUTO\")).sum())",
+            "subquestion": "In 2020, how many <node_2 answer> incidents occurred in Ward <node_3 answer>?",
+            "answer": "1247"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: 1 is the ward containing Columbia Heights (Washington, D.C.)."
+            ],
+            "answer": "1"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `WARD` equals <hop 1 answer>, count records by `OFFENSE`, and select the most common `OFFENSE`."
+            ],
+            "answer": "THEFT F/AUTO"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `OFFENSE` equals <hop 2 answer>, count records by `WARD`, and select the most common `WARD`."
+            ],
+            "answer": "2"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 4: Filter rows where `WARD` equals <hop 3 answer> and `OFFENSE` equals <hop 2 answer>, then count matching incidents.",
+                "Node 5: Filter rows where `WARD` equals <hop 3 answer> and `OFFENSE` equals <hop 2 answer>, then count matching incidents.",
+                "Hop result: 2020 incidents - 2019 incidents = 1247 - 2431 = -1184."
+            ],
+            "answer": "-1184"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+        "datagov/crime-incidents-in-2017/files/data.txt",
+        "datagov/crime-incidents-in-2017/signed-metadata.txt",
+        "datagov/crime-incidents-in-2017/files/38.arcgis-layer.json",
+        "datagov/crime-incidents-in-2018/files/data.txt",
+        "datagov/crime-incidents-in-2018/signed-metadata.txt",
+        "datagov/crime-incidents-in-2018/files/0.arcgis-layer.json",
+        "datagov/crime-incidents-in-2019/files/data.txt",
+        "datagov/crime-incidents-in-2019/signed-metadata.txt",
+        "datagov/crime-incidents-in-2019/files/1.arcgis-layer.json",
+        "datagov/crime-incidents-in-2020/files/data.txt",
+        "datagov/crime-incidents-in-2020/signed-metadata.txt",
+        "datagov/crime-incidents-in-2020/files/2.arcgis-layer.json"
+    ]
+}

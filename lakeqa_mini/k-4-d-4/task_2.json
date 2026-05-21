@@ -1,0 +1,199 @@
+{
+    "question": "In Chicago elementary schools that are public school, find which school (1) received the top performance rating in 2011-12, (2) showed above-average growth in the 2012-13, and (3) classified as moderately organized under the My Voice, My School measure, and (4) showed above-average or far-above-average student growth in 2017-2018, based on progress report cards. This school is also located in a community area with a per capita income above $50K. In what year was the MLB team founded that plays in the stadium located within that same community area? Please return the year only. Your response should be in the format [Answer].",
+    "answer": "1876",
+    "nodes": {
+        "1": {
+            "source": "datagov/chicago-public-schools-progress-report-cards-2011-2012/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/chicago-public-schools-progress-report-cards-2011-2012/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmask = (\n    (df[\"Elementary, Middle, or High School\"] == \"ES\")\n    & (df[\"CPS Performance Policy Level\"] == \"Level 1\")\n)\n\nanswer = dict(\n    zip(\n        df.loc[mask, \"Name of School\"],\n        df.loc[mask, \"School ID\"].astype(\"Int64\").astype(str)\n    )\n)\nprint(answer)",
+            "subquestion": "Which CPS public elementary schools in the 2011-2012 progress report cards had CPS Performance Policy Level \"Level 1\"?",
+            "answer": {
+                "Eliza Chappell Elementary School": "609852",
+                "Lenart Elementary Regional Gifted Center": "610298",
+                "Abraham Lincoln Elementary School": "610038",
+                "Christopher Columbus Elementary School": "609863",
+                "Frank W Gunsaulus Elementary Scholastic Academy": "609958",
+                "Durkin Park Elementary School": "610352",
+                "Edison Park Elementary School": "610523",
+                "Pilsen Elementary Community Academy": "610013",
+                "John Calhoun North Elementary School": "610243",
+                "Alexander Graham Bell Elementary School": "609799"
+            },
+            "limit": 10
+        },
+        "2": {
+            "source": "datagov/chicago-public-schools-elementary-school-progress-report-card-2012-2013/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/chicago-public-schools-elementary-school-progress-report-card-2012-2013/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmask = df[\"Growth Overall Level\"] == \"Above Average\"\n\nanswer = dict(\n    zip(\n        df.loc[mask, \"School Short Name\"],\n        df.loc[mask, \"School ID\"].astype(\"Int64\").astype(str)\n    )\n)\nprint(answer)",
+            "subquestion": "Which schools in the 2012-2013 CPS elementary progress report card had Growth Overall Level \"Above Average\"?",
+            "answer": {
+                "Clissold": "609861",
+                "Greene": "609952",
+                "Thorp, O": "610201",
+                "Nash": "610092",
+                "Addams": "609772",
+                "Dixon": "609887",
+                "Mays": "610290",
+                "Irving": "610121",
+                "Armstrong, G": "609779",
+                "Lasalle Ii": "610520"
+            },
+            "limit": 10
+        },
+        "3": {
+            "source": "datagov/chicago-public-schools-elementary-school-progress-report-2013-2014/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/chicago-public-schools-elementary-school-progress-report-2013-2014/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmask = df[\"My Voice, My School Overall Rating\"] == \"MODERATELY ORGANIZED\"\n\nanswer = dict(\n    zip(\n        df.loc[mask, \"Name of School\"],\n        df.loc[mask, \"School ID\"].astype(\"Int64\").astype(str)\n    )\n)\nprint(answer)",
+            "subquestion": "Which schools in the 2013-2014 CPS progress report source had My Voice, My School Overall Rating \"MODERATELY ORGANIZED\"?",
+            "answer": {
+                "STEM Magnet Academy": "610548",
+                "Edgar Allan Poe Elementary Classical School": "610132",
+                "Mildred I Lavizzo Elementary School": "610208",
+                "UNO Charter - Sandra Cisneros": "400101",
+                "Arthur R Ashe Elementary School": "610268",
+                "Lyman A Budlong Elementary School": "609817",
+                "Federico Garcia Lorca Elementary School": "610541",
+                "Frederic Chopin Elementary School": "609854",
+                "Jacob Beidler Elementary School": "609797",
+                "Amos Alonzo Stagg Elementary School": "610339"
+            },
+            "limit": 10
+        },
+        "4": {
+            "source": "datagov/chicago-public-schools-school-progress-reports-sy1718/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/chicago-public-schools-school-progress-reports-sy1718/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmask = df[\"Student_Growth_Rating\"].isin([\"ABOVE AVERAGE\", \"FAR ABOVE AVERAGE\"])\n\nanswer = dict(\n    zip(\n        df.loc[mask, \"Short_Name\"],\n        df.loc[mask, \"School_ID\"].astype(\"Int64\").astype(str)\n    )\n)\nprint(answer)",
+            "subquestion": "Which schools showed above-average or far-above-average student growth in 2017-18?",
+            "answer": {
+                "BRUNSON": "609830",
+                "KELLER": "610084",
+                "LAVIZZO": "610208",
+                "DIRKSEN": "609874",
+                "ASHE": "610268",
+                "CALMECA": "610353",
+                "MURRAY": "610090",
+                "CLINTON": "609859",
+                "CURTIS": "609900",
+                "NIGHTINGALE": "610096"
+            },
+            "limit": 10
+        },
+        "5": {
+            "source": "datagov/chicago-public-schools-school-locations-sy1516/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/chicago-public-schools-school-locations-sy1516/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nschool_ids = [609857, 609974, 610132, 610145]\nmask = df[\"School_ID\"].isin(school_ids)\n\nanswer = dict(\n    zip(\n        df.loc[mask, \"Short_Name\"],\n        df.loc[mask, \"COMMAREA\"]\n    )\n)\nprint(answer)",
+            "subquestion": "In which community areas are the schools from <hop 1 answer> located, according to CPS School Locations SY2015-16?",
+            "answer": {
+                "CLEVELAND": "IRVING PARK",
+                "HAWTHORNE": "LAKE VIEW",
+                "POE": "PULLMAN",
+                "REINBERG": "PORTAGE PARK"
+            }
+        },
+        "6": {
+            "source": "datagov/census-data-selected-socioeconomic-indicators-in-chicago-2008-2012/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/census-data-selected-socioeconomic-indicators-in-chicago-2008-2012/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncommunity_areas = [\"Irving Park\", \"Lake View\", \"Pullman\", \"Portage Park\"]\nmask = (\n    df[\"COMMUNITY AREA NAME\"].isin(community_areas)\n    & (df[\"PER CAPITA INCOME \"] > 50000)\n)\n\nanswer = dict(\n    zip(\n        df.loc[mask, \"COMMUNITY AREA NAME\"],\n        df.loc[mask, \"PER CAPITA INCOME \"].map(lambda x: f\"${x:,.0f}\")\n    )\n)\nprint(answer)",
+            "subquestion": "Among the community areas from <node_5 answer>, which have per capita income above $50,000 in the 2008-2012 Chicago census dataset?",
+            "answer": {
+                "Lake View": "$60,058"
+            }
+        },
+        "7": {
+            "source": "wikipedia/Wrigley_Field/content.txt",
+            "fact": "Wrigley Field () is a ballpark on the North Side of Chicago, Illinois, United States. It is the home ballpark of Major League Baseball's Chicago Cubs, one of the city's two MLB franchises. It first opened in 1914 as Weeghman Park for Charles Weeghman's Chicago Whales of the Federal League, which folded after the 1915 baseball season. The Cubs played their first home game at the park on April 20, 1916. Chewing gum magnate William Wrigley Jr. of the Wrigley Company acquired the Cubs in 1921. It was named Cubs Park from 1920 to 1926, before changing its name to Wrigley Field in 1927. The stadium currently seats 41,649 people.\n\nIn the North Side community area of Lakeview in the Wrigleyville neighborhood, Wrigley Field",
+            "subquestion": "Which MLB team plays at the stadium located in <hop 3 answer>?",
+            "answer": "Chicago Cubs"
+        },
+        "8": {
+            "source": "wikipedia/Chicago_Cubs/content.txt",
+            "fact": "Category:1876 establishments in Illinois\nCategory:Baseball teams established in 1876",
+            "subquestion": "In what year was <hop 3 answer> established?",
+            "answer": "1876"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Wrigley_Field/content.txt",
+        "wikipedia/Chicago_Cubs/content.txt",
+        "datagov/chicago-public-schools-progress-report-cards-2011-2012/files/rows.txt",
+        "datagov/chicago-public-schools-progress-report-cards-2011-2012/signed-metadata.txt",
+        "datagov/chicago-public-schools-progress-report-cards-2011-2012/files/9xs2-f89t.publisher-view.json",
+        "datagov/chicago-public-schools-elementary-school-progress-report-card-2012-2013/files/rows.txt",
+        "datagov/chicago-public-schools-elementary-school-progress-report-card-2012-2013/signed-metadata.txt",
+        "datagov/chicago-public-schools-elementary-school-progress-report-card-2012-2013/files/b5gj-d4r4.publisher-view.json",
+        "datagov/chicago-public-schools-elementary-school-progress-report-2013-2014/files/rows.txt",
+        "datagov/chicago-public-schools-elementary-school-progress-report-2013-2014/signed-metadata.txt",
+        "datagov/chicago-public-schools-elementary-school-progress-report-2013-2014/files/tj8h-mnuv.publisher-view.json",
+        "datagov/chicago-public-schools-school-progress-reports-sy1718/files/rows.txt",
+        "datagov/chicago-public-schools-school-progress-reports-sy1718/signed-metadata.txt",
+        "datagov/chicago-public-schools-school-locations-sy1516/files/rows.txt",
+        "datagov/chicago-public-schools-school-locations-sy1516/signed-metadata.txt",
+        "datagov/census-data-selected-socioeconomic-indicators-in-chicago-2008-2012/files/rows.txt",
+        "datagov/census-data-selected-socioeconomic-indicators-in-chicago-2008-2012/signed-metadata.txt",
+        "datagov/census-data-selected-socioeconomic-indicators-in-chicago-2008-2012/files/kn9c-c2s2.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Elementary, Middle, or High School` equals `ES` and `CPS Performance Policy Level` equals `Level 1`, then keep `Name of School` -> `School ID`.",
+                "Node 2: Filter rows where `Growth Overall Level` equals `Above Average`, then keep `School Short Name` -> `School ID`.",
+                "Node 3: Filter rows where `My Voice, My School Overall Rating` equals `MODERATELY ORGANIZED`, then keep `Name of School` -> `School ID`.",
+                "Node 4: Filter rows where `Student_Growth_Rating` is in {`ABOVE AVERAGE`, `FAR ABOVE AVERAGE`}, then keep `Short_Name` -> `School_ID`.",
+                "Hop result: semantically intersect the school-ID sets from nodes 1-4 = {Grover Cleveland Elementary School: 609857, Hawthorne Elementary Scholastic Academy: 609974, Edgar Allan Poe Elementary Classical School: 610132, Peter A Reinberg Elementary School: 610145}."
+            ],
+            "answer": {
+                "Grover Cleveland Elementary School": "609857",
+                "Hawthorne Elementary Scholastic Academy": "609974",
+                "Edgar Allan Poe Elementary Classical School": "610132",
+                "Peter A Reinberg Elementary School": "610145"
+            }
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Filter rows where `School_ID` is one of the school IDs from <hop 1 answer>, then keep `Short_Name` -> `COMMAREA`."
+            ],
+            "answer": {
+                "CLEVELAND": "IRVING PARK",
+                "HAWTHORNE": "LAKE VIEW",
+                "POE": "PULLMAN",
+                "REINBERG": "PORTAGE PARK"
+            }
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Among the community areas from <hop 2 answer>, filter rows where `PER CAPITA INCOME ` is greater than 50000, then keep `COMMUNITY AREA NAME` -> formatted `PER CAPITA INCOME `.",
+                "Hop result: only `Lake View` qualifies, so the corresponding school from hop 1 is Hawthorne Elementary Scholastic Academy."
+            ],
+            "answer": "Lake View"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Wrigley Field is in the North Side community area of Lakeview and is the home ballpark of Major League Baseball's Chicago Cubs."
+            ],
+            "answer": "Chicago Cubs"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: `Category:Baseball teams established in 1876` supports the establishment year of <hop 4 answer>."
+            ],
+            "answer": "1876"
+        }
+    ]
+}

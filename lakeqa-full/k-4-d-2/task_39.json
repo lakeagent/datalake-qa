@@ -1,0 +1,97 @@
+{
+    "question": "For the city where the Colorado Department of Education is headquartered, identify the CBSA code from postsecondary institution records, then subtract the number of district administrative offices in that CBSA in school year 2022-2023 from the number of private schools in that CBSA in school year 2021-2022. What is that difference per bus route operated by the regional transit agency serving that city, using its 2024 bus-route count? Round your answer to one decimal. Your response should be in the format [Answer].",
+    "answer": "0.6",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Colorado_Department_of_Education/content.txt",
+            "fact": "The Colorado Department of Education is headquartered in Denver.",
+            "subquestion": "In which city is the Colorado Department of Education headquartered?",
+            "answer": "Denver"
+        },
+        "2": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Denver'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n]\nanswer = filtered[\"CBSA\"].dropna().astype(str).str.strip().iloc[0]\n",
+            "subquestion": "In school year 2022-2023, among postsecondary institutions located in the city of <node_1 answer>, what is the CBSA code?",
+            "answer": "19740"
+        },
+        "3": {
+            "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Denver'\nnode_2_answer = '19740'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2021-2022')\n].copy()\nfiltered = filtered[filtered[\"CBSA\"].astype(str).str.strip().eq(str(node_2_answer).strip())]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In school year 2021-2022, how many private schools are located in the city of <node_1 answer> in CBSA <node_2 answer>?",
+            "answer": "51"
+        },
+        "4": {
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Denver'\nnode_2_answer = '19740'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n].copy()\nfiltered = filtered[filtered[\"CBSA\"].astype(str).str.strip().eq(str(node_2_answer).strip())]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In school year 2022-2023, how many school district offices are located in the city of <node_1 answer> in CBSA <node_2 answer>?",
+            "answer": "9"
+        },
+        "5": {
+            "source": "wikipedia/Regional_Transportation_District/content.txt",
+            "fact": "The Regional Transportation District is the agency responsible for public transportation in the Denver, Colorado area. The RTD system operates 76 bus routes, as of 2024, with service between 5:00 a.m. and 11:00 p.m. daily, and ending much earlier on weekends. Computation: 42 / 76 = 0.5526, which rounds to 0.6.",
+            "subquestion": "What is <hop 3 answer> per bus route operated by the regional transit agency serving <hop 1 answer>, using its 2024 bus-route count? Round your answer to one decimal.",
+            "answer": "0.6"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Colorado_Department_of_Education/content.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt",
+        "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+        "datagov/private-school-locations-current-f7d96/signed-metadata.txt",
+        "datagov/private-school-locations-current-f7d96/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "wikipedia/Regional_Transportation_District/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Denver is where the Colorado Department of Education is headquartered.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Denver"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `CITY` is <hop 1 answer> and `SCHOOLYEAR` is 2022-2023, then take the first non-null value in `CBSA`.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "19740"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `CITY` is <hop 1 answer>, `SCHOOLYEAR` is 2021-2022, and `CBSA` is <hop 2 answer>, then count the rows.",
+                "Node 4: Filter rows where `CITY` is <hop 1 answer>, `SCHOOLYEAR` is 2022-2023, and `CBSA` is <hop 2 answer>, then count the rows.",
+                "Hop result: <node_3 answer> - <node_4 answer> = 51 - 9 = 42."
+            ],
+            "answer": "42"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Divide <hop 3 answer> by the 2024 bus-route count for the regional transit agency serving <hop 1 answer> and round to one decimal.",
+                "Hop result: <node_5 answer>"
+            ],
+            "answer": "0.6"
+        }
+    ]
+}

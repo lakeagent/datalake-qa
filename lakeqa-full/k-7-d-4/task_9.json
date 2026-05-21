@@ -1,0 +1,198 @@
+{
+    "question": "First identify the headquarter of the education company included in Graham Holdings Company's current holding and the state it is in. Within that state, consider counties that are in the top 3 by school district offices and are also in at least one of these groups: top 3 by public schools, top 3 by private schools. Using postsecondary institution counts for those counties, identify the single county with the most postsecondary institutions. For that county, compute public schools - private schools + postsecondary institutions - school district offices. Give the final answer as an integer.",
+    "answer": "234",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Graham_Holdings/content.txt",
+            "fact": "Its current holdings include the digital marketing company Code3 (formerly SocialCode); online and print media entities including Slate Magazine, Foreign Policy through the FP Group, which includes Foreign Policy magazine and ForeignPolicy.com), Graham Media Group (formerly Post-Newsweek Stations), a group of seven television stations; education company Kaplan;",
+            "subquestion": "Graham Holdings Company's current holdings include what education company?",
+            "answer": "Kaplan, Inc."
+        },
+        "2": {
+            "source": "wikipedia/Kaplan,_Inc./content.txt",
+            "fact": "The company is headquartered in Fort Lauderdale, Florida, and is a wholly owned subsidiary of Graham Holdings Company.",
+            "subquestion": "In what city is <hop 1 answer> headquartered?",
+            "answer": "Fort Lauderdale"
+        },
+        "3": {
+            "source": "wikipedia/Fort_Lauderdale,_Florida/content.txt",
+            "fact": "It is the seat of government of and most populous city in Broward County",
+            "subquestion": "<hop 2 answer> is a city in which county?",
+            "answer": "Broward County"
+        },
+        "4": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\nanswer = (\n    df[(df[\"CITY\"] == \"Fort Lauderdale\") & (df[\"NMCNTY\"] == \"Broward County\")][\"STFIP\"]\n    .drop_duplicates()\n    .tolist()\n)\nif len(answer) == 1:\n    answer = answer[0]",
+            "subquestion": "In the postsecondary school listings, entries with CITY='<hop 2 answer>' and NMCNTY='<hop 3 answer>' share what two-digit state FIPS code (STFIP)?",
+            "answer": "12"
+        },
+        "5": {
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-current-23297/files/data-oyCYxF.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\ncounts = (\n    df[df[\"STFIP\"] == \"12\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .reset_index(name=\"public_school_count\")\n    .sort_values([\"public_school_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = \"; \".join(counts.head(3)[\"NMCNTY\"].tolist())",
+            "subquestion": "For STFIP='<node_4 answer>', which 3 county names have the most public schools? Return the county names separated by '; '.",
+            "answer": "Miami-Dade County; Broward County; Hillsborough County"
+        },
+        "6": {
+            "source": "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\ncounts = (\n    df[df[\"STFIP\"] == \"12\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .reset_index(name=\"private_school_count\")\n    .sort_values([\"private_school_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = \"; \".join(counts.head(3)[\"NMCNTY\"].tolist())",
+            "subquestion": "For STFIP='<node_4 answer>', which 3 county names have the most private schools? Return the county names separated by '; '.",
+            "answer": "Miami-Dade County; Broward County; Orange County"
+        },
+        "7": {
+            "source": "datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\ncounts = (\n    df[df[\"STFIP\"] == \"12\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .reset_index(name=\"district_office_count\")\n    .sort_values([\"district_office_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = \"; \".join(counts.head(3)[\"NMCNTY\"].tolist())",
+            "subquestion": "For STFIP='<node_4 answer>', which 3 county names have the most school district offices? If there is a tie, select in alphabetical order. Return the county names separated by '; '.",
+            "answer": "Broward County; Leon County; Miami-Dade County"
+        },
+        "8": {
+            "source": "datagov/postsecondary-school-locations-2017-18-fa280/files/data-7AG3Nw.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-2017-18-fa280/files/data-7AG3Nw.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\ncounts = (\n    df[df[\"STFIP\"] == \"12\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .reset_index(name=\"postsecondary_count\")\n)\n\nA = {\"Miami-Dade County\", \"Broward County\", \"Hillsborough County\"}\nB = {\"Miami-Dade County\", \"Broward County\", \"Orange County\"}\nC = {\"Broward County\", \"Leon County\", \"Miami-Dade County\"}\ncandidate_counties = C & (A | B)\n\ncandidate_counts = counts[counts[\"NMCNTY\"].isin(candidate_counties)].sort_values(\n    [\"postsecondary_count\", \"NMCNTY\"], ascending=[False, True]\n).reset_index(drop=True)\n\nanswer = candidate_counts.iloc[0][\"NMCNTY\"]",
+            "subquestion": "Among the counties in <hop 5 answer>, which single county has the most postsecondary institutions in STFIP='<node_4 answer>'? Answer with the county name including the word 'County'.",
+            "answer": "Miami-Dade County"
+        },
+        "9": {
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-current-23297/files/data-oyCYxF.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\nanswer = df[(df[\"STFIP\"] == \"12\") & (df[\"NMCNTY\"] == \"Miami-Dade County\")].shape[0]",
+            "subquestion": "How many public schools have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 558
+        },
+        "10": {
+            "source": "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\nanswer = df[(df[\"STFIP\"] == \"12\") & (df[\"NMCNTY\"] == \"Miami-Dade County\")].shape[0]",
+            "subquestion": "How many private schools have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 403
+        },
+        "11": {
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\nanswer = df[(df[\"STFIP\"] == \"12\") & (df[\"NMCNTY\"] == \"Miami-Dade County\")].shape[0]",
+            "subquestion": "How many school district offices have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 4
+        },
+        "12": {
+            "source": "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\nanswer = df[(df[\"STFIP\"] == \"12\") & (df[\"NMCNTY\"] == \"Miami-Dade County\")].shape[0]",
+            "subquestion": "How many postsecondary institutions have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 83
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Read the education company included in Graham Holdings Company's current holdings from the cited Wikipedia source.",
+                "Hop result: the company is Kaplan, Inc."
+            ],
+            "answer": "Kaplan, Inc."
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Read the city where <hop 1 answer> is headquartered from the cited Wikipedia source.",
+                "Hop result: the city is Fort Lauderdale."
+            ],
+            "answer": "Fort Lauderdale"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Read the county containing <hop 2 answer> from the cited Wikipedia source.",
+                "Hop result: the county is Broward County."
+            ],
+            "answer": "Broward County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3 establishes that <hop 2 answer> is in the U.S. state of Florida.",
+                "Node 4 maps the city/county pair `<hop 2 answer>`, `<hop 3 answer>` to the shared two-digit state FIPS code `12`, which is the dataset key needed for the downstream statewide queries.",
+                "Hop result: the relevant state is Florida, queried downstream via `STFIP` 12."
+            ],
+            "answer": "Florida"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5,
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 5: For `STFIP` = `12`, count public schools by county and keep the top three county names.",
+                "Node 6: For `STFIP` = `12`, count private schools by county and keep the top three county names.",
+                "Node 7: For `STFIP` = `12`, count school district offices by county and keep the top three county names, using alphabetical order to break ties at the cutoff.",
+                "Hop result: keep counties that are in the top three for school district offices and also in at least one of the public-school or private-school top-three sets; the candidate counties are Broward County and Miami-Dade County."
+            ],
+            "answer": [
+                "Broward County",
+                "Miami-Dade County"
+            ]
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: For `STFIP` = `12`, count postsecondary institutions by county from the cited source, restrict to the counties in <hop 5 answer>, and keep the county with the highest count.",
+                "Hop result: the county is Miami-Dade County."
+            ],
+            "answer": "Miami-Dade County"
+        },
+        {
+            "hop": 7,
+            "node_ids": [
+                9,
+                10,
+                11,
+                12
+            ],
+            "reasoning": [
+                "Node 9: For `STFIP` = `12` and `NMCNTY` = <hop 6 answer>, count public schools.",
+                "Node 10: For `STFIP` = `12` and `NMCNTY` = <hop 6 answer>, count private schools.",
+                "Node 11: For `STFIP` = `12` and `NMCNTY` = <hop 6 answer>, count school district offices.",
+                "Node 12: For `STFIP` = `12` and `NMCNTY` = <hop 6 answer>, count postsecondary institutions.",
+                "Hop result: compute `558 - 403 + 83 - 4 = 234`."
+            ],
+            "answer": 234
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Graham_Holdings/content.txt",
+        "wikipedia/Kaplan,_Inc./content.txt",
+        "wikipedia/Fort_Lauderdale,_Florida/content.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt",
+        "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+        "datagov/public-school-locations-current-23297/signed-metadata.txt",
+        "datagov/public-school-locations-current-23297/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+        "datagov/private-school-locations-2017-18-f49f6/signed-metadata.txt",
+        "datagov/private-school-locations-2017-18-f49f6/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt",
+        "datagov/school-district-office-locations-2020-21-d8df0/signed-metadata.txt",
+        "datagov/school-district-office-locations-2020-21-d8df0/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2017-18-fa280/files/data-7AG3Nw.txt",
+        "datagov/postsecondary-school-locations-2017-18-fa280/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2017-18-fa280/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+        "datagov/postsecondary-school-locations-2022-23/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2022-23/files/0.arcgis-layer.json"
+    ]
+}

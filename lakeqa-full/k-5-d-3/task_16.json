@@ -1,0 +1,219 @@
+{
+    "question": "First, identify the Washington, DC wards that consistently ranked in the top four for building permits from 2022 to 2024, then find the two wards with the highest average number of crime incidents over the same period. Among those candidates, identify the ward that had the most scheduled street-cleaning events. In that ward, find the charter school that spans grades 8 and 9. Who was this school named after, and what was that person's first language? Please return the language only. Your response should be in the format [Answer].",
+    "answer": "Dutch",
+    "nodes": {
+        "1": {
+            "source": "datagov/building-permits-in-2022/files/data.txt",
+            "fact": "import boto3\nimport io\nimport xml.etree.ElementTree as ET\nfrom collections import Counter\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/building-permits-in-2022/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\nroot = ET.parse(io.BytesIO(obj[\"Body\"].read())).getroot()\nns = {\"k\": \"http://www.opengis.net/kml/2.2\"}\ncounts = Counter()\nfor schema_data in root.findall('.//k:SchemaData', ns):\n    row = {e.attrib.get('name'): (e.text or '') for e in schema_data.findall('k:SimpleData', ns)}\n    ward = row.get('WARD')\n    if str(ward).strip() != '':\n        counts[f\"Ward {ward}\"] += 1\nanswer = dict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:4])\n",
+            "subquestion": "Which Washington, DC wards were in the top 4 by number of building permits in 2022?",
+            "answer": {
+                "Ward 6": 8371,
+                "Ward 2": 8286,
+                "Ward 4": 6971,
+                "Ward 5": 6580
+            }
+        },
+        "2": {
+            "source": "datagov/building-permits-in-2023/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/building-permits-in-2023/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ncounts = (\n    df[df[\"properties.WARD\"].notna() & (df[\"properties.WARD\"].astype(str).str.strip() != \"\")]\n    .groupby(\"properties.WARD\")\n    .size()\n    .sort_values(ascending=False)\n    .head(4)\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {x}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "Which Washington, DC wards were in the top 4 by number of building permits in 2023?",
+            "answer": {
+                "Ward 2": 8392,
+                "Ward 6": 6845,
+                "Ward 4": 6525,
+                "Ward 5": 6072
+            }
+        },
+        "3": {
+            "source": "datagov/building-permits-in-2024/files/data.txt",
+            "fact": "import boto3\nimport io\nimport xml.etree.ElementTree as ET\nfrom collections import Counter\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/building-permits-in-2024/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\nroot = ET.parse(io.BytesIO(obj[\"Body\"].read())).getroot()\nns = {\"k\": \"http://www.opengis.net/kml/2.2\"}\ncounts = Counter()\nfor schema_data in root.findall('.//k:SchemaData', ns):\n    row = {e.attrib.get('name'): (e.text or '') for e in schema_data.findall('k:SimpleData', ns)}\n    ward = row.get('WARD')\n    if str(ward).strip() != '':\n        counts[f\"Ward {ward}\"] += 1\nanswer = dict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:4])\n",
+            "subquestion": "Which Washington, DC wards were in the top 4 by number of building permits in 2024?",
+            "answer": {
+                "Ward 2": 7897,
+                "Ward 4": 6856,
+                "Ward 6": 6658,
+                "Ward 5": 6213
+            }
+        },
+        "4": {
+            "source": "datagov/crime-incidents-in-2022/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/crime-incidents-in-2022/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ncounts = (\n    df[df[\"properties.WARD\"].astype(str).isin([\"2\", \"4\", \"5\", \"6\"])]\n    .groupby(\"properties.WARD\")\n    .size()\n    .sort_index()\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {x}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "For the wards in <hop 1 answer>, how many crime incidents were recorded in 2022?",
+            "answer": {
+                "Ward 2": 4794,
+                "Ward 4": 2547,
+                "Ward 5": 4497,
+                "Ward 6": 3685
+            }
+        },
+        "5": {
+            "source": "datagov/crime-incidents-in-2023/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/crime-incidents-in-2023/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ncounts = (\n    df[df[\"properties.WARD\"].astype(str).isin([\"2\", \"4\", \"5\", \"6\"])]\n    .groupby(\"properties.WARD\")\n    .size()\n    .sort_index()\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {x}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "For the wards in <hop 1 answer>, how many crime incidents were recorded in 2023?",
+            "answer": {
+                "Ward 2": 5469,
+                "Ward 4": 3135,
+                "Ward 5": 5629,
+                "Ward 6": 4281
+            }
+        },
+        "6": {
+            "source": "datagov/crime-incidents-in-2024/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/crime-incidents-in-2024/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ncounts = (\n    df[df[\"properties.WARD\"].astype(str).isin([\"2\", \"4\", \"5\", \"6\"])]\n    .groupby(\"properties.WARD\")\n    .size()\n    .sort_index()\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {x}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "For the wards in <hop 1 answer>, how many crime incidents were recorded in 2024?",
+            "answer": {
+                "Ward 2": 4420,
+                "Ward 4": 2595,
+                "Ward 5": 4585,
+                "Ward 6": 3549
+            }
+        },
+        "7": {
+            "source": "datagov/street-sweeping-schedule-2022/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/street-sweeping-schedule-2022/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()))\nward_numeric = pd.to_numeric(df[\"WARD\"], errors=\"coerce\")\ncounts = (\n    df[ward_numeric.isin([2, 5])]\n    .groupby(ward_numeric[ward_numeric.isin([2, 5])])\n    .size()\n    .sort_index()\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {int(x)}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "For the wards in <hop 2 answer>, how many scheduled street-cleaning events were listed in 2022?",
+            "answer": {
+                "Ward 2": 72,
+                "Ward 5": 80
+            }
+        },
+        "8": {
+            "source": "datagov/street-sweeping-schedule-2023/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/street-sweeping-schedule-2023/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()))\nward_numeric = pd.to_numeric(df[\"WARD\"], errors=\"coerce\")\ncounts = (\n    df[ward_numeric.isin([2, 5])]\n    .groupby(ward_numeric[ward_numeric.isin([2, 5])])\n    .size()\n    .sort_index()\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {int(x)}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "For the wards in <hop 2 answer>, how many scheduled street-cleaning events were listed in 2023?",
+            "answer": {
+                "Ward 2": 54,
+                "Ward 5": 83
+            }
+        },
+        "9": {
+            "source": "datagov/street-sweeping-schedule-2024/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/street-sweeping-schedule-2024/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()))\nward_numeric = pd.to_numeric(df[\"WARD\"], errors=\"coerce\")\ncounts = (\n    df[ward_numeric.isin([2, 5])]\n    .groupby(ward_numeric[ward_numeric.isin([2, 5])])\n    .size()\n    .sort_index()\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {int(x)}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "For the wards in <hop 2 answer>, how many scheduled street-cleaning events were listed in 2024?",
+            "answer": {
+                "Ward 2": 54,
+                "Ward 5": 87
+            }
+        },
+        "10": {
+            "source": "datagov/dc-charter-schools/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/dc-charter-schools/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\n\ngrade_map = {\n    \"PK3\": -2,\n    \"PK4\": -1,\n    \"KG\": 0,\n    \"1st\": 1,\n    \"2nd\": 2,\n    \"3rd\": 3,\n    \"4th\": 4,\n    \"5th\": 5,\n    \"6th\": 6,\n    \"7th\": 7,\n    \"8th\": 8,\n    \"9th\": 9,\n    \"10th\": 10,\n    \"11th\": 11,\n    \"12th\": 12,\n}\n\ndef spans_8_and_9(grades):\n    if not isinstance(grades, str):\n        return False\n    for part in grades.replace(\"–\", \"-\").split(\";\"):\n        part = part.strip()\n        if \"-\" in part:\n            start, end = [x.strip() for x in part.split(\"-\", 1)]\n            if start in grade_map and end in grade_map and grade_map[start] <= 8 <= grade_map[end] and grade_map[start] <= 9 <= grade_map[end]:\n                return True\n    return False\n\nmatches = (\n    df[(df[\"properties.WARD\"] == \"Ward 5\") & (df[\"properties.GRADES\"].apply(spans_8_and_9))]\n    [\"properties.NAME\"]\n    .tolist()\n)\nanswer = matches[0] if len(matches) == 1 else matches\n",
+            "subquestion": "Which charter school in <hop 3 answer> spans grades 8 and 9?",
+            "answer": "Sojourner Truth PCS"
+        },
+        "11": {
+            "source": "wikipedia/Sojourner_Truth/content.txt",
+            "fact": "Her first language was Dutch, and she continued to speak with a Dutch accent for the rest of her life.",
+            "subquestion": "What was the first language of the person named in <hop 4 answer>?",
+            "answer": "Dutch"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Sojourner_Truth/content.txt",
+        "datagov/building-permits-in-2022/files/data.txt",
+        "datagov/building-permits-in-2022/signed-metadata.txt",
+        "datagov/building-permits-in-2022/files/14.arcgis-layer.json",
+        "datagov/building-permits-in-2023/files/data.txt",
+        "datagov/building-permits-in-2023/signed-metadata.txt",
+        "datagov/building-permits-in-2023/files/15.arcgis-layer.json",
+        "datagov/building-permits-in-2024/files/data.txt",
+        "datagov/building-permits-in-2024/signed-metadata.txt",
+        "datagov/building-permits-in-2024/files/16.arcgis-layer.json",
+        "datagov/crime-incidents-in-2022/files/data.txt",
+        "datagov/crime-incidents-in-2022/signed-metadata.txt",
+        "datagov/crime-incidents-in-2022/files/4.arcgis-layer.json",
+        "datagov/crime-incidents-in-2023/files/data.txt",
+        "datagov/crime-incidents-in-2023/signed-metadata.txt",
+        "datagov/crime-incidents-in-2023/files/5.arcgis-layer.json",
+        "datagov/crime-incidents-in-2024/files/data.txt",
+        "datagov/crime-incidents-in-2024/signed-metadata.txt",
+        "datagov/crime-incidents-in-2024/files/6.arcgis-layer.json",
+        "datagov/street-sweeping-schedule-2022/files/rows.txt",
+        "datagov/street-sweeping-schedule-2022/signed-metadata.txt",
+        "datagov/street-sweeping-schedule-2023/files/rows.txt",
+        "datagov/street-sweeping-schedule-2023/signed-metadata.txt",
+        "datagov/street-sweeping-schedule-2024/files/rows.txt",
+        "datagov/street-sweeping-schedule-2024/signed-metadata.txt",
+        "datagov/street-sweeping-schedule-2024/v1/files/3q8d-2t69.json",
+        "datagov/dc-charter-schools/files/data.txt",
+        "datagov/dc-charter-schools/signed-metadata.txt",
+        "datagov/dc-charter-schools/files/1.arcgis-layer.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Parse the 2022 KML building-permits source, extract `WARD` from each permit record, count permits by ward, sort descending, and keep the top four wards.",
+                "Node 2: Normalize the 2023 GeoJSON building-permits source, filter rows where `properties.WARD` is present, count permits by `properties.WARD`, sort descending, and keep the top four wards.",
+                "Node 3: Parse the 2024 KML building-permits source, extract `WARD` from each permit record, count permits by ward, sort descending, and keep the top four wards.",
+                "Hop result: intersect the three yearly top-four ward sets to keep the wards that consistently ranked in the top four for building permits."
+            ],
+            "answer": [
+                "Ward 2",
+                "Ward 4",
+                "Ward 5",
+                "Ward 6"
+            ]
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: Normalize the 2022 crime-incidents GeoJSON, filter rows where `properties.WARD` is 2, 4, 5, or 6, count incidents by `properties.WARD`, and return the yearly ward mapping.",
+                "Node 5: Normalize the 2023 crime-incidents GeoJSON, filter rows where `properties.WARD` is 2, 4, 5, or 6, count incidents by `properties.WARD`, and return the yearly ward mapping.",
+                "Node 6: Normalize the 2024 crime-incidents GeoJSON, filter rows where `properties.WARD` is 2, 4, 5, or 6, count incidents by `properties.WARD`, and return the yearly ward mapping.",
+                "Hop result: average the three yearly incident counts and keep the two wards with the highest overall averages: Ward 5 and Ward 2."
+            ],
+            "answer": [
+                "Ward 5",
+                "Ward 2"
+            ]
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                7,
+                8,
+                9
+            ],
+            "reasoning": [
+                "Node 7: Convert 2022 `WARD` values to numeric, filter rows where `WARD` is 2 or 5 from <hop 2 answer>, count schedule entries by ward, and return the yearly ward mapping.",
+                "Node 8: Convert 2023 `WARD` values to numeric, filter rows where `WARD` is 2 or 5 from <hop 2 answer>, count schedule entries by ward, and return the yearly ward mapping.",
+                "Node 9: Convert 2024 `WARD` values to numeric, filter rows where `WARD` is 2 or 5 from <hop 2 answer>, count schedule entries by ward, and return the yearly ward mapping.",
+                "Hop result: average the three yearly street-sweeping entry counts and select Ward 5 because it has the higher overall average."
+            ],
+            "answer": "Ward 5"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: Normalize the DC charter-schools GeoJSON, filter rows where `properties.WARD` = `Ward 5` and the grade span in `properties.GRADES` includes both 8th and 9th grade, then return the matching school name.",
+                "Hop result: the school is Sojourner Truth PCS."
+            ],
+            "answer": "Sojourner Truth PCS"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                11
+            ],
+            "reasoning": [
+                "Node 11: Retrieve the first language of the person named after <hop 4 answer>.",
+                "Hop result: the language is Dutch."
+            ],
+            "answer": "Dutch"
+        }
+    ]
+}

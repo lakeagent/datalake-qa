@@ -1,0 +1,119 @@
+{
+    "question": "In the state with two-digit FIPS code 19, find the counties that rank in the top three for public schools, private schools, and school district offices. Among their intersection, select the county with the most postsecondary institutions. For that county, compute (public schools + district offices) - (private schools + postsecondary institutions). Only report the integer result. Your response should be in the format [Answer].",
+    "answer": "109",
+    "nodes": {
+        "1": {
+            "source": "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\nfiltered = df[state_fips.eq(19)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+            "subquestion": "For STFIP='19', which 3 county names have the most public schools? Return the county names separated by '; '.",
+            "answer": "Polk County; Linn County; Scott County"
+        },
+        "2": {
+            "source": "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\nfiltered = df[state_fips.eq(19)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+            "subquestion": "For STFIP='19', which 3 county names have the most private schools? Return the county names separated by '; '.",
+            "answer": "Polk County; Linn County; Sioux County"
+        },
+        "3": {
+            "source": "datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\nfiltered = df[state_fips.eq(19)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+            "subquestion": "For STFIP='19', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+            "answer": "Linn County; Polk County; Pottawattamie County"
+        },
+        "4": {
+            "source": "datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nnode_1_answer = \"Polk County; Linn County; Scott County\"\nnode_2_answer = \"Polk County; Linn County; Sioux County\"\nnode_3_answer = \"Linn County; Polk County; Pottawattamie County\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\ndef parse_counties(value):\n    return {part.strip() for part in str(value).split(\";\") if part.strip()}\n\ncandidate_counties = parse_counties(node_3_answer) & (parse_counties(node_1_answer) | parse_counties(node_2_answer))\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\nfiltered = df[state_fips.eq(19)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index]\nfiltered = filtered[filtered[\"NMCNTY\"].isin(candidate_counties)]\ncounts = (\n    filtered.groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = str(counts.iloc[0][\"NMCNTY\"]) if not counts.empty else \"\"",
+            "subquestion": "Let A be the set of counties in <node_1 answer>, B be the set of counties in <node_2 answer>, and C be the set of counties in <node_3 answer>. Consider the intersection of C with the union of A and B. Among those counties, which single county has the most postsecondary institutions in STFIP='19'? Answer with the county name including the word 'County'.",
+            "answer": "Polk County"
+        },
+        "5": {
+            "source": "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nnode_4_answer = \"Polk County\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip().str.lower()\nfiltered = df[state_fips.eq(19) & county.eq(str(node_4_answer).strip().lower())]\nanswer = str(int(len(filtered)))",
+            "subquestion": "How many public schools have NMCNTY='<node_4 answer>' and STFIP='19'?",
+            "answer": "130"
+        },
+        "6": {
+            "source": "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nnode_4_answer = \"Polk County\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip().str.lower()\nfiltered = df[state_fips.eq(19) & county.eq(str(node_4_answer).strip().lower())]\nanswer = str(int(len(filtered)))",
+            "subquestion": "How many private schools have NMCNTY='<node_4 answer>' and STFIP='19'?",
+            "answer": "19"
+        },
+        "7": {
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nnode_4_answer = \"Polk County\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip().str.lower()\nfiltered = df[state_fips.eq(19) & county.eq(str(node_4_answer).strip().lower())]\nanswer = str(int(len(filtered)))",
+            "subquestion": "How many school district offices have NMCNTY='<node_4 answer>' and STFIP='19'?",
+            "answer": "12"
+        },
+        "8": {
+            "source": "datagov/postsecondary-school-locations-2017-18-fa280/files/data-7AG3Nw.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/postsecondary-school-locations-2017-18-fa280/files/data-7AG3Nw.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nnode_4_answer = \"Polk County\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip().str.lower()\nfiltered = df[state_fips.eq(19) & county.eq(str(node_4_answer).strip().lower())]\nanswer = str(int(len(filtered)))",
+            "subquestion": "How many postsecondary institutions have NMCNTY='<node_4 answer>' and STFIP='19'?",
+            "answer": "14"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: For STFIP=19, the 3 counties with the most public schools are: Polk County (130); Linn County (77); Scott County (52). The next county is Johnson County (40), so the cut is unique.",
+                "Node 2: For STFIP=19, the 3 counties with the most private schools are: Polk County (19); Linn County (14); Sioux County (14). The next county is Dubuque County (13), so the cut is unique.",
+                "Node 3: For STFIP=19, the 3 counties with the most school district offices are: Linn County (12); Polk County (10); Pottawattamie County (8). The next county is Story County (7), so the cut is unique.",
+                "Derive hop 1 answer using nodes 1, 2, and 3: produce the three top-county sets (public, private, district offices) for STFIP 19. Hop answer: Candidate county intersection inputs."
+            ],
+            "answer": "Candidate county intersection inputs"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Using the intersection of C with the union of A and B, the candidate counties are: Linn County, Polk County. Postsecondary counts within that set are: Polk County (11); Linn County (7). Polk County is strictly highest.",
+                "Derive hop 2 answer from node 4: combine/intersect the hop 1 sets per node 4 logic to choose the county with the highest postsecondary count. Hop answer: Polk County."
+            ],
+            "answer": "Polk County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5,
+                6,
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 5: For STFIP=19 and NMCNTY='Polk County', the public school count is 130.",
+                "Node 6: For STFIP=19 and NMCNTY='Polk County', the private school count is 19.",
+                "Node 7: For STFIP=19 and NMCNTY='Polk County', the school district office count is 12.",
+                "Node 8: For STFIP=19 and NMCNTY='Polk County', the postsecondary institution count is 14.",
+                "Derive hop 3 answer using nodes 5, 6, 7, and 8: compute public minus private minus district-office counts for the selected county. Hop answer: 109."
+            ],
+            "answer": "109"
+        }
+    ],
+    "datasets_used": [
+        "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+        "datagov/public-school-locations-2018-19-42360/signed-metadata.txt",
+        "datagov/public-school-locations-2018-19-42360/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+        "datagov/private-school-locations-2017-18-f49f6/signed-metadata.txt",
+        "datagov/private-school-locations-2017-18-f49f6/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt",
+        "datagov/school-district-office-locations-2020-21-d8df0/signed-metadata.txt",
+        "datagov/school-district-office-locations-2020-21-d8df0/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt",
+        "datagov/postsecondary-school-locations-2019-20-64b31/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2019-20-64b31/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2017-18-fa280/files/data-7AG3Nw.txt",
+        "datagov/postsecondary-school-locations-2017-18-fa280/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2017-18-fa280/files/0.arcgis-layer.json"
+    ]
+}

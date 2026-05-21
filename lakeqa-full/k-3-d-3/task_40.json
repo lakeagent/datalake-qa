@@ -1,0 +1,97 @@
+{
+  "question": "In 2017, which U.S. state had the 3rd lowest death rate for unintentional injuries? In that state, since 2010, which years did their offices have the 3rd to 12th highest unpaid expenditure on food and beverages? Among the years in that answer, which three years had the most traffic crashes in LA? Across the Los Angeles Lakers seasons that began in those three years, how many regular-season wins did the team have in total? Please return only the number in the format [Answer].",
+  "answer": 124,
+  "nodes": {
+    "1": {
+      "source": "datagov/nchs-leading-causes-of-death-united-states/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nchs-leading-causes-of-death-united-states/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['rate_num'] = pd.to_numeric(df['Age-adjusted Death Rate'], errors='coerce')\nfiltered = df[\n    df['Year'].eq('2017')\n    & df['Cause Name'].eq('Unintentional injuries')\n    & df['State'].ne('United States')\n    & df['State'].ne('')\n    & df['rate_num'].notna()\n].copy()\nranked = filtered.sort_values(['rate_num', 'State'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = str(ranked.iloc[2]['State'])\n",
+      "subquestion": "In 2017, which U.S. state had the 3rd lowest death rate for unintentional injuries?",
+      "answer": "Hawaii"
+    },
+    "2": {
+      "source": "datagov/unpaid-expenditures-for-hawaii-state-and-county-candidates-from-november-8-2006-through-31/files/ccsche.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/unpaid-expenditures-for-hawaii-state-and-county-candidates-from-november-8-2006-through-31/files/ccsche.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['year_num'] = pd.to_datetime(df['Date'], errors='coerce').dt.year\ndf['amt_num'] = pd.to_numeric(df['Unpaid Expenditure Amount'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nfiltered = df[\n    df['Expenditure Category'].eq('Food & Beverages')\n    & df['year_num'].ge(2010)\n    & df['amt_num'].notna()\n].copy()\nranked = filtered.groupby('year_num', as_index=False)['amt_num'].sum().sort_values(['amt_num', 'year_num'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[2:12]['year_num'].astype(int).astype(str).tolist())\n",
+      "subquestion": "For <node_1 answer> offices, since 2010, which years did they have the3rd to 12th highest unpaid expenditure on food and beverages?",
+      "answer": "2010; 2017; 2012; 2016; 2022; 2018; 2011; 2020; 2019; 2015"
+    },
+    "3": {
+      "source": "datagov/traffic-collision-data-from-2010-to-present/files/rows.txt",
+      "fact": "import io\nimport re\nfrom collections import Counter\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/traffic-collision-data-from-2010-to-present/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_2_answer = '2010; 2017; 2012; 2016; 2022; 2018; 2011; 2020; 2019; 2015'\ncandidate_years = set(re.findall(r'\\b\\d{4}\\b', node_2_answer))\ntext = boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read().decode('utf-8', errors='replace')\npattern = re.compile(r'(\\d{9}) (\\d{4})-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2} (\\d{4})-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}')\ncounts = Counter()\nfor match in pattern.finditer(text):\n    year = match.group(3)\n    if year in candidate_years:\n        counts[year] += 1\nranked = sorted(counts.items(), key=lambda x: (-x[1], x[0]))\nanswer = '; '.join(year for year, _ in ranked[:3])\n",
+      "subquestion": "Among the years in <node_2 answer>, which three years had the most traffic crashes in LA?",
+      "answer": "2017; 2018; 2019"
+    },
+    "4": {
+      "source": "wikipedia/2017–18_Los_Angeles_Lakers_season/content.txt",
+      "fact": "| 82\n| April 11\n| @ L.A. Clippers\n| \n| Josh Hart (30)\n| Gary Payton II (12)\n| Andre Ingram (6)\n| Staples Center19,068\n| 35–47",
+      "subquestion": "How many regular-season wins did the Los Angeles Lakers have in the season that began in the first year of <hop 2 answer>?",
+      "answer": 35
+    },
+    "5": {
+      "source": "wikipedia/2018–19_Los_Angeles_Lakers_season/content.txt",
+      "fact": "| 82\n| April 9\n| Portland\n| \n| Kentavious Caldwell-Pope (32)\n| Jemerrio Jones (15)\n| Alex Caruso (13)\n| Staples Center18,997\n| 37–45",
+      "subquestion": "How many regular-season wins did the Los Angeles Lakers have in the season that began in the second year of <hop 2 answer>?",
+      "answer": 37
+    },
+    "6": {
+      "source": "wikipedia/2019–20_Los_Angeles_Lakers_season/content.txt",
+      "fact": "The Lakers finished the shortened season 52–19, with a winning percentage roughly equivalent to 60 wins in a full season.",
+      "subquestion": "How many regular-season wins did the Los Angeles Lakers have in the season that began in the third year of <hop 2 answer>?",
+      "answer": 52
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1 filters the leading-causes table to 2017, the cause Unintentional injuries, and states only.",
+        "It ranks states by age-adjusted death rate from lowest to highest.",
+        "Hawaii is the 3rd lowest."
+      ],
+      "answer": "Hawaii"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 2 sums unpaid Food & Beverages expenditures by year from 2010 onward in Hawaii and returns the years ranked 3rd through 12th by total amount.",
+        "Those candidate years are 2010, 2017, 2012, 2016, 2022, 2018, 2011, 2020, 2019, and 2015.",
+        "Node 3 counts traffic-collision records for just those candidate years and ranks the years by collision count.",
+        "The top three are 2017, 2018, and 2019."
+      ],
+      "answer": "2017; 2018; 2019"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        4,
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 4 gives 35 wins for the Los Angeles Lakers season that began in the first year of <hop 2 answer>.",
+        "Node 5 gives 37 wins for the Los Angeles Lakers season that began in the second year of <hop 2 answer>.",
+        "Node 6 gives 52 wins for the Los Angeles Lakers season that began in the third year of <hop 2 answer>.",
+        "The total is 35 + 37 + 52 = 124."
+      ],
+      "answer": 124
+    }
+  ],
+  "datasets_used": [
+    "datagov/nchs-leading-causes-of-death-united-states/files/rows.txt",
+    "datagov/nchs-leading-causes-of-death-united-states/signed-metadata.txt",
+    "datagov/unpaid-expenditures-for-hawaii-state-and-county-candidates-from-november-8-2006-through-31/files/ccsche.txt",
+    "datagov/unpaid-expenditures-for-hawaii-state-and-county-candidates-from-november-8-2006-through-31/signed-metadata.txt",
+    "datagov/traffic-collision-data-from-2010-to-present/files/rows.txt",
+    "datagov/traffic-collision-data-from-2010-to-present/signed-metadata.txt",
+    "datagov/traffic-collision-data-from-2010-to-present/files/d5tf-ez2w.txt",
+    "wikipedia/2017–18_Los_Angeles_Lakers_season/content.txt",
+    "wikipedia/2018–19_Los_Angeles_Lakers_season/content.txt",
+    "wikipedia/2019–20_Los_Angeles_Lakers_season/content.txt"
+  ]
+}

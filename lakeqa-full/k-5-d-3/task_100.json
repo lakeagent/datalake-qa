@@ -1,0 +1,128 @@
+{
+    "question": "Define a more valuable area as one with a higher average property market value and gross income per square foot. In Manhattan, Brooklyn, and Queens, which postcodes are respectively the 7th, 8th, and 8th most valuable areas in 2008-09? For all schools in those areas, which school year has the highest number of registered students? Using the starting year of that school year, among all states where registered buses are fewer than trucks and registered cars are greater than trucks, which state has the 5th highest number of registered cars? For that state, which county has the second-largest government-guaranteed loan amount among rows where the approved amount is less than total project costs? How far apart were that county's 2020 and 2010 census populations? Please return only the number in the format [Answer].",
+    "answer": 16098,
+    "nodes": {
+        "1": {
+            "source": "datagov/dof-condominium-comparable-rental-income-manhattan-fy-2008-2009/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/dof-condominium-comparable-rental-income-manhattan-fy-2008-2009/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Postcode\"] = df[\"Postcode\"].fillna(\"\").astype(str).str.strip()\ndf[\"MANHATTAN CONDOMINIUM PROPERTY Market Value per SqFt\"] = pd.to_numeric(df[\"MANHATTAN CONDOMINIUM PROPERTY Market Value per SqFt\"], errors=\"coerce\")\ndf[\"MANHATTAN CONDOMINIUM PROPERTY Gross Income per SqFt\"] = pd.to_numeric(df[\"MANHATTAN CONDOMINIUM PROPERTY Gross Income per SqFt\"], errors=\"coerce\")\nagg = df[\n    df[\"Postcode\"].ne(\"\")\n    & df[\"MANHATTAN CONDOMINIUM PROPERTY Market Value per SqFt\"].notna()\n    & df[\"MANHATTAN CONDOMINIUM PROPERTY Gross Income per SqFt\"].notna()\n].groupby(\"Postcode\", as_index=False).agg(\n    avg_market_value_per_sqft=(\"MANHATTAN CONDOMINIUM PROPERTY Market Value per SqFt\", \"mean\"),\n    avg_gross_income_per_sqft=(\"MANHATTAN CONDOMINIUM PROPERTY Gross Income per SqFt\", \"mean\")\n)\nranked = agg.sort_values(\n    [\"avg_market_value_per_sqft\", \"avg_gross_income_per_sqft\", \"Postcode\"],\n    ascending=[False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = str(ranked.iloc[6][\"Postcode\"])\n",
+            "subquestion": "Define a more valuable area as one with a higher average property market value and gross income per square foot. In Manhattan, which postcode is the 7th most valuable area in 2008-09?",
+            "answer": "10023"
+        },
+        "2": {
+            "source": "datagov/dof-condominium-comparable-rental-income-brooklyn-fy-2008-2009/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/dof-condominium-comparable-rental-income-brooklyn-fy-2008-2009/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Postcode\"] = df[\"Postcode\"].fillna(\"\").astype(str).str.strip()\ndf[\"BROOKLYN CONDOMINIUM PROPERTY Market Value per SqFt\"] = pd.to_numeric(df[\"BROOKLYN CONDOMINIUM PROPERTY Market Value per SqFt\"], errors=\"coerce\")\ndf[\"BROOKLYN CONDOMINIUM PROPERTY Gross Income per SqFt\"] = pd.to_numeric(df[\"BROOKLYN CONDOMINIUM PROPERTY Gross Income per SqFt\"], errors=\"coerce\")\nagg = df[\n    df[\"Postcode\"].ne(\"\")\n    & df[\"BROOKLYN CONDOMINIUM PROPERTY Market Value per SqFt\"].notna()\n    & df[\"BROOKLYN CONDOMINIUM PROPERTY Gross Income per SqFt\"].notna()\n].groupby(\"Postcode\", as_index=False).agg(\n    avg_market_value_per_sqft=(\"BROOKLYN CONDOMINIUM PROPERTY Market Value per SqFt\", \"mean\"),\n    avg_gross_income_per_sqft=(\"BROOKLYN CONDOMINIUM PROPERTY Gross Income per SqFt\", \"mean\")\n)\nranked = agg.sort_values(\n    [\"avg_market_value_per_sqft\", \"avg_gross_income_per_sqft\", \"Postcode\"],\n    ascending=[False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = str(ranked.iloc[7][\"Postcode\"])\n",
+            "subquestion": "Define a more valuable area as one with a higher average property market value and gross income per square foot. In Brooklyn, which postcode is the 8th most valuable area in 2008-09?",
+            "answer": "11215"
+        },
+        "3": {
+            "source": "datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Postcode\"] = df[\"Postcode\"].fillna(\"\").astype(str).str.strip()\ndf[\"QUEENS CONDOMINIUM PROPERTY Market Value per SqFt\"] = pd.to_numeric(df[\"QUEENS CONDOMINIUM PROPERTY Market Value per SqFt\"], errors=\"coerce\")\ndf[\"QUEENS CONDOMINIUM PROPERTY Gross Income per SqFt\"] = pd.to_numeric(df[\"QUEENS CONDOMINIUM PROPERTY Gross Income per SqFt\"], errors=\"coerce\")\nagg = df[\n    df[\"Postcode\"].ne(\"\")\n    & df[\"QUEENS CONDOMINIUM PROPERTY Market Value per SqFt\"].notna()\n    & df[\"QUEENS CONDOMINIUM PROPERTY Gross Income per SqFt\"].notna()\n].groupby(\"Postcode\", as_index=False).agg(\n    avg_market_value_per_sqft=(\"QUEENS CONDOMINIUM PROPERTY Market Value per SqFt\", \"mean\"),\n    avg_gross_income_per_sqft=(\"QUEENS CONDOMINIUM PROPERTY Gross Income per SqFt\", \"mean\")\n)\nranked = agg.sort_values(\n    [\"avg_market_value_per_sqft\", \"avg_gross_income_per_sqft\", \"Postcode\"],\n    ascending=[False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = str(ranked.iloc[7][\"Postcode\"])\n",
+            "subquestion": "Define a more valuable area as one with a higher average property market value and gross income per square foot. In Queens, which postcode is the 8th most valuable area in 2008-09?",
+            "answer": "11360"
+        },
+        "4": {
+            "source": "datagov/2010-2016-school-safety-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/2010-2016-school-safety-report/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_1_answer = \"10023, 11215, 11360\"\ntarget_postcodes = {part.strip() for part in str(hop_1_answer).split(\",\") if part.strip()}\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"Register_num\"] = pd.to_numeric(df[\"Register\"], errors=\"coerce\")\nfiltered = df[df[\"Postcode\"].isin(target_postcodes) & df[\"Register_num\"].notna()].copy()\nranked = filtered.groupby(\"School Year\", as_index=False)[\"Register_num\"].sum().sort_values(\n    [\"Register_num\", \"School Year\"],\n    ascending=[False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = str(ranked.iloc[0][\"School Year\"])\n",
+            "subquestion": "For all schools in the areas of the postcodes in <hop 1 answer>, which school year has the highest total registered students from 2010 to 2016?",
+            "answer": "2014-15"
+        },
+        "5": {
+            "source": "datagov/motor-vehicle-registrations-dashboard-data/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/motor-vehicle-registrations-dashboard-data/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_2_answer = \"2014-15\"\nstarting_year = int(str(hop_2_answer).split(\"-\")[0])\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"year_num\"] = pd.to_numeric(df[\"year\"], errors=\"coerce\")\ndf[\"Auto_num\"] = pd.to_numeric(df[\"Auto\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\ndf[\"Bus_num\"] = pd.to_numeric(df[\"Bus\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\ndf[\"Truck_num\"] = pd.to_numeric(df[\"Truck\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[\n    df[\"year_num\"].eq(starting_year)\n    & df[\"Auto_num\"].notna()\n    & df[\"Bus_num\"].notna()\n    & df[\"Truck_num\"].notna()\n    & df[\"Bus_num\"].lt(df[\"Truck_num\"])\n    & df[\"Auto_num\"].gt(df[\"Truck_num\"])\n].copy()\nranked = filtered.sort_values([\"Auto_num\", \"state\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = str(ranked.iloc[4][\"state\"])\n",
+            "subquestion": "Using the starting year of <hop 2 answer>, among all states where registered buses are fewer than trucks and registered cars are greater than trucks, which state has the 5th highest number of registered cars?",
+            "answer": "Maryland"
+        },
+        "6": {
+            "source": "datagov/maryland-commerce-consolidated-finance-tracker-data/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/maryland-commerce-consolidated-finance-tracker-data/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_3_answer = \"Maryland\"\ntarget_state = {\"Maryland\": \"MD\"}.get(str(hop_3_answer).strip(), str(hop_3_answer).strip())\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\nfor col in [\"Approved Amount\", \"Loan Guarantee Amount\", \"Total Project Costs\"]:\n    df[col + \"_num\"] = pd.to_numeric(df[col].astype(str).str.replace(\"$\", \"\", regex=False).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[\n    df[\"State\"].eq(target_state)\n    & df[\"County\"].ne(\"\")\n    & df[\"Approved Amount_num\"].notna()\n    & df[\"Loan Guarantee Amount_num\"].notna()\n    & df[\"Total Project Costs_num\"].notna()\n    & df[\"Approved Amount_num\"].lt(df[\"Total Project Costs_num\"])\n].copy()\nranked = filtered.sort_values([\"Loan Guarantee Amount_num\", \"County\", \"Recipient\"], ascending=[False, True, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = str(ranked.iloc[1][\"County\"])\n",
+            "subquestion": "In <hop 3 answer>, which county has the second-largest government-guaranteed loan amount among rows where the approved amount is less than total project costs?",
+            "answer": "Harford"
+        },
+        "7": {
+            "source": "wikipedia/Harford_County,_Maryland/content.txt",
+            "fact": "Harford County is a county located in the U.S. state of Maryland. As of the 2020 census, the population was 260,924.\nAs of the 2010 United States census, there were 244,826 people, 90,218 households, and 66,335 families residing in the county.",
+            "subquestion": "How far apart were the 2020 and 2010 census populations of <hop 4 answer> County?",
+            "answer": 16098
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Harford_County,_Maryland/content.txt",
+        "datagov/dof-condominium-comparable-rental-income-manhattan-fy-2008-2009/files/rows.txt",
+        "datagov/dof-condominium-comparable-rental-income-manhattan-fy-2008-2009/signed-metadata.txt",
+        "datagov/dof-condominium-comparable-rental-income-brooklyn-fy-2008-2009/files/rows.txt",
+        "datagov/dof-condominium-comparable-rental-income-brooklyn-fy-2008-2009/signed-metadata.txt",
+        "datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/files/rows.txt",
+        "datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/signed-metadata.txt",
+        "datagov/2010-2016-school-safety-report/files/rows.txt",
+        "datagov/2010-2016-school-safety-report/signed-metadata.txt",
+        "datagov/2010-2016-school-safety-report/files/qybk-bjjc.publisher-view.json",
+        "datagov/motor-vehicle-registrations-dashboard-data/files/rows.txt",
+        "datagov/motor-vehicle-registrations-dashboard-data/signed-metadata.txt",
+        "datagov/maryland-commerce-consolidated-finance-tracker-data/files/rows.txt",
+        "datagov/maryland-commerce-consolidated-finance-tracker-data/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: In the Manhattan condo dataset, aggregate by postcode, rank by average property Market Value per SqFt descending and then average property Gross Income per SqFt descending, and the 7th-ranked postcode is 10023.",
+                "Node 2: In the Brooklyn condo dataset, using the same postcode-level ranking rule, the 8th-ranked postcode is 11215.",
+                "Node 3: In the Queens condo dataset, using the same postcode-level ranking rule, the 8th-ranked postcode is 11360.",
+                "Hop result: 10023, 11215, 11360"
+            ],
+            "answer": "10023, 11215, 11360"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In the school safety report, filter to the postcodes in <hop 1 answer> and sum Register within each School Year.",
+                "The totals are 12341 for 2013-14, 27878 for 2014-15, and 27204 for 2015-16.",
+                "Therefore, the School Year with the highest total Register is 2014-15."
+            ],
+            "answer": "2014-15"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Take the starting year of <hop 2 answer>, which is 2014.",
+                "In the motor-vehicle registrations dashboard data, keep states in 2014 where Bus is less than Truck and Auto is greater than Truck, then rank them by Auto descending.",
+                "The ordered states are California, Florida, New Jersey, Massachusetts, Maryland, Connecticut, Rhode Island, and District of Columbia, so the 5th-highest Auto count belongs to Maryland."
+            ],
+            "answer": "Maryland"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: In the Maryland commerce consolidated finance tracker data, filter to State = MD, keep rows with Approved Amount less than Total Project Costs, and rank rows by Loan Guarantee Amount descending.",
+                "The top Loan Guarantee Amount row is Howard County at 7,000,000, and the second-largest row is Harford County at 1,221,540.",
+                "Therefore, the county with the second-largest Loan Guarantee Amount is Harford."
+            ],
+            "answer": "Harford"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7 gives Harford County's 2020 census population as 260,924 and its 2010 United States census population as 244,826.",
+                "Hop result: 260,924 - 244,826 = 16,098."
+            ],
+            "answer": 16098
+        }
+    ]
+}

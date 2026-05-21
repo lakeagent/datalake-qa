@@ -1,0 +1,120 @@
+{
+    "question": "In 2017, which U.S. state had the 3rd lowest death rate for unintentional injuries? In that state A, since 2010, which years did their offices have the 3rd to 12th highest unpaid expenditure on food and beverages? Among the years in that answer, which three years B, C, and D had the most traffic crashes in LA? In that state A, and in years B, C, and D, which departments had the 3rd to 5th highest, 4th to 6th highest, and 5th to 7th highest actual budgets for the general government function? Finally, across all departments that appear in those three answers, what was their average planned budget for the general government function in 2019? Please return only the number in the format [Answer].",
+    "answer": "41526403.8",
+    "nodes": {
+        "1": {
+            "source": "datagov/nchs-leading-causes-of-death-united-states/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nchs-leading-causes-of-death-united-states/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['rate_num'] = pd.to_numeric(df['Age-adjusted Death Rate'], errors='coerce')\nfiltered = df[\n    df['Year'].eq('2017')\n    & df['Cause Name'].eq('Unintentional injuries')\n    & df['State'].ne('United States')\n    & df['State'].ne('')\n    & df['rate_num'].notna()\n].copy()\nranked = filtered.sort_values(['rate_num', 'State'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = str(ranked.iloc[2]['State'])\n",
+            "subquestion": "In 2017, which U.S. state had the 3rd lowest death rate for unintentional injuries?",
+            "answer": "Hawaii"
+        },
+        "2": {
+            "source": "datagov/unpaid-expenditures-for-hawaii-state-and-county-candidates-from-november-8-2006-through-31/files/ccsche.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/unpaid-expenditures-for-hawaii-state-and-county-candidates-from-november-8-2006-through-31/files/ccsche.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['year_num'] = pd.to_datetime(df['Date'], errors='coerce').dt.year\ndf['amt_num'] = pd.to_numeric(df['Unpaid Expenditure Amount'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nfiltered = df[\n    df['Expenditure Category'].eq('Food & Beverages')\n    & df['year_num'].ge(2010)\n    & df['amt_num'].notna()\n].copy()\nranked = filtered.groupby('year_num', as_index=False)['amt_num'].sum().sort_values(['amt_num', 'year_num'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[2:12]['year_num'].astype(int).astype(str).tolist())\n",
+            "subquestion": "For <node_1 answer> offices, since 2010, which years did they have the3rd to 12th highest unpaid expenditure on food and beverages?",
+            "answer": "2010; 2017; 2012; 2016; 2022; 2018; 2011; 2020; 2019; 2015"
+        },
+        "3": {
+            "source": "datagov/traffic-collision-data-from-2010-to-present/files/rows.txt",
+            "fact": "import io\nimport re\nfrom collections import Counter\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/traffic-collision-data-from-2010-to-present/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_2_answer = '2010; 2017; 2012; 2016; 2022; 2018; 2011; 2020; 2019; 2015'\ncandidate_years = set(re.findall(r'\\b\\d{4}\\b', node_2_answer))\ntext = boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read().decode('utf-8', errors='replace')\npattern = re.compile(r'(\\d{9}) (\\d{4})-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2} (\\d{4})-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}')\ncounts = Counter()\nfor match in pattern.finditer(text):\n    year = match.group(3)\n    if year in candidate_years:\n        counts[year] += 1\nranked = sorted(counts.items(), key=lambda x: (-x[1], x[0]))\nanswer = '; '.join(year for year, _ in ranked[:3])\n",
+            "subquestion": "Among the years in <node_2 answer>, which three years had the most traffic crashes in LA?",
+            "answer": "2017; 2018; 2019"
+        },
+        "4": {
+            "source": "datagov/adopted-fy17-budget/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/adopted-fy17-budget/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['budget_num'] = pd.to_numeric(df['FY 2017 Final Budget'].astype(str).str.replace(',', '', regex=False), errors='coerce').fillna(0)\nfiltered = df[df['Fund Name'].eq('General Fund')].copy()\nranked = filtered.groupby('Department Name', as_index=False)['budget_num'].sum().sort_values(['budget_num', 'Department Name'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[2:5]['Department Name'].tolist())\n",
+            "subquestion": "In <node_1 answer> and the first year of <node_3 answer>, which departments had the 3rd to 5th highest actual budgets for the general government function?",
+            "answer": "Parks and Recreation; Emergency Services; Facility Maintenance"
+        },
+        "5": {
+            "source": "datagov/adopted-fy18-budget/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/adopted-fy18-budget/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['budget_num'] = pd.to_numeric(df['FY 2018 Final Budget'].astype(str).str.replace(',', '', regex=False), errors='coerce').fillna(0)\nfiltered = df[df['Fund Name'].eq('General Fund')].copy()\nranked = filtered.groupby('Department Name', as_index=False)['budget_num'].sum().sort_values(['budget_num', 'Department Name'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[3:6]['Department Name'].tolist())\n",
+            "subquestion": "In <node_1 answer> and the second year of <node_3 answer>, which departments had the 4th to 6th highest actual budgets for the general government function?",
+            "answer": "Emergency Services; Facility Maintenance; Customer Services"
+        },
+        "6": {
+            "source": "datagov/adopted-fy19-budget/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/adopted-fy19-budget/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['budget_num'] = pd.to_numeric(df['FY 2019 Final Budget'].astype(str).str.replace(',', '', regex=False), errors='coerce').fillna(0)\nfiltered = df[df['Fund Name'].eq('General Fund')].copy()\nranked = filtered.groupby('Department Name', as_index=False)['budget_num'].sum().sort_values(['budget_num', 'Department Name'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[4:7]['Department Name'].tolist())\n",
+            "subquestion": "In <node_1 answer> and the third year of <node_3 answer>, which departments had the 5th to 7th highest actual budgets for the general government function?",
+            "answer": "Facility Maintenance; Customer Services; Planning and Permitting"
+        },
+        "7": {
+            "source": "datagov/proposed-fy19-budget/files/rows.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/proposed-fy19-budget/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_4_answer = 'Parks and Recreation; Emergency Services; Facility Maintenance'\nnode_5_answer = 'Emergency Services; Facility Maintenance; Customer Services'\nnode_6_answer = 'Facility Maintenance; Customer Services; Planning and Permitting'\ntarget_departments = []\nfor part in (node_4_answer + '; ' + node_5_answer + '; ' + node_6_answer).split(';'):\n    name = part.strip()\n    if name and name not in target_departments:\n        target_departments.append(name)\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['budget_num'] = pd.to_numeric(df['FY 2019 Proposed Budget'].astype(str).str.replace(',', '', regex=False), errors='coerce').fillna(0)\nfiltered = df[df['Fund Name'].eq('General Fund') & df['Department Name'].isin(target_departments)].copy()\nranked = filtered.groupby('Department Name', as_index=False)['budget_num'].sum()\nranked = ranked.set_index('Department Name').reindex(target_departments).fillna(0).reset_index()\nanswer = str(float(ranked['budget_num'].mean()))\n",
+            "subquestion": "Across all departments that appear in <node_4 answer>, <node_5 answer>, and <node_6 answer>, what was their average planned budget for the general government function in 2019?",
+            "answer": "41526403.8"
+        }
+    },
+    "datasets_used": [
+        "datagov/nchs-leading-causes-of-death-united-states/files/rows.txt",
+        "datagov/nchs-leading-causes-of-death-united-states/signed-metadata.txt",
+        "datagov/unpaid-expenditures-for-hawaii-state-and-county-candidates-from-november-8-2006-through-31/files/ccsche.txt",
+        "datagov/unpaid-expenditures-for-hawaii-state-and-county-candidates-from-november-8-2006-through-31/signed-metadata.txt",
+        "datagov/traffic-collision-data-from-2010-to-present/files/rows.txt",
+        "datagov/traffic-collision-data-from-2010-to-present/signed-metadata.txt",
+        "datagov/traffic-collision-data-from-2010-to-present/files/d5tf-ez2w.txt",
+        "datagov/adopted-fy17-budget/files/rows.txt",
+        "datagov/adopted-fy17-budget/files/fpu3-7m4z.txt",
+        "datagov/adopted-fy18-budget/files/rows.txt",
+        "datagov/adopted-fy18-budget/signed-metadata.txt",
+        "datagov/adopted-fy19-budget/files/rows.txt",
+        "datagov/adopted-fy19-budget/signed-metadata.txt",
+        "datagov/proposed-fy19-budget/files/rows.txt",
+        "datagov/proposed-fy19-budget/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1 filters the leading-causes table to 2017, the cause Unintentional injuries, and states only.",
+                "It ranks states by age-adjusted death rate from lowest to highest.",
+                "Hawaii is the 3rd lowest."
+            ],
+            "answer": "Hawaii"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 2 sums unpaid Food & Beverages expenditures by year from 2010 onward in Hawaii and returns the years ranked 3rd through 12th by total amount.",
+                "Those candidate years are 2010, 2017, 2012, 2016, 2022, 2018, 2011, 2020, 2019, and 2015.",
+                "Node 3 counts traffic-collision records for just those candidate years and ranks the years by collision count.",
+                "The top three are 2017, 2018, and 2019."
+            ],
+            "answer": "2017; 2018; 2019"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4 uses the FY2017 adopted budget, keeps the General Fund, and returns the departments ranked 3rd to 5th by total final budget: Parks and Recreation, Emergency Services, and Facility Maintenance.",
+                "Node 5 uses the FY2018 adopted budget, keeps the General Fund, and returns the departments ranked 4th to 6th: Emergency Services, Facility Maintenance, and Customer Services.",
+                "Node 6 uses the FY2019 adopted budget, keeps the General Fund, and returns the departments ranked 5th to 7th: Facility Maintenance, Customer Services, and Planning and Permitting.",
+                "Taking distinct departments across those three answers yields Parks and Recreation, Emergency Services, Facility Maintenance, Customer Services, and Planning and Permitting."
+            ],
+            "answer": "Parks and Recreation; Emergency Services; Facility Maintenance; Customer Services; Planning and Permitting"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7 looks up those five departments in the FY2019 proposed budget, again within the General Fund.",
+                "Their proposed-budget totals are 75567100, 51205880, 38873012, 21493209, and 20492818.",
+                "The mean of those five values is 41526403.8."
+            ],
+            "answer": "41526403.8"
+        }
+    ]
+}

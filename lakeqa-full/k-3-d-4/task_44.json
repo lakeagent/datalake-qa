@@ -1,0 +1,172 @@
+{
+  "question": "Among Texas cities with diabetes prevalence above 12% in each year from 2016 through 2019, which two had 2020 populations under 100,000? Between those cities, how many more people did the city with the larger 2020-to-2022 population increase gain? Your response should be in the format [Answer].",
+  "answer": 385,
+  "nodes": {
+    "1": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2016-release/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/500-cities-city-level-data-gis-friendly-format-2016-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate = df[\"StateAbbr\"].astype(str).str.strip()\ncity = df[\"PlaceName\"].astype(str).str.strip()\ndiabetes = pd.to_numeric(df[\"DIABETES_CrudePrev\"], errors=\"coerce\")\nanswer = sorted(city[state.eq(\"TX\") & diabetes.gt(12)].unique().tolist())",
+      "subquestion": "Which Texas cities had diabetes prevalence above 12% in the CDC 500 Cities 2016 release?",
+      "answer": [
+        "Beaumont",
+        "Brownsville",
+        "Corpus Christi",
+        "Edinburg",
+        "El Paso",
+        "Laredo",
+        "McAllen",
+        "Mission",
+        "Pharr",
+        "San Antonio"
+      ]
+    },
+    "2": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate = df[\"StateAbbr\"].astype(str).str.strip()\ncity = df[\"PlaceName\"].astype(str).str.strip()\ndiabetes = pd.to_numeric(df[\"DIABETES_CrudePrev\"], errors=\"coerce\")\nanswer = sorted(city[state.eq(\"TX\") & diabetes.gt(12)].unique().tolist())",
+      "subquestion": "Which Texas cities had diabetes prevalence above 12% in the CDC 500 Cities 2017 release?",
+      "answer": [
+        "Baytown",
+        "Beaumont",
+        "Brownsville",
+        "Corpus Christi",
+        "Edinburg",
+        "El Paso",
+        "Houston",
+        "Laredo",
+        "McAllen",
+        "Mission",
+        "Pharr",
+        "San Antonio"
+      ]
+    },
+    "3": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate = df[\"StateAbbr\"].astype(str).str.strip()\ncity = df[\"PlaceName\"].astype(str).str.strip()\ndiabetes = pd.to_numeric(df[\"DIABETES_CrudePrev\"], errors=\"coerce\")\nanswer = sorted(city[state.eq(\"TX\") & diabetes.gt(12)].unique().tolist())",
+      "subquestion": "Which Texas cities had diabetes prevalence above 12% in the CDC 500 Cities 2018 release?",
+      "answer": [
+        "Beaumont",
+        "Brownsville",
+        "Corpus Christi",
+        "El Paso",
+        "Houston",
+        "Laredo",
+        "Longview",
+        "McAllen",
+        "Mission",
+        "Pharr",
+        "San Antonio",
+        "Tyler"
+      ]
+    },
+    "4": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate = df[\"StateAbbr\"].astype(str).str.strip()\ncity = df[\"PlaceName\"].astype(str).str.strip()\ndiabetes = pd.to_numeric(df[\"DIABETES_CrudePrev\"], errors=\"coerce\")\nanswer = sorted(city[state.eq(\"TX\") & diabetes.gt(12)].unique().tolist())",
+      "subquestion": "Which Texas cities had diabetes prevalence above 12% in the CDC 500 Cities 2019 release?",
+      "answer": [
+        "Beaumont",
+        "Brownsville",
+        "Corpus Christi",
+        "Edinburg",
+        "El Paso",
+        "Laredo",
+        "Longview",
+        "McAllen",
+        "Mission",
+        "Pharr",
+        "San Antonio",
+        "Tyler",
+        "Waco"
+      ]
+    },
+    "5": {
+      "source": "datagov/2020-census-redistricting-data-all-texas-places/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/2020-census-redistricting-data-all-texas-places/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ncandidates = [\n    \"Beaumont\",\n    \"Brownsville\",\n    \"Corpus Christi\",\n    \"El Paso\",\n    \"Laredo\",\n    \"McAllen\",\n    \"Mission\",\n    \"Pharr\",\n    \"San Antonio\",\n]\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate = df[\"STUSAB\"].astype(str).str.strip()\nsumlev = pd.to_numeric(df[\"SUMLEV\"], errors=\"coerce\")\ncity = df[\"BASENAME\"].astype(str).str.strip()\npopulation = pd.to_numeric(df[\"POP100\"], errors=\"coerce\")\nanswer = [\n    name\n    for name in candidates\n    if ((state.eq(\"TX\")) & sumlev.eq(160) & city.eq(name) & population.lt(100000)).any()\n]",
+      "subquestion": "Which cities from <hop 1 answer> had population under 100,000 in the 2020 Census?",
+      "answer": [
+        "Mission",
+        "Pharr"
+      ]
+    },
+    "6": {
+      "source": "wikipedia/Mission,_Texas/content.txt",
+      "fact": "Mission is a city in Hidalgo County, in the US state of Texas, United States. Its population was 85,778 at the 2020 census and an estimated 86,635 in 2022.",
+      "subquestion": "For this city from <hop 2 answer>, what were its 2020 census population and 2022 population estimate?",
+      "answer": {
+        "city": "Mission",
+        "population_2020": 85778,
+        "estimated_2022_population": 86635
+      }
+    },
+    "7": {
+      "source": "wikipedia/Pharr,_Texas/content.txt",
+      "fact": "Pharr is a city in Hidalgo County, Texas, United States.  As of the 2020 census, the city population was 79,715, and in 2022, the estimated population was 80,187.",
+      "subquestion": "For this city from <hop 2 answer>, what were its 2020 census population and 2022 population estimate?",
+      "answer": {
+        "city": "Pharr",
+        "population_2020": 79715,
+        "estimated_2022_population": 80187
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: In the CDC 500 Cities 2016 release, 10 Texas cities had diabetes prevalence above 12%: Beaumont, Brownsville, Corpus Christi, Edinburg, El Paso, Laredo, McAllen, Mission, Pharr, and San Antonio.",
+        "Node 2: In the CDC 500 Cities 2017 release, 12 Texas cities had diabetes prevalence above 12%: Baytown, Beaumont, Brownsville, Corpus Christi, Edinburg, El Paso, Houston, Laredo, McAllen, Mission, Pharr, and San Antonio.",
+        "Node 3: In the CDC 500 Cities 2018 release, 12 Texas cities had diabetes prevalence above 12%: Beaumont, Brownsville, Corpus Christi, El Paso, Houston, Laredo, Longview, McAllen, Mission, Pharr, San Antonio, and Tyler.",
+        "Node 4: In the CDC 500 Cities 2019 release, 13 Texas cities had diabetes prevalence above 12%: Beaumont, Brownsville, Corpus Christi, Edinburg, El Paso, Laredo, Longview, McAllen, Mission, Pharr, San Antonio, Tyler, and Waco.",
+        "Derive hop 1 answer using nodes 1, 2, 3, 4: Nodes 1-4 ask for Texas cities with diabetes prevalence above 12% in each release from 2016 to 2019; intersecting these yearly city lists yields the recurring candidate cities. Hop answer: Beaumont, Brownsville, Corpus Christi, El Paso, Laredo, McAllen, Mission, Pharr, San Antonio."
+      ],
+      "answer": "Beaumont, Brownsville, Corpus Christi, El Paso, Laredo, McAllen, Mission, Pharr, San Antonio"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: From the cities in <hop 1 answer>, the ones with 2020 Census populations under 100,000 are Mission and Pharr.",
+        "Derive hop 2 answer using node 5: filter the recurring high-diabetes cities to those with 2020 population under 100,000. Hop answer: Mission and Pharr."
+      ],
+      "answer": "Mission and Pharr"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        6,
+        7
+      ],
+      "reasoning": [
+        "Node 6: One city from <hop 2 answer>, Mission, went from a 2020 census population of `85,778` to a 2022 population estimate of `86,635`, an increase of `857`.",
+        "Node 7: The other city from <hop 2 answer>, Pharr, went from a 2020 census population of `79,715` to a 2022 population estimate of `80,187`, an increase of `472`.",
+        "Derive hop 3 answer using nodes 6 and 7: Mission had the larger increase, and `857 - 472 = 385`. Hop answer: 385."
+      ],
+      "answer": 385
+    }
+  ],
+  "datasets_used": [
+    "datagov/500-cities-city-level-data-gis-friendly-format-2016-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2016-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2016-release/files/k56w-7tny.publisher-view.json",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/djk3-k3zs.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/pf7q-w24q.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/dxpw-cm5u.publisher-view.json",
+    "datagov/2020-census-redistricting-data-all-texas-places/files/rows.txt",
+    "datagov/2020-census-redistricting-data-all-texas-places/signed-metadata.txt",
+    "datagov/2020-census-redistricting-data-all-texas-places/files/2020Census_PL94_171Redistricting_StatesTechDoc_English.pdf",
+    "wikipedia/Mission,_Texas/content.txt",
+    "wikipedia/Pharr,_Texas/content.txt"
+  ]
+}

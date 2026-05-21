@@ -1,0 +1,378 @@
+{
+    "question": "A Missouri state agency ranked third by average expenditures from FY2007 to FY2010.Find the city the Southwest district of the agency is based and a highway that was born in the city. Between that highway's two terminus cities, which one had higher binge drinking rates in 2016 and 2018?  For that city, which department had the second-highest cost overtime from 2014 to 2017? Return the department name only. Your response should be in the format [Answer].",
+    "answer": "Fire",
+    "nodes": {
+        "1": {
+            "source": "datagov/2007-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2007-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ncolumns = [col[\"name\"] for col in payload[\"meta\"][\"view\"][\"columns\"]]\ndf = pd.DataFrame(payload[\"data\"], columns=columns)\ndf[\"Payments Total\"] = pd.to_numeric(df[\"Payments Total\"], errors=\"coerce\")\nanswer = (\n    df.loc[df[\"Fiscal Year\"].astype(str) == \"2007\", [\"Agency Name\", \"Payments Total\"]]\n    .groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "What are the total FY2007 expenditures by Missouri state agency, so this year's agency totals can be combined with FY2008-FY2010 to rank agencies by average expenditure across FY2007-FY2010?",
+            "answer": {
+                "SOCIAL SERVICES": 5528171459.84,
+                "ELEMENTARY AND SECONDARY EDUCATION": 4893252163.41,
+                "TRANSPORTATION": 1922237354.88,
+                "HIGHER EDUCATION AND WORKFORCE DEV": 1062578010.95,
+                "MENTAL HEALTH": 759892459.14,
+                "HEALTH AND SENIOR SERVICES": 698796366.98,
+                "REVENUE": 373724618.79,
+                "OFFICE OF ADMINISTRATION": 369596080.22,
+                "CORRECTIONS": 279877976.24,
+                "PUBLIC SAFETY": 247925806.08,
+                "NATURAL RESOURCES": 234500082.04,
+                "ECONOMIC DEVELOPMENT": 174094167.56,
+                "LABOR AND INDUSTRIAL RELATIONS": 99218148.03,
+                "CONSERVATION": 68648122.91,
+                "JUDICIARY": 44966740.94,
+                "OFFICE OF SECRETARY OF STATE": 36749292.92,
+                "AGRICULTURE": 31813546.32,
+                "LEGISLATURE": 7248855.92,
+                "OFFICE OF ATTORNEY GENERAL": 6333182.25,
+                "COMMERCE AND INSURANCE": 2009267.01,
+                "OFFICE OF STATE TREASURER": 964965.87,
+                "OFFICE OF STATE AUDITOR": 690801.45,
+                "OFFICE OF GOVERNOR": 384461.96,
+                "OFFICE OF LIEUTENANT GOVERNOR": 337730.61
+            }
+        },
+        "2": {
+            "source": "datagov/2008-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2008-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"Payments Total\"] = pd.to_numeric(df[\"Payments Total\"], errors=\"coerce\")\nanswer = (\n    df.loc[df[\"Fiscal Year\"].astype(str) == \"2008\", [\"Agency Name\", \"Payments Total\"]]\n    .groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "What are the total FY2008 expenditures by Missouri state agency, so this year's agency totals can be combined with FY2007, FY2009, and FY2010 to rank agencies by average expenditure across FY2007-FY2010?",
+            "answer": {
+                "SOCIAL SERVICES": 5988522037.62,
+                "ELEMENTARY AND SECONDARY EDUCATION": 5048553721.08,
+                "TRANSPORTATION": 1786534604.37,
+                "HIGHER EDUCATION AND WORKFORCE DEV": 1220312581.65,
+                "MENTAL HEALTH": 813799778.73,
+                "HEALTH AND SENIOR SERVICES": 734833032.4,
+                "OFFICE OF ADMINISTRATION": 466398986.98,
+                "REVENUE": 387774187.98,
+                "PUBLIC SAFETY": 293606432.85,
+                "CORRECTIONS": 279260171.22,
+                "ECONOMIC DEVELOPMENT": 205680617.98,
+                "NATURAL RESOURCES": 188619903.73,
+                "LABOR AND INDUSTRIAL RELATIONS": 94918175.83000001,
+                "CONSERVATION": 71467088.65,
+                "JUDICIARY": 47543796.72,
+                "AGRICULTURE": 37088287.9,
+                "OFFICE OF SECRETARY OF STATE": 28586528.86,
+                "OFFICE OF ATTORNEY GENERAL": 8519661.26,
+                "LEGISLATURE": 6858628.94,
+                "COMMERCE AND INSURANCE": 6346960.76,
+                "OFFICE OF STATE TREASURER": 1203412.24,
+                "OFFICE OF STATE AUDITOR": 741462.11,
+                "OFFICE OF LIEUTENANT GOVERNOR": 337041.39,
+                "OFFICE OF GOVERNOR": 167100.93
+            }
+        },
+        "3": {
+            "source": "datagov/2009-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2009-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"Payments Total\"] = pd.to_numeric(df[\"Payments Total\"], errors=\"coerce\")\nanswer = (\n    df.loc[df[\"Fiscal Year\"].astype(str) == \"2009\", [\"Agency Name\", \"Payments Total\"]]\n    .groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "What are the total FY2009 expenditures by Missouri state agency, so this year's agency totals can be combined with FY2007, FY2008, and FY2010 to rank agencies by average expenditure across FY2007-FY2010?",
+            "answer": {
+                "SOCIAL SERVICES": 6707806742.86,
+                "ELEMENTARY AND SECONDARY EDUCATION": 5170194688.51,
+                "TRANSPORTATION": 2000940522.19,
+                "HIGHER EDUCATION AND WORKFORCE DEV": 1291298943.33,
+                "MENTAL HEALTH": 877438429.1899999,
+                "HEALTH AND SENIOR SERVICES": 815631750.83,
+                "OFFICE OF ADMINISTRATION": 497442735.68,
+                "REVENUE": 371129680.46999997,
+                "PUBLIC SAFETY": 301774658.68,
+                "NATURAL RESOURCES": 292863341.01,
+                "CORRECTIONS": 286079463.35,
+                "ECONOMIC DEVELOPMENT": 224463661.07,
+                "LABOR AND INDUSTRIAL RELATIONS": 77534960.59,
+                "CONSERVATION": 68528448.2,
+                "AGRICULTURE": 45903725.15,
+                "JUDICIARY": 45870978.11,
+                "OFFICE OF SECRETARY OF STATE": 23056913.53,
+                "LEGISLATURE": 6771210.5200000005,
+                "COMMERCE AND INSURANCE": 6514041.0,
+                "OFFICE OF ATTORNEY GENERAL": 6187561.03,
+                "OFFICE OF STATE AUDITOR": 1307656.71,
+                "OFFICE OF STATE TREASURER": 1298442.3199999998,
+                "OFFICE OF GOVERNOR": 1132014.83,
+                "OFFICE OF LIEUTENANT GOVERNOR": 639614.44
+            }
+        },
+        "4": {
+            "source": "datagov/2010-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2010-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"Payments Total\"] = pd.to_numeric(df[\"Payments Total\"], errors=\"coerce\")\nanswer = (\n    df.loc[df[\"Fiscal Year\"].astype(str) == \"2010\", [\"Agency Name\", \"Payments Total\"]]\n    .groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "What are the total FY2010 expenditures by Missouri state agency, so this year's agency totals can be combined with FY2007, FY2008, and FY2009 to rank agencies by average expenditure across FY2007-FY2010?",
+            "answer": {
+                "SOCIAL SERVICES": 7141666880.32,
+                "ELEMENTARY AND SECONDARY EDUCATION": 5351561573.54,
+                "TRANSPORTATION": 2144139919.08,
+                "HIGHER EDUCATION AND WORKFORCE DEV": 1320888790.61,
+                "MENTAL HEALTH": 921056914.52,
+                "HEALTH AND SENIOR SERVICES": 884344054.2500001,
+                "OFFICE OF ADMINISTRATION": 439597907.95,
+                "REVENUE": 370228371.58,
+                "PUBLIC SAFETY": 333299335.44,
+                "CORRECTIONS": 268435627.28,
+                "ECONOMIC DEVELOPMENT": 263220946.8,
+                "NATURAL RESOURCES": 252156983.91,
+                "CONSERVATION": 61908035.44,
+                "LABOR AND INDUSTRIAL RELATIONS": 48365787.8,
+                "JUDICIARY": 45794975.93,
+                "AGRICULTURE": 40395382.19,
+                "OFFICE OF SECRETARY OF STATE": 20121681.69,
+                "LEGISLATURE": 7288253.9,
+                "OFFICE OF ATTORNEY GENERAL": 6422036.95,
+                "COMMERCE AND INSURANCE": 5910088.04,
+                "OFFICE OF STATE AUDITOR": 1458791.06,
+                "OFFICE OF STATE TREASURER": 1215852.78,
+                "OFFICE OF LIEUTENANT GOVERNOR": 632065.5299999999,
+                "OFFICE OF GOVERNOR": 207334.37
+            }
+        },
+        "5": {
+            "source": "wikipedia/Missouri_Department_of_Transportation/content.txt",
+            "fact": "MoDOT operates seven districts throughout the state: Northwest, based in St. Joseph; Northeast, based in Hannibal; Kansas City, based in Lee's Summit; Central, based in Jefferson City; St. Louis, based in Chesterfield; Southwest, based in Springfield; and Southeast, based in Sikeston.",
+            "subquestion": "In which city is the Southwest district of <hop 1 answer> based?",
+            "answer": "Springfield"
+        },
+        "6": {
+            "source": "wikipedia/Springfield,_Missouri/content.txt",
+            "fact": "Officially recognized as the birthplace of Route 66, it was in Springfield on April 30, 1926, that officials first proposed the name of the new Chicago-to-Los Angeles highway.",
+            "subquestion": "What are the terminus cities of the highway whose name was first proposed in <hop 2 answer>?",
+            "answer": [
+                "Chicago",
+                "Los Angeles"
+            ]
+        },
+        "7": {
+            "source": "datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"Data_Value\"] = pd.to_numeric(df[\"Data_Value\"], errors=\"coerce\")\nanswer = (\n    df.loc[\n        (df[\"Short_Question_Text\"] == \"Binge Drinking\")\n        & (df[\"GeographicLevel\"] == \"City\")\n        & (df[\"Data_Value_Type\"] == \"Crude prevalence\")\n        & (df[\"CityName\"].isin([\"Chicago\", \"Los Angeles\"])),\n        [\"CityName\", \"Data_Value\"],\n    ]\n    .dropna(subset=[\"Data_Value\"])\n    .drop_duplicates(subset=[\"CityName\"])\n    .set_index(\"CityName\")[\"Data_Value\"]\n    .to_dict()\n)",
+            "subquestion": "What is the 2016 city-level crude binge drinking prevalence for each of the two Route 66 terminus cities, Chicago and Los Angeles, so their 2016 and 2018 values can be compared across both releases?",
+            "answer": {
+                "Chicago": 20.1,
+                "Los Angeles": 15.9
+            }
+        },
+        "8": {
+            "source": "datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"Data_Value\"] = pd.to_numeric(df[\"Data_Value\"], errors=\"coerce\")\nanswer = (\n    df.loc[\n        (df[\"Short_Question_Text\"] == \"Binge Drinking\")\n        & (df[\"GeographicLevel\"] == \"City\")\n        & (df[\"Data_Value_Type\"] == \"Crude prevalence\")\n        & (df[\"CityName\"].isin([\"Chicago\", \"Los Angeles\"])),\n        [\"CityName\", \"Data_Value\"],\n    ]\n    .dropna(subset=[\"Data_Value\"])\n    .drop_duplicates(subset=[\"CityName\"])\n    .set_index(\"CityName\")[\"Data_Value\"]\n    .to_dict()\n)",
+            "subquestion": "What is the 2018 city-level crude binge drinking prevalence for each of the two Route 66 terminus cities, Chicago and Los Angeles, so their 2016 and 2018 values can be compared across both releases?",
+            "answer": {
+                "Chicago": 21.5,
+                "Los Angeles": 16.7
+            }
+        },
+        "9": {
+            "source": "datagov/employee-overtime-and-supplemental-earnings-2014/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/employee-overtime-and-supplemental-earnings-2014/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"TOTAL\"] = pd.to_numeric(df[\"TOTAL\"], errors=\"coerce\")\nanswer = (\n    df.loc[:, [\"DEPARTMENT NAME\", \"TOTAL\"]]\n    .dropna(subset=[\"TOTAL\"])\n    .groupby(\"DEPARTMENT NAME\", dropna=False)[\"TOTAL\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "What is each Chicago department's total overtime cost in 2014, so the department totals can be combined with 2015-2017 to determine which department ranks second by total overtime across 2014-2017?",
+            "answer": {
+                "Police": 101460132.24,
+                "Fire": 63941565.36,
+                "Water Management": 23507061.7,
+                "Streets and Sanitation": 15393693.24,
+                "Aviation": 13147383.4,
+                "Emergency Management and Communications": 10051342.17,
+                "Transportation": 7982308.35,
+                "Fleet and Facility Management": 4876625.86,
+                "Animal Care and Control": 490423.37,
+                "Library": 447115.04,
+                "Board of Election Commissioners": 447070.65,
+                "Buildings": 336975.7,
+                "Independent Police Review Authority": 150084.61,
+                "City Clerk": 133299.31,
+                "Public Health": 115419.74,
+                "Family and Support Services": 70553.37,
+                "Finance": 49766.22,
+                "Law": 38516.43,
+                "Planning and Development": 3004.7,
+                "Procurement Services": 753.72,
+                "Mayor's Office for People with Disabilities": 742.31,
+                "Administrative Hearings": 78.45,
+                "Innovation and Technology": 0.0
+            }
+        },
+        "10": {
+            "source": "datagov/employee-overtime-and-supplemental-earnings-2015/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/employee-overtime-and-supplemental-earnings-2015/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"TOTAL\"] = pd.to_numeric(df[\"TOTAL\"], errors=\"coerce\")\nanswer = (\n    df.loc[:, [\"DEPARTMENT NAME\", \"TOTAL\"]]\n    .dropna(subset=[\"TOTAL\"])\n    .groupby(\"DEPARTMENT NAME\", dropna=False)[\"TOTAL\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "What is each Chicago department's total overtime cost in 2015, so the department totals can be combined with 2014, 2016, and 2017 to determine which department ranks second by total overtime across 2014-2017?",
+            "answer": {
+                "Police": 116144553.32,
+                "Fire": 43847384.3,
+                "Water Management": 19954056.68,
+                "Streets and Sanitation": 16582331.52,
+                "Emergency Management and Communications": 10945883.57,
+                "Aviation": 10028911.51,
+                "Transportation": 5840237.85,
+                "Fleet and Facility Management": 4336312.0,
+                "Buildings": 512654.06,
+                "Animal Care and Control": 460788.49,
+                "Library": 385046.48,
+                "Board of Election Commissioners": 337421.14,
+                "Public Health": 272585.6,
+                "City Clerk": 108099.77,
+                "Independent Police Review Authority": 66950.83,
+                "Law": 35385.29,
+                "Family & Support Services": 35247.94,
+                "Finance": 22754.81,
+                "Planning & Development": 1196.55
+            }
+        },
+        "11": {
+            "source": "datagov/employee-overtime-and-supplemental-earnings-2016/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/employee-overtime-and-supplemental-earnings-2016/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"TOTAL\"] = pd.to_numeric(df[\"TOTAL\"], errors=\"coerce\")\nanswer = (\n    df.loc[:, [\"DEPARTMENT NAME\", \"TOTAL\"]]\n    .dropna(subset=[\"TOTAL\"])\n    .groupby(\"DEPARTMENT NAME\", dropna=False)[\"TOTAL\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "What is each Chicago department's total overtime cost in 2016, so the department totals can be combined with 2014, 2015, and 2017 to determine which department ranks second by total overtime across 2014-2017?",
+            "answer": {
+                "Police": 143032724.45,
+                "Fire": 50604010.67,
+                "Water Management": 21335912.52,
+                "Streets and Sanitation": 13836742.94,
+                "Aviation": 12881495.76,
+                "Emergency Management and Communications": 11031421.65,
+                "Transportation": 5657020.47,
+                "Fleet and Facility Management": 4372193.25,
+                "Library": 697759.72,
+                "Board of Election Commissioners": 600083.73,
+                "Buildings": 553205.3,
+                "Animal Care and Control": 514031.65,
+                "Public Health": 140472.5,
+                "Independent Police Review Authority": 87716.22,
+                "Finance": 74180.33,
+                "City Clerk": 62226.92,
+                "Family and Support Services": 48187.91,
+                "Law": 8598.11,
+                "City Council": 3352.47,
+                "Planning and Development": 2144.7,
+                "Inspector General": 722.19,
+                "Procurement Services": 15.11,
+                "Business Affairs and Consumer Protection": 1.71
+            }
+        },
+        "12": {
+            "source": "datagov/employee-overtime-and-supplemental-earnings-2017/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/employee-overtime-and-supplemental-earnings-2017/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"TOTAL\"] = pd.to_numeric(df[\"TOTAL\"], errors=\"coerce\")\nanswer = (\n    df.loc[:, [\"DEPARTMENT NAME\", \"TOTAL\"]]\n    .dropna(subset=[\"TOTAL\"])\n    .groupby(\"DEPARTMENT NAME\", dropna=False)[\"TOTAL\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "What is each Chicago department's total overtime cost in 2017, so the department totals can be combined with 2014-2016 to determine which department ranks second by total overtime across 2014-2017?",
+            "answer": {
+                "Police": 156732988.0,
+                "Fire": 49571354.0,
+                "Water Management": 20049910.0,
+                "Aviation": 14884756.0,
+                "Streets and Sanitation": 10718299.0,
+                "Emergency Management and Communications": 10619207.0,
+                "Transportation": 5823275.0,
+                "Fleet and Facility Management": 4065963.0,
+                "Library": 781426.0,
+                "Buildings": 665130.0,
+                "Animal Care and Control": 530063.0,
+                "Finance": 161744.0,
+                "Independent Police Review Authority": 139686.0,
+                "Public Health": 91768.0,
+                "City Clerk": 80427.0,
+                "Family and Support Services": 66390.0,
+                "Civilian Office of Police Accountability": 26415.0,
+                "Administrative Hearings": 13472.0,
+                "Board of Election Commissioners": 6882.0,
+                "Law": 3034.0,
+                "Inspector General": 902.0,
+                "Planning and Development": 45.0
+            }
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Read the full FY2007 expenditure totals by `Agency Name`.",
+                "Node 2: Read the full FY2008 expenditure totals by `Agency Name`.",
+                "Node 3: Read the full FY2009 expenditure totals by `Agency Name`.",
+                "Node 4: Read the full FY2010 expenditure totals by `Agency Name`.",
+                "Hop result: average each agency's totals across FY2007-FY2010 and select the agency ranked third by average expenditure."
+            ],
+            "answer": "Missouri Department of Transportation"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Read the base city of the Southwest district of <hop 1 answer> from the cited Wikipedia source.",
+                "Hop result: the city is Springfield."
+            ],
+            "answer": "Springfield"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Read the two terminus cities of the Chicago-to-Los Angeles highway whose name was first proposed in <hop 2 answer>.",
+                "Hop result: the two terminus cities are Chicago and Los Angeles."
+            ],
+            "answer": [
+                "Chicago",
+                "Los Angeles"
+            ]
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: Read the 2016 city-level crude binge drinking prevalence for Chicago and Los Angeles.",
+                "Node 8: Read the 2018 city-level crude binge drinking prevalence for Chicago and Los Angeles.",
+                "Hop result: compare the two cities across both releases and keep the city with the higher binge drinking prevalence in both years."
+            ],
+            "answer": "Chicago"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                9,
+                10,
+                11,
+                12
+            ],
+            "reasoning": [
+                "Node 9: Read the 2014 department-level overtime totals for Chicago.",
+                "Node 10: Read the 2015 department-level overtime totals for Chicago.",
+                "Node 11: Read the 2016 department-level overtime totals for Chicago.",
+                "Node 12: Read the 2017 department-level overtime totals for Chicago.",
+                "Hop result: sum each department's overtime totals across 2014-2017 and select the department ranked second by combined overtime cost."
+            ],
+            "answer": "Fire"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Missouri_Department_of_Transportation/content.txt",
+        "wikipedia/Springfield,_Missouri/content.txt",
+        "datagov/2007-state-expenditures/files/rows.txt",
+        "datagov/2007-state-expenditures/signed-metadata.txt",
+        "datagov/2008-state-expenditures/files/rows.txt",
+        "datagov/2008-state-expenditures/signed-metadata.txt",
+        "datagov/2009-state-expenditures/files/rows.txt",
+        "datagov/2009-state-expenditures/signed-metadata.txt",
+        "datagov/2010-state-expenditures/files/rows.txt",
+        "datagov/2010-state-expenditures/signed-metadata.txt",
+        "datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt",
+        "datagov/500-cities-local-data-for-better-health-2016-release/signed-metadata.txt",
+        "datagov/500-cities-local-data-for-better-health-2016-release/files/9z78-nsfp.publisher-view.json",
+        "datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt",
+        "datagov/500-cities-local-data-for-better-health-2018-release/signed-metadata.txt",
+        "datagov/500-cities-local-data-for-better-health-2018-release/files/rja3-32tc.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2014/files/rows.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2014/signed-metadata.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2015/files/rows.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2015/signed-metadata.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2016/files/rows.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2016/signed-metadata.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2017/files/rows.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2017/signed-metadata.txt"
+    ]
+}

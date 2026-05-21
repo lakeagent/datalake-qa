@@ -1,0 +1,130 @@
+{
+    "question": "From 2015 to 2020, after aggregating across all counties, which three years have the most currently publicly-assisted child support cases, which three years collected least total funds for currently publicly-assisted child support cases, and which three years have the most children claimed paternity? Counting distinct years in those 9 years, and for all children, which top 10 counties have most adults being investigated due to their mistreatment to those children? Then, among schools in those counties, define a more caring school as one with a higher percentage of economically disadvantaged students, and higher student achievement. Find the school codes for the top 5 caring schools. For those 5 school codes, which schools have open enrollment and regular instruction? Finally, among those school codes, take the first six digits of those numbers as distinct district numbers, andd find the average base pay of those districts? Please return only the number in the format [Answer].",
+    "answer": "176175",
+    "nodes": {
+        "1": {
+            "source": "datagov/department-of-child-support-services-case-overview-ffy-2015-ffy-2020/files/department-of-child-support-services-case-overview-ffy-2015-ffy-2023.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/department-of-child-support-services-case-overview-ffy-2015-ffy-2020/files/department-of-child-support-services-case-overview-ffy-2015-ffy-2023.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Year\"] = df[\"Year\"].fillna(\"\").astype(str).str.strip()\ndf = df[df[\"Year\"].isin([\"2015\", \"2016\", \"2017\", \"2018\", \"2019\", \"2020\"])].copy()\ndf[\"Case Type\"] = df[\"Case Type\"].fillna(\"\").astype(str).str.strip()\ndf[\"Cases\"] = pd.to_numeric(df[\"Cases\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[df[\"Case Type\"].eq(\"Current Public Assistance\")].copy()\nranked = filtered.groupby(\"Year\", as_index=False)[\"Cases\"].sum().sort_values([\"Cases\", \"Year\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.head(3)[\"Year\"].tolist())\n",
+            "subquestion": "From 2015 to 2020 and after aggregating across all counties, which three years have the largest number of child support cases that are currently receiving public assistance?",
+            "answer": "2015, 2016, 2017"
+        },
+        "2": {
+            "source": "datagov/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-f/files/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-ffy-202.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-f/files/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-ffy-202.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Year\"] = df[\"Year\"].fillna(\"\").astype(str).str.strip()\ndf = df[df[\"Year\"].isin([\"2015\", \"2016\", \"2017\", \"2018\", \"2019\", \"2020\"])].copy()\ndf[\"Assistance Status\"] = df[\"Assistance Status\"].fillna(\"\").astype(str).str.strip()\ndf[\"Amount_num\"] = pd.to_numeric(df[\"Amount\"].astype(str).str.replace(\"$\", \"\", regex=False).str.replace(\",\", \"\", regex=False).str.strip(), errors=\"coerce\")\nstatus_family = {\n    \"Current Public Assistance\": \"Current Assistance Family\",\n    \"Current Assistance\": \"Current Assistance Family\",\n    \"Former Public Assistance\": \"Former Assistance Family\",\n    \"Former Assistance\": \"Former Assistance Family\",\n    \"Never Assisted\": \"Never Assisted Family\",\n    \"Never Assistance\": \"Never Assisted Family\",\n}\ndf[\"assistance_family\"] = df[\"Assistance Status\"].map(status_family)\nfiltered = df[df[\"assistance_family\"].eq(\"Current Assistance Family\")].copy()\nranked = filtered.groupby(\"Year\", as_index=False)[\"Amount_num\"].sum().sort_values([\"Amount_num\", \"Year\"], ascending=[True, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.head(3)[\"Year\"].tolist())\n",
+            "subquestion": "From 2015 to 2020 and after aggregating across all counties, which three years collected the least total funds for currently publicly-assisted child support cases?",
+            "answer": "2019, 2018, 2020"
+        },
+        "3": {
+            "source": "datagov/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2020/files/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2023.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2020/files/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2023.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ncol = \"Children with Paternity Established During Federal Fiscal Year\"\ndf[\"Year\"] = df[\"Year\"].fillna(\"\").astype(str).str.strip()\ndf = df[df[\"Year\"].isin([\"2015\", \"2016\", \"2017\", \"2018\", \"2019\", \"2020\"])].copy()\ndf[col] = pd.to_numeric(df[col].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nranked = df.groupby(\"Year\", as_index=False)[col].sum().sort_values([col, \"Year\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.head(3)[\"Year\"].tolist())\n",
+            "subquestion": "From 2015 to 2020 and after aggregating across all counties, which three years have the largest number of children claimed paternity?",
+            "answer": "2015, 2016, 2017"
+        },
+        "4": {
+            "source": "datagov/cpi-3-7-adults-and-children-in-abuse-neglect-investigations-fy2013-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/cpi-3-7-adults-and-children-in-abuse-neglect-investigations-fy2013-2022/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_1_answer = \"2015, 2016, 2017\"\nnode_2_answer = \"2019, 2018, 2020\"\nnode_3_answer = \"2015, 2016, 2017\"\ntarget_years = []\nfor value in [node_1_answer, node_2_answer, node_3_answer]:\n    target_years.extend([part.strip() for part in str(value).split(\",\") if part.strip()])\ntarget_years = sorted(set(target_years), key=int)\n\ndf[\"Fiscal Year\"] = df[\"Fiscal Year\"].fillna(\"\").astype(str).str.strip()\ndf[\"County\"] = df[\"County\"].fillna(\"\").astype(str).str.strip()\ndf[\"Client Type\"] = df[\"Client Type\"].fillna(\"\").astype(str).str.strip()\ndf[\"Principals in Investigations_num\"] = pd.to_numeric(df[\"Principals in Investigations\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nper_year_top10 = []\nfor year in target_years:\n    yearly = df[\n        df[\"Fiscal Year\"].eq(year)\n        & df[\"Client Type\"].eq(\"Children\")\n        & df[\"County\"].ne(\"\")\n        & df[\"Principals in Investigations_num\"].notna()\n    ].copy()\n    ranked = yearly.groupby(\"County\", as_index=False)[\"Principals in Investigations_num\"].sum().sort_values(\n        [\"Principals in Investigations_num\", \"County\"],\n        ascending=[False, True],\n        kind=\"mergesort\"\n    ).reset_index(drop=True)\n    per_year_top10.append(set(ranked.head(10)[\"County\"].tolist()))\ncommon_counties = sorted(set.intersection(*per_year_top10))\nanswer = \", \".join(common_counties)\n",
+            "subquestion": "For all years appearing in <node_1 answer>, <node_2 answer>, and <node_3 answer>, for all children, which top 10 counties have most adults being investigated due to their mistreatment to those children?",
+            "answer": "Bexar, Dallas, El Paso, Harris, Hidalgo, Tarrant, Travis"
+        },
+        "5": {
+            "source": "datagov/school-year-2021-2022-statewide-accountability-ratings-as-of-february-6-2023/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/school-year-2021-2022-statewide-accountability-ratings-as-of-february-6-2023/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf.columns = [str(c).replace(\"\\n\", \" \").strip() for c in df.columns]\nnode_4_answer = \"Bexar, Dallas, El Paso, Harris, Hidalgo, Tarrant, Travis\"\ntarget_counties = {part.strip().upper() for part in str(node_4_answer).split(\",\") if part.strip()}\n\ndf[\"County\"] = df[\"County\"].fillna(\"\").astype(str).str.strip()\ndf[\"Campus\"] = df[\"Campus\"].fillna(\"\").astype(str).str.strip()\ndf[\"District\"] = df[\"District\"].fillna(\"\").astype(str).str.strip()\ndf[\"Campus Number\"] = df[\"Campus Number\"].fillna(\"\").astype(str).str.strip().str.replace(\"'\", \"\", regex=False)\ndf[\"Student Achievement Rating\"] = df[\"Student Achievement Rating\"].fillna(\"\").astype(str).str.strip()\ndf[\"% Economically Disadvantaged_num\"] = pd.to_numeric(df[\"% Economically Disadvantaged\"].astype(str).str.replace(\"%\", \"\", regex=False), errors=\"coerce\")\ndf[\"Student Achievement Score_num\"] = pd.to_numeric(df[\"Student Achievement Score\"], errors=\"coerce\")\nrating_order = {\"A\": 5, \"B\": 4, \"C\": 3, \"D\": 2, \"F\": 1}\ndf[\"Student Achievement Rating_rank\"] = df[\"Student Achievement Rating\"].map(rating_order)\nfiltered = df[\n    df[\"County\"].str.upper().isin(target_counties)\n    & df[\"Campus Number\"].ne(\"\")\n    & df[\"Campus\"].ne(\"\")\n    & df[\"% Economically Disadvantaged_num\"].notna()\n    & df[\"Student Achievement Rating_rank\"].notna()\n].copy()\nranked = filtered.sort_values(\n    [\"% Economically Disadvantaged_num\", \"Student Achievement Rating_rank\", \"Student Achievement Score_num\", \"Campus\", \"District\"],\n    ascending=[False, False, False, True, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.head(5)[\"Campus Number\"].tolist())\n",
+            "subquestion": "Define a more caring school as one with a higher percentage of economically disadvantaged students, and higher student achievement. For all schools in <node_4 answer>, which are the top five most caring schools? Return their school codes.",
+            "answer": "057835101, 108909005, 101859101, 071803001, 220904003"
+        },
+        "6": {
+            "source": "datagov/askted-data-february-06-2023/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/askted-data-february-06-2023/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_5_answer = \"057835101, 108909005, 101859101, 071803001, 220904003\"\ntarget_school_numbers = [part.strip() for part in str(node_5_answer).split(\",\") if part.strip()]\ntarget_districts = [value[:6] for value in target_school_numbers if len(value) >= 6]\norder_map = {name: idx for idx, name in enumerate(target_districts)}\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"District Number_norm\"] = df[\"District Number\"].str.replace(\"'\", \"\", regex=False).str.strip()\ndf[\"School Number_norm\"] = df[\"School Number\"].str.replace(\"'\", \"\", regex=False).str.strip()\ndf[\"School Enrollment as of Oct 2023_num\"] = pd.to_numeric(df[\"School Enrollment as of Oct 2023\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[\n    df[\"District Number_norm\"].isin(target_districts)\n    & df[\"Instruction Type\"].eq(\"REGULAR INSTRUCTIONAL\")\n    & df[\"Charter Type\"].eq(\"OPEN ENROLLMENT CHARTER\")\n    & df[\"School Status\"].eq(\"Active\")\n    & df[\"School Enrollment as of Oct 2023_num\"].notna()\n].copy()\nfiltered[\"district_order\"] = filtered[\"District Number_norm\"].map(order_map)\nfiltered = filtered.sort_values(\n    [\"District Number_norm\", \"School Enrollment as of Oct 2023_num\", \"School Number_norm\"],\n    ascending=[True, False, True],\n    kind=\"mergesort\"\n)\nbest_per_district = filtered.groupby(\"District Number_norm\", as_index=False).head(1).copy()\nbest_per_district[\"district_order\"] = best_per_district[\"District Number_norm\"].map(order_map)\nbest_per_district = best_per_district.sort_values([\"district_order\", \"School Number_norm\"], ascending=[True, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(best_per_district[\"School Number_norm\"].tolist())\n",
+            "subquestion": "For schools in <node_5 answer>, which schools are open enrollment and have regular instruction.",
+            "answer": "057835001, 101859102"
+        },
+        "7": {
+            "source": "datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_6_answer = \"057835001, 101859102\"\ntarget_school_numbers = [part.strip() for part in str(node_6_answer).split(\",\") if part.strip()]\ntarget_district_numbers = sorted({value[:6] for value in target_school_numbers if len(value) >= 6})\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"Base Pay_num\"] = pd.to_numeric(df[\"Base Pay\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[df[\"District\"].isin(target_district_numbers) & df[\"Base Pay_num\"].notna()].copy()\nanswer = str(int(filtered[\"Base Pay_num\"].mean()))\n",
+            "subquestion": "The district number of <node_6 answer> is its first six digits. What is the average base pay of those districts?",
+            "answer": "176175"
+        }
+    },
+    "datasets_used": [
+        "datagov/department-of-child-support-services-case-overview-ffy-2015-ffy-2020/files/department-of-child-support-services-case-overview-ffy-2015-ffy-2023.txt",
+        "datagov/department-of-child-support-services-case-overview-ffy-2015-ffy-2020/signed-metadata.txt",
+        "datagov/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-f/files/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-ffy-202.txt",
+        "datagov/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-f/signed-metadata.txt",
+        "datagov/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2020/files/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2023.txt",
+        "datagov/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2020/signed-metadata.txt",
+        "datagov/cpi-3-7-adults-and-children-in-abuse-neglect-investigations-fy2013-2022/files/rows.txt",
+        "datagov/cpi-3-7-adults-and-children-in-abuse-neglect-investigations-fy2013-2022/signed-metadata.txt",
+        "datagov/school-year-2021-2022-statewide-accountability-ratings-as-of-february-6-2023/files/rows.txt",
+        "datagov/school-year-2021-2022-statewide-accountability-ratings-as-of-february-6-2023/signed-metadata.txt",
+        "datagov/school-year-2021-2022-statewide-accountability-ratings-as-of-february-6-2023/files/chapter-2-2022-student-achievement-domain.pdf",
+        "datagov/askted-data-february-06-2023/files/rows.txt",
+        "datagov/askted-data-february-06-2023/signed-metadata.txt",
+        "datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/files/rows.txt",
+        "datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/signed-metadata.txt",
+        "datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/files/6dh5-cse4.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: After aggregating all counties from 2015 to 2020, the three years with the largest number of child support cases involving families currently receiving public assistance are 2015, 2016, and 2017.",
+                "Node 2: After aggregating all counties from 2015 to 2020 and treating the two current-assistance naming variants as the same group, the three years with the smallest total collections are 2019, 2018, and 2020.",
+                "Node 3: After aggregating all counties from 2015 to 2020, the three years with the largest number of children for whom paternity was established are 2015, 2016, and 2017.",
+                "Hop result: 2015, 2016, 2017; 2019, 2018, 2020; 2015, 2016, 2017"
+            ],
+            "answer": "2015, 2016, 2017; 2019, 2018, 2020; 2015, 2016, 2017"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Collect every distinct year that appears in nodes 1-3, which gives 2015, 2016, 2017, 2018, 2019, and 2020.",
+                "In the abuse-neglect investigations dataset, keep only Client Type = Children, rank counties within each of those years by principals in investigations, and take the top 10 each year.",
+                "The counties that appear in the top 10 in every one of those years are Bexar, Dallas, El Paso, Harris, Hidalgo, Tarrant, and Travis."
+            ],
+            "answer": "Bexar, Dallas, El Paso, Harris, Hidalgo, Tarrant, Travis"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In the 2021-2022 statewide accountability ratings, keep schools whose county is one of the counties from node 4 and drop district summary rows by requiring a non-empty campus number.",
+                "Define a more caring school as one with a higher percentage of economically disadvantaged students, then break ties by better student achievement rating, higher student achievement score, and finally alphabetically by campus and district.",
+                "Under that rule, the top five school codes are 057835101, 108909005, 101859101, 071803001, and 220904003."
+            ],
+            "answer": "057835101, 108909005, 101859101, 071803001, 220904003"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: In the 2023 AskTED directory, take the first six digits of each school code from node 5 as the district number and normalize the quoted code fields.",
+                "Keep only schools that are Active, REGULAR INSTRUCTIONAL, and OPEN ENROLLMENT CHARTER, and within each such district keep the school number with the highest October 2023 enrollment.",
+                "The resulting school numbers are 057835001 and 101859102."
+            ],
+            "answer": "057835001, 101859102"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Treat the first six digits of the two school numbers from node 6 as district numbers, namely 057835 and 101859.",
+                "In the 2021-2022 superintendent salary report, those districts have base pays of 265650 and 86700, so their average is 176175."
+            ],
+            "answer": "176175"
+        }
+    ]
+}

@@ -1,0 +1,97 @@
+{
+    "question": "Carnegie Steel Company was founded by a person. Where was he based, and what was the minimum Police Bureau expenditure in that city in 2017 and 2018? Using the largest listed sworn-officer strength for that city's police bureau, what was the minimum expenditure per 100 sworn officers in millions of dollars? Round your answer to one decimal. Your response should be in the format [Answer].",
+    "answer": "7.0",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Carnegie_Steel_Company/content.txt",
+            "fact": "Carnegie Steel Company was a steel-producing company primarily created by Andrew Carnegie and several close associates to manage businesses at steel mills in the Pittsburgh, Pennsylvania area in the late 19th century.",
+            "subquestion": "Who founded Carnegie Steel Company?",
+            "answer": "Andrew Carnegie"
+        },
+        "2": {
+            "source": "wikipedia/Andrew_Carnegie/content.txt",
+            "fact": "Carnegie was born in Dunfermline, Scotland. He  immigrated to what is now Pittsburgh, Pennsylvania, with his parents in 1848 at the age of 12.",
+            "subquestion": "Where was Andrew Carnegie based?",
+            "answer": "Pittsburgh, Pennsylvania"
+        },
+        "3": {
+            "source": "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2017-operating.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2017-operating.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_2_answer = 'Pittsburgh, Pennsylvania'\n\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Amount\"] = pd.to_numeric(df[\"Amount\"], errors=\"coerce\")\nfiltered = df[\n    df[\"Year\"].eq(2017)\n    & df[\"Type\"].astype(str).str.strip().str.lower().eq(\"expenditure\")\n    & df[\"Department\"].astype(str).str.strip().str.upper().eq(\"PS - POLICE BUREAU\")\n]\ntotal_amount = float(filtered[\"Amount\"].sum())\nanswer = {'2017': f\"${total_amount:,.2f}\"}\n",
+            "subquestion": "What was Pittsburgh's Police Bureau expenditure in 2017?",
+            "answer": {
+                "2017": "$98,453,962.68"
+            }
+        },
+        "4": {
+            "source": "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2018-operating.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2018-operating.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_2_answer = 'Pittsburgh, Pennsylvania'\n\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Amount\"] = pd.to_numeric(df[\"Amount\"], errors=\"coerce\")\nfiltered = df[\n    df[\"Year\"].eq(2018)\n    & df[\"Type\"].astype(str).str.strip().str.lower().eq(\"expenditure\")\n    & df[\"Department\"].astype(str).str.strip().str.upper().eq(\"PS - POLICE BUREAU\")\n]\ntotal_amount = float(filtered[\"Amount\"].sum())\nanswer = {'2018': f\"${total_amount:,.2f}\"}\n",
+            "subquestion": "What was Pittsburgh's Police Bureau expenditure in 2018?",
+            "answer": {
+                "2018": "$100,261,931.64"
+            }
+        },
+        "5": {
+            "source": "wikipedia/Pittsburgh_Police/content.txt",
+            "fact": "By 1952 the Bureau had a strength of 1,400 sworn officers; in July 1985, 1,200; and by November 1989, 1,040. Computation: 98.45396268 million dollars / (1,400 / 100) = 7.0324 million dollars per 100 sworn officers, which rounds to 7.0.",
+            "subquestion": "Using <hop 3 answer> and the largest listed sworn-officer strength for <hop 2 answer>'s police bureau, what was the minimum expenditure per 100 sworn officers in millions of dollars? Round your answer to one decimal.",
+            "answer": "7.0"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Carnegie_Steel_Company/content.txt",
+        "wikipedia/Andrew_Carnegie/content.txt",
+        "wikipedia/Pittsburgh_Police/content.txt",
+        "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2017-operating.txt",
+        "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2018-operating.txt",
+        "datagov/2011-2023-city-of-pittsburgh-operating-budget/signed-metadata.txt",
+        "datagov/2011-2023-city-of-pittsburgh-operating-budget/files/2012-operating.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Andrew Carnegie is the person who primarily created Carnegie Steel Company.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Andrew Carnegie"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Pittsburgh, Pennsylvania is where <hop 1 answer> immigrated with his parents in 1848.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Pittsburgh, Pennsylvania"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `Year` is 2017, `Type` is Expenditure, and `Department` is `PS - Police Bureau`, then sum `Amount`.",
+                "Node 4: Filter rows where `Year` is 2018, `Type` is Expenditure, and `Department` is `PS - Police Bureau`, then sum `Amount`.",
+                "Hop result: min(<node_3 answer>, <node_4 answer>) = min(98453962.68, 100261931.64) = 98453962.68."
+            ],
+            "answer": "98453962.68"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: The largest listed sworn-officer strength for <hop 2 answer>'s police bureau is 1,400, so divide <hop 3 answer>, expressed as 98.45396268 million dollars, by 14 groups of 100 sworn officers.",
+                "Hop result: 98.45396268 / (1,400 / 100) = 7.0324 million dollars per 100 sworn officers, which rounds to 7.0."
+            ],
+            "answer": "7.0"
+        }
+    ]
+}

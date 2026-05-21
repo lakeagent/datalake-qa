@@ -1,0 +1,197 @@
+{
+    "question": "New York Regents Examinations are developed and administered by which department, and which state is that department's main office in? In that state, consider counties that are in the top 3 by public schools, in the top 3 by private schools, and in the top 3 by school district offices. Using postsecondary institution counts for those counties, identify the single county with the most postsecondary institutions. For that county, compute (public schools + postsecondary institutions) - (private schools + school district offices). Give the final answer as an integer.",
+    "answer": "327",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/New_York_Regents_Examinations/content.txt",
+            "fact": "The Regents Examinations are developed and administered by the New York State Education Department (NYSED) under the authority of the Board of Regents of the University of the State of New York.",
+            "subquestion": "New York Regents Examinations are developed and administered by which department?",
+            "answer": "New York State Education Department"
+        },
+        "2": {
+            "source": "wikipedia/New_York_State_Education_Department/content.txt",
+            "fact": "The main offices of the department are housed in the New York State Department of Education Building, located at 89 Washington Avenue in Albany, the state capital.",
+            "subquestion": "The main offices of <hop 1 answer> are located in what city?",
+            "answer": "Albany"
+        },
+        "3": {
+            "source": "wikipedia/Albany,_New_York/content.txt",
+            "fact": "Albany ( ) is the capital city of the U.S. state of New York, and the county seat of – and most populous city in – Albany County.",
+            "subquestion": "<hop 2 answer> is the county seat of which county?",
+            "answer": "Albany County"
+        },
+        "4": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\") for col in df.columns]\n\nresult = (\n    df.loc[(df[\"CITY\"] == \"Albany\") & (df[\"NMCNTY\"] == \"Albany County\"), [\"CITY\", \"NMCNTY\", \"STFIP\"]]\n    .drop_duplicates()\n    .sort_values([\"CITY\", \"NMCNTY\", \"STFIP\"])\n    .reset_index(drop=True)\n)\n\nunique_stfip = result[\"STFIP\"].dropna().astype(str).unique().tolist()\nanswer = unique_stfip[0] if len(unique_stfip) == 1 else unique_stfip",
+            "subquestion": "In the postsecondary school listings, entries with CITY='<hop 2 answer>' and NMCNTY='<hop 3 answer>' share what two-digit state FIPS code (STFIP)?",
+            "answer": "36"
+        },
+        "5": {
+            "source": "datagov/public-school-locations-2021-22-5a116/files/data.txt",
+            "fact": "import io\nfrom collections import Counter\nfrom xml.etree import ElementTree as ET\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-2021-22-5a116/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\nroot = ET.parse(io.BytesIO(obj[\"Body\"].read())).getroot()\nns = {\"k\": \"http://www.opengis.net/kml/2.2\"}\n\ncounts = Counter()\nfor placemark in root.findall('.//k:Placemark', ns):\n    values = {\n        simple_data.attrib.get(\"name\"): (simple_data.text or \"\")\n        for simple_data in placemark.findall('.//k:SimpleData', ns)\n    }\n    if values.get(\"STFIP\") == \"36\":\n        counts[values.get(\"NMCNTY\")] += 1\n\nresult = (\n    pd.DataFrame(counts.items(), columns=[\"NMCNTY\", \"public_school_count\"])\n    .sort_values([\"public_school_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\ntop3 = result.head(3)[\"NMCNTY\"].tolist()\nanswer = \"; \".join(top3)",
+            "subquestion": "For STFIP='<node_4 answer>', which 3 county names have the most public schools? Return the county names separated by '; '.",
+            "answer": "Kings County; Bronx County; Queens County"
+        },
+        "6": {
+            "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+            "fact": "import io\nimport json\nfrom collections import Counter\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\n\ncounts = Counter()\nfor feature in data[\"features\"]:\n    properties = feature[\"properties\"]\n    if properties.get(\"STFIP\") == \"36\":\n        counts[properties.get(\"NMCNTY\")] += 1\n\nresult = (\n    pd.DataFrame(counts.items(), columns=[\"NMCNTY\", \"private_school_count\"])\n    .sort_values([\"private_school_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\ntop3 = result.head(3)[\"NMCNTY\"].tolist()\nanswer = \"; \".join(top3)",
+            "subquestion": "For STFIP='<node_4 answer>', which 3 county names have the most private schools? Return the county names separated by '; '.",
+            "answer": "Kings County; New York County; Queens County"
+        },
+        "7": {
+            "source": "datagov/school-district-office-locations-2021-22-d5dd7/files/data-TEK2ZS.txt",
+            "fact": "import io\nimport json\nfrom collections import Counter\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-2021-22-d5dd7/files/data-TEK2ZS.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\n\ncounts = Counter()\nfor feature in data[\"features\"]:\n    properties = feature[\"properties\"]\n    if properties.get(\"STFIP\") == \"36\":\n        counts[properties.get(\"NMCNTY\")] += 1\n\nresult = (\n    pd.DataFrame(counts.items(), columns=[\"NMCNTY\", \"school_district_office_count\"])\n    .sort_values([\"school_district_office_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\ntop3 = result.head(3)[\"NMCNTY\"].tolist()\nanswer = \"; \".join(top3)",
+            "subquestion": "For STFIP='<node_4 answer>', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+            "answer": "Kings County; Bronx County; Suffolk County"
+        },
+        "8": {
+            "source": "datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt",
+            "fact": "import io\nimport json\nfrom collections import Counter\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\n\ncounts = Counter()\nfor feature in data[\"features\"]:\n    properties = feature[\"properties\"]\n    if properties.get(\"STFIP\") == \"36\":\n        counts[properties.get(\"NMCNTY\")] += 1\n\nset_a = {\"Kings County\", \"Bronx County\", \"Queens County\"}\nset_b = {\"Kings County\", \"New York County\", \"Queens County\"}\nset_c = {\"Kings County\", \"Bronx County\", \"Suffolk County\"}\ncandidate_counties = sorted(set_a & set_b & set_c)\n\nresult = (\n    pd.DataFrame(\n        [(county, counts[county]) for county in candidate_counties],\n        columns=[\"NMCNTY\", \"postsecondary_institution_count\"],\n    )\n    .sort_values([\"postsecondary_institution_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = result.loc[0, \"NMCNTY\"]",
+            "subquestion": "Among the counties in <hop 5 answer>, which single county has the most postsecondary institutions in STFIP='<node_4 answer>'? Answer with the county name including the word 'County'.",
+            "answer": "Kings County"
+        },
+        "9": {
+            "source": "datagov/public-school-locations-2021-22-5a116/files/data.txt",
+            "fact": "import io\nfrom xml.etree import ElementTree as ET\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-2021-22-5a116/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\nroot = ET.parse(io.BytesIO(obj[\"Body\"].read())).getroot()\nns = {\"k\": \"http://www.opengis.net/kml/2.2\"}\n\ncount = 0\nfor placemark in root.findall('.//k:Placemark', ns):\n    values = {\n        simple_data.attrib.get(\"name\"): (simple_data.text or \"\")\n        for simple_data in placemark.findall('.//k:SimpleData', ns)\n    }\n    if values.get(\"STFIP\") == \"36\" and values.get(\"NMCNTY\") == \"Kings County\":\n        count += 1\n\nanswer = count",
+            "subquestion": "How many public schools have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 574
+        },
+        "10": {
+            "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+            "fact": "import io\nimport json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\n\ncount = 0\nfor feature in data[\"features\"]:\n    properties = feature[\"properties\"]\n    if properties.get(\"STFIP\") == \"36\" and properties.get(\"NMCNTY\") == \"Kings County\":\n        count += 1\n\nanswer = count",
+            "subquestion": "How many private schools have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 195
+        },
+        "11": {
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import io\nimport json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\n\ncount = 0\nfor feature in data[\"features\"]:\n    properties = feature[\"properties\"]\n    if properties.get(\"STFIP\") == \"36\" and properties.get(\"NMCNTY\") == \"Kings County\":\n        count += 1\n\nanswer = count",
+            "subquestion": "How many school district offices have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 104
+        },
+        "12": {
+            "source": "datagov/postsecondary-school-locations-current-40ae1/files/nces::postsecondary-school-locations-current-1.txt",
+            "fact": "import io\nfrom xml.etree import ElementTree as ET\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-40ae1/files/nces::postsecondary-school-locations-current-1.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\nroot = ET.parse(io.BytesIO(obj[\"Body\"].read())).getroot()\nns = {\"k\": \"http://www.opengis.net/kml/2.2\"}\n\ncount = 0\nfor placemark in root.findall('.//k:Placemark', ns):\n    values = {\n        simple_data.attrib.get(\"name\"): (simple_data.text or \"\")\n        for simple_data in placemark.findall('.//k:SimpleData', ns)\n    }\n    if values.get(\"STFIP\") == \"36\" and values.get(\"NMCNTY\") == \"Kings County\":\n        count += 1\n\nanswer = count",
+            "subquestion": "How many postsecondary institutions have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 52
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Read the department that develops and administers the New York Regents Examinations from the cited Wikipedia source.",
+                "Hop result: the department is New York State Education Department."
+            ],
+            "answer": "New York State Education Department"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Read the city where <hop 1 answer> has its main offices from the cited Wikipedia source.",
+                "Hop result: the city is Albany."
+            ],
+            "answer": "Albany"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Read the county containing <hop 2 answer> from the cited Wikipedia source.",
+                "Hop result: the county is Albany County."
+            ],
+            "answer": "Albany County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3 establishes that <hop 2 answer> is in the U.S. state of New York.",
+                "Node 4 maps the city/county pair `<hop 2 answer>`, `<hop 3 answer>` to the shared two-digit state FIPS code `36`, which is the dataset key needed for the downstream statewide queries.",
+                "Hop result: the relevant state is New York, queried downstream via `STFIP` 36."
+            ],
+            "answer": "New York"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5,
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 5: For `STFIP` = `36`, count public schools by county and keep the top three county names.",
+                "Node 6: For `STFIP` = `36`, count private schools by county and keep the top three county names.",
+                "Node 7: For `STFIP` = `36`, count school district offices by county and keep the top three county names.",
+                "Hop result: intersect the three top-three county sets; the shared county is Kings County."
+            ],
+            "answer": [
+                "Kings County"
+            ]
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: For `STFIP` = `36`, count postsecondary institutions by county from the cited source, restrict to the counties in <hop 5 answer>, and keep the county with the highest count.",
+                "Hop result: the county is Kings County."
+            ],
+            "answer": "Kings County"
+        },
+        {
+            "hop": 7,
+            "node_ids": [
+                9,
+                10,
+                11,
+                12
+            ],
+            "reasoning": [
+                "Node 9: For `STFIP` = `36` and `NMCNTY` = <hop 6 answer>, count public schools.",
+                "Node 10: For `STFIP` = `36` and `NMCNTY` = <hop 6 answer>, count private schools.",
+                "Node 11: For `STFIP` = `36` and `NMCNTY` = <hop 6 answer>, count school district offices.",
+                "Node 12: For `STFIP` = `36` and `NMCNTY` = <hop 6 answer>, count postsecondary institutions.",
+                "Hop result: compute `(574 + 52) - (195 + 104) = 327`."
+            ],
+            "answer": 327
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/New_York_Regents_Examinations/content.txt",
+        "wikipedia/New_York_State_Education_Department/content.txt",
+        "wikipedia/Albany,_New_York/content.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt",
+        "datagov/public-school-locations-2021-22-5a116/files/data.txt",
+        "datagov/public-school-locations-2021-22-5a116/signed-metadata.txt",
+        "datagov/public-school-locations-2021-22-5a116/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+        "datagov/private-school-locations-current-f7d96/signed-metadata.txt",
+        "datagov/private-school-locations-current-f7d96/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2021-22-d5dd7/files/data-TEK2ZS.txt",
+        "datagov/school-district-office-locations-2021-22-d5dd7/signed-metadata.txt",
+        "datagov/school-district-office-locations-2021-22-d5dd7/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt",
+        "datagov/postsecondary-school-locations-2019-20-64b31/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2019-20-64b31/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-current-40ae1/files/nces::postsecondary-school-locations-current-1.txt",
+        "datagov/postsecondary-school-locations-current-40ae1/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-40ae1/files/0.arcgis-layer.json"
+    ]
+}

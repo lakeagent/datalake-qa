@@ -1,0 +1,69 @@
+{
+    "question": "First identify the state that appears in both of these data.gov-derived groups: Which states were home to sponsors behind independently funded political advertising and related election-season messages in Washington when no more than 10 sponsors from the state used at least 25 different vendors; and In February 2011, which states had average household electricity prices across ZIP codes for bundled service that were at least $0.025 per kWh higher than the corresponding average business prices. After identifying that state, what dog is listed among the official symbols of that state? Your response should be in the format [Answer].",
+    "answer": "American Foxhound",
+    "nodes": {
+        "1": {
+            "source": "datagov/independent-campaign-expenditures-and-electioneering-communications/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/independent-campaign-expenditures-and-electioneering-communications/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\nfiltered = df[\n    df[\"sponsor_state\"].notna()\n    & df[\"sponsor_name\"].notna()\n    & df[\"vendor_name\"].notna()\n    & df[\"expenditure_amount\"].notna()\n].copy()\nfiltered[\"expenditure_amount\"] = pd.to_numeric(filtered[\"expenditure_amount\"], errors=\"coerce\")\nfiltered = filtered[filtered[\"expenditure_amount\"].notna()].copy()\nfiltered[\"state\"] = filtered[\"sponsor_state\"].map(state_map).fillna(filtered[\"sponsor_state\"])\n\nresult = (\n    filtered.groupby(\"state\", dropna=False)\n    .agg(\n        sponsor_count=(\"sponsor_name\", \"nunique\"),\n        vendor_count=(\"vendor_name\", \"nunique\")\n    )\n    .reset_index()\n)\n\nresult = result[(result[\"vendor_count\"] >= 25) & (result[\"sponsor_count\"] <= 10)]\nresult = result.sort_values(\"state\").reset_index(drop=True)\nanswer = result[\"state\"].tolist()",
+            "subquestion": "Which states were home to sponsors behind independently funded political advertising and related election-season messages in Washington when no more than 10 sponsors from the state used at least 25 different vendors?",
+            "answer": [
+                "California",
+                "Virginia"
+            ]
+        },
+        "2": {
+            "source": "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-feb-2011-a2fc8/files/iouzipcodes2011.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-feb-2011-a2fc8/files/iouzipcodes2011.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\nfiltered = df[\n    (df[\"service_type\"] == \"Bundled\")\n    & df[\"state\"].notna()\n    & df[\"res_rate\"].notna()\n    & df[\"comm_rate\"].notna()\n].copy()\nfiltered[\"res_rate\"] = pd.to_numeric(filtered[\"res_rate\"], errors=\"coerce\")\nfiltered[\"comm_rate\"] = pd.to_numeric(filtered[\"comm_rate\"], errors=\"coerce\")\nfiltered = filtered[filtered[\"res_rate\"].notna() & filtered[\"comm_rate\"].notna()].copy()\nfiltered[\"state_full\"] = filtered[\"state\"].map(state_map).fillna(filtered[\"state\"])\n\nresult = (\n    filtered.groupby(\"state_full\", dropna=False)\n    .agg(\n        avg_comm=(\"comm_rate\", \"mean\"),\n        avg_res=(\"res_rate\", \"mean\")\n    )\n    .reset_index()\n)\nresult[\"res_comm_gap\"] = result[\"avg_res\"] - result[\"avg_comm\"]\nresult = result[result[\"res_comm_gap\"] >= 0.025].sort_values(\"state_full\").reset_index(drop=True)\nanswer = result[\"state_full\"].tolist()",
+            "subquestion": "In February 2011, which states had average household electricity prices across ZIP codes for bundled service that were at least $0.025 per kWh higher than the corresponding average business prices?",
+            "answer": [
+                "Illinois",
+                "Iowa",
+                "Maine",
+                "New York",
+                "Vermont",
+                "Virginia",
+                "Wisconsin"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Virginia/content.txt",
+            "fact": "The Virginia page lists official symbols including Dog: American Foxhound.",
+            "subquestion": "What dog is listed among the official symbols of <hop 1 answer>?",
+            "answer": "American Foxhound"
+        }
+    },
+    "datasets_used": [
+        "datagov/independent-campaign-expenditures-and-electioneering-communications/files/rows.txt",
+        "datagov/independent-campaign-expenditures-and-electioneering-communications/signed-metadata.txt",
+        "datagov/independent-campaign-expenditures-and-electioneering-communications/files/67cp-h962.publisher-view.json",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-feb-2011-a2fc8/files/iouzipcodes2011.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-feb-2011-a2fc8/signed-metadata.txt",
+        "wikipedia/Virginia/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `sponsor_state`, `sponsor_name`, `vendor_name`, and `expenditure_amount` are present, convert `expenditure_amount` to numeric, normalize `sponsor_state` values to full state names, aggregate by state to compute distinct sponsor and vendor counts, and keep states with at least 25 distinct vendors and no more than 10 distinct sponsors.",
+                "Node 2: Filter rows where `service_type` = `Bundled`, `state` is present, and both `res_rate` and `comm_rate` are present, convert `res_rate` and `comm_rate` to numeric, normalize `state` values to full state names, aggregate by state to compute average commercial and average residential rates, compute `res_comm_gap = avg_res - avg_comm`, and keep states with `res_comm_gap >= 0.025`.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Virginia."
+            ],
+            "answer": "Virginia"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: The Virginia page identifies American Foxhound as the dog listed among the official symbols of the computed state.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "American Foxhound"
+        }
+    ]
+}

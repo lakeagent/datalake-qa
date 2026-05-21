@@ -1,0 +1,49 @@
+{
+    "question": "Which states had at least $25 in average total pharmacy reimbursement per Medicaid-reimbursed prescription from January through March 1991, and also had a 2017 bundled-electricity spread score of at least 5, where the score is defined as the number of distinct electric utilities offering bundled service in the state multiplied by the state's average residential-to-industrial electricity price ratio minus 1? Respond with [Answer].",
+    "answer": "Wisconsin",
+    "nodes": {
+        "1": {
+            "source": "datagov/state-drug-utilization-data-1991-aa1ed/files/StateDrugUtilizationData1991.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/state-drug-utilization-data-1991-aa1ed/files/StateDrugUtilizationData1991.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"Year\"] == 1991) & (df[\"Quarter\"] == 1) & (df[\"Suppression Used\"] != True)].copy()\nfiltered[\"Number of Prescriptions\"] = pd.to_numeric(filtered[\"Number of Prescriptions\"], errors=\"coerce\")\nfiltered[\"Total Amount Reimbursed\"] = pd.to_numeric(filtered[\"Total Amount Reimbursed\"], errors=\"coerce\")\nfiltered = filtered[\n    filtered[\"Number of Prescriptions\"].notna()\n    & filtered[\"Total Amount Reimbursed\"].notna()\n    & (filtered[\"Number of Prescriptions\"] != 0)\n].copy()\n\nstate_name_map = {\n    \"AK\": \"Alaska\", \"AL\": \"Alabama\", \"AR\": \"Arkansas\", \"AZ\": \"Arizona\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DC\": \"District of Columbia\", \"DE\": \"Delaware\",\n    \"FL\": \"Florida\", \"GA\": \"Georgia\", \"HI\": \"Hawaii\", \"IA\": \"Iowa\", \"ID\": \"Idaho\",\n    \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\",\n    \"MA\": \"Massachusetts\", \"MD\": \"Maryland\", \"ME\": \"Maine\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\",\n    \"MO\": \"Missouri\", \"MS\": \"Mississippi\", \"MT\": \"Montana\", \"NC\": \"North Carolina\",\n    \"ND\": \"North Dakota\", \"NE\": \"Nebraska\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NV\": \"Nevada\", \"NY\": \"New York\", \"OH\": \"Ohio\", \"OK\": \"Oklahoma\",\n    \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VA\": \"Virginia\",\n    \"VT\": \"Vermont\", \"WA\": \"Washington\", \"WI\": \"Wisconsin\", \"WV\": \"West Virginia\", \"WY\": \"Wyoming\"\n}\nfiltered[\"normalized_state\"] = filtered[\"State\"].map(state_name_map)\n\nstate_metric = filtered.groupby(\"normalized_state\", as_index=False).agg(\n    total_amount_reimbursed=(\"Total Amount Reimbursed\", \"sum\"),\n    total_prescriptions=(\"Number of Prescriptions\", \"sum\"),\n    unsuppressed_record_count=(\"State\", \"size\")\n)\nstate_metric[\"avg_amount_reimbursed_per_prescription\"] = (\n    state_metric[\"total_amount_reimbursed\"] / state_metric[\"total_prescriptions\"]\n)\n\nresult = state_metric[state_metric[\"avg_amount_reimbursed_per_prescription\"] >= 25].sort_values(\n    \"normalized_state\"\n).reset_index(drop=True)\nanswer = result[\"normalized_state\"].tolist()",
+            "subquestion": "Which states had at least $25 in average total pharmacy reimbursement per Medicaid-reimbursed prescription from January through March 1991?",
+            "answer": [
+                "North Carolina",
+                "Wisconsin"
+            ]
+        },
+        "2": {
+            "source": "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2017-841a4/files/iouzipcodes2017.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2017-841a4/files/iouzipcodes2017.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[df[\"service_type\"] == \"Bundled\"].copy()\nfiltered[\"res_rate\"] = pd.to_numeric(filtered[\"res_rate\"], errors=\"coerce\")\nfiltered[\"ind_rate\"] = pd.to_numeric(filtered[\"ind_rate\"], errors=\"coerce\")\nfiltered = filtered[\n    filtered[\"res_rate\"].notna()\n    & filtered[\"ind_rate\"].notna()\n    & (filtered[\"ind_rate\"] > 0)\n].copy()\n\nstate_name_map = {\n    \"AK\": \"Alaska\", \"AL\": \"Alabama\", \"AR\": \"Arkansas\", \"AZ\": \"Arizona\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DC\": \"District of Columbia\", \"DE\": \"Delaware\",\n    \"FL\": \"Florida\", \"GA\": \"Georgia\", \"HI\": \"Hawaii\", \"IA\": \"Iowa\", \"ID\": \"Idaho\",\n    \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\",\n    \"MA\": \"Massachusetts\", \"MD\": \"Maryland\", \"ME\": \"Maine\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\",\n    \"MO\": \"Missouri\", \"MS\": \"Mississippi\", \"MT\": \"Montana\", \"NC\": \"North Carolina\",\n    \"ND\": \"North Dakota\", \"NE\": \"Nebraska\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NV\": \"Nevada\", \"NY\": \"New York\", \"OH\": \"Ohio\", \"OK\": \"Oklahoma\",\n    \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VA\": \"Virginia\",\n    \"VT\": \"Vermont\", \"WA\": \"Washington\", \"WI\": \"Wisconsin\", \"WV\": \"West Virginia\", \"WY\": \"Wyoming\"\n}\nfiltered[\"normalized_state\"] = filtered[\"state\"].map(state_name_map)\nfiltered[\"residential_to_industrial_rate_ratio\"] = filtered[\"res_rate\"] / filtered[\"ind_rate\"]\n\nstate_metric = filtered.groupby(\"normalized_state\", as_index=False).agg(\n    utility_count=(\"utility_name\", \"nunique\"),\n    avg_residential_to_industrial_rate_ratio=(\"residential_to_industrial_rate_ratio\", \"mean\")\n)\nstate_metric[\"utility_spread_score\"] = state_metric[\"utility_count\"] * (\n    state_metric[\"avg_residential_to_industrial_rate_ratio\"] - 1\n)\n\nresult = state_metric[state_metric[\"utility_spread_score\"] >= 5].sort_values(\n    \"normalized_state\"\n).reset_index(drop=True)\nanswer = result[\"normalized_state\"].tolist()",
+            "subquestion": "Define a state's 2017 bundled-electricity spread score as the number of distinct electric utilities offering bundled service in that state multiplied by the state's average residential-to-industrial electricity price ratio minus 1. Which states had a bundled-electricity spread score of at least 5?",
+            "answer": [
+                "Michigan",
+                "New Jersey",
+                "New York",
+                "Pennsylvania",
+                "Wisconsin"
+            ]
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Year` = 1991, `Quarter` = 1, and `Suppression Used` is not true, convert `Number of Prescriptions` and `Total Amount Reimbursed` to numeric, exclude rows with missing values or zero prescriptions, aggregate reimbursement and prescription totals by normalized `State`, compute average reimbursed amount per prescription, and keep states with average at least 25.",
+                "Node 2: Filter rows where `service_type` = `Bundled`, convert `res_rate` and `ind_rate` to numeric, exclude rows with missing values or nonpositive `ind_rate`, compute each row's residential-to-industrial rate ratio, aggregate by normalized `state` to get distinct `utility_name` count and average ratio, compute spread score as utility count multiplied by average ratio minus 1, and keep states with spread score at least 5.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Wisconsin."
+            ],
+            "answer": "Wisconsin"
+        }
+    ],
+    "datasets_used": [
+        "datagov/state-drug-utilization-data-1991-aa1ed/files/StateDrugUtilizationData1991.txt",
+        "datagov/state-drug-utilization-data-1991-aa1ed/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-1991-aa1ed/files/state-drug-utilization-data-dictionary.json",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2017-841a4/files/iouzipcodes2017.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2017-841a4/signed-metadata.txt"
+    ]
+}

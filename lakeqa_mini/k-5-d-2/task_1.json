@@ -1,0 +1,153 @@
+{
+    "question": "Find the Texas counties that appear in both of these groups: (1) counties with at least 10% of residents ages 18 to 64 living with disabilities and at least 23% of residents age 65 or older in 2023, and (2) counties in the Abilene adult-protection region with 150 or more completed adult-protection investigations in 2023. Of those counties, pick the one with the fewest completed investigations into possible child abuse or neglect in 2023. A leader of that county's Regulators died in that county's seat. What is the county seat of the county where this leader was born? Please return the county seat name only. Your response should be in the format [Answer].",
+    "answer": "Dadeville",
+    "nodes": {
+        "1": {
+            "source": "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Fiscal Year\"] = pd.to_numeric(df[\"Fiscal Year\"], errors=\"coerce\")\ndf[\"Adult Disabled 18-64: % of Population\"] = pd.to_numeric(df[\"Adult Disabled 18-64: % of Population\"], errors=\"coerce\")\ndf[\"65 and older: % of Population\"] = pd.to_numeric(df[\"65 and older: % of Population\"], errors=\"coerce\")\n\nresult = df[\n    (df[\"Fiscal Year\"] == 2023)\n    & (df[\"Adult Disabled 18-64: % of Population\"] >= 10)\n    & (df[\"65 and older: % of Population\"] >= 23)\n][[\"County\", \"Adult Disabled 18-64: % of Population\", \"65 and older: % of Population\"]].sort_values([\"County\"]).reset_index(drop=True)\n\nanswer = result[\"County\"].tolist()",
+            "subquestion": "Which Texas counties had at least 10% adult disabled population and at least 23% elderly population in 2023?",
+            "answer": [
+                "Culberson",
+                "Eastland",
+                "Edwards",
+                "Hudspeth",
+                "Kent",
+                "King",
+                "Kinney",
+                "Lampasas",
+                "Montague",
+                "Sabine",
+                "San Augustine",
+                "San Jacinto",
+                "Trinity",
+                "Tyler"
+            ]
+        },
+        "2": {
+            "source": "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Fiscal Year\"] = pd.to_numeric(df[\"Fiscal Year\"], errors=\"coerce\")\ndf[\"Completed Investigations\"] = pd.to_numeric(df[\"Completed Investigations\"], errors=\"coerce\")\n\nresult = df[\n    (df[\"Fiscal Year\"] == 2023)\n    & (df[\"Region\"] == \"2-Abilene\")\n    & (df[\"Completed Investigations\"] >= 150)\n][[\"County\", \"Completed Investigations\"]].sort_values([\"County\"]).reset_index(drop=True)\n\nanswer = result[\"County\"].tolist()",
+            "subquestion": "Which Texas counties in the Abilene region had 150 or more completed adult-protection investigations in 2023?",
+            "answer": [
+                "Brown",
+                "Eastland",
+                "Montague",
+                "Taylor",
+                "Wichita"
+            ]
+        },
+        "3": {
+            "source": "datagov/cpi-3-1-completed-abuse-neglect-investigations-by-county-fy2013-fy2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/cpi-3-1-completed-abuse-neglect-investigations-by-county-fy2013-fy2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Fiscal Year\"] = pd.to_numeric(df[\"Fiscal Year\"], errors=\"coerce\")\ndf[\"Completed Investigations\"] = pd.to_numeric(df[\"Completed Investigations\"], errors=\"coerce\")\n\nresult = df[\n    (df[\"Fiscal Year\"] == 2023)\n    & (df[\"County\"] == \"Eastland\")\n][[\"County\", \"Completed Investigations\"]].reset_index(drop=True)\n\nanswer = result.loc[0, \"Completed Investigations\"]",
+            "subquestion": "How many completed investigations into possible child abuse or neglect were recorded in Eastland County in 2023?",
+            "answer": "149"
+        },
+        "4": {
+            "source": "datagov/cpi-3-2-completed-investigations-initiated-timely-by-county-fy2013-fy2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/cpi-3-2-completed-investigations-initiated-timely-by-county-fy2013-fy2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Fiscal Year\"] = pd.to_numeric(df[\"Fiscal Year\"], errors=\"coerce\")\ndf[\"Completed Investigations\"] = pd.to_numeric(df[\"Completed Investigations\"], errors=\"coerce\")\n\nresult = df[\n    (df[\"Fiscal Year\"] == 2023)\n    & (df[\"County\"] == \"Montague\")\n][[\"County\", \"Priority\", \"Reponse Timely\", \"Completed Investigations\"]].reset_index(drop=True)\n\nanswer = result[\"Completed Investigations\"].sum()",
+            "subquestion": "How many completed investigations into possible child abuse or neglect were recorded in Montague County in 2023?",
+            "answer": "193"
+        },
+        "5": {
+            "source": "wikipedia/Lincoln_County_Regulators/content.txt",
+            "fact": "The Regulators would go through three different leaders, all but one being killed. Although Billy the Kid would achieve fame as a member of the Regulators, he never led them. Their first leader was Richard \"Dick\" Brewer, killed later by Buckshot Roberts and replaced by Frank McNab, who was killed by members of the Seven Rivers Warriors. McNab was replaced by the Regulators final leader, Doc Scurlock.",
+            "subquestion": "Who were the leaders of the Lincoln County Regulators?",
+            "answer": [
+                "Richard \"Dick\" Brewer",
+                "Frank McNab",
+                "Doc Scurlock"
+            ]
+        },
+        "6": {
+            "source": "wikipedia/Doc_Scurlock/content.txt",
+            "fact": "He was born in Tallapoosa County, Alabama, January 11, 1849, the sixth of 11 children born to Priestly Norman Scurlock (July 3, 1806 – June 22, 1876) and Esther Ann Brown (May 19, 1819 – June 1, 1903). Josiah was said to have studied medicine in New Orleans, thus receiving his nickname \"Doc\".\n\nDoc Scurlock died at age 80 from a heart attack in Eastland, Texas. He is interred in Eastland City Cemetery, along with his wife and other family members.",
+            "subquestion": "Which of <hop 3 answer> died in <hop 2 answer>, and what county was he born in?",
+            "answer": "Doc Scurlock"
+        },
+        "7": {
+            "source": "wikipedia/Tallapoosa_County,_Alabama/content.txt",
+            "fact": "Tallapoosa County is a county located in the east-central portion of the U.S. state of Alabama.\"ACES Tallapoosa County Office\" (links/history), Alabama Cooperative Extension System (ACES), 2007, webpage: ACES-Tallapoosa. As of the 2020 census, the population was 41,311. Its county seat is Dadeville.",
+            "subquestion": "What is the county seat of the Alabama county where <node 6 answer> was born?",
+            "answer": "Dadeville"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Fiscal Year` = 2023, `Adult Disabled 18-64: % of Population` >= 10, and `65 and older: % of Population` >= 23, then keep `County`.",
+                "Node 2: Filter rows where `Fiscal Year` = 2023, `Region` = `2-Abilene`, and `Completed Investigations` >= 150, then keep `County`.",
+                "Hop result: intersect the node outputs to keep counties that meet both APS conditions."
+            ],
+            "answer": [
+                "Eastland",
+                "Montague"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `Fiscal Year` = 2023 and `County` = `Eastland`, then return `Completed Investigations`.",
+                "Node 4: Filter rows where `Fiscal Year` = 2023 and `County` = `Montague`, sum `Completed Investigations` across the matching priority rows, and return the county total.",
+                "Hop result: compare <node 3 answer> and <node 4 answer>; the county with fewer completed child abuse/neglect investigations is Eastland County."
+            ],
+            "answer": "Eastland"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Identify the leaders of the Lincoln County Regulators from the cited Wikipedia source."
+            ],
+            "answer": [
+                "Richard \"Dick\" Brewer",
+                "Frank McNab",
+                "Doc Scurlock"
+            ]
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: From <hop 3 answer>, identify who died in <hop 2 answer>; the cited source also states that he was born in Tallapoosa County, Alabama."
+            ],
+            "answer": "Doc Scurlock"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Read the county seat of Tallapoosa County, Alabama from the cited Wikipedia source."
+            ],
+            "answer": "Dadeville"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Lincoln_County_Regulators/content.txt",
+        "wikipedia/Doc_Scurlock/content.txt",
+        "wikipedia/Tallapoosa_County,_Alabama/content.txt",
+        "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/rows.txt",
+        "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/signed-metadata.txt",
+        "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/qjby-4sji.publisher-view.json",
+        "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/rows.txt",
+        "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/signed-metadata.txt",
+        "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/3zr8-huug.txt",
+        "datagov/cpi-3-1-completed-abuse-neglect-investigations-by-county-fy2013-fy2022/files/rows.txt",
+        "datagov/cpi-3-1-completed-abuse-neglect-investigations-by-county-fy2013-fy2022/signed-metadata.txt",
+        "datagov/cpi-3-2-completed-investigations-initiated-timely-by-county-fy2013-fy2022/files/rows.txt",
+        "datagov/cpi-3-2-completed-investigations-initiated-timely-by-county-fy2013-fy2022/signed-metadata.txt"
+    ]
+}

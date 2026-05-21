@@ -1,0 +1,48 @@
+{
+    "question": "Which year from 2005-2010 has the lowest total CTA 'L' station entries. After finding that, which team won the Super Bowl for that year's NFL season? Your response should be in the format [Answer].",
+    "answer": "Pittsburgh Steelers",
+    "nodes": {
+        "1": {
+            "source": "datagov/cta-ridership-l-station-entries-monthly-day-type-averages-totals/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/cta-ridership-l-station-entries-monthly-day-type-averages-totals/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=None, engine=\"python\")\n\n\ndf[\"year\"] = pd.to_datetime(df[\"month_beginning\"], errors=\"coerce\").dt.year\ndf[\"monthtotal\"] = pd.to_numeric(df[\"monthtotal\"], errors=\"coerce\")\nfiltered = df[df[\"year\"].between(2005, 2010)]\nyearly_totals = filtered.groupby(\"year\", dropna=True)[\"monthtotal\"].sum()\nanswer = str(int(yearly_totals.idxmin()))\n",
+            "subquestion": "Which year from 2005-2010 has the lowest total CTA 'L' station entries?",
+            "answer": "2005"
+        },
+        "2": {
+            "source": "wikipedia/2005_NFL_season/content.txt",
+            "fact": "The New England Patriots' streak of 10 consecutive playoff wins and chance at a third straight Super Bowl title was ended in the Divisional Playoff Round by the Denver Broncos, and eventually the NFL title was won by the Pittsburgh Steelers, who defeated the Seattle Seahawks 21–10 in Super Bowl XL at Ford Field in Detroit, Michigan on February 5 for their fifth Super Bowl win.",
+            "subquestion": "Which team won the Super Bowl for the <hop 1 answer> NFL season?",
+            "answer": "Pittsburgh Steelers"
+        }
+    },
+    "datasets_used": [
+        "datagov/cta-ridership-l-station-entries-monthly-day-type-averages-totals/files/rows.txt",
+        "datagov/cta-ridership-l-station-entries-monthly-day-type-averages-totals/signed-metadata.txt",
+        "datagov/cta-ridership-l-station-entries-monthly-day-type-averages-totals/files/ridershipreadme.txt",
+        "wikipedia/2005_NFL_season/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Extract `year` from `month_beginning`, filter rows where `year` is between 2005 and 2010, sum `monthtotal` by `year`, and select the year with the lowest total.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2005"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Pittsburgh Steelers was the Super Bowl winner for 2005.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Pittsburgh Steelers"
+        }
+    ]
+}

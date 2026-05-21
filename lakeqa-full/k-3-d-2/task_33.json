@@ -1,0 +1,83 @@
+{
+    "question": "Identify the Wyoming county that had at least 150 and fewer than 180 VA disability compensation recipients in FY 2019 and at least 260 and fewer than 280 VA disability compensation recipients in FY 2023. Then identify that county's county seat. What is that town's nickname? Your response should be in the format [Answer].",
+    "answer": "Lilac City",
+    "nodes": {
+        "1": {
+            "source": "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Wyoming'.lower())].copy()\nfiltered['# Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['# Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['# Total: Disability Compensation Recipients'] >= 150) & (filtered['# Total: Disability Compensation Recipients'] < 180)]\ncounty_names = filtered['County name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Wyoming counties had at least 150 and fewer than 180 VA disability compensation recipients in FY 2019?",
+            "answer": [
+                "Big Horn County",
+                "Crook County",
+                "Teton County",
+                "Sublette County"
+            ]
+        },
+        "2": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Wyoming'.lower())].copy()\nfiltered['Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['Total: Disability Compensation Recipients'] >= 260) & (filtered['Total: Disability Compensation Recipients'] < 280)]\ncounty_names = filtered['County Name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Wyoming counties had at least 260 and fewer than 280 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Big Horn County",
+                "Weston County"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Big_Horn_County,_Wyoming/content.txt",
+            "fact": "Big Horn County is a county in the U.S. state of Wyoming. As of the 2020 United States census, the population was 11,521. The county seat is Basin.",
+            "subquestion": "What is the county seat of <hop 1 answer>?",
+            "answer": "Basin"
+        },
+        "4": {
+            "source": "wikipedia/Basin,_Wyoming/content.txt",
+            "fact": "Basin is known as the Lilac City and hosts the Big Horn County Fair each summer.",
+            "subquestion": "What is <hop 2 answer>'s nickname?",
+            "answer": "Lilac City"
+        }
+    },
+    "datasets_used": [
+        "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+        "datagov/fy-2019-disability-pension-recipient-by-county/signed-metadata.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt",
+        "wikipedia/Big_Horn_County,_Wyoming/content.txt",
+        "wikipedia/Basin,_Wyoming/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `State` is Wyoming and `# Total: Disability Compensation Recipients` is at least 150 and less than 180, then return the unique county names.",
+                "Node 2: Filter rows where `State` is Wyoming and `Total: Disability Compensation Recipients` is at least 260 and less than 280, then return the unique county names.",
+                "Hop result: intersection of <node_1 answer> and <node_2 answer> = ['Big Horn County']."
+            ],
+            "answer": "Big Horn County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Basin is the county seat of <hop 1 answer>.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Basin"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: <hop 2 answer> is known as the Lilac City.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "Lilac City"
+        }
+    ]
+}

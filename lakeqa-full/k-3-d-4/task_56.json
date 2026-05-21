@@ -1,0 +1,163 @@
+{
+  "question": "Which New York City middle schools had at least 50 specialized high school admissions test offers in every school year from 2015-16 through 2018-19 and are located in Queens District 26? Among those schools, identify the schools named after scientists. How many years apart are the birth years of the earlier-born and later-born scientist namesakes? Please return only the number in the format [Answer].",
+  "answer": 45,
+  "nodes": {
+    "1": {
+      "source": "datagov/2015-2016-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2015-2016-shsat-admissions-test-offers-by-sending-school/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\noffers = pd.to_numeric(df[\"Count of Offers\"], errors=\"coerce\")\nmask = offers >= 50\n\nanswer = dict(zip(df.loc[mask, \"Feeder School Name\"], df.loc[mask, \"Feeder School DBN\"]))\nprint(answer)",
+      "subquestion": "Which NYC middle schools had at least 50 SHSAT offers to specialized high schools in school year 2015-16?",
+      "answer": {
+        "NEW EXPLORATIONS INTO SCIENCE, TECHNOLOGY AND MATH SCHOOL": "01M539",
+        "J.H.S. 104 SIMON BARUCH": "02M104",
+        "EAST SIDE MIDDLE SCHOOL": "02M114",
+        "J.H.S. 167 ROBERT F. WAGNER": "02M167",
+        "M.S. 255 SALK SCHOOL OF SCIENCE": "02M255",
+        "NEW YORK CITY LAB MIDDLE SCHOOL FOR COLLABORATIVE STUDIES": "02M312",
+        "J.H.S. 054 BOOKER T. WASHINGTON": "03M054",
+        "THE ANDERSON SCHOOL": "03M334",
+        "M.S. 51 WILLIAM ALEXANDER": "15K051",
+        "THE MATH & SCIENCE EXPLORATORY SCHOOL": "15K447"
+      },
+      "limit": 10
+    },
+    "2": {
+      "source": "datagov/2016-2017-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2016-2017-shsat-admissions-test-offers-by-sending-school/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\noffers = pd.to_numeric(df[\"Count of Offers\"], errors=\"coerce\")\nmask = offers >= 50\n\nanswer = dict(zip(df.loc[mask, \"Feeder School Name\"], df.loc[mask, \"Feeder School DBN\"]))\nprint(answer)",
+      "subquestion": "Which NYC middle schools had at least 50 SHSAT offers to specialized high schools in school year 2016-17?",
+      "answer": {
+        "NEW EXPLORATIONS INTO SCIENCE, TECHNOLOGY AND MATH SCHOOL": "01M539",
+        "J.H.S. 104 SIMON BARUCH": "02M104",
+        "EAST SIDE MIDDLE SCHOOL": "02M114",
+        "J.H.S. 167 ROBERT F. WAGNER": "02M167",
+        "M.S. 255 SALK SCHOOL OF SCIENCE": "02M255",
+        "NEW YORK CITY LAB MIDDLE SCHOOL FOR COLLABORATIVE STUDIES": "02M312",
+        "J.H.S. 054 BOOKER T. WASHINGTON": "03M054",
+        "THE ANDERSON SCHOOL": "03M334",
+        "M.S. 51 WILLIAM ALEXANDER": "15K051",
+        "THE MATH & SCIENCE EXPLORATORY SCHOOL": "15K447"
+      },
+      "limit": 10
+    },
+    "3": {
+      "source": "datagov/2017-2018-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2017-2018-shsat-admissions-test-offers-by-sending-school/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\noffers = pd.to_numeric(df[\"Count of Offers\"], errors=\"coerce\")\nmask = offers >= 50\n\nanswer = dict(zip(df.loc[mask, \"Feeder School Name\"], df.loc[mask, \"Feeder School DBN\"]))\nprint(answer)",
+      "subquestion": "Which NYC middle schools had at least 50 SHSAT offers to specialized high schools in school year 2017-18?",
+      "answer": {
+        "NEW EXPLORATIONS INTO SCIENCE, TECHNOLOGY AND MATH SCHOOL": "01M539",
+        "J.H.S. 104 SIMON BARUCH": "02M104",
+        "EAST SIDE MIDDLE SCHOOL": "02M114",
+        "J.H.S. 167 ROBERT F. WAGNER": "02M167",
+        "M.S. 255 SALK SCHOOL OF SCIENCE": "02M255",
+        "NEW YORK CITY LAB MIDDLE SCHOOL FOR COLLABORATIVE STUDIES": "02M312",
+        "J.H.S. 054 BOOKER T. WASHINGTON": "03M054",
+        "THE ANDERSON SCHOOL": "03M334",
+        "M.S. 51 WILLIAM ALEXANDER": "15K051",
+        "THE MATH & SCIENCE EXPLORATORY SCHOOL": "15K447"
+      },
+      "limit": 10
+    },
+    "4": {
+      "source": "datagov/2018-2019-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2018-2019-shsat-admissions-test-offers-by-sending-school/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\noffers = pd.to_numeric(df[\"Number of Offers\"], errors=\"coerce\")\nmask = offers >= 50\n\nanswer = dict(zip(df.loc[mask, \"Feeder School Name\"], df.loc[mask, \"Feeder School DBN\"]))\nprint(answer)",
+      "subquestion": "Which NYC middle schools had at least 50 SHSAT offers to specialized high schools in school year 2018-19?",
+      "answer": {
+        "NEW EXPLORATIONS INTO SCIENCE, TECHNOLOGY AND MATH HIGH SCHOOL": "01M539",
+        "J.H.S. 104 SIMON BARUCH": "02M104",
+        "EAST SIDE MIDDLE SCHOOL": "02M114",
+        "J.H.S. 167 ROBERT F. WAGNER": "02M167",
+        "M.S. 255 SALK SCHOOL OF SCIENCE": "02M255",
+        "NEW YORK CITY LAB MIDDLE SCHOOL FOR COLLABORATIVE": "02M312",
+        "J.H.S. 054 BOOKER T. WASHINGTON": "03M054",
+        "M.S. 51 WILLIAM ALEXANDER": "15K051",
+        "THE MATH & SCIENCE EXPLORATORY SCHOOL": "15K447",
+        "THE CHRISTA MCAULIFFE SCHOOL\\I.S. 187": "20K187"
+      },
+      "limit": 10
+    },
+    "5": {
+      "source": "datagov/2016-2017-school-locations/files/rows.txt",
+      "fact": "According to NYC DOE School Locations data for 2016-17, four schools from the intersection are in Queens District 26: J.H.S. 067 Louis Pasteur (26Q067) in Douglas Manor-Douglaston-Little Neck (NTA QN45), J.H.S. 074 Nathaniel Hawthorne (26Q074) in Oakland Gardens (NTA QN42), M.S. 158 Marie Curie (26Q158) in Bayside-Bayside Hills (NTA QN46), and J.H.S. 216 George J. Ryan (26Q216) in Fresh Meadows-Utopia (NTA QN41). The GEOGRAPHICAL_DISTRICT_CODE for all four is 26.",
+      "subquestion": "Which schools with at least 50 specialized high school admissions test offers in all four school years are located in Queens District 26?",
+      "answer": {
+        "J.H.S. 067 Louis Pasteur": "26Q067, District 26",
+        "J.H.S. 074 Nathaniel Hawthorne": "26Q074, District 26",
+        "M.S. 158 Marie Curie": "26Q158, District 26",
+        "J.H.S. 216 George J. Ryan": "26Q216, District 26"
+      }
+    },
+    "6": {
+      "source": "wikipedia/Louis_Pasteur/content.txt",
+      "fact": "Louis Pasteur  (, ; 27 December 1822 – 28 September 1895) was a French chemist, pharmacist, and microbiologist renowned for his discoveries of the principles of vaccination, microbial fermentation, and pasteurization, the last of which was named after him.",
+      "subquestion": "Among the schools in <hop 2 answer> named after a scientist, what was the birth year of the earlier-born scientist namesake?",
+      "answer": 1822
+    },
+    "7": {
+      "source": "wikipedia/Marie_Curie/content.txt",
+      "fact": "Maria Salomea Skłodowska-Curie (; ; 7 November 1867 – 4 July 1934), better known as Marie Curie ( ; ), was a Polish and naturalised-French physicist and chemist who conducted pioneering research on radioactivity.",
+      "subquestion": "Among the schools in <hop 2 answer> named after a scientist, what was the birth year of the later-born scientist namesake?",
+      "answer": 1867
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Louis_Pasteur/content.txt",
+    "wikipedia/Marie_Curie/content.txt",
+    "datagov/2015-2016-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+    "datagov/2015-2016-shsat-admissions-test-offers-by-sending-school/files/columns.txt",
+    "datagov/2016-2017-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+    "datagov/2016-2017-shsat-admissions-test-offers-by-sending-school/files/8ws3-956v.txt",
+    "datagov/2017-2018-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+    "datagov/2017-2018-shsat-admissions-test-offers-by-sending-school/files/vsgi-eeb5.txt",
+    "datagov/2018-2019-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+    "datagov/2018-2019-shsat-admissions-test-offers-by-sending-school/signed-metadata.txt",
+    "datagov/2016-2017-school-locations/files/rows.txt",
+    "datagov/2016-2017-school-locations/files/ahjc-fdu3.txt",
+    "datagov/2016-2017-school-locations/files/ahjc-fdu3.publisher-view.json"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `Count of Offers` is at least 50, then keep `Feeder School Name` -> `Feeder School DBN`.",
+        "Node 2: Filter rows where `Count of Offers` is at least 50, then keep `Feeder School Name` -> `Feeder School DBN`.",
+        "Node 3: Filter rows where `Count of Offers` is at least 50, then keep `Feeder School Name` -> `Feeder School DBN`.",
+        "Node 4: Filter rows where `Number of Offers` is at least 50, then keep `Feeder School Name` -> `Feeder School DBN`.",
+        "Hop result: semantically intersect the yearly school sets from nodes 1-4 = 21 schools."
+      ],
+      "answer": "21 schools"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: Among the schools from <hop 1 answer>, keep rows where `GEOGRAPHICAL_DISTRICT_CODE` equals 26."
+      ],
+      "answer": {
+        "J.H.S. 067 Louis Pasteur": "26Q067, District 26",
+        "J.H.S. 074 Nathaniel Hawthorne": "26Q074, District 26",
+        "M.S. 158 Marie Curie": "26Q158, District 26",
+        "J.H.S. 216 George J. Ryan": "26Q216, District 26"
+      }
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        6,
+        7
+      ],
+      "reasoning": [
+        "Node 6 uses the school set from hop 2 and identifies the earlier-born scientist namesake's birth year as 1822.",
+        "Node 7 uses the school set from hop 2 and identifies the later-born scientist namesake's birth year as 1867.",
+        "The difference between 1867 and 1822 is 45 years."
+      ],
+      "answer": 45
+    }
+  ]
+}

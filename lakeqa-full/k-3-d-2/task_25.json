@@ -1,0 +1,90 @@
+{
+    "question": "Start by finding the Chicago city department with a budget of $400 million to $700 million in 2018 and $600 million to $700 million in 2019. Determine if this department became a paid professional force before or after Pittsburgh's fire bureau did, and focus on the city whose department became paid later. For that city, identify its largest airport. Please return the airport name only. Your response should be in the format [Answer].",
+    "answer": "Pittsburgh International Airport",
+    "nodes": {
+        "1": {
+            "source": "datagov/budget-2018-budget-ordinance-appropriations/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/budget-2018-budget-ordinance-appropriations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\ndf[\"2018 ORDINANCE (AMOUNT $)\"] = pd.to_numeric(df[\"2018 ORDINANCE (AMOUNT $)\"], errors=\"coerce\")\ndept_totals = df.groupby(\"DEPARTMENT DESCRIPTION\", dropna=True)[\"2018 ORDINANCE (AMOUNT $)\"].sum()\ndept_totals = dept_totals[(dept_totals >= 400000000) & (dept_totals <= 700000000)].sort_values(ascending=False)\nanswer = {dept: int(round(float(val))) for dept, val in dept_totals.items()}\n",
+            "subquestion": "Which Chicago city departments had 2018 budgets between $400 million and $700 million?",
+            "answer": {
+                "CFD": 642620615,
+                "CDOT": 459129158
+            }
+        },
+        "2": {
+            "source": "datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\ndf[\"2019 ORDINANCE (AMOUNT $)\"] = pd.to_numeric(df[\"2019 ORDINANCE (AMOUNT $)\"], errors=\"coerce\")\ndept_totals = df.groupby(\"DEPARTMENT DESCRIPTION\", dropna=True)[\"2019 ORDINANCE (AMOUNT $)\"].sum()\ndept_totals = dept_totals[(dept_totals >= 600000000) & (dept_totals <= 700000000)].sort_values(ascending=False)\nanswer = {dept: int(round(float(val))) for dept, val in dept_totals.items()}\n",
+            "subquestion": "Which Chicago city departments had 2019 budgets between $600 million and $700 million?",
+            "answer": {
+                "CFD": 652282316,
+                "DFSS": 633571744
+            }
+        },
+        "3": {
+            "source": "wikipedia/Chicago_Fire_Department/content.txt",
+            "fact": "The Chicago Fire Department (CFD) was organized as a paid department when the volunteer fire department was disestablished on August 2, 1858.",
+            "subquestion": "When did the Chicago Fire Department become a paid professional department?",
+            "answer": "August 2, 1858"
+        },
+        "4": {
+            "source": "wikipedia/Pittsburgh_Bureau_of_Fire/content.txt",
+            "fact": "The Pittsburgh Bureau of Fire officially transitioned to a fully paid department on May 23, 1870.",
+            "subquestion": "When did the Pittsburgh Bureau of Fire become a fully paid professional department?",
+            "answer": "May 23, 1870"
+        },
+        "5": {
+            "source": "wikipedia/Pittsburgh/content.txt",
+            "fact": "Pittsburgh International Airport is the largest airport in Pittsburgh.",
+            "subquestion": "What is the largest airport in Pittsburgh?",
+            "answer": "Pittsburgh International Airport"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Chicago_Fire_Department/content.txt",
+        "wikipedia/Pittsburgh_Bureau_of_Fire/content.txt",
+        "wikipedia/Pittsburgh/content.txt",
+        "datagov/budget-2018-budget-ordinance-appropriations/files/rows.txt",
+        "datagov/budget-2018-budget-ordinance-appropriations/signed-metadata.txt",
+        "datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt",
+        "datagov/budget-2019-budget-ordinance-appropriations/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Group by `DEPARTMENT DESCRIPTION`, sum `2018 ORDINANCE (AMOUNT $)` within each department, and keep totals between 400000000 and 700000000.",
+                "Node 2: Group by `DEPARTMENT DESCRIPTION`, sum `2019 ORDINANCE (AMOUNT $)` within each department, and keep totals between 600000000 and 700000000.",
+                "Hop result: intersect the department keys from node 1 and node 2. The only shared department is CFD, which is the Chicago Fire Department."
+            ],
+            "answer": "Chicago Fire Department"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: August 2, 1858 is when the Chicago Fire Department from <hop 1 answer> became a paid department.",
+                "Node 4: May 23, 1870 is when the Pittsburgh Bureau of Fire transitioned to a fully paid department.",
+                "Hop result: compare August 2, 1858 with May 23, 1870. Since May 23, 1870 is later, the city to focus on is Pittsburgh."
+            ],
+            "answer": "Pittsburgh"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Pittsburgh International Airport is the largest airport in the city selected in <hop 2 answer>.",
+                "Hop result: <node_5 answer>"
+            ],
+            "answer": "Pittsburgh International Airport"
+        }
+    ]
+}

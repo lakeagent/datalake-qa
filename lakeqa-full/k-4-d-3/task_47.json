@@ -1,0 +1,169 @@
+{
+  "question": "Identify the New York county that satisfies the listed public-assistance, foster-care, mental-health, social-services staffing, and case-opening filters, then find its county seat. For the private research university in that city, how many years after the seminary at its roots was founded was the university established? Your response should be in the format [Answer].",
+  "answer": 39,
+  "nodes": {
+    "1": {
+      "source": "datagov/supplemental-nutrition-assistance-program-snap-caseloads-and-expenditures-beginning-2002/files/rows.txt",
+      "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/supplemental-nutrition-assistance-program-snap-caseloads-and-expenditures-beginning-2002/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[\n    (df[\"Year\"] == 2023)\n    & (df[\"Month\"] == \"February\")\n    & (df[\"Total SNAP Households\"].between(29000, 75000))\n].copy()\ndf = df.sort_values(\"Total SNAP Households\", ascending=False)\nanswer = df[\"District\"].tolist()",
+      "subquestion": "Which NY counties had between 29,000 and 75,000 households enrolled in the federal program that provides eligible low-income households with monthly benefits to buy groceries in February 2023?",
+      "answer": [
+        "Suffolk",
+        "Monroe",
+        "Westchester",
+        "Onondaga",
+        "Nassau"
+      ]
+    },
+    "2": {
+      "source": "datagov/children-in-foster-care-annually-beginning-1994/files/rows.txt",
+      "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/children-in-foster-care-annually-beginning-1994/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[\n    (df[\"Year\"] == 2023)\n    & (df[\"Children In Care\"].between(350, 600))\n].copy()\ndf = df.sort_values(\"Children In Care\", ascending=False)\nanswer = df[\"County\"].tolist()",
+      "subquestion": "Which NY counties had between 350 and 600 children placed in out-of-home care in 2023?",
+      "answer": [
+        "ERIE",
+        "ONONDAGA",
+        "SUFFOLK",
+        "ONEIDA",
+        "MONROE"
+      ]
+    },
+    "3": {
+      "source": "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt",
+      "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[\n    (df[\"Service Year\"] == 2015)\n    & (df[\"Age Group\"] == \"Adult\")\n    & (df[\"Rate Code Group\"] == \"OMH Licensed Clinic Treatment\")\n    & (df[\"Count of Recipients by Rate Code Group and County\"].between(5000, 18000))\n].copy()\ndf = df.sort_values(\"Count of Recipients by Rate Code Group and County\", ascending=False)\nanswer = df[\"County Label\"].tolist()",
+      "subquestion": "Which NY counties had between 5,000 and 18,000 adult mental health clinic recipients for the OMH Licensed Clinic Treatment control group in 2015?",
+      "answer": [
+        "Monroe",
+        "Erie",
+        "Westchester",
+        "Suffolk",
+        "Nassau",
+        "Onondaga"
+      ]
+    },
+    "4": {
+      "source": "datagov/public-assistance-pa-caseloads-and-expenditures-beginning-2002/files/rows.txt",
+      "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/public-assistance-pa-caseloads-and-expenditures-beginning-2002/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[\n    (df[\"Year\"] == 2023)\n    & (df[\"Month\"] == \"February\")\n    & (df[\"Total Temporary Assistance Cases\"].between(4000, 6000))\n].copy()\ndf = df.sort_values(\"Total Temporary Assistance Cases\", ascending=False)\nanswer = df[\"District\"].tolist()",
+      "subquestion": "Which NY counties had between 4,000 and 6,000 temporary cash-assistance cases for low-income people and families in February 2023?",
+      "answer": [
+        "Suffolk",
+        "Onondaga",
+        "Westchester"
+      ]
+    },
+    "5": {
+      "source": "datagov/local-social-services-district-ssd-staff-counts-by-function-beginning-state-fiscal-ye-2004/files/rows.txt",
+      "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/local-social-services-district-ssd-staff-counts-by-function-beginning-state-fiscal-ye-2004/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[\n    (df[\"State Fiscal Year Ending\"] == 2017)\n    & (df[\"Total Staffing\"].between(600, 1000))\n].copy()\ndf = df.sort_values(\"Total Staffing\", ascending=False)\nanswer = df[\"District\"].tolist()",
+      "subquestion": "Which NY counties had social services staff between 600 and 1,000 total staff in the county's social-services agency in 2017?",
+      "answer": [
+        "Monroe",
+        "Nassau",
+        "Onondaga"
+      ]
+    },
+    "6": {
+      "source": "datagov/public-assistance-cases-opened-by-month-beginning-2006/files/rows.txt",
+      "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/public-assistance-cases-opened-by-month-beginning-2006/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[\n    (df[\"Year\"] == 2021)\n    & (df[\"Month\"] == \"March\")\n    & (df[\"Total Public Assistance Case Openings\"].between(200, 400))\n].copy()\ndf = df.sort_values(\"Total Public Assistance Case Openings\", ascending=False)\nanswer = df[\"District\"].tolist()",
+      "subquestion": "Which NY counties had opening public-assistance cash-benefit cases between 200 and 400 in March 2021?",
+      "answer": [
+        "Erie",
+        "Monroe",
+        "Onondaga",
+        "Westchester"
+      ]
+    },
+    "7": {
+      "source": "wikipedia/Onondaga_County,_New_York/content.txt",
+      "fact": "Onondaga County's county seat is Syracuse. The county name derives from the Onondaga tribe, one of the original Five Nations of the Haudenosaunee (Iroquois Confederacy). The word Onondaga means 'People of the Hills'.",
+      "subquestion": "What is the county seat of <hop 2 answer> County?",
+      "answer": "Syracuse"
+    },
+    "8": {
+      "source": "wikipedia/Syracuse_University/content.txt",
+      "fact": "Syracuse University (informally 'Cuse or SU) is a private research university in Syracuse, New York, United States. It was established in 1870 with roots in the Methodist Episcopal Church but has been nonsectarian since 1920.Nonsectarian status:\n\nThe relationship with the United Methodist Church persisted for some time: Located in the city's University Hill neighborhood, east and southeast of downtown Syracuse, the large campus features an eclectic mix of architecture, ranging from nineteenth-century Romanesque Revival to contemporary buildings. Syracuse University is organized into 13 schools and colleges and is classified among \"R1: Doctoral Universities – Very high research activity\".\n\nSyracuse University athletic teams, the Orange, participate in 20 intercollegiate sports. SU is a member of the Atlantic Coast Conference (ACC) for all NCAA Division I athletics, except for the men's rowing and women's ice hockey teams. SU is also a member of the Eastern College Athletic Conference. Alumni, faculty, and affiliates include former President Joe Biden, three Nobel Prize laureates, one Fields Medalist, thirty-six Olympic Medalists, thirteen Pulitzer Prize recipients, Academy Award winners, Emmy Award winners, Grammy Award winners, two Rhodes Scholars, seven Marshall Scholars, governors, and members of the U.S. Senate and House of Representatives.\n\nHistory\n\nFounding\nthumb|Genesee Wesleyan Seminary\n\nThe institution's roots can be traced to the Genesee Wesleyan Seminary. The seminary was founded in 1831 by the Genesee annual conference of the Methodist Episcopal Church in Lima, New York, south of Rochester.",
+      "subquestion": "For the private research university in <hop 3 answer>, what years mark the founding of the seminary at its roots and the university's establishment?",
+      "answer": {
+        "seminary_founded": 1831,
+        "university_established": 1870
+      }
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Onondaga_County,_New_York/content.txt",
+    "datagov/supplemental-nutrition-assistance-program-snap-caseloads-and-expenditures-beginning-2002/files/rows.txt",
+    "datagov/supplemental-nutrition-assistance-program-snap-caseloads-and-expenditures-beginning-2002/signed-metadata.txt",
+    "datagov/supplemental-nutrition-assistance-program-snap-caseloads-and-expenditures-beginning-2002/files/dq6j-8u8z.txt",
+    "datagov/children-in-foster-care-annually-beginning-1994/files/rows.txt",
+    "datagov/children-in-foster-care-annually-beginning-1994/signed-metadata.txt",
+    "datagov/children-in-foster-care-annually-beginning-1994/files/hfc5-3hsu.publisher-view.json",
+    "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt",
+    "datagov/county-mental-health-profiles-phase-2-beginning-2014/signed-metadata.txt",
+    "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/4uks-kzmv.txt",
+    "datagov/public-assistance-pa-caseloads-and-expenditures-beginning-2002/files/rows.txt",
+    "datagov/public-assistance-pa-caseloads-and-expenditures-beginning-2002/signed-metadata.txt",
+    "datagov/public-assistance-pa-caseloads-and-expenditures-beginning-2002/files/42wv-qbv6.txt",
+    "datagov/local-social-services-district-ssd-staff-counts-by-function-beginning-state-fiscal-ye-2004/files/rows.txt",
+    "datagov/local-social-services-district-ssd-staff-counts-by-function-beginning-state-fiscal-ye-2004/signed-metadata.txt",
+    "datagov/local-social-services-district-ssd-staff-counts-by-function-beginning-state-fiscal-ye-2004/files/rcn6-yg9v.txt",
+    "datagov/public-assistance-cases-opened-by-month-beginning-2006/files/rows.txt",
+    "datagov/public-assistance-cases-opened-by-month-beginning-2006/signed-metadata.txt",
+    "datagov/public-assistance-cases-opened-by-month-beginning-2006/files/fivj-j6mz.txt",
+    "wikipedia/Syracuse_University/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `Year` equals `2023`, `Month` equals `February`, and `Total SNAP Households` is between `29000` and `75000`, sort by `Total SNAP Households` descending, and keep `District`.",
+        "Node 2: Filter rows where `Year` equals `2023` and `Children In Care` is between `350` and `600`, sort by `Children In Care` descending, and keep `County`.",
+        "Node 3: Filter rows where `Service Year` equals `2015`, `Age Group` equals `Adult`, `Rate Code Group` equals `OMH Licensed Clinic Treatment`, and `Count of Recipients by Rate Code Group and County` is between `5000` and `18000`, sort by `Count of Recipients by Rate Code Group and County` descending, and keep `County Label`.",
+        "Hop result: semantically intersect the three county lists to get Suffolk, Monroe, and Onondaga."
+      ],
+      "answer": [
+        "Suffolk",
+        "Monroe",
+        "Onondaga"
+      ]
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 4: Filter rows where `Year` equals `2023`, `Month` equals `February`, and `Total Temporary Assistance Cases` is between `4000` and `6000`, sort by `Total Temporary Assistance Cases` descending, and keep `District`.",
+        "Node 5: Filter rows where `State Fiscal Year Ending` equals `2017` and `Total Staffing` is between `600` and `1000`, sort by `Total Staffing` descending, and keep `District`.",
+        "Node 6: Filter rows where `Year` equals `2021`, `Month` equals `March`, and `Total Public Assistance Case Openings` is between `200` and `400`, sort by `Total Public Assistance Case Openings` descending, and keep `District`.",
+        "Hop result: semantically intersect <hop 1 answer> with the three filtered county lists to get Onondaga."
+      ],
+      "answer": "Onondaga"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: The county seat of <hop 2 answer> County is Syracuse.",
+        "Hop result: Syracuse"
+      ],
+      "answer": "Syracuse"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        8
+      ],
+      "reasoning": [
+        "Node 8: The seminary at the roots of the private research university in <hop 3 answer> was founded in `1831`, and the university was established in `1870`.",
+        "Hop result: 1870 - 1831 = 39."
+      ],
+      "answer": 39
+    }
+  ]
+}

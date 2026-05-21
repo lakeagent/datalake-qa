@@ -1,0 +1,71 @@
+{
+    "question": "First identify the state that appears in both of these data.gov-derived groups: Which states would place 7th through 11th if you compared states by the typical dollar damage from railroad equipment accidents over all available years? Break any ties alphabetically.; and Which states would place 6th through 10th if you compared how much the average income on returns that owed no New York tax changes from year to year, starting with tax year 1999? Break any ties alphabetically.. After identifying that state, what gem was designated as the state gem of that state in 1967? Your response should be in the format [Answer].",
+    "answer": "Star garnet",
+    "nodes": {
+        "1": {
+            "source": "datagov/rail-equipment-accident-incident-data/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/rail-equipment-accident-incident-data/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf = df.copy()\ndf[\"normalized_state\"] = df[\"State Name\"].astype(str).str.strip().str.upper()\n\nstate_metric = (\n    df.groupby(\"normalized_state\", dropna=False)[\"Total Damage Cost\"]\n    .median()\n    .reset_index(name=\"median_total_reported_property_damage_cost\")\n)\n\nranked = state_metric.sort_values(\n    [\"median_total_reported_property_damage_cost\", \"normalized_state\"],\n    ascending=[False, True],\n).reset_index(drop=True)\n\nanswer = ranked.iloc[6:11][\"normalized_state\"].tolist()",
+            "subquestion": "Which states would place 7th through 11th if you compared states by the typical dollar damage from railroad equipment accidents over all available years? Break any ties alphabetically.",
+            "answer": [
+                "VERMONT",
+                "MONTANA",
+                "IDAHO",
+                "NORTH DAKOTA",
+                "UTAH"
+            ]
+        },
+        "2": {
+            "source": "datagov/total-income-and-tax-liability-by-place-of-residence-beginning-tax-year-1999/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/total-income-and-tax-liability-by-place-of-residence-beginning-tax-year-1999/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf = df.copy()\nvalid_states = {\n    \"Alabama\", \"Alaska\", \"Arizona\", \"Arkansas\", \"California\", \"Colorado\", \"Connecticut\", \"Delaware\",\n    \"District of Columbia\", \"Florida\", \"Georgia\", \"Hawaii\", \"Idaho\", \"Illinois\", \"Indiana\", \"Iowa\",\n    \"Kansas\", \"Kentucky\", \"Louisiana\", \"Maine\", \"Maryland\", \"Massachusetts\", \"Michigan\", \"Minnesota\",\n    \"Mississippi\", \"Missouri\", \"Montana\", \"Nebraska\", \"Nevada\", \"New Hampshire\", \"New Jersey\",\n    \"New Mexico\", \"New York\", \"North Carolina\", \"North Dakota\", \"Ohio\", \"Oklahoma\", \"Oregon\",\n    \"Pennsylvania\", \"Rhode Island\", \"South Carolina\", \"South Dakota\", \"Tennessee\", \"Texas\", \"Utah\",\n    \"Vermont\", \"Virginia\", \"Washington\", \"West Virginia\", \"Wisconsin\", \"Wyoming\"\n}\ndf[\"normalized_state\"] = df[\"State\"].astype(str).str.strip()\ndf = df[df[\"normalized_state\"].isin(valid_states)]\n\nstate_metric = (\n    df.groupby(\"normalized_state\", dropna=False)[\"Average NY AGI of Nontaxable Returns\"]\n    .std()\n    .reset_index(name=\"stddev_average_ny_agi_nontaxable_returns\")\n)\n\nranked = state_metric.sort_values(\n    [\"stddev_average_ny_agi_nontaxable_returns\", \"normalized_state\"],\n    ascending=[False, True],\n).reset_index(drop=True)\n\nanswer = ranked.iloc[5:10][\"normalized_state\"].tolist()",
+            "subquestion": "Which states would place 6th through 10th if you compared how much the average income on returns that owed no New York tax changes from year to year, starting with tax year 1999? Break any ties alphabetically.",
+            "answer": [
+                "Nevada",
+                "Tennessee",
+                "Idaho",
+                "South Dakota",
+                "Louisiana"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/List_of_Idaho_state_symbols/content.txt",
+            "fact": "The List of Idaho state symbols page states that star garnet was designated as the state gem in 1967.",
+            "subquestion": "What gem was designated as the state gem of <hop 1 answer> in 1967?",
+            "answer": "Star garnet"
+        }
+    },
+    "datasets_used": [
+        "datagov/rail-equipment-accident-incident-data/files/rows.txt",
+        "datagov/rail-equipment-accident-incident-data/signed-metadata.txt",
+        "datagov/rail-equipment-accident-incident-data/files/columns.txt",
+        "datagov/total-income-and-tax-liability-by-place-of-residence-beginning-tax-year-1999/files/rows.txt",
+        "datagov/total-income-and-tax-liability-by-place-of-residence-beginning-tax-year-1999/signed-metadata.txt",
+        "datagov/total-income-and-tax-liability-by-place-of-residence-beginning-tax-year-1999/files/nacg-rg66.publisher-view.json",
+        "wikipedia/List_of_Idaho_state_symbols/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Group rows by normalized `State Name`, compute each state's median `Total Damage Cost`, sort by median damage cost descending and state ascending to break ties alphabetically, and take ranks 7 through 11.",
+                "Node 2: Keep rows whose `State` is an actual U.S. state, group by normalized `State`, compute the sample standard deviation of `Average NY AGI of Nontaxable Returns`, sort by standard deviation descending and state ascending to break ties alphabetically, and take ranks 6 through 10.",
+                "Hop result: semantic intersection of the title-case equivalents of <node 1 answer> and <node 2 answer> = Idaho."
+            ],
+            "answer": "Idaho"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: The List of Idaho state symbols page identifies star garnet as the gem designated as the computed state\u2019s state gem in 1967.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Star garnet"
+        }
+    ]
+}

@@ -1,0 +1,108 @@
+{
+  "question": "Which school finished in the top five for overall score in each of the 2006-2007, 2007-2008, and 2008-2009 progress reports? For that school, take the 2017 program that drew the most ninth-grade applicants for general education relative to its number of available seats. What is the earliest known example of the concept named by that program? Return the answer only. Your response should be in the format [Answer].",
+  "answer": "stone tool",
+  "nodes": {
+    "1": {
+      "source": "datagov/2006-2007-school-progress-report/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2006-2007-school-progress-report/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client(\"s3\", region_name=\"us-east-1\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"DBN\"] = df[\"DBN\"].astype(str).str.strip()\ndf[\"SCHOOL\"] = df[\"SCHOOL\"].astype(str).str.strip()\ndf[\"SCHOOL LEVEL*\"] = df[\"SCHOOL LEVEL*\"].astype(str).str.strip()\ndf[\"OVERALL SCORE\"] = pd.to_numeric(df[\"OVERALL SCORE\"], errors=\"coerce\")\n\nfiltered = df[\n    df[\"SCHOOL LEVEL*\"].str.contains(\"High\", case=False, na=False)\n    & df[\"OVERALL SCORE\"].notna()\n].copy()\n\ntop = filtered.sort_values([\"OVERALL SCORE\", \"DBN\"], ascending=[False, True]).head(5)\nanswer = {\n    f\"{row['DBN']} | {row['SCHOOL']}\": round(float(row[\"OVERALL SCORE\"]), 2)\n    for _, row in top.iterrows()\n}\n",
+      "subquestion": "Which five high schools had the highest overall scores in the 2006-2007 progress report?",
+      "answer": {
+        "02M542 | MANHATTAN BRIDGES HIGH SCHOOL": 104.4,
+        "13K595 | BEDFORD ACADEMY HIGH SCHOOL": 103.6,
+        "10X477 | MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES": 98.13,
+        "11X544 | HIGH SCHOOL FOR CONTEMPORARY ARTS": 96.05,
+        "11X545 | BRONX AEROSPACE HIGH SCHOOL": 93.65
+      }
+    },
+    "2": {
+      "source": "datagov/2007-2008-school-progress-report/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2007-2008-school-progress-report/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client(\"s3\", region_name=\"us-east-1\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"DBN\"] = df[\"DBN\"].astype(str).str.strip()\ndf[\"SCHOOL\"] = df[\"SCHOOL\"].astype(str).str.strip()\ndf[\"SCHOOL LEVEL*\"] = df[\"SCHOOL LEVEL*\"].astype(str).str.strip()\ndf[\"OVERALL SCORE\"] = pd.to_numeric(df[\"OVERALL SCORE\"], errors=\"coerce\")\n\nfiltered = df[\n    df[\"SCHOOL LEVEL*\"].str.contains(\"High\", case=False, na=False)\n    & df[\"OVERALL SCORE\"].notna()\n].copy()\n\ntop = filtered.sort_values([\"OVERALL SCORE\", \"DBN\"], ascending=[False, True]).head(5)\nanswer = {\n    f\"{row['DBN']} | {row['SCHOOL']}\": round(float(row[\"OVERALL SCORE\"]), 2)\n    for _, row in top.iterrows()\n}\n",
+      "subquestion": "Which five high schools had the highest overall scores in the 2007-2008 progress report?",
+      "answer": {
+        "13K439 | BROOKLYN INTERNATIONAL HIGH SCHOOL": 106.5,
+        "06M552 | GREGORIO LUPERON HIGH SCHOOL FOR SCIENCE AND MATHEMATICS": 100.4,
+        "11X544 | HIGH SCHOOL FOR CONTEMPORARY ARTS": 99.1,
+        "13K595 | BEDFORD ACADEMY HIGH SCHOOL": 98.7,
+        "02M542 | MANHATTAN BRIDGES HIGH SCHOOL": 97.8
+      }
+    },
+    "3": {
+      "source": "datagov/2008-2009-school-progress-report/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2008-2009-school-progress-report/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client(\"s3\", region_name=\"us-east-1\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"DBN\"] = df[\"DBN\"].astype(str).str.strip()\ndf[\"SCHOOL\"] = df[\"SCHOOL\"].astype(str).str.strip()\ndf[\"SCHOOL LEVEL*\"] = df[\"SCHOOL LEVEL*\"].astype(str).str.strip()\ndf[\"OVERALL SCORE\"] = pd.to_numeric(df[\"OVERALL SCORE\"], errors=\"coerce\")\n\nfiltered = df[\n    df[\"SCHOOL LEVEL*\"].str.contains(\"High\", case=False, na=False)\n    & df[\"OVERALL SCORE\"].notna()\n].copy()\n\ntop = filtered.sort_values([\"OVERALL SCORE\", \"DBN\"], ascending=[False, True]).head(5)\nanswer = {\n    f\"{row['DBN']} | {row['SCHOOL']}\": round(float(row[\"OVERALL SCORE\"]), 2)\n    for _, row in top.iterrows()\n}\n",
+      "subquestion": "Which five high schools had the highest overall scores in the 2008-2009 progress report?",
+      "answer": {
+        "02M296 | HIGH SCHOOL OF HOSPITALITY MANAGEMENT": 105.3,
+        "13K595 | BEDFORD ACADEMY HIGH SCHOOL": 103.3,
+        "14K561 | WILLIAMSBURG PREPARATORY SCHOOL": 102.3,
+        "07X221 | SOUTH BRONX PREPARATORY: A COLLEGE BOARD SCHOOL": 101.7,
+        "10X477 | MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES": 101.3
+      }
+    },
+    "4": {
+      "source": "datagov/2017-doe-high-school-directory/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2017-doe-high-school-directory/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client(\"s3\", region_name=\"us-east-1\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_1_answer = \"13K595\"\n\ndf[\"dbn\"] = df[\"dbn\"].astype(str).str.strip()\nrow = df[df[\"dbn\"].eq(hop_1_answer)].iloc[0]\n\n# In this directory, competitiveness for grade 9 general-education seats is measured by applicants per seat.\ncompetitiveness_records = []\nfor i in range(1, 11):\n    program = str(row.get(f\"program{i}\", \"\")).strip()\n    applicants_per_seat = pd.to_numeric(\n        str(row.get(f\"grade9geapplicantsperseat{i}\", \"\")).strip(),\n        errors=\"coerce\",\n    )\n    if program and pd.notna(applicants_per_seat):\n        competitiveness_records.append(\n            {\n                \"program\": program,\n                \"applicants_per_seat\": float(applicants_per_seat),\n                \"slot\": i,\n            }\n        )\n\ncompetitiveness_records.sort(\n    key=lambda item: (-item[\"applicants_per_seat\"], item[\"slot\"], item[\"program\"])\n)\nanswer = competitiveness_records[0][\"program\"]\n",
+      "subquestion": "For the school identified in <hop 1 answer>, which 2017 program drew the most ninth-grade applicants for general education relative to its number of available seats?",
+      "answer": "Technology"
+    },
+    "5": {
+      "source": "wikipedia/Technology/content.txt",
+      "fact": "The earliest known technology is the stone tool, used during prehistory, followed by the control of fire—which in turn contributed to the growth of the human brain and the development of language during the Ice Age, according to the cooking hypothesis.",
+      "subquestion": "What is the earliest known example of <hop 2 answer>?",
+      "answer": "stone tool"
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Technology/content.txt",
+    "datagov/2006-2007-school-progress-report/files/rows.txt",
+    "datagov/2006-2007-school-progress-report/signed-metadata.txt",
+    "datagov/2006-2007-school-progress-report/files/2006-07_School_Progress_Report.xlsx",
+    "datagov/2007-2008-school-progress-report/files/rows.txt",
+    "datagov/2007-2008-school-progress-report/signed-metadata.txt",
+    "datagov/2007-2008-school-progress-report/files/School_Progress_Reports_-_All_Schools.xlsx",
+    "datagov/2008-2009-school-progress-report/files/rows.txt",
+    "datagov/2008-2009-school-progress-report/signed-metadata.txt",
+    "datagov/2008-2009-school-progress-report/files/School_Progress_Reports_-_All_Schools.xlsx",
+    "datagov/2017-doe-high-school-directory/files/rows.txt",
+    "datagov/2017-doe-high-school-directory/signed-metadata.txt",
+    "datagov/2017-doe-high-school-directory/files/2017_DOE_High_School_Directory.xlsx"
+  ],
+  "reasoning_hops": [
+    {
+      "hop_id": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1 retrieves the top-five high schools by overall score for 2006-2007.",
+        "Node 2 retrieves the top-five high schools by overall score for 2007-2008.",
+        "Node 3 retrieves the top-five high schools by overall score for 2008-2009.",
+        "Hop result: intersecting the three top-five sets leaves 13K595, Bedford Academy High School."
+      ],
+      "answer": "13K595"
+    },
+    {
+      "hop_id": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4 identifies the 2017 program at <hop 1 answer> with the most ninth-grade general-education applicants relative to seats.",
+        "Hop result: the program is Technology."
+      ],
+      "answer": "Technology"
+    },
+    {
+      "hop_id": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5 retrieves the earliest known example of <hop 2 answer>.",
+        "Hop result: the earliest known example is the stone tool."
+      ],
+      "answer": "stone tool"
+    }
+  ]
+}

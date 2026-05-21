@@ -1,0 +1,65 @@
+{
+    "question": "Identify the Wyoming county that had at least 150 and fewer than 180 VA disability compensation recipients in FY 2019 and at least 260 and fewer than 280 VA disability compensation recipients in FY 2023. Which one-room schoolhouse located in that county was built in 1903 and used as a school until the 1950s? Your response should be in the format [Answer].",
+    "answer": "Lower Shell School House",
+    "nodes": {
+        "1": {
+            "source": "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Wyoming'.lower())].copy()\nfiltered['# Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['# Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['# Total: Disability Compensation Recipients'] >= 150) & (filtered['# Total: Disability Compensation Recipients'] < 180)]\ncounty_names = filtered['County name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Wyoming counties had at least 150 and fewer than 180 VA disability compensation recipients in FY 2019?",
+            "answer": [
+                "Big Horn County",
+                "Crook County",
+                "Teton County",
+                "Sublette County"
+            ]
+        },
+        "2": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Wyoming'.lower())].copy()\nfiltered['Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['Total: Disability Compensation Recipients'] >= 260) & (filtered['Total: Disability Compensation Recipients'] < 280)]\ncounty_names = filtered['County Name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Wyoming counties had at least 260 and fewer than 280 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Big Horn County",
+                "Weston County"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Lower_Shell_School_House/content.txt",
+            "fact": "The Lower Shell School House is located in an isolated portion of Big Horn County, Wyoming on a bluff near Shell Creek. The one-room schoolhouse was built in 1903, and was one of the first buildings in the area that did not use log construction. The school functioned as a church and Sunday school, and as a community meeting place. It was used as a school until the 1950s, and as a community meeting house until the 1970s.",
+            "subquestion": "Which one-room schoolhouse located in <hop 1 answer> was built in 1903 and used as a school until the 1950s?",
+            "answer": "Lower Shell School House"
+        }
+    },
+    "datasets_used": [
+        "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+        "datagov/fy-2019-disability-pension-recipient-by-county/signed-metadata.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt",
+        "wikipedia/Lower_Shell_School_House/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `State` is Wyoming and `# Total: Disability Compensation Recipients` is at least 150 and less than 180, then return the unique county names.",
+                "Node 2: Filter rows where `State` is Wyoming and `Total: Disability Compensation Recipients` is at least 260 and less than 280, then return the unique county names.",
+                "Hop result: intersection of <node_1 answer> and <node_2 answer> = ['Big Horn County']."
+            ],
+            "answer": "Big Horn County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Lower Shell School House is the one-room schoolhouse located in an isolated portion of <hop 1 answer>, built in 1903, and used as a school until the 1950s.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Lower Shell School House"
+        }
+    ]
+}

@@ -1,0 +1,187 @@
+{
+  "question": "Across January 2019-2021, identify the issuing agencies that consistently ranked in the top 20 by total parking-violation fines. From those, keep only the U.S. national law-enforcement bodies and find which had the highest average number of January moving violations from 2019-2021. Which federal agency operates that law-enforcement body? Return the agency name only. Your response should be in the format [Answer].",
+  "answer": "National Park Service",
+  "nodes": {
+    "1": {
+      "source": "datagov/parking-violations-issued-in-january-2019/files/data.txt",
+      "fact": "import os\nimport io\nimport json\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/parking-violations-issued-in-january-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    with open(local_path, \"r\", encoding=\"utf-8\", errors=\"replace\") as f:\n        geo = json.load(f)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    geo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nfiltered = df.copy()\nfiltered[\"ISSUING_AGENCY_NAME\"] = filtered[\"ISSUING_AGENCY_NAME\"].astype(str).str.strip()\nfiltered[\"FINE_AMOUNT\"] = pd.to_numeric(filtered[\"FINE_AMOUNT\"], errors=\"coerce\")\nagency_totals = filtered.groupby(\"ISSUING_AGENCY_NAME\", dropna=True)[\"FINE_AMOUNT\"].sum().sort_values(ascending=False)\nanswer = agency_totals.head(20).index.astype(str).tolist()\n",
+      "subquestion": "Which agencies were in the top 20 for total January parking-violation fine amount in 2019?",
+      "answer": [
+        "DEPARTMENT OF PUBLIC WORKS",
+        "METROPOLITAN POLICE DPT-DISTRICT 2",
+        "METROPOLITAN POLICE DPT-DISTRICT 1",
+        "METROPOLITAN POLICE DPT-DISTRICT 4",
+        "METROPOLITAN POLICE DPT-DISTRICT 5",
+        "METROPOLITAN POLICE DPT-DISTRICT 7",
+        "D.C. HOUSING AUTHORITY",
+        "METROPOLITAN POLICE DPT-DISTRICT 3",
+        "METROPOLITAN POLICE DPT-DISTRICT 6",
+        "SPECIAL OPERATION DIV & TRAFFIC DIV",
+        "UNITED STATES CAPITOL POLICE",
+        "METRO POLICE",
+        "DDOT",
+        "PROTECTIVE SERVICES DEPT (DC GOVT)",
+        "SPECIAL INSPECTION DIVISION",
+        "MPD RESERVE CORPS",
+        "UNVRSTY OF THE D.C. SECURITY POLICE",
+        "TAXI COMMISSION",
+        "US. SECRET SERVICE UNIFORM DIVISION",
+        "UNITED STATES PARK POLICE"
+      ]
+    },
+    "2": {
+      "source": "datagov/parking-violations-issued-in-january-2020/files/data.txt",
+      "fact": "import os\nimport io\nimport json\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/parking-violations-issued-in-january-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    with open(local_path, \"r\", encoding=\"utf-8\", errors=\"replace\") as f:\n        geo = json.load(f)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    geo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nfiltered = df.copy()\nfiltered[\"ISSUING_AGENCY_NAME\"] = filtered[\"ISSUING_AGENCY_NAME\"].astype(str).str.strip()\nfiltered[\"FINE_AMOUNT\"] = pd.to_numeric(filtered[\"FINE_AMOUNT\"], errors=\"coerce\")\nagency_totals = filtered.groupby(\"ISSUING_AGENCY_NAME\", dropna=True)[\"FINE_AMOUNT\"].sum().sort_values(ascending=False)\nanswer = agency_totals.head(20).index.astype(str).tolist()\n",
+      "subquestion": "Which agencies were in the top 20 for total January parking-violation fine amount in 2020?",
+      "answer": [
+        "DEPARTMENT OF PUBLIC WORKS",
+        "METROPOLITAN POLICE DPT-DISTRICT 2",
+        "D.C. HOUSING AUTHORITY",
+        "METROPOLITAN POLICE DPT-DISTRICT 6",
+        "METROPOLITAN POLICE DPT-DISTRICT 7",
+        "METROPOLITAN POLICE DPT-DISTRICT 4",
+        "DDOT",
+        "METROPOLITAN POLICE DPT-DISTRICT 3",
+        "METROPOLITAN POLICE DPT-DISTRICT 1",
+        "METROPOLITAN POLICE DPT-DISTRICT 5",
+        "METRO POLICE",
+        "SPECIAL OPERATION DIV & TRAFFIC DIV",
+        "UNITED STATES PARK POLICE",
+        "UNITED STATES CAPITOL POLICE",
+        "TAXI COMMISSION",
+        "SPECIAL INSPECTION DIVISION",
+        "PROTECTIVE SERVICES DEPT (DC GOVT)",
+        "US. SECRET SERVICE UNIFORM DIVISION",
+        "BOLLING AFB",
+        "US. GOVERNMENT PRINTING OFFICE"
+      ]
+    },
+    "3": {
+      "source": "datagov/parking-violations-issued-in-january-2021/files/data.txt",
+      "fact": "import os\nimport io\nimport json\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/parking-violations-issued-in-january-2021/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    with open(local_path, \"r\", encoding=\"utf-8\", errors=\"replace\") as f:\n        geo = json.load(f)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    geo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nfiltered = df.copy()\nfiltered[\"ISSUING_AGENCY_NAME\"] = filtered[\"ISSUING_AGENCY_NAME\"].astype(str).str.strip()\nfiltered[\"FINE_AMOUNT\"] = pd.to_numeric(filtered[\"FINE_AMOUNT\"], errors=\"coerce\")\nagency_totals = filtered.groupby(\"ISSUING_AGENCY_NAME\", dropna=True)[\"FINE_AMOUNT\"].sum().sort_values(ascending=False)\nanswer = agency_totals.head(20).index.astype(str).tolist()\n",
+      "subquestion": "Which agencies were in the top 20 for total January parking-violation fine amount in 2021?",
+      "answer": [
+        "DEPARTMENT OF PUBLIC WORKS",
+        "METROPOLITAN POLICE DPT-DISTRICT 7",
+        "METROPOLITAN POLICE DPT-DISTRICT 3",
+        "METROPOLITAN POLICE DPT-DISTRICT 6",
+        "METROPOLITAN POLICE DPT-DISTRICT 1",
+        "METROPOLITAN POLICE DPT-DISTRICT 2",
+        "METROPOLITAN POLICE DPT-DISTRICT 4",
+        "METROPOLITAN POLICE DPT-DISTRICT 5",
+        "SPECIAL OPERATION DIV & TRAFFIC DIV",
+        "D.C. HOUSING AUTHORITY",
+        "UNITED STATES PARK POLICE",
+        "METRO POLICE",
+        "TAXI COMMISSION",
+        "UNITED STATES CAPITOL POLICE",
+        "MPD RESERVE CORPS",
+        "US. SECRET SERVICE UNIFORM DIVISION",
+        "PROTECTIVE SERVICES DEPT (DC GOVT)",
+        "DPT. OF GENERAL SERVICES GUARDS",
+        "US. GOVERNMENT PRINTING OFFICE",
+        "OTHER"
+      ]
+    },
+    "4": {
+      "source": "datagov/moving-violations-issued-in-january-2019/files/data.txt",
+      "fact": "import os\nimport io\nimport json\nimport re\nfrom collections import Counter\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/moving-violations-issued-in-january-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    with open(local_path, \"r\", encoding=\"utf-8\", errors=\"replace\") as f:\n        geo = json.load(f)\nelse:\n    obj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    geo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ntarget_order = [\n    \"UNITED STATES PARK POLICE\",\n    \"UNITED STATES CAPITOL POLICE\",\n    \"US. SECRET SERVICE UNIFORM DIVISION\",\n]\n\ndef norm_agency(s):\n    s = str(s).upper()\n    s = re.sub(r\"[^A-Z0-9 ]\", \"\", s)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\ntarget_norm = {name: norm_agency(name) for name in target_order}\ntarget_values = set(target_norm.values())\ncounts = Counter()\nfor feature in geo.get(\"features\", []):\n    props = feature.get(\"properties\", {})\n    agency = norm_agency(props.get(\"ISSUING_AGENCY_NAME\", \"\"))\n    if agency in target_values:\n        counts[agency] += 1\n\nanswer = {name: int(counts.get(target_norm[name], 0)) for name in target_order}\n",
+      "subquestion": "What were the January moving-violation counts in 2019 for the U.S. national law-enforcement bodies in <hop 1 answer>?",
+      "answer": {
+        "UNITED STATES PARK POLICE": 103,
+        "UNITED STATES CAPITOL POLICE": 176,
+        "US. SECRET SERVICE UNIFORM DIVISION": 145
+      }
+    },
+    "5": {
+      "source": "datagov/moving-violations-issued-in-january-2020/files/data.txt",
+      "fact": "import os\nimport io\nimport json\nimport re\nfrom collections import Counter\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/moving-violations-issued-in-january-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    with open(local_path, \"r\", encoding=\"utf-8\", errors=\"replace\") as f:\n        geo = json.load(f)\nelse:\n    obj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    geo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ntarget_order = [\n    \"UNITED STATES PARK POLICE\",\n    \"UNITED STATES CAPITOL POLICE\",\n    \"US. SECRET SERVICE UNIFORM DIVISION\",\n]\n\ndef norm_agency(s):\n    s = str(s).upper()\n    s = re.sub(r\"[^A-Z0-9 ]\", \"\", s)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\ntarget_norm = {name: norm_agency(name) for name in target_order}\ntarget_values = set(target_norm.values())\ncounts = Counter()\nfor feature in geo.get(\"features\", []):\n    props = feature.get(\"properties\", {})\n    agency = norm_agency(props.get(\"ISSUING_AGENCY_NAME\", \"\"))\n    if agency in target_values:\n        counts[agency] += 1\n\nanswer = {name: int(counts.get(target_norm[name], 0)) for name in target_order}\n",
+      "subquestion": "What were the January moving-violation counts in 2020 for the U.S. national law-enforcement bodies in <hop 1 answer>?",
+      "answer": {
+        "UNITED STATES PARK POLICE": 204,
+        "UNITED STATES CAPITOL POLICE": 139,
+        "US. SECRET SERVICE UNIFORM DIVISION": 118
+      }
+    },
+    "6": {
+      "source": "datagov/moving-violations-issued-in-january-2021/files/data.txt",
+      "fact": "import os\nimport io\nimport json\nimport re\nfrom collections import Counter\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/moving-violations-issued-in-january-2021/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    with open(local_path, \"r\", encoding=\"utf-8\", errors=\"replace\") as f:\n        geo = json.load(f)\nelse:\n    obj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    geo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ntarget_order = [\n    \"UNITED STATES PARK POLICE\",\n    \"UNITED STATES CAPITOL POLICE\",\n    \"US. SECRET SERVICE UNIFORM DIVISION\",\n]\n\ndef norm_agency(s):\n    s = str(s).upper()\n    s = re.sub(r\"[^A-Z0-9 ]\", \"\", s)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\ntarget_norm = {name: norm_agency(name) for name in target_order}\ntarget_values = set(target_norm.values())\ncounts = Counter()\nfor feature in geo.get(\"features\", []):\n    props = feature.get(\"properties\", {})\n    agency = norm_agency(props.get(\"ISSUING_AGENCY_NAME\", \"\"))\n    if agency in target_values:\n        counts[agency] += 1\n\nanswer = {name: int(counts.get(target_norm[name], 0)) for name in target_order}\n",
+      "subquestion": "What were the January moving-violation counts in 2021 for the U.S. national law-enforcement bodies in <hop 1 answer>?",
+      "answer": {
+        "UNITED STATES PARK POLICE": 71,
+        "UNITED STATES CAPITOL POLICE": 30,
+        "US. SECRET SERVICE UNIFORM DIVISION": 32
+      }
+    },
+    "7": {
+      "source": "wikipedia/United_States_Park_Police/content.txt",
+      "fact": "The United States Park Police is an operation of the National Park Service.",
+      "subquestion": "Which federal agency operates <hop 2 answer>?",
+      "answer": "National Park Service"
+    }
+  },
+  "datasets_used": [
+    "wikipedia/United_States_Park_Police/content.txt",
+    "datagov/parking-violations-issued-in-january-2019/files/data.txt",
+    "datagov/parking-violations-issued-in-january-2019/signed-metadata.txt",
+    "datagov/parking-violations-issued-in-january-2019/files/0.arcgis-layer.json",
+    "datagov/parking-violations-issued-in-january-2020/files/data.txt",
+    "datagov/parking-violations-issued-in-january-2020/signed-metadata.txt",
+    "datagov/parking-violations-issued-in-january-2020/files/0.arcgis-layer.json",
+    "datagov/parking-violations-issued-in-january-2021/files/data.txt",
+    "datagov/parking-violations-issued-in-january-2021/signed-metadata.txt",
+    "datagov/parking-violations-issued-in-january-2021/files/0.arcgis-layer.json",
+    "datagov/moving-violations-issued-in-january-2019/files/data.txt",
+    "datagov/moving-violations-issued-in-january-2019/signed-metadata.txt",
+    "datagov/moving-violations-issued-in-january-2019/files/0.arcgis-layer.json",
+    "datagov/moving-violations-issued-in-january-2020/files/data.txt",
+    "datagov/moving-violations-issued-in-january-2020/signed-metadata.txt",
+    "datagov/moving-violations-issued-in-january-2020/files/0.arcgis-layer.json",
+    "datagov/moving-violations-issued-in-january-2021/files/data.txt",
+    "datagov/moving-violations-issued-in-january-2021/signed-metadata.txt",
+    "datagov/moving-violations-issued-in-january-2021/files/0.arcgis-layer.json"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: According to the January 2019 DC parking violations dataset, the top 20 issuing agencies by total fine amount were: DEPARTMENT OF PUBLIC WORKS ($4,954,065.00), METROPOLITAN POLICE DPT-DISTRICT 2 ($77,631.00), METROPOLITAN POLICE DPT-DISTRICT 1 ($63,915.00), METROPOLITAN POLICE DPT-DISTRICT 4 ($59,570.00), METROPOLITAN POLICE DPT-DISTRICT 5 ($47,620.00), METROPOLITAN POLICE DPT-DISTRICT 7 ($47,050.00), D.C. HOUSING AUTHORITY ($45,080.00), METROPOLITAN POLICE DPT-DISTRICT 3 ($44,695.00), METROPOLITAN POLICE DPT-DISTRICT 6 ($28,595.00), SPECIAL OPERATION DIV & TRAFFIC DIV ($20,030.00), UNITED STATES CAPITOL POLICE ($15,230.00), METRO POLICE ($12,690.00), DDOT ($12,095.00), PROTECTIVE SERVICES DEPT (DC GOVT) ($9,760.00), SPECIAL INSPECTION DIVISION ($5,550.00), MPD RESERVE CORPS ($4,620.00), UNVRSTY OF THE D.C. SECURITY POLICE ($3,510.00), TAXI COMMISSION ($2,700.00), US. SECRET SERVICE UNIFORM DIVISION ($2,695.00), and UNITED STATES PARK POLICE ($2,245.00).",
+        "Node 2: According to the January 2020 DC parking violations dataset, the top 20 issuing agencies by total fine amount were: DEPARTMENT OF PUBLIC WORKS ($6,756,190.00), METROPOLITAN POLICE DPT-DISTRICT 2 ($114,810.00), D.C. HOUSING AUTHORITY ($77,480.00), METROPOLITAN POLICE DPT-DISTRICT 6 ($77,190.00), METROPOLITAN POLICE DPT-DISTRICT 7 ($61,545.00), METROPOLITAN POLICE DPT-DISTRICT 4 ($56,485.00), DDOT ($48,580.00), METROPOLITAN POLICE DPT-DISTRICT 3 ($46,520.00), METROPOLITAN POLICE DPT-DISTRICT 1 ($46,310.00), METROPOLITAN POLICE DPT-DISTRICT 5 ($42,185.00), METRO POLICE ($42,180.00), SPECIAL OPERATION DIV & TRAFFIC DIV ($24,190.00), UNITED STATES PARK POLICE ($15,585.00), UNITED STATES CAPITOL POLICE ($7,595.00), TAXI COMMISSION ($7,370.00), SPECIAL INSPECTION DIVISION ($6,500.00), PROTECTIVE SERVICES DEPT (DC GOVT) ($4,575.00), US. SECRET SERVICE UNIFORM DIVISION ($2,665.00), BOLLING AFB ($1,840.00), and US. GOVERNMENT PRINTING OFFICE ($1,550.00).",
+        "Node 3: According to the January 2021 DC parking violations dataset, the top 20 issuing agencies by total fine amount were: DEPARTMENT OF PUBLIC WORKS ($1,055,060.00), METROPOLITAN POLICE DPT-DISTRICT 7 ($87,685.00), METROPOLITAN POLICE DPT-DISTRICT 3 ($66,435.00), METROPOLITAN POLICE DPT-DISTRICT 6 ($44,730.00), METROPOLITAN POLICE DPT-DISTRICT 1 ($38,955.00), METROPOLITAN POLICE DPT-DISTRICT 2 ($32,930.00), METROPOLITAN POLICE DPT-DISTRICT 4 ($28,740.00), METROPOLITAN POLICE DPT-DISTRICT 5 ($24,440.00), SPECIAL OPERATION DIV & TRAFFIC DIV ($16,725.00), D.C. HOUSING AUTHORITY ($16,695.00), UNITED STATES PARK POLICE ($6,340.00), METRO POLICE ($3,515.00), TAXI COMMISSION ($2,650.00), UNITED STATES CAPITOL POLICE ($1,970.00), MPD RESERVE CORPS ($1,750.00), US. SECRET SERVICE UNIFORM DIVISION ($795.00), PROTECTIVE SERVICES DEPT (DC GOVT) ($750.00), DPT. OF GENERAL SERVICES GUARDS ($555.00), US. GOVERNMENT PRINTING OFFICE ($500.00), and OTHER ($325.00).",
+        "Hop result: report <node_1 answer>, <node_2 answer>, <node_3 answer> as this hop answer."
+      ],
+      "answer": "UNITED STATES CAPITOL POLICE, US. SECRET SERVICE UNIFORM DIVISION, UNITED STATES PARK POLICE"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 4: For 2019, January moving-violation counts for the U.S. national law-enforcement bodies in <hop 1 answer> were UNITED STATES PARK POLICE 103, UNITED STATES CAPITOL POLICE 176, and US. SECRET SERVICE UNIFORM DIVISION 145.",
+        "Node 5: For 2020, the counts were UNITED STATES PARK POLICE 204, UNITED STATES CAPITOL POLICE 139, and US. SECRET SERVICE UNIFORM DIVISION 118.",
+        "Node 6: For 2021, the counts were UNITED STATES PARK POLICE 71, UNITED STATES CAPITOL POLICE 30, and US. SECRET SERVICE UNIFORM DIVISION 32.",
+        "Hop result: using <node_4 answer>, <node_5 answer>, and <node_6 answer>, the average counts are UNITED STATES PARK POLICE 126.0, UNITED STATES CAPITOL POLICE 115.0, and US. SECRET SERVICE UNIFORM DIVISION 98.3; the highest is UNITED STATES PARK POLICE."
+      ],
+      "answer": "UNITED STATES PARK POLICE"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: <hop 2 answer> is operated by the National Park Service.",
+        "Hop result: report <node_7 answer> as the final answer."
+      ],
+      "answer": "National Park Service"
+    }
+  ]
+}

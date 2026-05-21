@@ -1,0 +1,189 @@
+{
+  "question": "Across 2015-16 through 2018-19, identify the Texas counties consistently in the top five for total lunch serves in the Seamless Summer Option program. Among those counties, identify the two with the largest percentage decreases in day care home meal reimbursements from 2018-19 to 2020-21. For those two counties, identify the colleges whose service areas include all of each county. Which of those colleges has the later founding year? Your response should be in the format [Answer].",
+  "answer": "South Texas College",
+  "nodes": {
+    "1": {
+      "source": "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2015-2016'\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nlunch_total = pd.to_numeric(df['LunchTotal'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'LunchTotal': lunch_total})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.ne('') & county.ne('Nan')].copy()\nranked = filtered.groupby('SiteCounty', as_index=False)['LunchTotal'].sum().sort_values(['LunchTotal', 'SiteCounty'], ascending=[False, True])\nanswer = ranked['SiteCounty'].head(5).tolist()",
+      "subquestion": "Which Texas counties were in the top five for SSO LunchTotal in 2015-2016?",
+      "answer": [
+        "Harris",
+        "Hidalgo",
+        "Dallas",
+        "Cameron",
+        "El Paso"
+      ]
+    },
+    "2": {
+      "source": "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2016-2017'\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nlunch_total = pd.to_numeric(df['LunchTotal'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'LunchTotal': lunch_total})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.ne('') & county.ne('Nan')].copy()\nranked = filtered.groupby('SiteCounty', as_index=False)['LunchTotal'].sum().sort_values(['LunchTotal', 'SiteCounty'], ascending=[False, True])\nanswer = ranked['SiteCounty'].head(5).tolist()",
+      "subquestion": "Which Texas counties were in the top five for SSO LunchTotal in 2016-2017?",
+      "answer": [
+        "Hidalgo",
+        "Harris",
+        "Dallas",
+        "Cameron",
+        "Bexar"
+      ]
+    },
+    "3": {
+      "source": "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2017-2018'\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nlunch_total = pd.to_numeric(df['LunchTotal'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'LunchTotal': lunch_total})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.ne('') & county.ne('Nan')].copy()\nranked = filtered.groupby('SiteCounty', as_index=False)['LunchTotal'].sum().sort_values(['LunchTotal', 'SiteCounty'], ascending=[False, True])\nanswer = ranked['SiteCounty'].head(5).tolist()",
+      "subquestion": "Which Texas counties were in the top five for SSO LunchTotal in 2017-2018?",
+      "answer": [
+        "Hidalgo",
+        "Harris",
+        "Dallas",
+        "Cameron",
+        "Bexar"
+      ]
+    },
+    "4": {
+      "source": "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2018-2019'\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nlunch_total = pd.to_numeric(df['LunchTotal'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'LunchTotal': lunch_total})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.ne('') & county.ne('Nan')].copy()\nranked = filtered.groupby('SiteCounty', as_index=False)['LunchTotal'].sum().sort_values(['LunchTotal', 'SiteCounty'], ascending=[False, True])\nanswer = ranked['SiteCounty'].head(5).tolist()",
+      "subquestion": "Which Texas counties were in the top five for SSO LunchTotal in 2018-2019?",
+      "answer": [
+        "Hidalgo",
+        "Harris",
+        "Dallas",
+        "Bexar",
+        "Cameron"
+      ]
+    },
+    "5": {
+      "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2018-2019'\nordered_targets = ['Harris', 'Dallas', 'Hidalgo', 'Cameron']\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nreimbursement = pd.to_numeric(df['TotalMealReimbursement'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'TotalMealReimbursement': reimbursement})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.isin(ordered_targets)].copy()\ntotals = filtered.groupby('SiteCounty')['TotalMealReimbursement'].sum()\nanswer = {name: round(float(totals.get(name, 0.0)), 4) for name in ordered_targets}",
+      "subquestion": "For the counties in <hop 1 answer>, what were the CACFP day care home meal reimbursements in 2018-2019?",
+      "answer": {
+        "Harris": 8757796.13,
+        "Dallas": 2835278.75,
+        "Hidalgo": 1202699.73,
+        "Cameron": 392489.51
+      }
+    },
+    "6": {
+      "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2020-2021'\nordered_targets = ['Harris', 'Dallas', 'Hidalgo', 'Cameron']\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nreimbursement = pd.to_numeric(df['TotalMealReimbursement'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'TotalMealReimbursement': reimbursement})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.isin(ordered_targets)].copy()\ntotals = filtered.groupby('SiteCounty')['TotalMealReimbursement'].sum()\nanswer = {name: round(float(totals.get(name, 0.0)), 4) for name in ordered_targets}",
+      "subquestion": "For the counties in <hop 1 answer>, what were the CACFP day care home meal reimbursements in 2020-2021?",
+      "answer": {
+        "Harris": 7558597.77,
+        "Dallas": 2393411.26,
+        "Hidalgo": 971063.56,
+        "Cameron": 330003.06
+      }
+    },
+    "7": {
+      "source": "wikipedia/Hidalgo_County,_Texas/content.txt",
+      "fact": "All of the county is in the service area of South Texas College.",
+      "subquestion": "Which college has all of Hidalgo County from <hop 2 answer> in its service area?",
+      "answer": "South Texas College"
+    },
+    "8": {
+      "source": "wikipedia/Cameron_County,_Texas/content.txt",
+      "fact": "All of the county is in the service area of Texas Southmost College.",
+      "subquestion": "Which college has all of Cameron County from <hop 2 answer> in its service area?",
+      "answer": "Texas Southmost College"
+    },
+    "9": {
+      "source": "wikipedia/South_Texas_College/content.txt",
+      "fact": "South Texas College (STC) is a public community college in the Rio Grande Valley region of South Texas. It was created on September 1, 1993, with the passage of Texas Senate Bill 251, the purpose of which was to serve Hidalgo and Starr County.",
+      "subquestion": "What founding year is stated for the college paired with Hidalgo County in <hop 3 answer>?",
+      "answer": 1993
+    },
+    "10": {
+      "source": "wikipedia/Texas_Southmost_College/content.txt",
+      "fact": "Texas Southmost College (TSC) is a public junior college located in Brownsville, Texas, United States. Texas Southmost College was established in 1926 under the name of The Junior College of the Lower Rio Grande Valley, as a subsidiary of the local school district in Brownsville.",
+      "subquestion": "What founding year is stated for the college paired with Cameron County in <hop 3 answer>?",
+      "answer": 1926
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Nodes 1-4 each group the SSO meal-count data by `SiteCounty`, rank counties by summed `LunchTotal`, and keep the top five for one program year.",
+        "The counties appearing in the top five in every year from 2015-16 through 2018-19 are Harris, Hidalgo, Dallas, and Cameron."
+      ],
+      "answer": [
+        "Harris",
+        "Hidalgo",
+        "Dallas",
+        "Cameron"
+      ]
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5 gives `TotalMealReimbursement` for the hop 1 counties in 2018-19; node 6 gives the same measure for 2020-21.",
+        "Comparing percentage decreases from node 5 to node 6, Hidalgo and Cameron have the two largest drops."
+      ],
+      "answer": [
+        "Hidalgo",
+        "Cameron"
+      ]
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        7,
+        8
+      ],
+      "reasoning": [
+        "Node 7 identifies South Texas College as the college whose service area includes all of Hidalgo County from <hop 2 answer>.",
+        "Node 8 identifies Texas Southmost College as the college whose service area includes all of Cameron County from <hop 2 answer>.",
+        "The service-area colleges for the hop 2 counties are South Texas College and Texas Southmost College."
+      ],
+      "answer": {
+        "Hidalgo": "South Texas College",
+        "Cameron": "Texas Southmost College"
+      }
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        9,
+        10
+      ],
+      "reasoning": [
+        "Node 9 states that South Texas College from <hop 3 answer> was created in 1993.",
+        "Node 10 states that Texas Southmost College from <hop 3 answer> was established in 1926.",
+        "Since 1993 is later than 1926, the college with the later founding year is South Texas College."
+      ],
+      "answer": "South Texas College"
+    }
+  ],
+  "datasets_used": [
+    "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/files/rows.txt",
+    "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/signed-metadata.txt",
+    "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/files/u7tr-bbu3.txt",
+    "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/files/rows.txt",
+    "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/signed-metadata.txt",
+    "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/files/sjdu-n9ry.publisher-view.json",
+    "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/files/rows.txt",
+    "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/signed-metadata.txt",
+    "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/files/rw2u-mey4.txt",
+    "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/files/rows.txt",
+    "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/signed-metadata.txt",
+    "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/files/ckuq-8u2b.publisher-view.json",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/m3iw-uy6q.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/ymex-tquc.publisher-view.json",
+    "wikipedia/Hidalgo_County,_Texas/content.txt",
+    "wikipedia/Cameron_County,_Texas/content.txt",
+    "wikipedia/South_Texas_College/content.txt",
+    "wikipedia/Texas_Southmost_College/content.txt"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+    "question": "Which year from 2008-2010 has the lowest total MTA ridership? Your response should be in the format [Answer].",
+    "answer": "2008",
+    "nodes": {
+        "1": {
+            "source": "datagov/mta-monthly-ridership-traffic-data-beginning-january-2008/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/mta-monthly-ridership-traffic-data-beginning-january-2008/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_datetime(df[\"Month\"], format=\"%Y-%m-%d\", errors=\"coerce\").dt.year\ndf[\"Ridership\"] = pd.to_numeric(df[\"Ridership\"], errors=\"coerce\")\nfiltered = df[df[\"Year\"].between(2008, 2010)].copy()\nyearly_totals = filtered.groupby(\"Year\", dropna=True)[\"Ridership\"].sum()\nanswer = str(int(yearly_totals.idxmin()))\n",
+            "subquestion": "Which year from 2008-2010 has the lowest total MTA ridership?",
+            "answer": "2008"
+        }
+    },
+    "datasets_used": [
+        "datagov/mta-monthly-ridership-traffic-data-beginning-january-2008/files/rows.txt",
+        "datagov/mta-monthly-ridership-traffic-data-beginning-january-2008/signed-metadata.txt",
+        "datagov/mta-monthly-ridership-traffic-data-beginning-january-2008/files/xfre-bxip.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Group records by year parsed from `Month`, sum `Ridership` within 2008-2010, and select the year with the smallest total. The answer is 2008.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2008"
+        }
+    ]
+}

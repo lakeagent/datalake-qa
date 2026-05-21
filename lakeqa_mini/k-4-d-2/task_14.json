@@ -1,0 +1,110 @@
+{
+    "question": "Start by finding the Chicago city department with a budget of $400 million to $700 million in 2018 and $600 million to $700 million in 2019. Determine if this department became paid before or after Pittsburgh's fire bureau did, and focus on the city whose department became paid later. For that city, identify the airport that most directly serves it for commercial passenger travel; in its March 2019 scheduled traffic report, how many total seats did the top destination have? Please return the number only. Your response should be in the format [Answer].",
+    "answer": "44912",
+    "nodes": {
+        "1": {
+            "source": "datagov/budget-2018-budget-ordinance-appropriations/files/rows.txt",
+            "fact": "In the 2018 Chicago Budget Ordinance totals by department, CFD ($642,620,615) and CDOT ($459,129,158) are the only departments with total appropriations between $400 million and $700 million.",
+            "subquestion": "Which Chicago city departments had 2018 budgets between $400 million and $700 million?",
+            "answer": {
+                "CFD": 642620615,
+                "CDOT": 459129158
+            }
+        },
+        "2": {
+            "source": "datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt",
+            "fact": "In the 2019 Chicago Budget Ordinance totals by department, CFD ($652,282,316) and DFSS ($633,571,744) are the only departments with total appropriations between $600 million and $700 million.",
+            "subquestion": "Which Chicago city departments had 2019 budgets between $600 million and $700 million?",
+            "answer": {
+                "CFD": 652282316,
+                "DFSS": 633571744
+            }
+        },
+        "3": {
+            "source": "wikipedia/Chicago_Fire_Department/content.txt",
+            "fact": "The Chicago Fire Department (CFD) was organized as a paid department when the volunteer fire department was disestablished on August 2, 1858.",
+            "subquestion": "On what date was <hop 1 answer> organized as a paid department?",
+            "answer": "August 2, 1858"
+        },
+        "4": {
+            "source": "wikipedia/Pittsburgh_Bureau_of_Fire/content.txt",
+            "fact": "The Pittsburgh Bureau of Fire officially transitioned to a fully paid department on May 23, 1870.",
+            "subquestion": "On what date did the Pittsburgh Bureau of Fire become a fully paid department?",
+            "answer": "May 23, 1870"
+        },
+        "5": {
+            "source": "wikipedia/Pittsburgh/content.txt",
+            "fact": "Pittsburgh International Airport provides commercial passenger service from over 15 airlines to the Pittsburgh metropolitan area. Arnold Palmer Regional Airport also provides limited commercial passenger service and is east of Pittsburgh.",
+            "subquestion": "Which airport most directly serves <hop 2 answer> for commercial passenger travel?",
+            "answer": "Pittsburgh International Airport"
+        },
+        "6": {
+            "source": "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt",
+            "fact": "In the March 2019 Pittsburgh International scheduled traffic report, Atlanta (ATL) has 44,912 total seats, the highest of any destination (next highest is Chicago O'Hare with 35,699).",
+            "subquestion": "For <hop 3 answer>, how many total seats did the top destination have in March 2019?",
+            "answer": "44912"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: group by `DEPARTMENT DESCRIPTION`, sum `2018 ORDINANCE (AMOUNT $)`, and keep totals between 400000000 and 700000000 -> {CFD: 642620615, CDOT: 459129158}.",
+                "Node 2: group by `DEPARTMENT DESCRIPTION`, sum `2019 ORDINANCE (AMOUNT $)`, and keep totals between 600000000 and 700000000 -> {CFD: 652282316, DFSS: 633571744}.",
+                "Hop result: intersection of <node 1 answer> and <node 2 answer> = CFD"
+            ],
+            "answer": "CFD"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: CFD was organized as a paid department on August 2, 1858.",
+                "Node 4: Pittsburgh Bureau of Fire became a fully paid department on May 23, 1870.",
+                "Hop result: compare August 2, 1858 and May 23, 1870 -> Pittsburgh"
+            ],
+            "answer": "Pittsburgh"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Pittsburgh International Airport provides commercial passenger service to <hop 2 answer>'s metropolitan area, while Arnold Palmer Regional Airport is only described as providing limited commercial passenger service.",
+                "Hop result: Pittsburgh International Airport"
+            ],
+            "answer": "Pittsburgh International Airport"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: group by `Destination Code`, sum `Seats March 2019`, and return the maximum total seats for <hop 3 answer> -> 44912.",
+                "Hop result: 44912"
+            ],
+            "answer": "44912"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Chicago_Fire_Department/content.txt",
+        "wikipedia/Pittsburgh_Bureau_of_Fire/content.txt",
+        "wikipedia/Pittsburgh/content.txt",
+        "datagov/budget-2018-budget-ordinance-appropriations/files/rows.txt",
+        "datagov/budget-2018-budget-ordinance-appropriations/signed-metadata.txt",
+        "datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt",
+        "datagov/budget-2019-budget-ordinance-appropriations/signed-metadata.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/signed-metadata.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pit-scheduled-traffic-report-data-dictionary.txt"
+    ]
+}

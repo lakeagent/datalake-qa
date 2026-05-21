@@ -1,0 +1,117 @@
+{
+  "question": "Can you find me the NYC elementary school in District 2 that ranked in the top 3 by performance category score over each school year from 2010-13. For the neighborhood this elementary school is located in, who is it named after? Only report the year when this person is born. Your response should be in the format [Answer].",
+  "answer": "1835",
+  "nodes": {
+    "1": {
+      "source": "datagov/2010-2011-school-progress-report/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2010-2011-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nimport re\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\nperf_col = [c for c in df.columns if \"PERFORMANCE CATEGORY SCORE\" in c.upper()][0]\nlevel_col = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()][0]\nschool_col = \"SCHOOL\" if \"SCHOOL\" in df.columns else \"School Name\"\n\nfiltered = df.copy()\nfiltered[\"DISTRICT\"] = pd.to_numeric(filtered[\"DISTRICT\"], errors=\"coerce\")\nfiltered[perf_col] = pd.to_numeric(filtered[perf_col], errors=\"coerce\")\nfiltered = filtered[\n    filtered[\"DISTRICT\"].eq(2)\n    & filtered[level_col].astype(str).str.contains(\"Elementary\", case=False, na=False)\n]\nfiltered[\"_ps_num\"] = filtered[school_col].astype(str).str.extract(r\"P\\.?S\\.?\\s*0*(\\d+)\", expand=False)\nfiltered[\"_ps_num\"] = pd.to_numeric(filtered[\"_ps_num\"], errors=\"coerce\").fillna(-1)\nfiltered = filtered.sort_values([perf_col, \"_ps_num\"], ascending=[False, False])\nanswer = filtered[school_col].dropna().astype(str).head(3).map(normalize_school).tolist()\n",
+      "subquestion": "Which NYC elementary schools in District 2 ranked in the top 3 by performance category score in 2010-11?",
+      "answer": [
+        "PS 77 Lower Lab School",
+        "PS 158 Bayard Taylor",
+        "PS 290 Manhattan New School"
+      ]
+    },
+    "2": {
+      "source": "datagov/2011-2012-school-progress-report-all-schools/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2011-2012-school-progress-report-all-schools/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nimport re\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\nperf_col = [c for c in df.columns if \"PERFORMANCE CATEGORY SCORE\" in c.upper()][0]\nlevel_col = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()][0]\nschool_col = \"SCHOOL\" if \"SCHOOL\" in df.columns else \"School Name\"\n\nfiltered = df.copy()\nfiltered[\"DISTRICT\"] = pd.to_numeric(filtered[\"DISTRICT\"], errors=\"coerce\")\nfiltered[perf_col] = pd.to_numeric(filtered[perf_col], errors=\"coerce\")\nfiltered = filtered[\n    filtered[\"DISTRICT\"].eq(2)\n    & filtered[level_col].astype(str).str.contains(\"Elementary\", case=False, na=False)\n]\nfiltered[\"_ps_num\"] = filtered[school_col].astype(str).str.extract(r\"P\\.?S\\.?\\s*0*(\\d+)\", expand=False)\nfiltered[\"_ps_num\"] = pd.to_numeric(filtered[\"_ps_num\"], errors=\"coerce\").fillna(-1)\nfiltered = filtered.sort_values([perf_col, \"_ps_num\"], ascending=[False, False])\nanswer = filtered[school_col].dropna().astype(str).head(3).map(normalize_school).tolist()\n",
+      "subquestion": "Which NYC elementary schools in District 2 ranked in the top 3 by performance category score in 2011-12?",
+      "answer": [
+        "PS 77 Lower Lab School",
+        "PS 212 Midtown West",
+        "PS 042 Benjamin Altman"
+      ]
+    },
+    "3": {
+      "source": "datagov/2012-2013-citywide-progress-report/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2012-2013-citywide-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nimport re\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\nperf_col = [c for c in df.columns if \"PERFORMANCE CATEGORY SCORE\" in c.upper()][0]\nlevel_col = [c for c in df.columns if \"SCHOOL LEVEL\" in c.upper()][0]\nschool_col = \"SCHOOL\" if \"SCHOOL\" in df.columns else \"School Name\"\n\nfiltered = df.copy()\nfiltered[\"DISTRICT\"] = pd.to_numeric(filtered[\"DISTRICT\"], errors=\"coerce\")\nfiltered[perf_col] = pd.to_numeric(filtered[perf_col], errors=\"coerce\")\nfiltered = filtered[\n    filtered[\"DISTRICT\"].eq(2)\n    & filtered[level_col].astype(str).str.contains(\"Elementary\", case=False, na=False)\n]\nfiltered[\"_ps_num\"] = filtered[school_col].astype(str).str.extract(r\"P\\.?S\\.?\\s*0*(\\d+)\", expand=False)\nfiltered[\"_ps_num\"] = pd.to_numeric(filtered[\"_ps_num\"], errors=\"coerce\").fillna(-1)\nfiltered = filtered.sort_values([perf_col, \"_ps_num\"], ascending=[False, False])\nanswer = filtered[school_col].dropna().astype(str).head(3).map(normalize_school).tolist()\n",
+      "subquestion": "Which NYC elementary schools in District 2 ranked in the top 3 by performance category score in 2012-13?",
+      "answer": [
+        "PS 77 Lower Lab School",
+        "PS 124 Yung Wing",
+        "PS 042 Benjamin Altman"
+      ]
+    },
+    "4": {
+      "source": "datagov/2013-2014-school-locations/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2013-2014-school-locations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nhop_1_answer = \"PS 77 Lower Lab School\"\n\nimport re\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s.lower()\n\ntarget_norm = normalize_school(hop_1_answer)\n\ndf[\"_norm_loc\"] = df[\"LOCATION_NAME\"].astype(str).map(normalize_school)\nrow = df[df[\"_norm_loc\"].eq(target_norm)].iloc[0]\narea = str(row.get(\"NTA_NAME\", \"\")).strip()\nanswer = area.split(\"-\")[-1].strip() if \"-\" in area else area\n",
+      "subquestion": "In which Manhattan neighborhood is <hop 1 answer> located?",
+      "answer": "Carnegie Hill"
+    },
+    "5": {
+      "source": "wikipedia/Carnegie_Hill/content.txt",
+      "fact": "The neighborhood is named after the mansion that Andrew Carnegie built in 1901 at Fifth Avenue and 91st Street.",
+      "subquestion": "After whom is <hop 2 answer> named?",
+      "answer": "Andrew Carnegie"
+    },
+    "6": {
+      "source": "wikipedia/Andrew_Carnegie/content.txt",
+      "fact": "Andrew Carnegie (November 25, 1835 - August 11, 1919) was a Scottish-American industrialist and philanthropist.",
+      "subquestion": "In what year was <hop 3 answer> born?",
+      "answer": "1835"
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Carnegie_Hill/content.txt",
+    "wikipedia/Andrew_Carnegie/content.txt",
+    "datagov/2010-2011-school-progress-report/files/rows.txt",
+    "datagov/2010-2011-school-progress-report/signed-metadata.txt",
+    "datagov/2011-2012-school-progress-report-all-schools/files/rows.txt",
+    "datagov/2011-2012-school-progress-report-all-schools/signed-metadata.txt",
+    "datagov/2012-2013-citywide-progress-report/files/rows.txt",
+    "datagov/2012-2013-citywide-progress-report/signed-metadata.txt",
+    "datagov/2013-2014-school-locations/files/rows.txt",
+    "datagov/2013-2014-school-locations/files/columns.txt",
+    "datagov/2013-2014-school-locations/files/ac4n-c5re.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: In 2010-11, the top 3 District 2 elementary schools by performance category score were: PS 77 Lower Lab School (18.8), PS 158 Bayard Taylor (16.0), and PS 290 Manhattan New School (14.9).",
+        "Node 2: In 2011-12, the top 3 District 2 elementary schools by performance category score were: PS 77 Lower Lab School (21.0), PS 212 Midtown West (20.5), and PS 042 Benjamin Altman (20.2).",
+        "Node 3: In 2012-13, the top 3 District 2 elementary schools by performance category score were: PS 77 Lower Lab School (24.9), PS 124 Yung Wing (22.6), and PS 042 Benjamin Altman (21.2).",
+        "Hop result: <node_1 answer> ∩ <node_2 answer> ∩ <node_3 answer> = [\"PS 77 Lower Lab School\"]."
+      ],
+      "answer": "PS 77 Lower Lab School"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: PS 77 Lower Lab School is located at 1700 3rd Avenue in the Upper East Side-Carnegie Hill neighborhood of Manhattan.",
+        "Hop result: report <node_4 answer> as this hop answer."
+      ],
+      "answer": "Carnegie Hill"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: The neighborhood is named after the mansion that Andrew Carnegie built in 1901 at Fifth Avenue and 91st Street.",
+        "Hop result: report <node_5 answer> as this hop answer."
+      ],
+      "answer": "Andrew Carnegie"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: Andrew Carnegie (November 25, 1835 - August 11, 1919) was a Scottish-American industrialist and philanthropist.",
+        "Hop result: report <node_6 answer> as the final answer."
+      ],
+      "answer": "1835"
+    }
+  ]
+}

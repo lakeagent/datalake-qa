@@ -1,0 +1,30 @@
+{
+    "question": "Which year has the highest total number of individuals receiving regular unemployment insurance benefits starting from 2001? Your response should be in the format [Answer].",
+    "answer": "2020",
+    "nodes": {
+        "1": {
+            "source": "datagov/unemployment-insurance-beneficiaries-and-benefit-amounts-paid-beginning-2001/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/unemployment-insurance-beneficiaries-and-benefit-amounts-paid-beginning-2001/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=None, engine=\"python\")\n\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Beneficiaries\"] = pd.to_numeric(df[\"Beneficiaries\"], errors=\"coerce\")\nyearly_totals = df.groupby(\"Year\", dropna=True)[\"Beneficiaries\"].sum()\nanswer = str(int(yearly_totals.idxmax()))\n",
+            "subquestion": "Which year has the highest total number of individuals receiving regular unemployment insurance benefits starting from 2001?",
+            "answer": "2020"
+        }
+    },
+    "datasets_used": [
+        "datagov/unemployment-insurance-beneficiaries-and-benefit-amounts-paid-beginning-2001/files/rows.txt",
+        "datagov/unemployment-insurance-beneficiaries-and-benefit-amounts-paid-beginning-2001/signed-metadata.txt",
+        "datagov/unemployment-insurance-beneficiaries-and-benefit-amounts-paid-beginning-2001/files/xbjp-8sra.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Group records by `Year`, sum `Beneficiaries` within each year, and select the year with the largest total. The peak year is 2020.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2020"
+        }
+    ]
+}

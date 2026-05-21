@@ -1,0 +1,96 @@
+{
+    "question": "I am analyzing the LAPD division that covers Echo Park and Silver Lake. After identifying the most common arrest charge in that area named after this division in 2019, I want to find which LAPD area had the highest number of arrests for that charge. What is the ratio of the most frequent crime reported in 2021 for that area to the total number of public schools in Los Angeles? Round that to the nearest number. Your response should be in the format [Answer].",
+    "answer": "3",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/LAPD_Rampart_Division/content.txt",
+            "fact": "The LAPD Rampart area/division serves neighborhoods including Echo Park and Silver Lake.",
+            "subquestion": "Which LAPD area name serves neighborhoods including Echo Park and Silver Lake?",
+            "answer": "Rampart"
+        },
+        "2": {
+            "source": "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/arrest-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Arrest Date\"] = pd.to_datetime(df[\"Arrest Date\"], errors=\"coerce\")\ndf_2019 = df[df[\"Arrest Date\"].dt.year == 2019]\nrampart_2019 = df_2019[df_2019[\"Area Name\"] == \"Rampart\"]\n\ntop_charge_group = rampart_2019[\"Charge Group Description\"].value_counts().idxmax()\nanswer = df_2019[df_2019[\"Charge Group Description\"] == top_charge_group][\"Area Name\"].value_counts().idxmax()\nprint(answer)",
+            "subquestion": "In 2019 arrest records, within area <node_1 answer>, identify the most common arrest charge; then, for that charge, which area has the most arrests? Answer with the area name.",
+            "answer": "Central"
+        },
+        "3": {
+            "source": "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = df.loc[df[\"Area Name\"] == \"Central\", \"Area ID\"].value_counts().idxmax()\nprint(answer)",
+            "subquestion": "In the LAPD stop-incident records collected under California's RIPA program, what Area ID corresponds to area name <node_2 answer> (answer as an integer)?",
+            "answer": "1"
+        },
+        "4": {
+            "source": "datagov/crime-data-from-2020-to-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-data-from-2020-to-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"DATE OCC\"] = pd.to_datetime(df[\"DATE OCC\"], errors=\"coerce\")\ndf_2021 = df[df[\"DATE OCC\"].dt.year == 2021]\narea_1_2021 = df_2021[df_2021[\"AREA\"] == 1]\ncrime_counts = area_1_2021[\"Crm Cd Desc\"].value_counts()\nanswer = f\"{crime_counts.index[0]} ({int(crime_counts.iloc[0])})\"\nprint(answer)",
+            "subquestion": "In 2021 crime data, within Area ID <node_3 answer> (the Area ID for area <node_2 answer>), which crime description is most common and what is its incident count?",
+            "answer": "BURGLARY FROM VEHICLE (1620)"
+        },
+        "5": {
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "import json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-current-23297/files/data-oyCYxF.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\n\nanswer = sum(\n    1\n    for feature in data[\"features\"]\n    if feature.get(\"properties\", {}).get(\"STATE\") == \"CA\"\n    and feature.get(\"properties\", {}).get(\"CITY\") == \"Los Angeles\"\n)\nprint(answer)",
+            "subquestion": "Within city Los Angeles and state CA, how many public schools are listed?",
+            "answer": "579"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Rampart is the LAPD area serving Echo Park and Silver Lake."
+            ],
+            "answer": "Rampart"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Extract year from `Arrest Date`, filter rows where year of `Arrest Date` equals 2019 and `Area Name` equals <hop 1 answer>, select the most common `Charge Group Description`, then among 2019 rows with that `Charge Group Description`, select the most common `Area Name`."
+            ],
+            "answer": "Central"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `Area Name` equals <hop 2 answer>, count records by `Area ID`, and select the most common `Area ID`."
+            ],
+            "answer": "1"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 4: Extract year from `DATE OCC`, filter rows where year of `DATE OCC` equals 2021 and `AREA` equals <hop 3 answer>, count records by `Crm Cd Desc`, and return the most common `Crm Cd Desc` with its count.",
+                "Node 5: Count features where `properties.STATE` equals `CA` and `properties.CITY` equals `Los Angeles`.",
+                "Hop result: round(1620 / 579) = 3."
+            ],
+            "answer": "3"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/LAPD_Rampart_Division/content.txt",
+        "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+        "datagov/arrest-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/arrest-data-from-2010-to-2019/files/yru6-6re4.publisher-view.json",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/signed-metadata.txt",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/5gp9-8nrb.txt",
+        "datagov/crime-data-from-2020-to-present/files/rows.txt",
+        "datagov/crime-data-from-2020-to-present/signed-metadata.txt",
+        "datagov/crime-data-from-2020-to-present/files/2nrs-mtv8.txt",
+        "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+        "datagov/public-school-locations-current-23297/signed-metadata.txt",
+        "datagov/public-school-locations-current-23297/files/0.arcgis-layer.json"
+    ]
+}

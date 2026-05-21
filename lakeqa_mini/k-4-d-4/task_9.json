@@ -1,0 +1,180 @@
+{
+    "question": "Identify the agricultural college that was ultimately located in the town that beat the county seat of the Washington county with the lowest 2020 census population among those counties that (1) had Low-Income student enrollment percentage between 32-40% in every school year from 2018-19 through 2021-22, (2) had district-average Math proficiency above 40% in the 2021-22 school year, and (3) were not the most populous county in Washington. Only report the college name. Your response should be in the format [Answer].",
+    "answer": "Washington State University",
+    "nodes": {
+        "1": {
+            "source": "datagov/report-card-enrollment-2018-19-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-enrollment-2018-19-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"OrganizationLevel\"] == \"District\") & (df[\"GradeLevel\"] == \"All Grades\")]\ncounty = filtered.groupby(\"County\", as_index=False)[[\"Low-Income\", \"All Students\"]].sum()\ncounty[\"Low-Income%\"] = county[\"Low-Income\"] / county[\"All Students\"] * 100\nanswer = county[(county[\"Low-Income%\"] >= 32) & (county[\"Low-Income%\"] <= 40)].sort_values(\"County\")[\"County\"].tolist()\nprint(answer)",
+            "subquestion": "Which Washington counties had district-level All Grades Low-Income enrollment percentage between 32% and 40% in the 2018-19 school year?",
+            "answer": [
+                "Island",
+                "King",
+                "Kitsap",
+                "San Juan",
+                "Snohomish",
+                "Whitman"
+            ]
+        },
+        "2": {
+            "source": "datagov/report-card-enrollment-2019-20-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-enrollment-2019-20-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"OrganizationLevel\"] == \"District\") & (df[\"GradeLevel\"] == \"All Grades\")]\ncounty = filtered.groupby(\"County\", as_index=False)[[\"Low-Income\", \"All Students\"]].sum()\ncounty[\"Low-Income%\"] = county[\"Low-Income\"] / county[\"All Students\"] * 100\nanswer = county[(county[\"Low-Income%\"] >= 32) & (county[\"Low-Income%\"] <= 40)].sort_values(\"County\")[\"County\"].tolist()\nprint(answer)",
+            "subquestion": "Which Washington counties had district-level All Grades Low-Income enrollment percentage between 32% and 40% in the 2019-20 school year?",
+            "answer": [
+                "Island",
+                "King",
+                "Kitsap",
+                "San Juan",
+                "Snohomish",
+                "Whitman"
+            ]
+        },
+        "3": {
+            "source": "datagov/report-card-enrollment-2020-21-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-enrollment-2020-21-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"OrganizationLevel\"] == \"District\") & (df[\"GradeLevel\"] == \"All Grades\")]\ncounty = filtered.groupby(\"County\", as_index=False)[[\"Low-Income\", \"All Students\"]].sum()\ncounty[\"Low-Income%\"] = county[\"Low-Income\"] / county[\"All Students\"] * 100\nanswer = county[(county[\"Low-Income%\"] >= 32) & (county[\"Low-Income%\"] <= 40)].sort_values(\"County\")[\"County\"].tolist()\nprint(answer)",
+            "subquestion": "Which Washington counties had district-level All Grades Low-Income enrollment percentage between 32% and 40% in the 2020-21 school year?",
+            "answer": [
+                "Island",
+                "King",
+                "Kitsap",
+                "San Juan",
+                "Snohomish",
+                "Thurston",
+                "Whitman"
+            ]
+        },
+        "4": {
+            "source": "datagov/report-card-enrollment-2021-22-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-enrollment-2021-22-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"OrganizationLevel\"] == \"District\") & (df[\"GradeLevel\"] == \"All Grades\")]\ncounty = filtered.groupby(\"County\", as_index=False)[[\"Low-Income\", \"All Students\"]].sum()\ncounty[\"Low-Income%\"] = county[\"Low-Income\"] / county[\"All Students\"] * 100\nanswer = county[(county[\"Low-Income%\"] >= 32) & (county[\"Low-Income%\"] <= 40)].sort_values(\"County\")[\"County\"].tolist()\nprint(answer)",
+            "subquestion": "Which Washington counties had district-level All Grades Low-Income enrollment percentage between 32% and 40% in the 2021-22 school year?",
+            "answer": [
+                "King",
+                "Kitsap",
+                "San Juan",
+                "Whitman"
+            ]
+        },
+        "5": {
+            "source": "datagov/report-card-assessment-data-2021-22-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-assessment-data-2021-22-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"OrganizationLevel\"] == \"District\")\n    & (df[\"StudentGroup\"] == \"All Students\")\n    & (df[\"GradeLevel\"] == \"All Grades\")\n    & (df[\"TestSubject\"] == \"Math\")\n    & (df[\"County\"].isin([\"King\", \"Kitsap\", \"San Juan\", \"Whitman\"]))\n].copy()\nfiltered[\"PercentMetStandard\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"), errors=\"coerce\"\n)\ncounty = filtered.groupby(\"County\", as_index=False)[\"PercentMetStandard\"].mean()\nanswer = county[county[\"PercentMetStandard\"] > 40].sort_values(\"County\")[\"County\"].tolist()\nprint(answer)",
+            "subquestion": "Among <hop 1 answer>, which counties had district-average Math proficiency above 40% in 2021-22?",
+            "answer": [
+                "King",
+                "Kitsap",
+                "Whitman"
+            ]
+        },
+        "6": {
+            "source": "wikipedia/King_County,_Washington/content.txt",
+            "fact": "The population was 2,269,675 in the 2020 census, making it the most populous county in Washington",
+            "subquestion": "Does the King County, Washington article state that King County is the most populous county in Washington?",
+            "answer": [
+                "Kitsap",
+                "San Juan",
+                "Whitman"
+            ]
+        },
+        "7": {
+            "source": "wikipedia/Kitsap_County,_Washington/content.txt",
+            "fact": "As of the 2020 census, its population was 275,611.",
+            "subquestion": "What 2020 census population does the Kitsap County, Washington article report for Kitsap County?",
+            "answer": "Kitsap had population 275,611"
+        },
+        "8": {
+            "source": "wikipedia/Whitman_County,_Washington/content.txt",
+            "fact": "As of the 2020 census, the population was 47,973. The county seat is Colfax, and its largest city is Pullman.",
+            "subquestion": "What 2020 census population and county seat does the Whitman County, Washington article report for Whitman County?",
+            "answer": "Whitman had population 47,973 (lower than Kitsap's 275,611), county seat is Colfax"
+        },
+        "9": {
+            "source": "wikipedia/Colfax,_Washington/content.txt",
+            "fact": "In 1889–90, the town vied with several other finalists to become the site of a new state agricultural college, present-day Washington State University.  The honor ultimately fell to nearby Pullman,",
+            "subquestion": "What agricultural college does the Colfax article identify, and which town did it say ultimately received the site?",
+            "answer": "Washington State University, Pullman won the competition"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/King_County,_Washington/content.txt",
+        "wikipedia/Kitsap_County,_Washington/content.txt",
+        "wikipedia/Whitman_County,_Washington/content.txt",
+        "wikipedia/Colfax,_Washington/content.txt",
+        "datagov/report-card-enrollment-2018-19-school-year/files/rows.txt",
+        "datagov/report-card-enrollment-2018-19-school-year/signed-metadata.txt",
+        "datagov/report-card-enrollment-2018-19-school-year/files/u4gd-6wxx.txt",
+        "datagov/report-card-enrollment-2019-20-school-year/files/rows.txt",
+        "datagov/report-card-enrollment-2019-20-school-year/signed-metadata.txt",
+        "datagov/report-card-enrollment-2019-20-school-year/files/gtd3-scga.txt",
+        "datagov/report-card-enrollment-2020-21-school-year/files/rows.txt",
+        "datagov/report-card-enrollment-2020-21-school-year/signed-metadata.txt",
+        "datagov/report-card-enrollment-2020-21-school-year/files/nvpc-yr7b.publisher-view.json",
+        "datagov/report-card-enrollment-2021-22-school-year/files/rows.txt",
+        "datagov/report-card-enrollment-2021-22-school-year/signed-metadata.txt",
+        "datagov/report-card-enrollment-2021-22-school-year/files/ymi4-syjv.txt",
+        "datagov/report-card-assessment-data-2021-22-school-year/files/rows.txt",
+        "datagov/report-card-assessment-data-2021-22-school-year/signed-metadata.txt",
+        "datagov/report-card-assessment-data-2021-22-school-year/files/v928-8kke.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Group district-level 2018-19 enrollment rows with `GradeLevel` = `All Grades` by `County`, compute `Low-Income` / `All Students` * 100, and keep counties with percentage between 32 and 40.",
+                "Node 2: Apply the same county-level low-income enrollment calculation for 2019-20.",
+                "Node 3: Apply the same county-level low-income enrollment calculation for 2020-21.",
+                "Node 4: Apply the same county-level low-income enrollment calculation for 2021-22.",
+                "Hop result: counties meeting the low-income enrollment condition in all four years = King, Kitsap, San Juan, Whitman."
+            ],
+            "answer": [
+                "King",
+                "Kitsap",
+                "San Juan",
+                "Whitman"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Among <hop 1 answer>, keep counties whose district-average 2021-22 Math proficiency is above 40%.",
+                "Node 6: King County is the most populous county in Washington.",
+                "Hop result: counties from <hop 1 answer> that have district-average Math proficiency above 40% in 2021-22 and are not the most populous county in Washington = Kitsap, Whitman."
+            ],
+            "answer": [
+                "Kitsap",
+                "Whitman"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: Kitsap County had 2020 population 275,611.",
+                "Node 8: Whitman County had 2020 population 47,973 and county seat Colfax.",
+                "Hop result: county from <hop 2 answer> with the lower 2020 census population = Whitman County; county seat = Colfax."
+            ],
+            "answer": "Colfax"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: Colfax competed to host the state agricultural college, present-day Washington State University, and Pullman ultimately received the site.",
+                "Hop result: Washington State University."
+            ],
+            "answer": "Washington State University"
+        }
+    ]
+}

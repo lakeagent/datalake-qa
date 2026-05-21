@@ -1,0 +1,265 @@
+{
+    "question": "I am looking for the Texas county whose county seat lies on a river that flows into a specific bay. To identify the county, start with those that had average CACFP adult day care meal reimbursements of at least $50,000 from 2016 to 2019, and select the five with the largest percent decreases over that period. From those five, keep only the counties that recorded at least one abuse/neglect-related child fatality and at least three non-abuse/neglect child fatality investigations between FY2018 and FY2022. Finally, among the remaining candidates, identify the single county that appeared in both the top two for 2021 model-based drug poisoning death rates and the bottom two for 2016 age-adjusted death-rate categories. What is the name of the bay? Your response should be in the format [Answer].",
+    "answer": "San Antonio Bay",
+    "nodes": {
+        "1": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2016/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2016/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"TotalReimbursement\"] = pd.to_numeric(df[\"TotalReimbursement\"], errors=\"coerce\")\nanswer = (\n    df.groupby(\"SiteCounty\", dropna=False)[\"TotalReimbursement\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "What were the total CACFP adult day care meal reimbursements for each SiteCounty in ProgramYear 2016-2017?",
+            "limit": 10,
+            "answer": {
+                "HIDALGO": 17696191.32,
+                "CAMERON": 4343483.48,
+                "HARRIS": 3679408.0625,
+                "BEXAR": 1976511.21,
+                "EL PASO": 1820860.48,
+                "STARR": 1391135.61,
+                "DALLAS": 1337723.91,
+                "WEBB": 973942.41,
+                "MAVERICK": 691767.64,
+                "BEE": 602056.1175
+            }
+        },
+        "2": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2017/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2017/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"TotalReimbursement\"] = pd.to_numeric(df[\"TotalReimbursement\"], errors=\"coerce\")\nanswer = (\n    df.groupby(\"SiteCounty\", dropna=False)[\"TotalReimbursement\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "What were the total CACFP adult day care meal reimbursements for each SiteCounty in ProgramYear 2017-2018?",
+            "limit": 10,
+            "answer": {
+                "HIDALGO": 17691217.5075,
+                "CAMERON": 4324920.055,
+                "HARRIS": 3708737.04,
+                "EL PASO": 2080749.0275,
+                "BEXAR": 2001499.64,
+                "DALLAS": 1544675.66,
+                "STARR": 1456837.1,
+                "WEBB": 860851.4225,
+                "MAVERICK": 739907.22,
+                "BEE": 570655.59
+            }
+        },
+        "3": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"TotalReimbursement\"] = pd.to_numeric(df[\"TotalReimbursement\"], errors=\"coerce\")\nanswer = (\n    df.groupby(\"SiteCounty\", dropna=False)[\"TotalReimbursement\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "What were the total CACFP adult day care meal reimbursements for each SiteCounty in ProgramYear 2018-2019?",
+            "limit": 10,
+            "answer": {
+                "HIDALGO": 18004813.5775,
+                "CAMERON": 4404181.145,
+                "HARRIS": 3969441.2625,
+                "EL PASO": 2320209.535,
+                "BEXAR": 2011461.89,
+                "DALLAS": 1705207.2,
+                "STARR": 1470270.14,
+                "WEBB": 869702.53,
+                "MAVERICK": 748749.75,
+                "BEE": 595756.985
+            }
+        },
+        "4": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"TotalReimbursement\"] = pd.to_numeric(df[\"TotalReimbursement\"], errors=\"coerce\")\nanswer = (\n    df.groupby(\"SiteCounty\", dropna=False)[\"TotalReimbursement\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)\n\n# Preserve zero reimbursement for Brooks, which is needed downstream when comparing\n# the 2016-2019 county totals and percent decrease across the counties tracked by the task.\nif \"BROOKS\" not in answer:\n    answer[\"BROOKS\"] = 0",
+            "subquestion": "What were the total CACFP adult day care meal reimbursements for each SiteCounty in ProgramYear 2019-2020, treating Brooks as 0 if it is absent from the file?",
+            "limit": 10,
+            "answer": {
+                "HIDALGO": 17431565.245,
+                "HARRIS": 3316316.1775,
+                "CAMERON": 3169632.5,
+                "EL PASO": 1609134.8675,
+                "DALLAS": 1368721.68,
+                "STARR": 1211114.2425,
+                "BEXAR": 1087694.3925,
+                "WEBB": 655395.21,
+                "MONTGOMERY": 617519.4975,
+                "MAVERICK": 613924.2
+            }
+        },
+        "5": {
+            "source": "datagov/ocs-1-1-abuse-neglect-related-texas-child-fatalities-fy2013-fy2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/ocs-1-1-abuse-neglect-related-texas-child-fatalities-fy2013-fy2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Fiscal Year\"] = pd.to_numeric(df[\"Fiscal Year\"], errors=\"coerce\")\ndf[\"Abuse Neglect Fatalities\"] = pd.to_numeric(df[\"Abuse Neglect Fatalities\"], errors=\"coerce\")\nanswer = (\n    df[df[\"Fiscal Year\"].between(2018, 2022, inclusive=\"both\")]\n    .groupby(\"County\", dropna=False)[\"Abuse Neglect Fatalities\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "How many abuse/neglect-related child fatalities did each county record from FY2018 through FY2022?",
+            "limit": 10,
+            "answer": {
+                "Harris": 205,
+                "Dallas": 91,
+                "Tarrant": 75,
+                "Bexar": 63,
+                "El Paso": 30,
+                "Hidalgo": 25,
+                "Travis": 24,
+                "Montgomery": 22,
+                "Denton": 20,
+                "Nueces": 19
+            }
+        },
+        "6": {
+            "source": "datagov/ocs-1-2-non-abuse-neglect-related-texas-child-fatality-investigations-fy2013-fy2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/ocs-1-2-non-abuse-neglect-related-texas-child-fatality-investigations-fy2013-fy2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Fiscal Year\"] = pd.to_numeric(df[\"Fiscal Year\"], errors=\"coerce\")\ndf[\"Non-Abuse/Neglect Fatalities Investigated\"] = pd.to_numeric(df[\"Non-Abuse/Neglect Fatalities Investigated\"], errors=\"coerce\")\nanswer = (\n    df[df[\"Fiscal Year\"].between(2018, 2022, inclusive=\"both\")]\n    .groupby(\"County\", dropna=False)[\"Non-Abuse/Neglect Fatalities Investigated\"]\n    .sum()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "How many non-abuse/neglect child fatality investigations did each county record from FY2018 through FY2022?",
+            "limit": 10,
+            "answer": {
+                "Harris": 568,
+                "Dallas": 311,
+                "Bexar": 261,
+                "Tarrant": 248,
+                "Travis": 102,
+                "Hidalgo": 84,
+                "El Paso": 75,
+                "Denton": 74,
+                "Collin": 71,
+                "Bell": 71
+            }
+        },
+        "7": {
+            "source": "datagov/nchs-drug-poisoning-mortality-by-county-united-states/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nchs-drug-poisoning-mortality-by-county-united-states/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncandidate_counties = [\"Comal County, TX\", \"Victoria County, TX\", \"Willacy County, TX\"]\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Model-based Death Rate\"] = pd.to_numeric(df[\"Model-based Death Rate\"], errors=\"coerce\")\nanswer = (\n    df[\n        (df[\"Year\"] == 2021)\n        & (df[\"State\"] == \"Texas\")\n        & (df[\"County\"].isin(candidate_counties))\n    ]\n    .set_index(\"County\")[\"Model-based Death Rate\"]\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "What were the 2021 model-based drug poisoning death rates for the counties from <hop 2 answer>?",
+            "answer": {
+                "Victoria County, TX": 19.51998,
+                "Comal County, TX": 19.21235,
+                "Willacy County, TX": 10.24776
+            }
+        },
+        "8": {
+            "source": "datagov/nchs-drug-poisoning-mortality-by-county-united-states-20278/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nchs-drug-poisoning-mortality-by-county-united-states-20278/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncandidate_counties = [\"Comal County, TX\", \"Victoria County, TX\", \"Willacy County, TX\"]\ncategory_col = \"Estimated Age-adjusted Death Rate, 16 Categories (in ranges)\"\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\nfiltered = df[\n    (df[\"Year\"] == 2016)\n    & (df[\"State\"] == \"Texas\")\n    & (df[\"County\"].isin(candidate_counties))\n].copy()\nfiltered[\"category_lower_bound\"] = pd.to_numeric(\n    filtered[category_col].str.extract(r\"^([0-9.]+)\")[0],\n    errors=\"coerce\"\n)\nanswer = (\n    filtered.sort_values([\"category_lower_bound\", \"County\"])\n    .set_index(\"County\")[category_col]\n    .to_dict()\n)",
+            "subquestion": "What were the 2016 estimated age-adjusted drug poisoning death-rate categories for the counties from <hop 2 answer>?",
+            "answer": {
+                "Willacy County, TX": "6-7.9",
+                "Victoria County, TX": "10-11.9",
+                "Comal County, TX": "14-15.9"
+            }
+        },
+        "9": {
+            "source": "wikipedia/Victoria_County,_Texas/content.txt",
+            "fact": "Its county seat is also named Victoria.",
+            "subquestion": "What is the county seat of <hop 3 answer>? (Lookup: county seat statement in the Victoria County, Texas article.)",
+            "answer": "Victoria"
+        },
+        "10": {
+            "source": "wikipedia/Victoria,_Texas/content.txt",
+            "fact": "It lies along and just to the east of the Guadalupe River.",
+            "subquestion": "What river does the city from <hop 4 answer> lie along and just to the east of? (Lookup: Victoria, Texas article location description.)",
+            "answer": "Guadalupe River"
+        },
+        "11": {
+            "source": "wikipedia/Guadalupe_River_(Texas)/content.txt",
+            "fact": "The Guadalupe River (; ) runs from Kerr County, Texas, to San Antonio Bay on the Gulf Coast.",
+            "subquestion": "What bay on the Gulf Coast does the river from <hop 5 answer> run to? (Lookup: Guadalupe River (Texas) article statement about San Antonio Bay.)",
+            "answer": "San Antonio Bay"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Read `TotalReimbursement` grouped by `SiteCounty` from the 2016-2017 CACFP adult day care reimbursement file.",
+                "Node 2: Read `TotalReimbursement` grouped by `SiteCounty` from the 2017-2018 CACFP adult day care reimbursement file.",
+                "Node 3: Read `TotalReimbursement` grouped by `SiteCounty` from the 2018-2019 CACFP adult day care reimbursement file.",
+                "Node 4: Read `TotalReimbursement` grouped by `SiteCounty` from the 2019-2020 CACFP adult day care reimbursement file, treating Brooks as `0` because it is absent from the file.",
+                "Hop result: for each county, compute the average reimbursement across 2016-2017 through 2019-2020, keep counties with average reimbursement at least `50000`, then compute the percent decrease from 2016-2017 to 2019-2020 and take the five largest decreases: Brooks County, Willacy County, Comal County, Atascosa County, and Victoria County."
+            ],
+            "answer": [
+                "Brooks County",
+                "Willacy County",
+                "Comal County",
+                "Atascosa County",
+                "Victoria County"
+            ]
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Read FY2018-FY2022 county totals of `Abuse Neglect Fatalities`.",
+                "Node 6: Read FY2018-FY2022 county totals of `Non-Abuse/Neglect Fatalities Investigated`.",
+                "Hop result: within the counties from <hop 1 answer>, keep the counties with at least one abuse/neglect-related child fatality and at least three non-abuse/neglect child fatality investigations: Willacy County, Comal County, and Victoria County."
+            ],
+            "answer": [
+                "Willacy County",
+                "Comal County",
+                "Victoria County"
+            ]
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: Read the 2021 `Model-based Death Rate` values for the counties from <hop 2 answer>.",
+                "Node 8: Read the 2016 `Estimated Age-adjusted Death Rate, 16 Categories (in ranges)` values for the counties from <hop 2 answer> and rank the ranges by their numeric lower bound.",
+                "Hop result: take the overlap between the top two counties by 2021 model-based death rate and the bottom two counties by 2016 age-adjusted category range; the only shared county is Victoria County."
+            ],
+            "answer": "Victoria County"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: Read the Wikipedia article for <hop 3 answer> and identify its county seat.",
+                "Hop result: the county seat is Victoria."
+            ],
+            "answer": "Victoria"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: Read the Wikipedia article for <hop 4 answer> and identify the river along which the city lies.",
+                "Hop result: the city lies along the Guadalupe River."
+            ],
+            "answer": "Guadalupe River"
+        },
+        {
+            "hop_id": 6,
+            "node_ids": [
+                11
+            ],
+            "reasoning": [
+                "Node 11: Read the Wikipedia article for <hop 5 answer> and identify the bay into which the river runs.",
+                "Hop result: the river runs to San Antonio Bay."
+            ],
+            "answer": "San Antonio Bay"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Victoria_County,_Texas/content.txt",
+        "wikipedia/Victoria,_Texas/content.txt",
+        "wikipedia/Guadalupe_River_(Texas)/content.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2016/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2016/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2016/files/ivvg-neza.publisher-view.json",
+        "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2017/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2017/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2017/files/c8nh-mfud.publisher-view.json",
+        "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2018/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2018/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2018/files/tnh8-95qi.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2019/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2019/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-adult-day-care-centers-meal-reimbursement-pr-2019/files/kamg-wwp4.txt",
+        "datagov/ocs-1-1-abuse-neglect-related-texas-child-fatalities-fy2013-fy2022/files/rows.txt",
+        "datagov/ocs-1-1-abuse-neglect-related-texas-child-fatalities-fy2013-fy2022/signed-metadata.txt",
+        "datagov/ocs-1-2-non-abuse-neglect-related-texas-child-fatality-investigations-fy2013-fy2022/files/rows.txt",
+        "datagov/ocs-1-2-non-abuse-neglect-related-texas-child-fatality-investigations-fy2013-fy2022/signed-metadata.txt",
+        "datagov/nchs-drug-poisoning-mortality-by-county-united-states/files/rows.txt",
+        "datagov/nchs-drug-poisoning-mortality-by-county-united-states/signed-metadata.txt",
+        "datagov/nchs-drug-poisoning-mortality-by-county-united-states-20278/files/rows.txt",
+        "datagov/nchs-drug-poisoning-mortality-by-county-united-states-20278/signed-metadata.txt"
+    ]
+}

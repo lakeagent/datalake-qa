@@ -1,0 +1,127 @@
+{
+  "question": "Find the New England state that had between 200 and 400 VA pension recipients in both FY 2020 and FY 2021 and between 150 and 300 VA pension recipients in FY 2023, then identify its capital city. At the 2020 census, how many more people lived in that state's most populous city than in that capital city? Return the number only. Your response should be in the format [Answer].",
+  "answer": 36669,
+  "nodes": {
+    "1": {
+      "source": "datagov/fy-2020-pension-recipients-by-state/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/fy-2020-pension-recipients-by-state/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nstate = df['State'].astype(str).str.strip()\nrecipients = pd.to_numeric(df['Total: Pension Recipients'], errors='coerce')\nus_states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']\nanswer = sorted(state[state.isin(us_states) & recipients.between(200, 400, inclusive='both')].dropna().drop_duplicates().tolist())",
+      "subquestion": "Which U.S. states had between 200 and 400 VA pension recipients in FY 2020?",
+      "answer": [
+        "Alaska",
+        "Delaware",
+        "North Dakota",
+        "Vermont",
+        "Wyoming"
+      ]
+    },
+    "2": {
+      "source": "datagov/fy-2021-pension-recipients-by-state-1266e/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/fy-2021-pension-recipients-by-state-1266e/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nstate = df['State'].astype(str).str.strip()\nrecipients = pd.to_numeric(df['Total: Pension Recipients'], errors='coerce')\nus_states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']\nanswer = sorted(state[state.isin(us_states) & recipients.between(200, 400, inclusive='both')].dropna().drop_duplicates().tolist())",
+      "subquestion": "Which U.S. states had between 200 and 400 VA pension recipients in FY 2021?",
+      "answer": [
+        "Alaska",
+        "Delaware",
+        "North Dakota",
+        "Vermont",
+        "Wyoming"
+      ]
+    },
+    "3": {
+      "source": "datagov/fy-2023-pension-recipients-by-state/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/fy-2023-pension-recipients-by-state/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nstate = df['State'].astype(str).str.strip()\nrecipients = pd.to_numeric(df['Total: Pension Recipients'], errors='coerce')\nus_states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']\nanswer = sorted(state[state.isin(us_states) & recipients.between(150, 300, inclusive='both')].dropna().drop_duplicates().tolist())",
+      "subquestion": "Which U.S. states had between 150 and 300 VA pension recipients in FY 2023?",
+      "answer": [
+        "Alaska",
+        "Delaware",
+        "Vermont",
+        "Wyoming"
+      ]
+    },
+    "4": {
+      "source": "wikipedia/New_England/content.txt",
+      "fact": "New England is a region consisting of six states in the Northeastern United States: Connecticut, Maine, Massachusetts, New Hampshire, Rhode Island, and Vermont.",
+      "subquestion": "Which U.S. states are located in New England?",
+      "answer": [
+        "Connecticut",
+        "Maine",
+        "Massachusetts",
+        "New Hampshire",
+        "Rhode Island",
+        "Vermont"
+      ]
+    },
+    "5": {
+      "source": "wikipedia/Vermont/content.txt",
+      "fact": "Vermont is a landlocked state in the New England region. The state's capital of Montpelier is the least populous U.S. state capital. Vermont was admitted to the Union in 1791 as the 14th state.",
+      "subquestion": "What is the capital of <hop 1 answer>?",
+      "answer": "Montpelier"
+    },
+    "6": {
+      "source": "wikipedia/Montpelier,_Vermont/content.txt",
+      "fact": "Montpelier is the capital city of the U.S. state of Vermont and the county seat of Washington County. The site of Vermont's state government, it is the least populous state capital in the United States. As of the 2020 census, the population was 8,074, with a daytime population growth of about 21,000 due to the large number of jobs within city limits.",
+      "subquestion": "What was the 2020 census population of <hop 2 answer>?",
+      "answer": 8074
+    },
+    "7": {
+      "source": "wikipedia/Burlington,_Vermont/content.txt",
+      "fact": "Burlington is a city in, and county seat of, Chittenden County, Vermont, United States. As of the 2020 United States census, the population was 44,743. It is the most populous city in Vermont.",
+      "subquestion": "What was the 2020 census population of <hop 1 answer>'s most populous city?",
+      "answer": 44743
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: In FY 2020, the U.S. states with between 200 and 400 VA pension recipients were Alaska, Delaware, North Dakota, Vermont, and Wyoming.",
+        "Node 2: In FY 2021, the U.S. states with between 200 and 400 VA pension recipients were Alaska, Delaware, North Dakota, Vermont, and Wyoming.",
+        "Node 3: In FY 2023, the U.S. states with between 150 and 300 VA pension recipients were Alaska, Delaware, Vermont, and Wyoming.",
+        "Node 4: The New England states are Connecticut, Maine, Massachusetts, New Hampshire, Rhode Island, and Vermont.",
+        "Derive hop 1 answer using nodes 1, 2, 3, and 4: intersecting the three pension-recipient state sets with the New England state set leaves Vermont. Hop answer: Vermont."
+      ],
+      "answer": "Vermont"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: <hop 1 answer> has Montpelier as its capital city.",
+        "Derive hop 2 answer from node 5: node 5 asks for the capital of <hop 1 answer>. Hop answer: Montpelier."
+      ],
+      "answer": "Montpelier"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        6,
+        7
+      ],
+      "reasoning": [
+        "Node 6: The 2020 census population of <hop 2 answer> was `8,074`.",
+        "Node 7: The 2020 census population of <hop 1 answer>'s most populous city was `44,743`.",
+        "Derive hop 3 answer using nodes 6 and 7: subtract the capital-city population from the most-populous-city population, `44,743 - 8,074 = 36,669`. Hop answer: 36669."
+      ],
+      "answer": 36669
+    }
+  ],
+  "datasets_used": [
+    "datagov/fy-2020-pension-recipients-by-state/files/rows.txt",
+    "datagov/fy-2020-pension-recipients-by-state/signed-metadata.txt",
+    "datagov/fy-2021-pension-recipients-by-state-1266e/files/rows.txt",
+    "datagov/fy-2021-pension-recipients-by-state-1266e/signed-metadata.txt",
+    "datagov/fy-2023-pension-recipients-by-state/files/rows.txt",
+    "datagov/fy-2023-pension-recipients-by-state/signed-metadata.txt",
+    "wikipedia/New_England/content.txt",
+    "wikipedia/Vermont/content.txt",
+    "wikipedia/Montpelier,_Vermont/content.txt",
+    "wikipedia/Burlington,_Vermont/content.txt"
+  ]
+}

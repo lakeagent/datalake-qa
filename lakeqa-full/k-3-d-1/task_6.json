@@ -1,0 +1,66 @@
+{
+    "question": "In 2019 Los Angeles arrest data, which area had the most arrests for moving traffic violations? What municipal building is that area home to, and how many stories does that building contain? Your response should be in the format [Answer].",
+    "answer": "8",
+    "nodes": {
+        "1": {
+            "source": "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/arrest-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ncsv_path = io.BytesIO(obj[\"Body\"].read())\n\ncounts = {}\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"Arrest Date\", \"Area Name\", \"Charge Group Description\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    filtered = chunk[\n        chunk[\"Arrest Date\"].astype(str).str.contains(\"2019\", na=False)\n        & chunk[\"Charge Group Description\"].astype(str).str.strip().str.lower().eq(\"moving traffic violations\")\n    ]\n    vc = filtered[\"Area Name\"].astype(str).str.strip().value_counts()\n    for area, cnt in vc.items():\n        counts[area] = counts.get(area, 0) + int(cnt)\nanswer = str(max(counts, key=counts.get))\n",
+            "subquestion": "In 2019 arrest data, which area has the most arrests in the charge group \"Moving Traffic Violations\"?",
+            "answer": "Van Nuys"
+        },
+        "2": {
+            "source": "wikipedia/Van_Nuys/content.txt",
+            "fact": "Van Nuys is a neighborhood in the central San Fernando Valley region of Los Angeles, California, United States. Home to Van Nuys Airport and the Valley Municipal Building, it is the most populous neighborhood in the San Fernando Valley.",
+            "subquestion": "What municipal building is <hop 1 answer> home to?",
+            "answer": "Valley Municipal Building"
+        },
+        "3": {
+            "source": "wikipedia/Van_Nuys_City_Hall/content.txt",
+            "fact": "Van Nuys City Hall, built in 1932 originally as the Valley Municipal Building, serves various municipal services for the San Fernando Valley residents of the City of Los Angeles such as meeting chambers and public service offices and was dedicated as a Historic-Cultural Monument in 1968. Its 8 stories contain over 49,000 square feet.",
+            "subquestion": "How many stories does <hop 2 answer> contain?",
+            "answer": "8"
+        }
+    },
+    "datasets_used": [
+        "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+        "datagov/arrest-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/arrest-data-from-2010-to-2019/files/yru6-6re4.publisher-view.json",
+        "wikipedia/Van_Nuys/content.txt",
+        "wikipedia/Van_Nuys_City_Hall/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter records where `Arrest Date` contains 2019 and `Charge Group Description` equals Moving Traffic Violations, count rows by `Area Name`, and select the area with the highest count.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Van Nuys"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Identify the municipal building that <hop 1 answer> is home to.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Valley Municipal Building"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Use the article for the building originally known as <hop 2 answer> to identify how many stories it contains.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "8"
+        }
+    ]
+}

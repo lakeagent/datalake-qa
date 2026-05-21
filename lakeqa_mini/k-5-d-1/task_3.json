@@ -1,0 +1,103 @@
+{
+    "question": "I'm tracking crime patterns in Washington, D.C. starting with the ward that contains Adams Morgan. After identifying the most common offense in that ward in 2017, determine which ward had the highest number of incidents for that specific offense in 2018. For that ward, identify the most frequent crime committed in 2019, and tell me the total number of such incidents recorded in 2020. Only report the total number in your response. Your response should be in the format [Answer].",
+    "answer": "10926",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Adams_Morgan/content.txt",
+            "fact": "Adams Morgan is part of Ward 1 of Washington, D.C.",
+            "subquestion": "Which Washington, D.C. ward contains Adams Morgan?",
+            "answer": "1"
+        },
+        "2": {
+            "source": "datagov/crime-incidents-in-2017/files/data.txt",
+            "fact": "import json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom collections import Counter\n\nsource = \"datagov/crime-incidents-in-2017/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"].read()\npayload = json.loads(body)\nfeatures = payload.get(\"features\", [])\n\ncounts = Counter()\nfor feat in features:\n    props = feat.get(\"properties\", {})\n    if str(props.get(\"WARD\", \"\")).strip() == \"1\":\n        offense = str(props.get(\"OFFENSE\", \"\")).strip()\n        if offense:\n            counts[offense] += 1\n\nresult = dict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))\nanswer = next(iter(result))",
+            "subquestion": "In 2017, within Ward <hop 1 answer>, which offense was most common?",
+            "answer": "THEFT F/AUTO"
+        },
+        "3": {
+            "source": "datagov/crime-incidents-in-2018/files/data.txt",
+            "fact": "import json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom collections import Counter\n\nsource = \"datagov/crime-incidents-in-2018/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"].read()\npayload = json.loads(body)\nfeatures = payload.get(\"features\", [])\n\ncounts = Counter()\nfor feat in features:\n    props = feat.get(\"properties\", {})\n    if str(props.get(\"OFFENSE\", \"\")).strip() == \"THEFT F/AUTO\":\n        ward = str(props.get(\"WARD\", \"\")).strip()\n        if ward:\n            counts[ward] += 1\n\nresult = dict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))\nanswer = next(iter(result))",
+            "subquestion": "In 2018, which ward had the most <hop 2 answer> incidents?",
+            "answer": "2"
+        },
+        "4": {
+            "source": "datagov/crime-incidents-in-2019/files/data.txt",
+            "fact": "import json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom collections import Counter\n\nsource = \"datagov/crime-incidents-in-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"].read()\npayload = json.loads(body)\nfeatures = payload.get(\"features\", [])\n\ncounts = Counter()\nfor feat in features:\n    props = feat.get(\"properties\", {})\n    if str(props.get(\"WARD\", \"\")).strip() == \"2\":\n        offense = str(props.get(\"OFFENSE\", \"\")).strip()\n        if offense:\n            counts[offense] += 1\n\nresult = dict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))\nanswer = next(iter(result))",
+            "subquestion": "In 2019, within Ward <hop 3 answer>, which offense was most common?",
+            "answer": "THEFT/OTHER"
+        },
+        "5": {
+            "source": "datagov/crime-incidents-in-2020/files/data.txt",
+            "fact": "import json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"].read()\npayload = json.loads(body)\nfeatures = payload.get(\"features\", [])\n\nresult = [feat for feat in features if str(feat.get(\"properties\", {}).get(\"OFFENSE\", \"\")).strip() == \"THEFT/OTHER\"]\nanswer = len(result)",
+            "subquestion": "In 2020, how many incidents were recorded with offense <hop 4 answer>?",
+            "answer": "10926"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Identify the Washington, D.C. ward that contains Adams Morgan from the cited Wikipedia source."
+            ],
+            "answer": "1"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter features where `WARD` = <hop 1 answer>, group by `OFFENSE`, count incidents, sort descending, and keep the most common offense."
+            ],
+            "answer": "THEFT F/AUTO"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Filter features where `OFFENSE` = <hop 2 answer>, group by `WARD`, count incidents, sort descending, and keep the top ward."
+            ],
+            "answer": "2"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Filter features where `WARD` = <hop 3 answer>, group by `OFFENSE`, count incidents, sort descending, and keep the most common offense."
+            ],
+            "answer": "THEFT/OTHER"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Filter features where `OFFENSE` = <hop 4 answer>, then count incidents."
+            ],
+            "answer": 10926
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Adams_Morgan/content.txt",
+        "datagov/crime-incidents-in-2017/files/data.txt",
+        "datagov/crime-incidents-in-2017/signed-metadata.txt",
+        "datagov/crime-incidents-in-2017/files/38.arcgis-layer.json",
+        "datagov/crime-incidents-in-2018/files/data.txt",
+        "datagov/crime-incidents-in-2018/signed-metadata.txt",
+        "datagov/crime-incidents-in-2018/files/0.arcgis-layer.json",
+        "datagov/crime-incidents-in-2019/files/data.txt",
+        "datagov/crime-incidents-in-2019/signed-metadata.txt",
+        "datagov/crime-incidents-in-2019/files/1.arcgis-layer.json",
+        "datagov/crime-incidents-in-2020/files/data.txt",
+        "datagov/crime-incidents-in-2020/signed-metadata.txt",
+        "datagov/crime-incidents-in-2020/files/2.arcgis-layer.json"
+    ]
+}

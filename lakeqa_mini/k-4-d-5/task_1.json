@@ -1,0 +1,187 @@
+{
+    "question": "I'm researching upstate New York counties (excluding New York City and the Adirondack/Catskill preserves) that strike a balance between conservation and public amenities. Specifically, I'm looking for the two counties that each have at least 3 state parks, 6 farmers markets, and 40 endangered species, while also recording between 800,000 and 2 million state park visitors in 2019 and receiving $10M-$35M in lottery-funded education aid in 2019-2020. For the county among these two with the higher 2020 violent crime count, in what year was the historic Paddock Arcade built in its county seat? Your response should be in the format [Answer].",
+    "answer": "1869",
+    "nodes": {
+        "1": {
+            "source": "datagov/campgrounds-by-county-outside-adirondack-catskill-forest-preserve/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/campgrounds-by-county-outside-adirondack-catskill-forest-preserve/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounts = (\n    df[df[\"Category\"].astype(str).eq(\"State Park\")]\n    .groupby(\"County\", dropna=True)\n    .size()\n    .reset_index(name=\"state_park_count\")\n    .sort_values([\"state_park_count\", \"County\"], ascending=[False, True], kind=\"mergesort\")\n)\n\nanswer = counts.loc[counts[\"state_park_count\"] >= 3, \"County\"].tolist()",
+            "subquestion": "Which Non-NYC NY counties have at least 3 state parks outside the Adirondack and Catskill Forest Preserves?",
+            "answer": [
+                "Jefferson",
+                "St. Lawrence",
+                "Cayuga",
+                "Otsego",
+                "Suffolk",
+                "Tompkins"
+            ]
+        },
+        "2": {
+            "source": "datagov/farmers-markets-in-new-york-state/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/farmers-markets-in-new-york-state/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nnyc_counties = {\"Bronx\", \"Kings\", \"New York\", \"Queens\", \"Richmond\"}\ncounts = (\n    df[~df[\"County\"].isin(nyc_counties)]\n    .groupby(\"County\", dropna=True)\n    .size()\n    .reset_index(name=\"farmers_market_count\")\n    .sort_values([\"farmers_market_count\", \"County\"], ascending=[False, True], kind=\"mergesort\")\n)\n\nanswer = counts.loc[counts[\"farmers_market_count\"] >= 6, \"County\"].tolist()",
+            "subquestion": "For each non-NYC New York county, how many farmers markets are listed in this dataset? Keep the counties with at least 6 markets.",
+            "answer": [
+                "Monroe",
+                "Erie",
+                "Nassau",
+                "Westchester",
+                "Niagara",
+                "Sullivan",
+                "Chautauqua",
+                "Onondaga",
+                "Orange",
+                "Rensselaer"
+            ],
+            "limit": 10
+        },
+        "3": {
+            "source": "datagov/biodiversity-by-county-distribution-of-animals-plants-and-natural-communities/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/biodiversity-by-county-distribution-of-animals-plants-and-natural-communities/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nnyc_counties = {\"Bronx\", \"Kings\", \"New York\", \"Queens\", \"Richmond\"}\ncounts = (\n    df[\n        df[\"NY Listing Status\"].astype(str).eq(\"Endangered\")\n        & ~df[\"County\"].isin(nyc_counties)\n    ]\n    .groupby(\"County\", dropna=True)\n    .size()\n    .reset_index(name=\"endangered_species_count\")\n    .sort_values([\"endangered_species_count\", \"County\"], ascending=[False, True], kind=\"mergesort\")\n)\n\nanswer = counts.loc[counts[\"endangered_species_count\"] >= 40, \"County\"].tolist()",
+            "subquestion": "For each non-NYC New York county, how many counties have at least 40 endangered species?",
+            "answer": [
+                "Suffolk",
+                "Nassau",
+                "Monroe",
+                "Westchester",
+                "Erie",
+                "Essex",
+                "Onondaga",
+                "Ulster",
+                "Orange",
+                "Oneida"
+            ],
+            "limit": 10
+        },
+        "4": {
+            "source": "datagov/state-park-annual-attendance-figures-by-facility-beginning-2003/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/state-park-annual-attendance-figures-by-facility-beginning-2003/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nnyc_counties = {\"Bronx\", \"Kings\", \"New York\", \"Queens\", \"Richmond\"}\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Attendance\"] = pd.to_numeric(df[\"Attendance\"], errors=\"coerce\")\ncounty_totals = (\n    df[df[\"Year\"].eq(2019) & ~df[\"County\"].isin(nyc_counties)]\n    .groupby(\"County\", dropna=True)[\"Attendance\"]\n    .sum()\n    .reset_index(name=\"total_attendance\")\n    .sort_values([\"total_attendance\", \"County\"], ascending=[False, True], kind=\"mergesort\")\n)\n\nanswer = county_totals.loc[\n    county_totals[\"total_attendance\"].between(800000, 2000000),\n    \"County\"\n].tolist()",
+            "subquestion": "For each non-NYC New York county, what is the total 2019 state park attendance across all facilities in this dataset? Keep the counties whose totals are between 800,000 and 2,000,000 inclusive.",
+            "answer": [
+                "Tompkins",
+                "Cattaraugus",
+                "Rockland",
+                "Erie",
+                "Schuyler",
+                "Jefferson",
+                "Livingston/Wyoming"
+            ]
+        },
+        "5": {
+            "source": "datagov/lottery-aid-to-education-beginning-2002/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/lottery-aid-to-education-beginning-2002/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nnyc_counties = {\"Bronx\", \"Kings\", \"New York\", \"Queens\", \"Richmond\"}\ndf[\"Beginning Fiscal Year\"] = pd.to_numeric(df[\"Beginning Fiscal Year\"], errors=\"coerce\")\ndf[\"Ending Fiscal Year\"] = pd.to_numeric(df[\"Ending Fiscal Year\"], errors=\"coerce\")\ndf[\" Amount of Aid \"] = pd.to_numeric(df[\" Amount of Aid \"], errors=\"coerce\")\ncounty_totals = (\n    df[\n        df[\"Beginning Fiscal Year\"].eq(2019)\n        & df[\"Ending Fiscal Year\"].eq(2020)\n        & ~df[\"County\"].isin(nyc_counties)\n    ]\n    .groupby(\"County\", dropna=True)[\" Amount of Aid \"]\n    .sum()\n    .reset_index(name=\"lottery_aid_total\")\n    .sort_values([\"lottery_aid_total\", \"County\"], ascending=[False, True], kind=\"mergesort\")\n)\n\nanswer = county_totals.loc[\n    county_totals[\"lottery_aid_total\"].between(10000000, 35000000),\n    \"County\"\n].tolist()",
+            "subquestion": "For each non-NYC New York county, what is the total amount of lottery-funded education aid amount in 2019-2020? Keep the counties whose totals are between $10,000,000 and $35,000,000 inclusive.",
+            "answer": [
+                "Chautauqua",
+                "Rensselaer",
+                "Jefferson",
+                "Ulster",
+                "Saint Lawrence",
+                "Steuben",
+                "Wayne",
+                "Cattaraugus",
+                "Ontario",
+                "Chemung"
+            ],
+            "limit": 10
+        },
+        "6": {
+            "source": "wikipedia/Jefferson_County,_New_York/content.txt",
+            "fact": "Its county seat is Watertown.",
+            "subquestion": "What is the county seat of Jefferson County in <hop 1 answer>?",
+            "answer": "Watertown"
+        },
+        "7": {
+            "source": "wikipedia/Tompkins_County,_New_York/content.txt",
+            "fact": "The county seat is Ithaca.",
+            "subquestion": "What is the county seat of Tompkins County in <hop 1 answer>?",
+            "answer": "Ithaca"
+        },
+        "8": {
+            "source": "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Violent Count\"] = pd.to_numeric(df[\"Violent Count\"], errors=\"coerce\")\ncounts = (\n    df[df[\"Year\"].eq(2020) & df[\"County\"].isin([\"Jefferson\", \"Tompkins\"])]\n    [[\"County\", \"Violent Count\"]]\n    .sort_values([\"Violent Count\", \"County\"], ascending=[False, True], kind=\"mergesort\")\n    .reset_index(drop=True)\n)\n\nanswer = counts.iloc[0][\"County\"] if not counts.empty else \"\"",
+            "subquestion": "Among <hop 1 answer>, which county had more violent crimes in 2020?",
+            "answer": "Jefferson"
+        },
+        "9": {
+            "source": "wikipedia/Watertown,_New_York/content.txt",
+            "fact": "Watertown was incorporated as a village in 1816. In 1869, it reincorporated as a city.",
+            "subquestion": "What year was the county seat of <hop 3 answer> incorporated as a city?",
+            "answer": "1869"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Jefferson_County,_New_York/content.txt",
+        "wikipedia/Tompkins_County,_New_York/content.txt",
+        "wikipedia/Watertown,_New_York/content.txt",
+        "datagov/campgrounds-by-county-outside-adirondack-catskill-forest-preserve/files/rows.txt",
+        "datagov/campgrounds-by-county-outside-adirondack-catskill-forest-preserve/signed-metadata.txt",
+        "datagov/campgrounds-by-county-outside-adirondack-catskill-forest-preserve/files/5zxz-z3ci.publisher-view.json",
+        "datagov/farmers-markets-in-new-york-state/files/rows.txt",
+        "datagov/farmers-markets-in-new-york-state/signed-metadata.txt",
+        "datagov/farmers-markets-in-new-york-state/files/qq4h-8p86.publisher-view.json",
+        "datagov/biodiversity-by-county-distribution-of-animals-plants-and-natural-communities/files/rows.txt",
+        "datagov/biodiversity-by-county-distribution-of-animals-plants-and-natural-communities/signed-metadata.txt",
+        "datagov/biodiversity-by-county-distribution-of-animals-plants-and-natural-communities/files/tk82-7km5.publisher-view.json",
+        "datagov/state-park-annual-attendance-figures-by-facility-beginning-2003/files/rows.txt",
+        "datagov/state-park-annual-attendance-figures-by-facility-beginning-2003/signed-metadata.txt",
+        "datagov/state-park-annual-attendance-figures-by-facility-beginning-2003/files/8f3n-xj78.publisher-view.json",
+        "datagov/lottery-aid-to-education-beginning-2002/files/rows.txt",
+        "datagov/lottery-aid-to-education-beginning-2002/signed-metadata.txt",
+        "datagov/lottery-aid-to-education-beginning-2002/files/9ypc-vjiq.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/signed-metadata.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/DCJS_IndexCrimeRatesByCounty_DataDictionary.pdf"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Category` equals `State Park`, group by `County`, count rows, and keep counties with at least 3 state parks.",
+                "Node 2: Group non-NYC rows by `County`, count farmers markets, and keep counties with at least 6 markets.",
+                "Node 3: Filter rows where `NY Listing Status` equals `Endangered`, exclude NYC counties, group by `County`, count rows, and keep counties with counts at least 40.",
+                "Node 4: Filter rows where `Year` equals 2019, group by `County`, sum `Attendance`, and keep counties with totals between 800000 and 2000000 inclusive.",
+                "Node 5: Filter rows where `Beginning Fiscal Year` equals 2019 and `Ending Fiscal Year` equals 2020, group by `County`, sum ` Amount of Aid `, and keep counties with totals between 10000000 and 35000000 inclusive.",
+                "Hop result: semantic intersection of <node 1 answer>, <node 2 answer>, <node 3 answer>, <node 4 answer>, and <node 5 answer> = Jefferson; Tompkins."
+            ],
+            "answer": "Jefferson; Tompkins"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 6: Jefferson County is a county in the U.S. state of New York. Its county seat is Watertown.",
+                "Node 7: Tompkins County is a county in the U.S. state of New York. The county seat is Ithaca."
+            ],
+            "answer": "Watertown; Ithaca"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Filter rows where `Year` equals 2020 and `County` is in <hop 1 answer>, keep `County` and `Violent Count`, and select the county with the higher violent crime count."
+            ],
+            "answer": "Jefferson"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: Watertown was incorporated as a village in 1816. In 1869, it reincorporated as a city."
+            ],
+            "answer": "1869"
+        }
+    ]
+}

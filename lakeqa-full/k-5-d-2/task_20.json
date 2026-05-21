@@ -1,0 +1,165 @@
+{
+  "question": "Identify the DC Council member who represents the ward that, among the top two wards, recorded both the highest average violent crimes, and the higher average 311 service requests from 2019 through 2020. Which university did this council member attend for graduate studies? How many years after that university's men's basketball program began competing did it win its national championship? Your response should be in the format [Answer].",
+  "answer": 77,
+  "nodes": {
+    "1": {
+      "source": "datagov/crime-incidents-in-2019/files/data.txt",
+      "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.BytesIO(obj[\"Body\"].read()))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.split(\".\")[-1] for col in df.columns]\nviolent_offenses = [\"HOMICIDE\", \"ASSAULT W/DANGEROUS WEAPON\", \"ROBBERY\", \"SEX ABUSE\"]\ncounts = df[df[\"OFFENSE\"].isin(violent_offenses)].groupby(\"WARD\").size().sort_index()\nanswer = {str(k): int(v) for k, v in counts.items()}\n",
+      "subquestion": "In 2019, what were the violent-crime counts for each DC ward?",
+      "answer": {
+        "1": 603,
+        "2": 452,
+        "3": 89,
+        "4": 260,
+        "5": 685,
+        "6": 417,
+        "7": 905,
+        "8": 765
+      }
+    },
+    "2": {
+      "source": "datagov/crime-incidents-in-2020/files/data.txt",
+      "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.BytesIO(obj[\"Body\"].read()))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.split(\".\")[-1] for col in df.columns]\nviolent_offenses = [\"HOMICIDE\", \"ASSAULT W/DANGEROUS WEAPON\", \"ROBBERY\", \"SEX ABUSE\"]\ncounts = df[df[\"OFFENSE\"].isin(violent_offenses)].groupby(\"WARD\").size().sort_index()\nanswer = {str(k): int(v) for k, v in counts.items()}\n",
+      "subquestion": "In 2020, what were the violent-crime counts for each DC ward?",
+      "answer": {
+        "1": 435,
+        "2": 289,
+        "3": 68,
+        "4": 286,
+        "5": 680,
+        "6": 395,
+        "7": 945,
+        "8": 907
+      }
+    },
+    "3": {
+      "source": "datagov/311-city-service-requests-in-2019/files/data.txt",
+      "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/311-city-service-requests-in-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.BytesIO(obj[\"Body\"].read()))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.split(\".\")[-1] for col in df.columns]\nward_series = df[\"WARD\"].astype(str).str.strip()\nward_series = ward_series.str.replace(r\"^Ward\\s+\", \"\", regex=True)\nvalid_wards = [str(i) for i in range(1, 9)]\ncounts = ward_series[ward_series.isin(valid_wards)].value_counts().sort_index()\nanswer = {str(k): int(v) for k, v in counts.items()}\n",
+      "subquestion": "In 2019, how many DC 311 service requests were recorded for each ward?",
+      "answer": {
+        "1": 39631,
+        "2": 57766,
+        "3": 32841,
+        "4": 45109,
+        "5": 49383,
+        "6": 62290,
+        "7": 42326,
+        "8": 35025
+      }
+    },
+    "4": {
+      "source": "datagov/311-city-service-requests-in-2020/files/data.txt",
+      "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/311-city-service-requests-in-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.BytesIO(obj[\"Body\"].read()))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.split(\".\")[-1] for col in df.columns]\nward_series = df[\"WARD\"].astype(str).str.strip()\nward_series = ward_series.str.replace(r\"^Ward\\s+\", \"\", regex=True)\nvalid_wards = [str(i) for i in range(1, 9)]\ncounts = ward_series[ward_series.isin(valid_wards)].value_counts().sort_index()\nanswer = {str(k): int(v) for k, v in counts.items()}\n",
+      "subquestion": "In 2020, how many DC 311 service requests were recorded for each ward?",
+      "answer": {
+        "1": 31617,
+        "2": 30400,
+        "3": 28823,
+        "4": 45816,
+        "5": 45583,
+        "6": 48481,
+        "7": 36113,
+        "8": 37124
+      }
+    },
+    "5": {
+      "source": "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+      "fact": "Ward 7 Councilmember: Wendell Felder. Ward 7 has a population of 77,456 (2022).",
+      "subquestion": "Who represents <hop 2 answer> on the DC Council?",
+      "answer": "Wendell Felder"
+    },
+    "6": {
+      "source": "wikipedia/Wendell_Felder/content.txt",
+      "fact": "Wendell Felder received a B.S. from Bowie State University and a M.A. from Georgetown University.",
+      "subquestion": "Which university did <hop 3 answer> attend for graduate studies?",
+      "answer": "Georgetown University"
+    },
+    "7": {
+      "source": "wikipedia/Georgetown_Hoyas_men's_basketball/content.txt",
+      "fact": "The Georgetown Hoyas men's basketball program represents Georgetown University in NCAA Division I men's intercollegiate basketball and the Big East Conference. Georgetown has competed in men's college basketball since 1907. Georgetown won the national championship in 1984.",
+      "subquestion": "For <hop 4 answer>'s men's basketball program, what years mark when it began competing and when it won its national championship?",
+      "answer": {
+        "began_competing": 1907,
+        "national_championship": 1984
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `OFFENSE` is in {HOMICIDE, ASSAULT W/DANGEROUS WEAPON, ROBBERY, SEX ABUSE}, count records by `WARD`, and return the 2019 ward-level counts.",
+        "Node 2: Filter rows where `OFFENSE` is in {HOMICIDE, ASSAULT W/DANGEROUS WEAPON, ROBBERY, SEX ABUSE}, count records by `WARD`, and return the 2020 ward-level counts.",
+        "Hop result: top 2 wards by avg violent crime = {Ward 7: (905 + 945) / 2 = 925, Ward 8: (765 + 907) / 2 = 836}"
+      ],
+      "answer": "Ward 7, Ward 8"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 3: Normalize `WARD` to ward numbers 1 through 8, count records by `WARD`, and return the 2019 ward-level 311 request counts.",
+        "Node 4: Normalize `WARD` to ward numbers 1 through 8, count records by `WARD`, and return the 2020 ward-level 311 request counts.",
+        "Hop result: higher avg 311 requests among <hop 1 answer> = {Ward 7: (42,326 + 36,113) / 2 = 39,219.5, Ward 8: (35,025 + 37,124) / 2 = 36,074.5} -> Ward 7"
+      ],
+      "answer": "Ward 7"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: Wendell Felder represents <hop 2 answer> on the DC Council.",
+        "Hop result: Wendell Felder"
+      ],
+      "answer": "Wendell Felder"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: Georgetown University is <hop 3 answer>'s graduate university.",
+        "Hop result: Georgetown University"
+      ],
+      "answer": "Georgetown University"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: <hop 4 answer>'s men's basketball program began competing in `1907` and won its national championship in `1984`.",
+        "Hop result: `1984 - 1907 = 77`."
+      ],
+      "answer": 77
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+    "wikipedia/Wendell_Felder/content.txt",
+    "datagov/crime-incidents-in-2019/files/data.txt",
+    "datagov/crime-incidents-in-2019/signed-metadata.txt",
+    "datagov/crime-incidents-in-2019/files/1.arcgis-layer.json",
+    "datagov/crime-incidents-in-2020/files/data.txt",
+    "datagov/crime-incidents-in-2020/signed-metadata.txt",
+    "datagov/crime-incidents-in-2020/files/2.arcgis-layer.json",
+    "datagov/311-city-service-requests-in-2019/files/data.txt",
+    "datagov/311-city-service-requests-in-2019/signed-metadata.txt",
+    "datagov/311-city-service-requests-in-2019/files/10.arcgis-layer.json",
+    "datagov/311-city-service-requests-in-2020/files/data.txt",
+    "datagov/311-city-service-requests-in-2020/signed-metadata.txt",
+    "datagov/311-city-service-requests-in-2020/files/11.arcgis-layer.json",
+    "wikipedia/Georgetown_Hoyas_men's_basketball/content.txt"
+  ]
+}

@@ -1,0 +1,108 @@
+{
+    "question": "I'm analyzing police activity in the capital of Texas. For 2023, I need to know which patrol sector had the highest volume of police dispatch incidents. Within that sector, which city council district recorded the most use-of-force incidents? Finally, for that specific council district, which sector conducted the most searches in 2023, and how many total complaints were filed against that sector in 2024? Only report the number of total complaints. Your response should be in the format [Answer].",
+    "answer": "52",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Austin,_Texas/content.txt",
+            "fact": "Austin is the capital city of the U.S. state of Texas.",
+            "subquestion": "What city is the capital of Texas?",
+            "answer": "Austin"
+        },
+        "2": {
+            "source": "datagov/apd-computer-aided-dispatch-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/apd-computer-aided-dispatch-incidents/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.loc[df[\"Response Year\"] == 2023, [\"Sector\"]]\n      .groupby(\"Sector\", dropna=False)\n      .size()\n      .reset_index(name=\"incident_count\")\n      .sort_values([\"incident_count\", \"Sector\"], ascending=[False, True])\n      .reset_index(drop=True)\n)\n\nanswer = result.iloc[0][\"Sector\"]\n",
+            "subquestion": "For 2023 <hop 1 answer> police dispatch incidents, which sector has the most incidents?",
+            "answer": "Edward"
+        },
+        "3": {
+            "source": "datagov/apd-use-of-force/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/apd-use-of-force/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Occurred Date\"] = pd.to_datetime(df[\"Occurred Date\"], errors=\"coerce\")\n\nresult = (\n    df.loc[(df[\"Sector\"] == \"Edward\") & (df[\"Occurred Date\"].dt.year == 2023), [\"Council District\"]]\n      .groupby(\"Council District\", dropna=False)\n      .size()\n      .reset_index(name=\"incident_count\")\n      .sort_values([\"incident_count\", \"Council District\"], ascending=[False, True])\n      .reset_index(drop=True)\n)\n\nanswer = int(result.iloc[0][\"Council District\"])\n",
+            "subquestion": "In 2023 APD use-of-force entries within sector <hop 2 answer>, which council district has the most incidents?",
+            "answer": 4
+        },
+        "4": {
+            "source": "datagov/apd-searches-by-type/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/apd-searches-by-type/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.loc[(df[\"Occurred Year\"] == 2023) & (df[\"Council District\"] == 4), [\"Sector\"]]\n      .groupby(\"Sector\", dropna=False)\n      .size()\n      .reset_index(name=\"search_count\")\n      .sort_values([\"search_count\", \"Sector\"], ascending=[False, True])\n      .reset_index(drop=True)\n)\n\nanswer = result.iloc[0][\"Sector\"]\n",
+            "subquestion": "In 2023 APD search entries within council district <hop 3 answer>, which sector has the most searches?",
+            "answer": "Edward"
+        },
+        "5": {
+            "source": "datagov/apd-complaints-by-sector/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/apd-complaints-by-sector/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = df.loc[(df[\"Occurred Year\"] == 2024) & (df[\"Sector\"] == \"Edward\"), \"Total Complaints\"].sum()",
+            "subquestion": "In 2024 complaints-by-sector data, what is the total number of complaints for sector <hop 4 answer>?",
+            "answer": 52
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Austin,_Texas/content.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/files/rows.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/signed-metadata.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/files/22de-7rzg.publisher-view.json",
+        "datagov/apd-use-of-force/files/rows.txt",
+        "datagov/apd-use-of-force/signed-metadata.txt",
+        "datagov/apd-use-of-force/files/8dc8-gj97.txt",
+        "datagov/apd-searches-by-type/files/rows.txt",
+        "datagov/apd-searches-by-type/signed-metadata.txt",
+        "datagov/apd-searches-by-type/files/j8ta-6rms.publisher-view.json",
+        "datagov/apd-complaints-by-sector/files/rows.txt",
+        "datagov/apd-complaints-by-sector/signed-metadata.txt",
+        "datagov/apd-complaints-by-sector/files/uptr-vfp2.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Austin is the capital city of Texas.",
+                "Hop result: The capital of Texas is `Austin`."
+            ],
+            "answer": "Austin"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `Response Year` equals `2023`, count rows by `Sector`, sort descending by the count, and keep the top sector.",
+                "Hop result: The sector with the highest number of CAD incidents in 2023 is `Edward`."
+            ],
+            "answer": "Edward"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where the year of `Occurred Date` equals `2023` and `Sector` equals <hop 2 answer>, count rows by `Council District`, sort descending by the count, and keep the top district.",
+                "Hop result: Within sector <hop 2 answer>, the council district with the most use-of-force incidents is `4`."
+            ],
+            "answer": 4
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Filter rows where `Occurred Year` equals `2023` and `Council District` equals <hop 3 answer>, count rows by `Sector`, sort descending by the count, and keep the top sector.",
+                "Hop result: Within council district <hop 3 answer>, the sector with the most searches is `Edward`."
+            ],
+            "answer": "Edward"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Filter rows where `Occurred Year` equals `2024` and `Sector` equals <hop 4 answer>, sum `Total Complaints`, and return the total.",
+                "Hop result: The total number of complaints filed in 2024 for sector <hop 4 answer> is `52`."
+            ],
+            "answer": 52
+        }
+    ]
+}

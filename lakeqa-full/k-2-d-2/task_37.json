@@ -1,0 +1,73 @@
+{
+    "question": "First identify the state that appears in both of these data.gov-derived groups: In 2017, which states had at least 7 Medicaid managed care arrangements, with at least 4 of them requiring enrollee experience survey results as part of quality oversight; and For the 2021 measures about mental health and substance use care, which states were on average at least 4 points better than the middle reported value once each measure is interpreted so better performance always produces a positive difference. After identifying that state, what drink is listed as the state drink of that state? Your response should be in the format [Answer].",
+    "answer": "Coffee Milk",
+    "nodes": {
+        "1": {
+            "source": "datagov/2017-managed-care-programs-by-state/files/2017-managed-care-programs-by-state.hc9x-7kex.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2017-managed-care-programs-by-state/files/2017-managed-care-programs-by-state.hc9x-7kex.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[df[\"State\"].notna()].copy()\nresult = (\n    filtered.groupby(\"State\", dropna=False)\n    .agg(\n        program_count=(\"State\", \"size\"),\n        cahps_required_count=(\n            \"Quality assurance and improvement: CAHPS data required?\",\n            lambda s: s.astype(str).str.strip().eq(\"Yes\").sum(),\n        ),\n    )\n    .reset_index()\n)\nresult = result[(result[\"program_count\"] >= 7) & (result[\"cahps_required_count\"] >= 4)]\nresult = result.sort_values([\"State\"], ascending=[True]).reset_index(drop=True)\nanswer = result[\"State\"].tolist()",
+            "subquestion": "In 2017, which states had at least 7 Medicaid managed care arrangements, with at least 4 of them requiring enrollee experience survey results as part of quality oversight?",
+            "answer": [
+                "California",
+                "Rhode Island",
+                "Texas"
+            ]
+        },
+        "2": {
+            "source": "datagov/2021-child-and-adult-health-care-quality-measures-quality/files/2021-child-and-adult-health-care-quality-measures_0.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2021-child-and-adult-health-care-quality-measures-quality/files/2021-child-and-adult-health-care-quality-measures_0.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"Domain\"] == \"Behavioral Health Care\")\n    & (df[\"State\"].notna())\n].copy()\nfiltered[\"State Rate\"] = pd.to_numeric(filtered[\"State Rate\"], errors=\"coerce\")\nfiltered[\"Median\"] = pd.to_numeric(filtered[\"Median\"], errors=\"coerce\")\nfiltered = filtered[\n    filtered[\"State Rate\"].notna()\n    & filtered[\"Median\"].notna()\n].copy()\nfiltered[\"gap_vs_median\"] = filtered.apply(\n    lambda row: row[\"State Rate\"] - row[\"Median\"]\n    if row[\"Measure Type\"] == \"Higher rates are better for this measure\"\n    else row[\"Median\"] - row[\"State Rate\"],\n    axis=1,\n)\nresult = (\n    filtered.groupby(\"State\", dropna=False)\n    .agg(\n        measure_count=(\"State\", \"size\"),\n        avg_gap_vs_median=(\"gap_vs_median\", \"mean\"),\n    )\n    .reset_index()\n)\nresult = result[result[\"avg_gap_vs_median\"] >= 4]\nresult = result.sort_values([\"State\"], ascending=[True]).reset_index(drop=True)\nanswer = result[\"State\"].tolist()",
+            "subquestion": "For the 2021 measures about mental health and substance use care, which states were on average at least 4 points better than the middle reported value once each measure is interpreted so better performance always produces a positive difference?",
+            "answer": [
+                "Arizona",
+                "Connecticut",
+                "Maine",
+                "Massachusetts",
+                "New Hampshire",
+                "New York",
+                "Ohio",
+                "Rhode Island",
+                "Vermont"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/List_of_Rhode_Island_state_symbols/content.txt",
+            "fact": "The List of Rhode Island state symbols page lists Drink: Coffee Milk.",
+            "subquestion": "What drink is listed as the state drink of <hop 1 answer>?",
+            "answer": "Coffee Milk"
+        }
+    },
+    "datasets_used": [
+        "datagov/2017-managed-care-programs-by-state/files/2017-managed-care-programs-by-state.hc9x-7kex.txt",
+        "datagov/2017-managed-care-programs-by-state/signed-metadata.txt",
+        "datagov/2017-managed-care-programs-by-state/files/2017-medicaid-managed-care-enrollment-report.pdf",
+        "datagov/2021-child-and-adult-health-care-quality-measures-quality/files/2021-child-and-adult-health-care-quality-measures_0.txt",
+        "datagov/2021-child-and-adult-health-care-quality-measures-quality/signed-metadata.txt",
+        "datagov/2021-child-and-adult-health-care-quality-measures-quality/files/quality-measures-2019-2022-data-dictionary.json",
+        "wikipedia/List_of_Rhode_Island_state_symbols/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `State` is present, aggregate by `State` to get total program count and the count of rows where `Quality assurance and improvement: CAHPS data required?` = `Yes`, and keep states with at least 7 programs and at least 4 CAHPS-required programs.",
+                "Node 2: Filter rows where `Domain` = `Behavioral Health Care` and both `State Rate` and `Median` are numeric, compute each row's direction-adjusted gap versus the median as `State Rate - Median` when `Measure Type` says higher rates are better and `Median - State Rate` otherwise, aggregate by `State` to get each state's average direction-adjusted gap, and keep states with average gap at least 4.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Rhode Island."
+            ],
+            "answer": "Rhode Island"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: The List of Rhode Island state symbols page identifies Coffee Milk as the state drink of the computed state.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Coffee Milk"
+        }
+    ]
+}

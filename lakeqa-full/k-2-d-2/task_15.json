@@ -1,0 +1,79 @@
+{
+    "question": "I'm researching a state that was below the reported median on both the measure for staying on prescribed antidepressant treatment and the measure for receiving follow-up mental health care after a hospitalization for mental illness in the 2015 behavioral health quality measures, and also had at least 500 drug-poisoning deaths in 2016 together with an age-adjusted drug-poisoning death rate of at least 25 per 100,000 residents for both sexes and all ages combined. Which state is it? Respond with [Answer]. After finding that, what is the highest point in that state? Your response should be in the format [Answer].",
+    "answer": "Wheeler Peak",
+    "nodes": {
+        "1": {
+            "source": "datagov/2015-child-and-adult-health-care-quality-measures-08da6/files/2015-child-and-adult-health-care-quality-measures.7kj7-m9ih.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2015-child-and-adult-health-care-quality-measures-08da6/files/2015-child-and-adult-health-care-quality-measures.7kj7-m9ih.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"Domain\"] == \"Behavioral Health Care\")\n    & (df[\"Measure Name\"].isin([\n        \"Antidepressant Medication Management\",\n        \"Follow-Up After Hospitalization for Mental Illness\",\n    ]))\n    & (df[\"State\"] != \"United States\")\n].copy()\n\nfiltered[\"State Rate\"] = pd.to_numeric(filtered[\"State Rate\"], errors=\"coerce\")\nfiltered[\"Median\"] = pd.to_numeric(filtered[\"Median\"], errors=\"coerce\")\nfiltered = filtered.dropna(subset=[\"State Rate\", \"Median\"])\nfiltered[\"below_median\"] = filtered[\"State Rate\"] < filtered[\"Median\"]\n\namm_states = set(\n    filtered[\n        (filtered[\"Measure Name\"] == \"Antidepressant Medication Management\")\n        & (filtered[\"below_median\"])\n    ][\"State\"]\n)\nfuh_states = set(\n    filtered[\n        (filtered[\"Measure Name\"] == \"Follow-Up After Hospitalization for Mental Illness\")\n        & (filtered[\"below_median\"])\n    ][\"State\"]\n)\n\nanswer = sorted(amm_states & fuh_states)",
+            "subquestion": "Which states were below the reported median on both the measure for staying on prescribed antidepressant treatment and the measure for receiving follow-up mental health care after a hospitalization for mental illness in the 2015 behavioral health quality measures?",
+            "answer": [
+                "Alabama",
+                "Arkansas",
+                "District of Columbia",
+                "Illinois",
+                "Iowa",
+                "Louisiana",
+                "Missouri",
+                "New Mexico",
+                "North Carolina",
+                "Texas",
+                "Virginia"
+            ]
+        },
+        "2": {
+            "source": "datagov/nchs-drug-poisoning-mortality-by-state-united-states-07d29/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nchs-drug-poisoning-mortality-by-state-united-states-07d29/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"Year\"] == 2016)\n    & (df[\"Sex\"] == \"Both Sexes\")\n    & (df[\"Age Group\"] == \"All Ages\")\n    & (df[\"Race and Hispanic Origin\"] == \"All Races-All Origins\")\n    & (df[\"State\"] != \"United States\")\n].copy()\n\nfiltered[\"Age-adjusted Rate\"] = pd.to_numeric(filtered[\"Age-adjusted Rate\"], errors=\"coerce\")\nfiltered[\"Deaths\"] = pd.to_numeric(filtered[\"Deaths\"], errors=\"coerce\")\nfiltered = filtered.dropna(subset=[\"Age-adjusted Rate\", \"Deaths\"])\n\nanswer = sorted(\n    filtered[\n        (filtered[\"Age-adjusted Rate\"] >= 25)\n        & (filtered[\"Deaths\"] >= 500)\n    ][\"State\"].tolist()\n)",
+            "subquestion": "Which states had at least 500 drug-poisoning deaths in 2016 together with an age-adjusted drug-poisoning death rate of at least 25 per 100,000 residents for both sexes and all ages combined?",
+            "answer": [
+                "Connecticut",
+                "Kentucky",
+                "Maryland",
+                "Massachusetts",
+                "New Mexico",
+                "Ohio",
+                "Pennsylvania",
+                "West Virginia"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/New_Mexico/content.txt",
+            "fact": "The highest point is Wheeler Peak at over in the Sangre de Cristo Mountains, while the lowest is the Red Bluff Reservoir at around , in the southeastern corner of the state.",
+            "subquestion": "What is the highest point in <hop 1 answer>?",
+            "answer": "Wheeler Peak"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Domain` = `Behavioral Health Care` and `Measure Name` is either `Antidepressant Medication Management` or `Follow-Up After Hospitalization for Mental Illness`, exclude `State` = `United States`, convert `State Rate` and `Median` to numeric, and keep states having at least one below-median row for each measure family.",
+                "Node 2: Filter rows where `Year` = 2016, `Sex` = `Both Sexes`, `Age Group` = `All Ages`, `Race and Hispanic Origin` = `All Races-All Origins`, and `State` != `United States`, convert `Age-adjusted Rate` and `Deaths` to numeric, and keep states where age-adjusted rate is at least 25 and deaths are at least 500.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = New Mexico."
+            ],
+            "answer": "New Mexico"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Wheeler Peak is the highest point in <hop 1 answer>.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Wheeler Peak"
+        }
+    ],
+    "datasets_used": [
+        "datagov/2015-child-and-adult-health-care-quality-measures-08da6/files/2015-child-and-adult-health-care-quality-measures.7kj7-m9ih.txt",
+        "datagov/2015-child-and-adult-health-care-quality-measures-08da6/signed-metadata.txt",
+        "datagov/2015-child-and-adult-health-care-quality-measures-08da6/files/quality-measures-2014-2015-data-dictionary.json",
+        "datagov/nchs-drug-poisoning-mortality-by-state-united-states-07d29/files/rows.txt",
+        "datagov/nchs-drug-poisoning-mortality-by-state-united-states-07d29/signed-metadata.txt",
+        "wikipedia/New_Mexico/content.txt"
+    ]
+}

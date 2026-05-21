@@ -1,0 +1,130 @@
+{
+    "question": "Among Connecticut towns that ranked in the top 10 in late 2019 for preschool spaces being used, Care 4 Kids enrollment, and licensed child day-care capacity, which one had the highest affordable-housing share in 2023? In that town's county, which towns were in the top five in the 2022-23 school year for both overall attendance so far that year and attendance so far that year among high-needs students? Return only the town names as a semicolon-separated list.",
+    "answer": "Farmington; Glastonbury; Hartland; South Windsor",
+    "nodes": {
+        "1": {
+            "source": "datagov/school-readiness-2018-19-by-town-june/files/rows.txt",
+            "fact": "import io\nimport re\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-readiness-2018-19-by-town-june/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj['Body'].read()),\n    usecols=['Town', 'Total School Readiness Preschool Spaces Utilized (a) 2018-2019'],\n    dtype=str,\n    low_memory=False,\n)\n\ndef normalize_town(value):\n    town = str(value).strip()\n    town = re.sub(r'^x_+', '', town, flags=re.I)\n    town = re.sub(r'\\s*\\([^)]*\\)', '', town).strip()\n    town = re.sub(r'\\s+', ' ', town)\n    return town\n\ndf['Town'] = df['Town'].map(normalize_town)\ndf['utilized_spaces'] = pd.to_numeric(df['Total School Readiness Preschool Spaces Utilized (a) 2018-2019'], errors='coerce')\nfiltered = df[\n    df['Town'].ne('')\n    & df['Town'].ne('Grand Total')\n    & df['utilized_spaces'].notna()\n].copy()\nranked = (\n    filtered.groupby('Town', dropna=True)['utilized_spaces']\n    .max()\n    .reset_index()\n    .sort_values(['utilized_spaces', 'Town'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[9, 'utilized_spaces'] > ranked.loc[10, 'utilized_spaces']\nanswer = '; '.join(ranked.head(10)['Town'].tolist())\n",
+            "subquestion": "In June 2019, which Connecticut towns were in the top 10 for the number of school-readiness preschool spaces being used in the 2018-19 school year?",
+            "answer": "Bridgeport; Waterbury; Hartford; New Haven; New Britain; Norwalk; Stamford; Meriden; Danbury; Bristol"
+        },
+        "2": {
+            "source": "datagov/care-4-kids-c4k-number-of-children-by-town-october-2019/files/rows.txt",
+            "fact": "import io\nimport re\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/care-4-kids-c4k-number-of-children-by-town-october-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj['Body'].read()),\n    usecols=['Town or City', 'Total Number of Children (All Age Groups). Distinct Count, not the sum of columns.'],\n    dtype=str,\n    low_memory=False,\n)\n\ncomparison_towns = [town.strip() for town in str(node_1_answer).split(';') if town.strip()]\nassert len(comparison_towns) == 10\n\ndef normalize_town(value):\n    town = str(value).strip()\n    town = re.sub(r'^x_+', '', town, flags=re.I)\n    town = re.sub(r'\\s*\\([^)]*\\)', '', town).strip()\n    town = re.sub(r'\\s+', ' ', town)\n    return town\n\ndf['Town'] = df['Town or City'].map(normalize_town)\ndf['enrollment'] = pd.to_numeric(\n    df['Total Number of Children (All Age Groups). Distinct Count, not the sum of columns.'],\n    errors='coerce'\n)\nfiltered = df[df['Town'].ne('') & df['enrollment'].notna()].copy()\nranked = (\n    filtered.groupby('Town', dropna=True)['enrollment']\n    .max()\n    .reset_index()\n    .sort_values(['enrollment', 'Town'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[9, 'enrollment'] > ranked.loc[10, 'enrollment']\nanswer = '; '.join(ranked.head(10)['Town'].tolist())\n",
+            "subquestion": "In October 2019, which Connecticut towns were in the top 10 for Care 4 Kids enrollment?",
+            "answer": "New Haven; Bridgeport; Waterbury; Hartford; New Britain; Meriden; West Haven; Manchester; Danbury; East Hartford"
+        },
+        "3": {
+            "source": "datagov/child-day-care-cdc-2019-20-by-town-dec/files/rows.txt",
+            "fact": "import io\nimport re\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/child-day-care-cdc-2019-20-by-town-dec/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj['Body'].read()),\n    usecols=['Town', 'TOTAL CDC SPACES (Capacity)'],\n    dtype=str,\n    low_memory=False,\n)\n\ncomparison_towns_1 = [town.strip() for town in str(node_1_answer).split(';') if town.strip()]\ncomparison_towns_2 = [town.strip() for town in str(node_2_answer).split(';') if town.strip()]\nassert len(comparison_towns_1) == 10\nassert len(comparison_towns_2) == 10\n\ndef normalize_town(value):\n    town = str(value).strip()\n    town = re.sub(r'^x_+', '', town, flags=re.I)\n    town = re.sub(r'\\s*\\([^)]*\\)', '', town).strip()\n    town = re.sub(r'\\s+', ' ', town)\n    return town\n\ndf['Town'] = df['Town'].map(normalize_town)\ndf['capacity'] = pd.to_numeric(df['TOTAL CDC SPACES (Capacity)'], errors='coerce')\nfiltered = df[df['Town'].ne('') & df['capacity'].notna()].copy()\nranked = (\n    filtered.groupby('Town', dropna=True)['capacity']\n    .max()\n    .reset_index()\n    .sort_values(['capacity', 'Town'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[9, 'capacity'] > ranked.loc[10, 'capacity']\nanswer = '; '.join(ranked.head(10)['Town'].tolist())\n",
+            "subquestion": "In December 2019, which Connecticut towns were in the top 10 for licensed child day-care capacity?",
+            "answer": "Bridgeport; Hartford; Stamford; Waterbury; New Haven; Norwalk; Danbury; Enfield; Manchester; New London"
+        },
+        "4": {
+            "source": "datagov/affordable-housing-by-town-2011-present/files/rows.txt",
+            "fact": "import io\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/affordable-housing-by-town-2011-present/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj['Body'].read()),\n    usecols=['Town', 'Year', 'Percent Affordable'],\n    dtype=str,\n    low_memory=False,\n)\n\ncandidates = (\n    {town.strip() for town in str(node_1_answer).split(';') if town.strip()}\n    & {town.strip() for town in str(node_2_answer).split(';') if town.strip()}\n    & {town.strip() for town in str(node_3_answer).split(';') if town.strip()}\n)\n\ndf['Town'] = df['Town'].astype(str).str.strip()\ndf['Year'] = pd.to_numeric(df['Year'], errors='coerce')\ndf['Percent Affordable'] = pd.to_numeric(df['Percent Affordable'], errors='coerce')\nfiltered = df[\n    df['Town'].isin(candidates)\n    & df['Year'].eq(2023)\n    & df['Percent Affordable'].notna()\n].copy()\nranked = filtered.sort_values(['Percent Affordable', 'Town'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nassert ranked.loc[0, 'Percent Affordable'] > ranked.loc[1, 'Percent Affordable']\nanswer = str(ranked.loc[0, 'Town'])\n",
+            "subquestion": "Among the towns that appear in the answers to nodes 1 through 3, which had the highest affordable-housing share in 2023?",
+            "answer": "Hartford"
+        },
+        "5": {
+            "source": "datagov/annual-housing-permit-data-by-town-1990-2021/files/rows.txt",
+            "fact": "import io\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/annual-housing-permit-data-by-town-1990-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj['Body'].read()),\n    usecols=['Town', 'County'],\n    dtype=str,\n    low_memory=False,\n)\n\ntown = str(node_4_answer).strip()\n\ndf['Town'] = df['Town'].astype(str).str.strip()\ndf['County'] = df['County'].astype(str).str.strip()\nfiltered = df[df['Town'].eq(town) & df['County'].ne('')].copy()\ncounty = str(filtered.iloc[0]['County']).strip()\nanswer = county if county.lower().endswith('county') else f'{county} County'\n",
+            "subquestion": "Which county contains the town from node 4?",
+            "answer": "Hartford County"
+        },
+        "6": {
+            "source": "datagov/covid-19-vaccinations-by-town-archive/files/rows.txt",
+            "fact": "import io\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/covid-19-vaccinations-by-town-archive/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj['Body'].read()),\n    usecols=['Town', 'County'],\n    dtype=str,\n    low_memory=False,\n)\n\ncounty = str(node_5_answer).strip()\ncounty = county[:-7].strip() if county.lower().endswith('county') else county\n\ndf['Town'] = df['Town'].astype(str).str.strip()\ndf['County'] = df['County'].astype(str).str.strip()\ntowns = sorted(df.loc[df['County'].eq(county) & df['Town'].ne(''), 'Town'].drop_duplicates().tolist())\nassert 'Hartford' in towns\nassert len(towns) == 29\nanswer = '; '.join(towns)\n",
+            "subquestion": "Which towns are in the county from node 5?",
+            "answer": "Avon; Berlin; Bloomfield; Bristol; Burlington; Canton; East Granby; East Hartford; East Windsor; Enfield; Farmington; Glastonbury; Granby; Hartford; Hartland; Manchester; Marlborough; New Britain; Newington; Plainville; Rocky Hill; Simsbury; South Windsor; Southington; Suffield; West Hartford; Wethersfield; Windsor; Windsor Locks"
+        },
+        "7": {
+            "source": "datagov/school-attendance-by-town-2022-2023/files/rows.txt",
+            "fact": "import io\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-attendance-by-town-2022-2023/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj['Body'].read()),\n    usecols=[\n        'Town name',\n        'Overall 2022-2023 attendance rate - year to date',\n        'High needs student 2022-2023 attendance rate - year to date',\n    ],\n    dtype=str,\n    low_memory=False,\n)\n\ncandidates = [town.strip() for town in str(node_6_answer).split(';') if town.strip()]\n\ndf['Town'] = df['Town name'].astype(str).str.strip()\ndf['overall_attendance'] = pd.to_numeric(df['Overall 2022-2023 attendance rate - year to date'], errors='coerce')\ndf['high_needs_attendance'] = pd.to_numeric(df['High needs student 2022-2023 attendance rate - year to date'], errors='coerce')\nfiltered = df[\n    df['Town'].isin(candidates)\n    & df['overall_attendance'].notna()\n    & df['high_needs_attendance'].notna()\n].copy()\nranked_overall = (\n    filtered.groupby('Town', dropna=True)['overall_attendance']\n    .max()\n    .reset_index()\n    .sort_values(['overall_attendance', 'Town'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nranked_high_needs = (\n    filtered.groupby('Town', dropna=True)['high_needs_attendance']\n    .max()\n    .reset_index()\n    .sort_values(['high_needs_attendance', 'Town'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked_overall.loc[4, 'overall_attendance'] > ranked_overall.loc[5, 'overall_attendance']\nassert ranked_high_needs.loc[4, 'high_needs_attendance'] > ranked_high_needs.loc[5, 'high_needs_attendance']\ntop_overall = set(ranked_overall.head(5)['Town'].tolist())\ntop_high_needs = set(ranked_high_needs.head(5)['Town'].tolist())\nanswer = '; '.join(sorted(top_overall & top_high_needs))\n",
+            "subquestion": "Among the towns from node 6, which were in that county's top five in the 2022-23 school year for both overall attendance so far that year and attendance so far that year among high-needs students? Return the town names as a semicolon-separated list.",
+            "answer": "Farmington; Glastonbury; Hartland; South Windsor"
+        }
+    },
+    "datasets_used": [
+        "datagov/school-readiness-2018-19-by-town-june/files/rows.txt",
+        "datagov/school-readiness-2018-19-by-town-june/signed-metadata.txt",
+        "datagov/care-4-kids-c4k-number-of-children-by-town-october-2019/files/rows.txt",
+        "datagov/care-4-kids-c4k-number-of-children-by-town-october-2019/signed-metadata.txt",
+        "datagov/care-4-kids-c4k-number-of-children-by-town-october-2019/files/q3dy-i22e.publisher-view.json",
+        "datagov/child-day-care-cdc-2019-20-by-town-dec/files/rows.txt",
+        "datagov/child-day-care-cdc-2019-20-by-town-dec/signed-metadata.txt",
+        "datagov/affordable-housing-by-town-2011-present/files/rows.txt",
+        "datagov/affordable-housing-by-town-2011-present/signed-metadata.txt",
+        "datagov/affordable-housing-by-town-2011-present/files/3udy-56vi.txt",
+        "datagov/annual-housing-permit-data-by-town-1990-2021/files/rows.txt",
+        "datagov/annual-housing-permit-data-by-town-1990-2021/signed-metadata.txt",
+        "datagov/annual-housing-permit-data-by-town-1990-2021/files/stm9-38x4.publisher-view.json",
+        "datagov/covid-19-vaccinations-by-town-archive/files/rows.txt",
+        "datagov/covid-19-vaccinations-by-town-archive/signed-metadata.txt",
+        "datagov/covid-19-vaccinations-by-town-archive/files/pdqi-ds7f.txt",
+        "datagov/school-attendance-by-town-2022-2023/files/rows.txt",
+        "datagov/school-attendance-by-town-2022-2023/signed-metadata.txt",
+        "datagov/school-attendance-by-town-2022-2023/files/uuj5-gemt.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: In June 2019, the Connecticut towns with the most 2018-19 school-readiness preschool spaces in use were Bridgeport (1,648), Waterbury (1,328), Hartford (1,282), New Haven (1,001), New Britain (735), Norwalk (636), Stamford (548), Meriden (516), Danbury (416), and Bristol (390).",
+                "Node 2: In October 2019, the Connecticut towns with the highest Care 4 Kids enrollment were New Haven (1,690), Bridgeport (1,560), Waterbury (1,406), Hartford (1,303), New Britain (770), Meriden (614), West Haven (514), Manchester (504), Danbury (447), and East Hartford (424).",
+                "Node 3: In December 2019, the Connecticut towns with the largest licensed child day-care capacity were Bridgeport (593), Hartford (556), Stamford (227), Waterbury (213), New Haven (188), Norwalk (172), Danbury (171), Enfield (126), Manchester (102), and New London (100).",
+                "Hop result: The towns that appear in all three late-2019 top-10 lists are Bridgeport, Waterbury, Hartford, New Haven, and Danbury."
+            ],
+            "answer": "Bridgeport; Waterbury; Hartford; New Haven; Danbury"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Among the five towns from hop 1, Hartford had the highest 2023 affordable-housing share at 39.74%, ahead of New Haven (32.09%), Waterbury (21.27%), Bridgeport (20.68%), and Danbury (10.51%).",
+                "Hop result: Hartford"
+            ],
+            "answer": "Hartford"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In the town-level housing-permit dataset, Hartford is listed in Hartford County.",
+                "Hop result: Hartford County"
+            ],
+            "answer": "Hartford County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: The town-level vaccination archive lists Hartford County towns as Avon, Berlin, Bloomfield, Bristol, Burlington, Canton, East Granby, East Hartford, East Windsor, Enfield, Farmington, Glastonbury, Granby, Hartford, Hartland, Manchester, Marlborough, New Britain, Newington, Plainville, Rocky Hill, Simsbury, South Windsor, Southington, Suffield, West Hartford, Wethersfield, Windsor, and Windsor Locks.",
+                "Hop result: Avon; Berlin; Bloomfield; Bristol; Burlington; Canton; East Granby; East Hartford; East Windsor; Enfield; Farmington; Glastonbury; Granby; Hartford; Hartland; Manchester; Marlborough; New Britain; Newington; Plainville; Rocky Hill; Simsbury; South Windsor; Southington; Suffield; West Hartford; Wethersfield; Windsor; Windsor Locks"
+            ],
+            "answer": "Avon; Berlin; Bloomfield; Bristol; Burlington; Canton; East Granby; East Hartford; East Windsor; Enfield; Farmington; Glastonbury; Granby; Hartford; Hartland; Manchester; Marlborough; New Britain; Newington; Plainville; Rocky Hill; Simsbury; South Windsor; Southington; Suffield; West Hartford; Wethersfield; Windsor; Windsor Locks"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Among the Hartford County towns from hop 4, the top 5 in 2022-23 overall attendance were Glastonbury (0.9502), South Windsor (0.9476), Farmington (0.9475), Hartland (0.9465), and Avon (0.9457). The top 5 in 2022-23 high-needs attendance were Farmington (0.9350), South Windsor (0.9350), Burlington (0.9341), Glastonbury (0.9303), and Hartland (0.9303).",
+                "Hop result: The towns that appear in both county top-5 lists are Farmington, Glastonbury, Hartland, and South Windsor."
+            ],
+            "answer": "Farmington; Glastonbury; Hartland; South Windsor"
+        }
+    ]
+}

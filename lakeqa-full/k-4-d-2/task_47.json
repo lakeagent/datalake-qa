@@ -1,0 +1,119 @@
+{
+  "question": "Identify the NYC high school that was in the top 3 by overall progress score in both the 2011-12 and 2012-13 school years and had an A grade in the 2010-11 Progress Report. Find its ZIP code. Then compare the 2010 census population of the neighborhood whose primary ZIP Code matches that ZIP with the 2010 census population of the neighborhood bordering it to the east. How many more residents did the former neighborhood have? Your response should be in the format [Answer].",
+  "answer": "77319",
+  "nodes": {
+    "1": {
+      "source": "datagov/2011-2012-high-school-progress-report/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2011-2012-high-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nimport re\n\nschool_col = \"School Name\"\noverall_col = \"Overall Score\"\n\nfiltered = df.copy()\nif \"School Type\" in filtered.columns:\n    filtered = filtered[filtered[\"School Type\"].astype(str).str.contains(\"High\", case=False, na=False)]\n\nfiltered[overall_col] = pd.to_numeric(filtered[overall_col], errors=\"coerce\")\nfiltered = filtered.sort_values(overall_col, ascending=False)\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\nanswer = filtered[school_col].dropna().astype(str).head(3).map(normalize_school).tolist()\n",
+      "subquestion": "Which NYC high schools were in the top 3 by overall score in 2011-12?",
+      "answer": [
+        "It Takes a Village Academy",
+        "Manhattan Village Academy",
+        "Academy for Careers in Television and Film"
+      ]
+    },
+    "2": {
+      "source": "datagov/2012-2013-high-school-progress-report/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2012-2013-high-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nimport re\n\nschool_col = \"School Name\"\noverall_col = \"Overall Score\"\n\nfiltered = df.copy()\nif \"School Type\" in filtered.columns:\n    filtered = filtered[filtered[\"School Type\"].astype(str).str.contains(\"High\", case=False, na=False)]\n\nfiltered[overall_col] = pd.to_numeric(filtered[overall_col], errors=\"coerce\")\nfiltered = filtered.sort_values(overall_col, ascending=False)\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s\n\nanswer = filtered[school_col].dropna().astype(str).head(3).map(normalize_school).tolist()\n",
+      "subquestion": "Which NYC high schools were in the top 3 by overall score in 2012-13?",
+      "answer": [
+        "It Takes a Village Academy",
+        "Academy for Careers in Television and Film",
+        "Brooklyn International High School"
+      ]
+    },
+    "3": {
+      "source": "datagov/2013-2014-doe-high-school-performance-directory/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2013-2014-doe-high-school-performance-directory/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['It Takes a Village Academy', 'Manhattan Village Academy', 'Academy for Careers in Television and Film']\nnode_2_answer = ['It Takes a Village Academy', 'Academy for Careers in Television and Film', 'Brooklyn International High School']\n\nimport os\nimport io\nimport re\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s.lower()\n\ncandidate_names = sorted(set(node_1_answer) & set(node_2_answer))\ncandidate_norm_to_name = {normalize_school(x): str(x).strip() for x in candidate_names}\n\nlookup_source = \"datagov/2012-2013-high-school-progress-report/files/rows.txt\"\nlookup_local = lookup_source if os.path.exists(lookup_source) else \"/tmp/k123_data_cache/\" + lookup_source\nif os.path.exists(lookup_local):\n    lookup_df = pd.read_csv(lookup_local, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=lookup_source)\n    lookup_df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nlookup_df[\"_norm_name\"] = lookup_df[\"School Name\"].astype(str).map(normalize_school)\nname_to_dbn = {\n    row[\"_norm_name\"]: str(row[\"DBN\"]).strip()\n    for _, row in lookup_df.iterrows()\n    if row[\"_norm_name\"] in candidate_norm_to_name\n}\n\ncandidate_dbns = set(name_to_dbn.values())\nfiltered = df[\n    df[\"DBN\"].astype(str).str.strip().isin(candidate_dbns)\n    & df[\"Progress_Rpt_10-11\"].astype(str).str.strip().str.upper().eq(\"A\")\n]\n\ndbns = filtered[\"DBN\"].astype(str).str.strip().tolist()\nanswer = [candidate_norm_to_name[norm_name] for norm_name, dbn in name_to_dbn.items() if dbn in dbns]\n",
+      "subquestion": "Which schools from <intersection of node_1, node_2> had an A grade in the 2010-11 Progress Report?",
+      "answer": [
+        "It Takes a Village Academy"
+      ]
+    },
+    "4": {
+      "source": "datagov/2012-2013-school-locations/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2012-2013-school-locations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_3_answer = ['It Takes a Village Academy']\n\nimport re\n\ndef normalize_school(name):\n    s = str(name)\n    s = re.sub(r\"\\s+at\\s+.+$\", \"\", s, flags=re.I)\n    s = re.sub(r\"\\bP\\.?\\s*S\\.?\\s*0*\", \"PS \", s, flags=re.I)\n    s = re.sub(r\"\\s+\", \" \", s).strip()\n    return s.lower()\n\ntarget = node_3_answer[0] if isinstance(node_3_answer, list) and node_3_answer else node_3_answer\ntarget_norm = normalize_school(target)\n\ndf[\"_norm_loc\"] = df[\"LOCATION_NAME\"].astype(str).map(normalize_school)\nrow = df[df[\"_norm_loc\"].eq(target_norm)].iloc[0]\nloc_text = str(row.get(\"Location 1\", \"\"))\nmatch = re.search(r\"\\b(\\d{5})(?:-\\d{4})?\\b\", loc_text)\nif match:\n    answer = match.group(1)\nelse:\n    addr_text = str(row.get(\"PRIMARY_ADDRESS_LINE_1\", \"\"))\n    match2 = re.search(r\"\\b(\\d{5})(?:-\\d{4})?\\b\", addr_text)\n    answer = match2.group(1) if match2 else \"\"\n",
+      "subquestion": "What is the ZIP code of <node_3 answer>?",
+      "answer": "11203"
+    },
+    "5": {
+      "source": "wikipedia/East_Flatbush,_Brooklyn/content.txt",
+      "fact": "East Flatbush is a residential neighborhood in the New York City borough of Brooklyn. East Flatbush is bounded by Crown Heights and Empire Boulevard to the north; Brownsville and East 98th Street to the east; Flatlands, Canarsie and the Long Island Rail Road's Bay Ridge Branch to the south; and the neighborhood of Flatbush and New York Avenue to the west. East Flatbush is a predominantly black neighborhood of African American and Afro-Caribbeans  and has a population of 135,619 as of the 2010 United States census.\n\nEast Flatbush is part of Brooklyn Community District 17, and its primary ZIP Code is 11203. It is patrolled by the 67th Precinct of the New York City Police Department. Politically it is represented by the New York City Council's 40th, 41st, and 45th Districts.\"Current City Council Districts for Kings County\", New York City. Accessed May 5, 2017.",
+      "subquestion": "Which neighborhood has primary ZIP Code <node_4 answer>, what was its 2010 census population, and which neighborhood is listed to its east?",
+      "answer": {
+        "neighborhood": "East Flatbush",
+        "population_2010": 135619,
+        "eastern_neighbor": "Brownsville"
+      }
+    },
+    "6": {
+      "source": "wikipedia/Brownsville,_Brooklyn/content.txt",
+      "fact": "Brownsville is a residential neighborhood in eastern Brooklyn in New York City. The neighborhood is bordered by Crown Heights to the northwest; Bedford–Stuyvesant and the subsection of Ocean Hill to the north; East New York to the east; Canarsie to the south; and East Flatbush to the west.\n\nThe  area that comprises Brownsville has 58,300 residents as of the 2010 United States census, with an estimated population of 128,369 residents in 2019. Founded in its current incarnation in 1858, Brownsville was initially a settlement composed of Jewish factory workers. The neighborhood underwent a major demographic change in the 1950s that saw an influx of African-American residents. Since the late 20th century, Brownsville has consistently held one of the highest poverty and crime rates of any neighborhood in New York City.",
+      "subquestion": "What was the 2010 census population of the eastern neighborhood identified in <node_5 answer>?",
+      "answer": 58300
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Brownsville,_Brooklyn/content.txt",
+    "wikipedia/East_Flatbush,_Brooklyn/content.txt",
+    "datagov/2011-2012-high-school-progress-report/files/rows.txt",
+    "datagov/2011-2012-high-school-progress-report/signed-metadata.txt",
+    "datagov/2012-2013-high-school-progress-report/files/rows.txt",
+    "datagov/2012-2013-high-school-progress-report/signed-metadata.txt",
+    "datagov/2013-2014-doe-high-school-performance-directory/files/rows.txt",
+    "datagov/2013-2014-doe-high-school-performance-directory/files/42et-jh9v.txt",
+    "datagov/2012-2013-school-locations/files/rows.txt",
+    "datagov/2012-2013-school-locations/files/emnd-d8ba.txt",
+    "datagov/2012-2013-school-locations/files/emnd-d8ba.publisher-view.json"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: In 2011-12, the top 3 high schools by overall score were: It Takes a Village Academy (98.7), Manhattan Village Academy (96.6), Academy for Careers in Television and Film (96.6).",
+        "Node 2: In 2012-13, the top 3 high schools by overall score were: It Takes a Village Academy (105.9), Academy for Careers in Television and Film (100.9), Brooklyn International High School (100.5).",
+        "Hop result: report <node_1 answer>, <node_2 answer> as this hop answer."
+      ],
+      "answer": "It Takes a Village Academy and Academy for Careers in Television and Film"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: In 2010-11, 109 NYC high schools had an A grade in Progress Report, including It Takes a Village Academy, Manhattan Village Academy, and Brooklyn International High School. Academy for Careers in Television and Film had N/A (no data) for 2010-11.",
+        "Hop result: report <node_3 answer> as this hop answer."
+      ],
+      "answer": "It Takes a Village Academy"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: Use the school-locations data to find the ZIP code for It Takes a Village Academy.",
+        "Hop result: report <node_4 answer> as this hop answer."
+      ],
+      "answer": "11203"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5: The ZIP code from <hop 3 answer> matches East Flatbush's primary ZIP Code, and East Flatbush had 135,619 residents in the 2010 census. The same evidence lists Brownsville to its east.",
+        "Node 6: Brownsville had 58,300 residents in the 2010 census.",
+        "Hop result: 135,619 - 58,300 = 77,319 more residents."
+      ],
+      "answer": "77319"
+    }
+  ]
+}

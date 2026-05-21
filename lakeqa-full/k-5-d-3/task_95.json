@@ -1,0 +1,135 @@
+{
+  "question": "Harry Mitchell served as mayor of a city. For that city, determine the year with the highest dissatisfied rate for the city's website, the year with the 6th highest yearly dissatisfied rate for the security in parks, and the year with the third highest dissatisfied rate for the city's online services such as registration or payment. Including all those years in total, identify the U.S. state with the third highest total healthcare service utilization rate per 1,000 beneficiaries excluding usage in December in these years. Then, in 2022 Q1, find the U.S. state ranked immediately below that state on the age-adjusted cancer mortality rate for the 3-month period. How many more counties does the latter state have than the former state? Please return only the number in the format [Answer].",
+  "answer": 30,
+  "nodes": {
+    "1": {
+      "source": "wikipedia/Harry_Mitchell/content.txt",
+      "fact": "Re-elected in 1974, Mitchell ran for Mayor of Tempe in 1978, gaining a majority of votes cast in the primary and avoiding a runoff.",
+      "subquestion": "Which city was Harry Mitchell mayor of?",
+      "answer": "Tempe"
+    },
+    "2": {
+      "source": "datagov/2-04-city-website-satisfaction-summary-a0c0e/files/data.txt",
+      "fact": "import io\nimport json\nimport boto3\n\nsource = 'datagov/2-04-city-website-satisfaction-summary-a0c0e/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\n\nnode_1_answer = \"Tempe\"\nfeatures = data[\"features\"]\nbest = max(features, key=lambda item: float(item[\"properties\"].get(\"Dissatisfied\") or 0))\nanswer = str(int(best[\"properties\"][\"Year\"]))\n",
+      "subquestion": "Which year has the highest dissatisfied rate for <hop 1 answer>'s city website?",
+      "answer": "2019"
+    },
+    "3": {
+      "source": "datagov/1-23-feeling-of-safety-in-parks-summary-e4bb8/files/data.txt",
+      "fact": "import io\nimport json\nimport boto3\n\nsource = 'datagov/1-23-feeling-of-safety-in-parks-summary-e4bb8/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\n\nnode_1_answer = \"Tempe\"\nfeatures = data[\"features\"]\nyearly_max = {}\nfor item in features:\n    props = item[\"properties\"]\n    year = int(props[\"Year\"])\n    dissatisfied = float(props.get(\"Dissatisfied\") or 0)\n    yearly_max[year] = max(yearly_max.get(year, float(\"-inf\")), dissatisfied)\nranked = sorted(yearly_max.items(), key=lambda pair: (-pair[1], pair[0]))\nanswer = str(ranked[5][0])\n",
+      "subquestion": "Which year has the 6th highest yearly dissatisfied rate for the security of parks in <hop 1 answer>?",
+      "answer": "2019"
+    },
+    "4": {
+      "source": "datagov/2-05-online-service-satisfaction-summary-1dbc9/files/data.txt",
+      "fact": "import io\nimport json\nimport boto3\n\nsource = 'datagov/2-05-online-service-satisfaction-summary-1dbc9/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\n\nnode_1_answer = \"Tempe\"\nfeatures = [item for item in data[\"features\"] if item[\"properties\"].get(\"Survey_Question\")]\nranked = sorted(features, key=lambda item: (-float(item[\"properties\"].get(\"Dissatisfied\") or 0), int(item[\"properties\"][\"Year\"])))\nanswer = str(int(ranked[2][\"properties\"][\"Year\"]))\n",
+      "subquestion": "Which year has the third highest dissatisfied rate for <hop 1 answer>'s online services including registration or payment?",
+      "answer": "2021"
+    },
+    "5": {
+      "source": "datagov/behavioral-health-servicesprovided-to-the-medicaid-and-chip-population-b6f90/files/Behavioral-Health-Services-Provided-to-the-MedicaidCHIP-Population.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/behavioral-health-servicesprovided-to-the-medicaid-and-chip-population-b6f90/files/Behavioral-Health-Services-Provided-to-the-MedicaidCHIP-Population.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_2_answer = \"2019\"\nnode_3_answer = \"2019\"\nnode_4_answer = \"2021\"\nyears = {str(node_2_answer).strip(), str(node_3_answer).strip(), str(node_4_answer).strip()}\nfiltered = df[df[\"Year\"].isin(years)].copy()\nfiltered = filtered[~filtered[\"Month\"].fillna(\"\").str.endswith(\"12\")].copy()\nfiltered[\"RatePer1000Beneficiaries\"] = pd.to_numeric(filtered[\"RatePer1000Beneficiaries\"], errors=\"coerce\")\nstate_totals = filtered.groupby(\"State\")[\"RatePer1000Beneficiaries\"].sum().sort_values(ascending=False)\nanswer = str(state_totals.index[2])\n",
+      "subquestion": "Which U.S. state has the third highest healthcare service utilization rate per 1,000 beneficiaries in all years from <hop 2 answer>, excluding December usage?",
+      "answer": "Maine"
+    },
+    "6": {
+      "source": "datagov/nchs-vsrr-quarterly-provisional-estimates-for-selected-indicators-of-mortality/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/nchs-vsrr-quarterly-provisional-estimates-for-selected-indicators-of-mortality/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_4_answer = \"2021\"\nnode_5_answer = \"Maine\"\ntarget_year_quarter = f\"{int(str(node_4_answer).strip()) + 1} Q1\"\nrow = df[\n    df[\"Year and Quarter\"].fillna(\"\").eq(target_year_quarter)\n    & df[\"Time Period\"].fillna(\"\").eq(\"3-month period\")\n    & df[\"Cause of Death\"].fillna(\"\").eq(\"Cancer\")\n    & df[\"Rate Type\"].fillna(\"\").eq(\"Age-adjusted\")\n].iloc[0]\nignore_cols = {\n    \"Rate Type\", \"Rate Sex Female\", \"Rate Sex Male\", \"Rate Age 1-4\", \"Rate Age 5-14\", \"Rate Age 15-24\",\n    \"Rate Age 25-34\", \"Rate Age 35-44\", \"Rate Age 45-54\", \"Rate Age 55-64\", \"Rate 65-74\",\n    \"Rate Age 75-84\", \"Rate Age 85 plus\"\n}\nstate_rates = []\nfor col, val in row.items():\n    if not str(col).startswith(\"Rate \") or col in ignore_cols:\n        continue\n    if pd.isna(val) or str(val).strip() == \"\":\n        continue\n    state_rates.append((str(col).replace(\"Rate \", \"\"), float(val)))\nstate_rates.sort(key=lambda item: (-item[1], item[0]))\nrank_map = {state: idx + 1 for idx, (state, _) in enumerate(state_rates)}\nanswer = str(state_rates[rank_map[str(node_5_answer).strip()]][0])\n",
+      "subquestion": "In 2022 Q1, which U.S. state ranked immediately below <hop 3 answer> in the age-adjusted cancer mortality rate for the 3-month period?",
+      "answer": "South Carolina"
+    },
+    "7": {
+      "source": "wikipedia/List_of_counties_in_Maine/content.txt",
+      "fact": "The U.S. state of Maine has sixteen counties.",
+      "subquestion": "How many counties does <hop 3 answer> have?",
+      "answer": 16
+    },
+    "8": {
+      "source": "wikipedia/List_of_counties_in_South_Carolina/content.txt",
+      "fact": "The U.S. state of South Carolina is made up of 46 counties, the maximum allowable by state law.Section 3, Article VIII of the South Carolina Constitution",
+      "subquestion": "How many counties is <hop 4 answer> made up of?",
+      "answer": 46
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Harry_Mitchell/content.txt",
+    "datagov/2-04-city-website-satisfaction-summary-a0c0e/files/data.txt",
+    "datagov/2-04-city-website-satisfaction-summary-a0c0e/signed-metadata.txt",
+    "datagov/2-04-city-website-satisfaction-summary-a0c0e/files/0.arcgis-layer.json",
+    "datagov/1-23-feeling-of-safety-in-parks-summary-e4bb8/files/data.txt",
+    "datagov/1-23-feeling-of-safety-in-parks-summary-e4bb8/signed-metadata.txt",
+    "datagov/1-23-feeling-of-safety-in-parks-summary-e4bb8/files/0.arcgis-layer.json",
+    "datagov/2-05-online-service-satisfaction-summary-1dbc9/files/data.txt",
+    "datagov/2-05-online-service-satisfaction-summary-1dbc9/signed-metadata.txt",
+    "datagov/2-05-online-service-satisfaction-summary-1dbc9/files/0.arcgis-layer.json",
+    "datagov/behavioral-health-servicesprovided-to-the-medicaid-and-chip-population-b6f90/files/Behavioral-Health-Services-Provided-to-the-MedicaidCHIP-Population.txt",
+    "datagov/behavioral-health-servicesprovided-to-the-medicaid-and-chip-population-b6f90/signed-metadata.txt",
+    "datagov/nchs-vsrr-quarterly-provisional-estimates-for-selected-indicators-of-mortality/files/rows.txt",
+    "datagov/nchs-vsrr-quarterly-provisional-estimates-for-selected-indicators-of-mortality/signed-metadata.txt",
+    "wikipedia/List_of_counties_in_Maine/content.txt",
+    "wikipedia/List_of_counties_in_South_Carolina/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Harry Mitchell served as mayor of Tempe.",
+        "Hop result: `Tempe`."
+      ],
+      "answer": "Tempe"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 2: In the city website satisfaction summary for <hop 1 answer>, the highest Dissatisfied value occurs in 2019.",
+        "Node 3: In the feeling of safety in parks summary for <hop 1 answer>, ranking each year by its highest Dissatisfied value gives 2019 as the 6th highest year.",
+        "Node 4: In the online service satisfaction summary for <hop 1 answer>, the third highest Dissatisfied year is 2021.",
+        "Hop result: `2019, 2019, 2021`."
+      ],
+      "answer": "2019, 2019, 2021"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: In the behavioral health services dataset, filtering to the years from <hop 2 answer>, excluding December rows, and summing RatePer1000Beneficiaries by state shows that Maine has the third highest total.",
+        "Hop result: `Maine`."
+      ],
+      "answer": "Maine"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: In 2022 Q1, for the 3-month period and age-adjusted cancer mortality rate, the state ranked immediately below <hop 3 answer> is South Carolina.",
+        "Hop result: `South Carolina`."
+      ],
+      "answer": "South Carolina"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        7,
+        8
+      ],
+      "reasoning": [
+        "Node 7: The state from <hop 3 answer> has 16 counties.",
+        "Node 8: The state from <hop 4 answer> is made up of 46 counties.",
+        "Hop result: 46 - 16 = `30`."
+      ],
+      "answer": 30
+    }
+  ]
+}

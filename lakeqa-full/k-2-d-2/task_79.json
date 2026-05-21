@@ -1,0 +1,80 @@
+{
+  "question": "Find the Connecticut counties that satisfy both criteria: (1) more than 200 accidental overdose deaths in 2020, and (2) assignment to a COVID health-service region with a number above 80. Between the counties with the highest and lowest accidental drug death totals in 2020, which has more cities? Return the county name only. Your response should be in the format [Answer].",
+  "answer": "New Haven County",
+  "nodes": {
+    "1": {
+      "source": "datagov/accidental-drug-related-deaths-2012-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/accidental-drug-related-deaths-2012-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Date\"] = pd.to_datetime(df[\"Date\"], errors=\"coerce\")\ndf_2020 = df[df[\"Date\"].dt.year == 2020].copy()\ndf_2020[\"Residence County\"] = df_2020[\"Residence County\"].fillna(\"\").astype(str).str.strip()\n\ncounty_counts = (\n    df_2020.loc[df_2020[\"Residence County\"] != \"\", \"Residence County\"]\n    .value_counts()\n    .rename_axis(\"county\")\n    .reset_index(name=\"accidental_drug_deaths_2020\")\n)\ncounty_counts[\"county\"] = county_counts[\"county\"].str.title() + \" County\"\nfiltered = county_counts[county_counts[\"accidental_drug_deaths_2020\"] > 200].copy()\nanswer = dict(zip(filtered[\"county\"], filtered[\"accidental_drug_deaths_2020\"]))",
+      "subquestion": "Which Connecticut counties had more than 200 accidental overdose deaths in 2020, and what were those totals?",
+      "answer": {
+        "New Haven County": 383,
+        "Hartford County": 335,
+        "Fairfield County": 208
+      }
+    },
+    "2": {
+      "source": "datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"state\"] == \"Connecticut\") & (df[\"health_service_area_number\"] > 80)].copy()\nanswer = filtered[\"county_name\"].drop_duplicates().tolist()",
+      "subquestion": "Which Connecticut counties were assigned to a COVID health-service region with a number above 80?",
+      "answer": [
+        "Fairfield County",
+        "New Haven County",
+        "Middlesex County",
+        "Litchfield County"
+      ]
+    },
+    "3": {
+      "source": "wikipedia/New_Haven_County,_Connecticut/content.txt",
+      "fact": "### Cities\n\n* Ansonia\n* Derby\n* Meriden\n* Milford\n* New Haven\n* Waterbury\n* West Haven",
+      "subquestion": "How many cities are in the higher-accidental-drug-death county from <hop 1 answer>?",
+      "answer": 7
+    },
+    "4": {
+      "source": "wikipedia/Fairfield_County,_Connecticut/content.txt",
+      "fact": "Cities\n\n* Bridgeport\n* Danbury\n* Norwalk\n* Shelton\n* Stamford",
+      "subquestion": "How many cities are in the lower-accidental-drug-death county from <hop 1 answer>?",
+      "answer": 5
+    }
+  },
+  "datasets_used": [
+    "datagov/accidental-drug-related-deaths-2012-2018/files/rows.txt",
+    "datagov/accidental-drug-related-deaths-2012-2018/signed-metadata.txt",
+    "datagov/accidental-drug-related-deaths-2012-2018/files/rybz-nyjw.publisher-view.json",
+    "datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/files/rows.txt",
+    "datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/signed-metadata.txt",
+    "datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/files/5tw8-bi5h.txt",
+    "wikipedia/New_Haven_County,_Connecticut/content.txt",
+    "wikipedia/Fairfield_County,_Connecticut/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: Parse 2020 `Date`, count rows by `Residence County`, keep counties with `accidental_drug_deaths_2020 > 200`, and return `county -> accidental_drug_deaths_2020`.",
+        "Node 2: Filter rows where `state` = `Connecticut` and `health_service_area_number > 80`, then return distinct `county_name` values.",
+        "Hop result: intersect node 1 counties with node 2 counties, then compare 2020 accidental drug death counts. Higher county = New Haven County; lower county = Fairfield County."
+      ],
+      "answer": {
+        "higher_accidental_drug_death_county": "New Haven County",
+        "lower_accidental_drug_death_county": "Fairfield County"
+      },
+      "hop": 1
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 3: The higher-accidental-drug-death county from <hop 1 answer> has 7 cities.",
+        "Node 4: The lower-accidental-drug-death county from <hop 1 answer> has 5 cities.",
+        "Hop result: 7 is greater than 5, so the answer is `New Haven County`."
+      ],
+      "answer": "New Haven County"
+    }
+  ]
+}

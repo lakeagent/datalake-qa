@@ -1,0 +1,91 @@
+{
+  "question": "We define a dangerous incident as an arrest where drugs or alcohol are present and a weapon is present. In the city where Kenan Stadium is located, which zip code has the 2nd highest number of dangerous incidents? In the area of that zip code, which offense is 71st most common? In 2021, what rank did that offense have among offenses by incident count? Please return only the number in the format [Answer].",
+  "answer": 4,
+  "nodes": {
+    "1": {
+      "source": "wikipedia/Kenan_Stadium/content.txt",
+      "fact": "Kenan Stadium is located in Chapel Hill, North Carolina.",
+      "subquestion": "Which city is Kenan Stadium located in?",
+      "answer": "Chapel Hill"
+    },
+    "2": {
+      "source": "datagov/police-arrests-made/files/data.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/police-arrests-made/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nnode_1_answer = \"Chapel Hill\"\ncity = str(node_1_answer).strip().upper()\ndf[\"City\"] = df[\"City\"].fillna(\"\").astype(str).str.strip().str.upper()\ndf[\"Zipcode\"] = df[\"Zipcode\"].fillna(\"\").astype(str).str.strip().str.replace(r\"\\\\.0$\", \"\", regex=True)\ndf[\"Drugs_or_Alcohol_Present\"] = df[\"Drugs_or_Alcohol_Present\"].fillna(\"\").astype(str).str.strip().str.upper()\ndf[\"Weapon_Present\"] = df[\"Weapon_Present\"].fillna(\"\").astype(str).str.strip().str.upper()\nfiltered = df[\n    df[\"City\"].eq(city)\n    & df[\"Drugs_or_Alcohol_Present\"].eq(\"Y\")\n    & df[\"Weapon_Present\"].ne(\"\")\n    & df[\"Weapon_Present\"].ne(\"UNARMED\")\n    & df[\"Weapon_Present\"].ne(\"<NULL>\")\n].copy()\nranked = (\n    filtered.groupby(\"Zipcode\", as_index=False)\n    .size()\n    .rename(columns={\"size\": \"dangerous_incidents\"})\n    .sort_values([\"dangerous_incidents\", \"Zipcode\"], ascending=[False, True], kind=\"mergesort\")\n    .reset_index(drop=True)\n)\nanswer = str(ranked.iloc[1][\"Zipcode\"])\n",
+      "subquestion": "Define a dangerous incident as an arrest where drugs or alcohol are present and a weapon is present. In <hop 1 answer>, which zip code has the 2nd highest number of dangerous incidents?",
+      "answer": "27516"
+    },
+    "3": {
+      "source": "datagov/police-incident-reports-written/files/data.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/police-incident-reports-written/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nnode_2_answer = \"27516\"\ndf[\"Zipcode\"] = df[\"Zipcode\"].fillna(\"\").astype(str).str.strip().str.replace(r\"\\\\.0$\", \"\", regex=True)\ndf[\"Offense\"] = df[\"Offense\"].fillna(\"\").astype(str).str.strip()\nfiltered = df[\n    df[\"Zipcode\"].eq(str(node_2_answer).strip())\n    & df[\"Offense\"].ne(\"\")\n    & df[\"Offense\"].ne(\"<Null>\")\n].copy()\nranked = (\n    filtered.groupby(\"Offense\", as_index=False)\n    .size()\n    .rename(columns={\"size\": \"count\"})\n    .sort_values([\"count\", \"Offense\"], ascending=[False, True], kind=\"mergesort\")\n    .reset_index(drop=True)\n)\nanswer = str(ranked.iloc[70][\"Offense\"])\n",
+      "subquestion": "In the area of zip code <hop 2 answer>, which offense is the 71st most common?",
+      "answer": "ROBBERY"
+    },
+    "4": {
+      "source": "datagov/crime-incidents-in-2021/files/data.txt",
+      "fact": "import collections\nimport json\n\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/crime-incidents-in-2021/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj['Body'].read().decode('utf-8', errors='replace'))\n\ntarget_offense = str(node_3_answer).strip().upper()\ncounts = collections.Counter()\nfor feature in geo.get('features', []):\n    offense = str(feature.get('properties', {}).get('OFFENSE') or '').strip().upper()\n    if offense:\n        counts[offense] += 1\nranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))\nanswer = next(rank for rank, (offense, _) in enumerate(ranked, start=1) if offense == target_offense)\n",
+      "subquestion": "In 2021, what rank did <hop 3 answer> have among offenses by incident count?",
+      "answer": 4
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Kenan_Stadium/content.txt",
+    "datagov/police-arrests-made/files/data.txt",
+    "datagov/police-arrests-made/files/0.txt",
+    "datagov/police-arrests-made/files/0.arcgis-layer.json",
+    "datagov/police-incident-reports-written/files/data.txt",
+    "datagov/police-incident-reports-written/files/0.txt",
+    "datagov/police-incident-reports-written/files/0.arcgis-layer.json",
+    "datagov/crime-incidents-in-2021/files/data.txt",
+    "datagov/crime-incidents-in-2021/signed-metadata.txt",
+    "datagov/crime-incidents-in-2021/files/3.arcgis-layer.json"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Kenan Stadium is located in Chapel Hill, North Carolina.",
+        "Hop result: Chapel Hill."
+      ],
+      "answer": "Chapel Hill"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Restrict police arrests to <hop 1 answer> and define dangerous incidents as arrests where drugs or alcohol are present and a weapon is present.",
+        "Rank zip codes by dangerous incident count descending; the 2nd highest zip code is 27516.",
+        "Hop result: 27516."
+      ],
+      "answer": "27516"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: In zip code <hop 2 answer>, count offenses and rank them by frequency descending.",
+        "The 71st offense is ROBBERY.",
+        "Hop result: ROBBERY."
+      ],
+      "answer": "ROBBERY"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: In the 2021 crime incident records, count incidents for each offense and rank offenses by count descending, breaking ties alphabetically.",
+        "<hop 3 answer> ranks 4th.",
+        "Hop result: 4."
+      ],
+      "answer": 4
+    }
+  ]
+}

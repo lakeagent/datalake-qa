@@ -1,0 +1,93 @@
+{
+  "question": "First identify the California hospital that satisfies both of these conditions: at least 250 TAVR hospital cases with an Average mortality rating in 2022, and at least 35,000 ambulatory surgery encounters in 2019. Then, for that hospital, find the county with the highest total of homeless inpatient encounters broken down by age. As of 2020, what was that county's median household income? Return the number only. Your response should be in the format [Answer].",
+  "answer": 130890,
+  "nodes": {
+    "1": {
+      "source": "datagov/california-hospital-ratings-for-transcatheter-aortic-valve-replacement-tavr-procedures/files/2022-tavr-hospital-performance-ratings.txt",
+      "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/california-hospital-ratings-for-transcatheter-aortic-valve-replacement-tavr-procedures/files/2022-tavr-hospital-performance-ratings.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\n\ndef normalize_text(value):\n    value = str(value).replace(\"\\n\", \" \").replace(\"\\x96\", \"-\").replace(\"\\x97\", \"-\").replace(\"\u2013\", \"-\").replace(\"\u2014\", \"-\").strip()\n    value = re.sub(r\"\\s+\", \" \", value)\n    return \"\" if value.lower() == \"nan\" else value\n\n\ndef normalize_name(value):\n    value = normalize_text(value)\n    return value.replace(\"Cedars - Sinai Medical Center\", \"Cedars-Sinai Medical Center\")\n\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf.columns = [normalize_text(column) for column in df.columns]\nfor column in df.columns:\n    if df[column].dtype == object:\n        df[column] = df[column].map(normalize_text)\n\ndf[\"Hospital\"] = df[\"Hospital\"].map(normalize_name)\ndf[\"Total Hospital TAVR Cases\"] = pd.to_numeric(df[\"Total Hospital TAVR Cases\"], errors=\"coerce\")\n\nmortality = df[df[\"Performance Measure\"].eq(\"TAVR In-hospital/30-day Mortality\")].copy()\nanswer = sorted(\n    mortality.loc[\n        mortality[\"Total Hospital TAVR Cases\"].ge(250)\n        & mortality[\"Performance Rating\"].eq(\"Average\"),\n        \"Hospital\"\n    ].tolist()\n)",
+      "subquestion": "Which California hospitals had at least 250 TAVR cases and an Average mortality rating in 2022?",
+      "answer": [
+        "Cedars-Sinai Medical Center",
+        "Kaiser Foundation Hospital - San Francisco",
+        "Mercy General Hospital",
+        "Scripps Memorial Hospital - La Jolla",
+        "Stanford Health Care"
+      ]
+    },
+    "2": {
+      "source": "datagov/effects-of-covid-19-on-hospital-utilization-trends-636d2/files/hospital-utilization-trends.txt",
+      "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/effects-of-covid-19-on-hospital-utilization-trends-636d2/files/hospital-utilization-trends.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\n\ndef normalize_text(value):\n    value = str(value).replace(\"\\n\", \" \").replace(\"\\x96\", \"-\").replace(\"\\x97\", \"-\").replace(\"\u2013\", \"-\").replace(\"\u2014\", \"-\").strip()\n    value = re.sub(r\"\\s+\", \" \", value)\n    return \"\" if value.lower() == \"nan\" else value\n\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf.columns = [normalize_text(column) for column in df.columns]\nfor column in df.columns:\n    if df[column].dtype == object:\n        df[column] = df[column].map(normalize_text)\n\ndf[\"Count\"] = pd.to_numeric(df[\"Count\"], errors=\"coerce\")\ndf[\"year\"] = df[\"Date\"].str[-2:].map(lambda value: 2000 + int(value) if str(value).isdigit() else None)\n\nranked = (\n    df.groupby([\"Facility Name\", \"Setting\", \"year\"], dropna=False)[\"Count\"]\n    .sum()\n    .reset_index()\n)\n\nanswer = sorted(\n    ranked.loc[\n        ranked[\"Setting\"].eq(\"Ambulatory Surgery\")\n        & ranked[\"year\"].eq(2019)\n        & ranked[\"Count\"].ge(35000),\n        \"Facility Name\"\n    ].tolist()\n)",
+      "subquestion": "Which hospitals had at least 35,000 ambulatory surgery encounters in 2019?",
+      "answer": [
+        "Stanford Health Care",
+        "UC San Diego Health Hillcrest - Hillcrest Medical Center",
+        "UCSF Medical Center"
+      ]
+    },
+    "3": {
+      "source": "datagov/hospital-encounters-for-homeless-patients-79a6f/files/2019-2020-homeless-hospital-encounters-age-race-sex-expected-payer-by-facility.txt",
+      "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/hospital-encounters-for-homeless-patients-79a6f/files/2019-2020-homeless-hospital-encounters-age-race-sex-expected-payer-by-facility.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\n\ndef normalize_text(value):\n    value = str(value).replace(\"\\n\", \" \").replace(\"\\x96\", \"-\").replace(\"\\x97\", \"-\").replace(\"\u2013\", \"-\").replace(\"\u2014\", \"-\").strip()\n    value = re.sub(r\"\\s+\", \" \", value)\n    return \"\" if value.lower() == \"nan\" else value\n\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf.columns = [normalize_text(column) for column in df.columns]\nfor column in df.columns:\n    if df[column].dtype == object:\n        df[column] = df[column].map(normalize_text)\n\ndf[\"Encounters\"] = pd.to_numeric(df[\"Encounters\"], errors=\"coerce\")\n\ncounty_totals = (\n    df[\n        df[\"FacilityName\"].eq(\"Stanford Health Care\")\n        & df[\"EncounterType\"].eq(\"Inpatient Hospitalizations\")\n        & df[\"HomelessIndicator\"].eq(\"Homeless\")\n        & df[\"Demographic\"].eq(\"Age\")\n    ]\n    .groupby(\"HospitalCounty\")[\"Encounters\"]\n    .sum()\n    .sort_values(ascending=False)\n)\n\nanswer = county_totals.index[0] + \" County\"",
+      "subquestion": "For the hospital from <hop 1 answer>, which county had the highest total of homeless inpatient encounters broken down by age?",
+      "answer": "Santa Clara County"
+    },
+    "4": {
+      "source": "wikipedia/Santa_Clara_County,_California/content.txt",
+      "fact": "As of 2020, it has a median household income of $130,890, the third-highest household income of any county in the nation behind Loudoun County, Virginia and Falls Church, Virginia, and the highest of any county in the Western United States.",
+      "subquestion": "As of 2020, what was <hop 2 answer>'s median household income?",
+      "answer": 130890
+    }
+  },
+  "datasets_used": [
+    "datagov/california-hospital-ratings-for-transcatheter-aortic-valve-replacement-tavr-procedures/files/2022-tavr-hospital-performance-ratings.txt",
+    "datagov/california-hospital-ratings-for-transcatheter-aortic-valve-replacement-tavr-procedures/signed-metadata.txt",
+    "datagov/effects-of-covid-19-on-hospital-utilization-trends-636d2/files/hospital-utilization-trends.txt",
+    "datagov/effects-of-covid-19-on-hospital-utilization-trends-636d2/signed-metadata.txt",
+    "datagov/effects-of-covid-19-on-hospital-utilization-trends-636d2/files/in-hospital-mortality-trends-by-diagnosis-type.txt",
+    "datagov/hospital-encounters-for-homeless-patients-79a6f/files/2019-2020-homeless-hospital-encounters-age-race-sex-expected-payer-by-facility.txt",
+    "datagov/hospital-encounters-for-homeless-patients-79a6f/signed-metadata.txt",
+    "datagov/hospital-encounters-for-homeless-patients-79a6f/files/data-dictionary-homeless-hospital-encounters-age-race-sex-expected-payer-by-facility.txt",
+    "wikipedia/Santa_Clara_County,_California/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "title": "Identify The Hospital",
+      "reasoning": [
+        "Node 1: In the 2022 TAVR mortality rows, keep hospitals with `Total Hospital TAVR Cases >= 250` and `Performance Rating = Average`.",
+        "Node 2: In the utilization trends table, sum `Count` by `Facility Name`, `Setting`, and parsed year, then keep hospitals with `Setting = Ambulatory Surgery`, `year = 2019`, and `Count >= 35000`.",
+        "Necessity check: omitting node 1 leaves 3 hospitals: `Stanford Health Care`, `UC San Diego Health Hillcrest - Hillcrest Medical Center`, and `UCSF Medical Center`.",
+        "Necessity check: omitting node 2 leaves 5 hospitals: `Cedars-Sinai Medical Center`, `Kaiser Foundation Hospital - San Francisco`, `Mercy General Hospital`, `Scripps Memorial Hospital - La Jolla`, and `Stanford Health Care`.",
+        "Hop result: intersect the two analytical candidate sets from nodes 1 and 2. The only hospital that satisfies both conditions is `Stanford Health Care`."
+      ],
+      "answer": "Stanford Health Care"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3
+      ],
+      "title": "Rank The County",
+      "reasoning": [
+        "Node 3: In the homeless-hospital-encounter table, filter to `FacilityName = <hop 1 answer>`, `EncounterType = Inpatient Hospitalizations`, `HomelessIndicator = Homeless`, and `Demographic = Age`, then sum `Encounters` by `HospitalCounty` and rank descending.",
+        "Hop result: `Santa Clara County` ranks first with `1131` homeless inpatient age-sliced encounters."
+      ],
+      "answer": "Santa Clara County"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        4
+      ],
+      "title": "Find The Median Household Income",
+      "reasoning": [
+        "Node 4 uses the county from `<hop 2 answer>` and retrieves its median household income as of 2020.",
+        "Hop result: `$130,890`."
+      ],
+      "answer": 130890
+    }
+  ]
+}

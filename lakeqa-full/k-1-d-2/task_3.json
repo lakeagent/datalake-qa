@@ -1,0 +1,52 @@
+{
+    "question": "Which state is in both of these groups: the states ranked 7th through 11th by the sample standard deviation of the share of premiums paid out in dental claims in 2019, and the states ranked 2nd through 6th by the average reported number of foreclosures in 2021 under Oregon House Bill 2009? Respond with [Answer].",
+    "answer": "Ohio",
+    "nodes": {
+        "1": {
+            "source": "datagov/2016-2019-dental-loss-ratios/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2016-2019-dental-loss-ratios/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_name_map = {\n    \"AL\": \"Alabama\",\n    \"AK\": \"Alaska\",\n    \"AZ\": \"Arizona\",\n    \"AR\": \"Arkansas\",\n    \"CA\": \"California\",\n    \"CO\": \"Colorado\",\n    \"CT\": \"Connecticut\",\n    \"DE\": \"Delaware\",\n    \"FL\": \"Florida\",\n    \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\",\n    \"ID\": \"Idaho\",\n    \"IL\": \"Illinois\",\n    \"IN\": \"Indiana\",\n    \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\",\n    \"KY\": \"Kentucky\",\n    \"LA\": \"Louisiana\",\n    \"ME\": \"Maine\",\n    \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\",\n    \"MI\": \"Michigan\",\n    \"MN\": \"Minnesota\",\n    \"MS\": \"Mississippi\",\n    \"MO\": \"Missouri\",\n    \"MT\": \"Montana\",\n    \"NE\": \"Nebraska\",\n    \"NV\": \"Nevada\",\n    \"NH\": \"New Hampshire\",\n    \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\",\n    \"NY\": \"New York\",\n    \"NC\": \"North Carolina\",\n    \"ND\": \"North Dakota\",\n    \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\",\n    \"OR\": \"Oregon\",\n    \"PA\": \"Pennsylvania\",\n    \"RI\": \"Rhode Island\",\n    \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\",\n    \"TN\": \"Tennessee\",\n    \"TX\": \"Texas\",\n    \"UT\": \"Utah\",\n    \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\",\n    \"WA\": \"Washington\",\n    \"WV\": \"West Virginia\",\n    \"WI\": \"Wisconsin\",\n    \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\",\n}\n\ndf_2019 = df[df[\"Year\"] == 2019].copy()\ndf_2019[\"Dental Loss Ratio\"] = pd.to_numeric(df_2019[\"Dental Loss Ratio\"], errors=\"coerce\")\ndf_2019[\"normalized_state\"] = df_2019[\"Domicile State\"].map(state_name_map).fillna(df_2019[\"Domicile State\"])\n\nstate_metric = (\n    df_2019.groupby(\"normalized_state\", dropna=False)[\"Dental Loss Ratio\"]\n    .std()\n    .reset_index(name=\"sample_stddev_dental_loss_ratio\")\n)\n\nranked = state_metric.sort_values(\n    by=[\"sample_stddev_dental_loss_ratio\", \"normalized_state\"],\n    ascending=[False, True],\n    kind=\"mergesort\",\n).reset_index(drop=True)\n\nresult = ranked.iloc[6:11].reset_index(drop=True)\nanswer = result[\"normalized_state\"].tolist()",
+            "subquestion": "Which states rank 7th through 11th by the sample standard deviation of the share of premiums paid out in dental claims in 2019?",
+            "answer": [
+                "Wisconsin",
+                "South Carolina",
+                "Indiana",
+                "Kansas",
+                "Ohio"
+            ]
+        },
+        "2": {
+            "source": "datagov/2022-foreclosure-avoidance-program-beneficiary-exemption-affidavits-pursuant-to-hb-2009/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2022-foreclosure-avoidance-program-beneficiary-exemption-affidavits-pursuant-to-hb-2009/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_name_map = {\n    \"AL\": \"Alabama\",\n    \"AK\": \"Alaska\",\n    \"AZ\": \"Arizona\",\n    \"AR\": \"Arkansas\",\n    \"CA\": \"California\",\n    \"CO\": \"Colorado\",\n    \"CT\": \"Connecticut\",\n    \"DE\": \"Delaware\",\n    \"FL\": \"Florida\",\n    \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\",\n    \"ID\": \"Idaho\",\n    \"IL\": \"Illinois\",\n    \"IN\": \"Indiana\",\n    \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\",\n    \"KY\": \"Kentucky\",\n    \"LA\": \"Louisiana\",\n    \"ME\": \"Maine\",\n    \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\",\n    \"MI\": \"Michigan\",\n    \"MN\": \"Minnesota\",\n    \"MS\": \"Mississippi\",\n    \"MO\": \"Missouri\",\n    \"MT\": \"Montana\",\n    \"NE\": \"Nebraska\",\n    \"NV\": \"Nevada\",\n    \"NH\": \"New Hampshire\",\n    \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\",\n    \"NY\": \"New York\",\n    \"NC\": \"North Carolina\",\n    \"ND\": \"North Dakota\",\n    \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\",\n    \"OR\": \"Oregon\",\n    \"PA\": \"Pennsylvania\",\n    \"RI\": \"Rhode Island\",\n    \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\",\n    \"TN\": \"Tennessee\",\n    \"TX\": \"Texas\",\n    \"UT\": \"Utah\",\n    \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\",\n    \"WA\": \"Washington\",\n    \"WV\": \"West Virginia\",\n    \"WI\": \"Wisconsin\",\n    \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\",\n    \"VI\": \"Virgin Islands\",\n}\n\ndf[\"2021 Foreclosures\"] = pd.to_numeric(df[\"2021 Foreclosures\"], errors=\"coerce\")\ndf[\"normalized_state\"] = df[\"State\"].map(state_name_map).fillna(df[\"State\"])\n\nstate_metric = (\n    df.groupby(\"normalized_state\", dropna=False)[\"2021 Foreclosures\"]\n    .mean()\n    .reset_index(name=\"avg_2021_foreclosures\")\n)\n\nranked = state_metric.sort_values(\n    by=[\"avg_2021_foreclosures\", \"normalized_state\"],\n    ascending=[False, True],\n    kind=\"mergesort\",\n).reset_index(drop=True)\n\nresult = ranked.iloc[1:6].reset_index(drop=True)\nanswer = result[\"normalized_state\"].tolist()",
+            "subquestion": "Which states are ranked 2nd through 6th by the average reported number of foreclosures in 2021 under Oregon House Bill 2009?",
+            "answer": [
+                "Florida",
+                "Minnesota",
+                "Nebraska",
+                "Ohio",
+                "Virginia"
+            ]
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Year` = 2019, normalize `Domicile State` to full state names, compute the sample standard deviation of `Dental Loss Ratio` by state, sort by that standard deviation descending with state name ascending as the tiebreaker, and take ranks 7 through 11.",
+                "Node 2: Normalize `State` to full state names, compute the mean `2021 Foreclosures` by state, sort by that mean descending with state name ascending as the tiebreaker, and take ranks 2 through 6.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Ohio."
+            ],
+            "answer": "Ohio"
+        }
+    ],
+    "datasets_used": [
+        "datagov/2016-2019-dental-loss-ratios/files/rows.txt",
+        "datagov/2016-2019-dental-loss-ratios/signed-metadata.txt",
+        "datagov/2016-2019-dental-loss-ratios/files/gi9j-78eu.txt",
+        "datagov/2022-foreclosure-avoidance-program-beneficiary-exemption-affidavits-pursuant-to-hb-2009/files/rows.txt",
+        "datagov/2022-foreclosure-avoidance-program-beneficiary-exemption-affidavits-pursuant-to-hb-2009/signed-metadata.txt"
+    ]
+}

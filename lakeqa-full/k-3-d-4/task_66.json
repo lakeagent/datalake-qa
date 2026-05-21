@@ -1,0 +1,164 @@
+{
+  "question": "From the counties that were in the statewide top 5 for releases from the Texas state prison system in 2019, 2020, and 2021, find their county seats. Across those county seats, how many years apart were the earliest and latest founding or establishment years? Please return only the number in the format [Answer].",
+  "answer": 131,
+  "nodes": {
+    "1": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.groupby(\"County\")\n    .size()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = result.index.tolist()",
+      "subquestion": "Which counties were in the statewide top 5 for releases from the Texas state prison system in 2019?",
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Tarrant",
+        "Bexar",
+        "Hidalgo"
+      ]
+    },
+    "2": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.groupby(\"County\")\n    .size()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = result.index.tolist()",
+      "subquestion": "Which counties were in the statewide top 5 for releases from the Texas state prison system in 2020?",
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Tarrant",
+        "Bexar",
+        "Travis"
+      ]
+    },
+    "3": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.groupby(\"County\")\n    .size()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = result.index.tolist()",
+      "subquestion": "Which counties were in the statewide top 5 for releases from the Texas state prison system in 2021?",
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Tarrant",
+        "Bexar",
+        "Hidalgo"
+      ]
+    },
+    "4": {
+      "source": "wikipedia/Harris_County,_Texas/content.txt",
+      "fact": "Harris County is a county located in the U.S. state of Texas. As of the 2020 census, the population was 4,731,145, and was estimated to be 5,009,302 in 2024, making it the most populous county in Texas and the third-most populous county in the United States. Its county seat is Houston, the most populous city in Texas and the fourth-most populous city in the United States.",
+      "subquestion": "What is the county seat of Harris County from <hop 1 answer>?",
+      "answer": "Houston is the county seat of Harris County"
+    },
+    "5": {
+      "source": "wikipedia/Dallas_County,_Texas/content.txt",
+      "fact": "Dallas County is a county located in the U.S. state of Texas. As of the 2020 census, the population was 2,613,539, and was estimated to be 2,656,028 in 2024, making it the second-most populous county in Texas and the eighth-most populous county in the United States. Its county seat is Dallas, the third-most populous city in Texas and the ninth-most populous city in the United States.",
+      "subquestion": "What is the county seat of Dallas County from <hop 1 answer>?",
+      "answer": "Dallas is the county seat of Dallas County"
+    },
+    "6": {
+      "source": "wikipedia/Tarrant_County,_Texas/content.txt",
+      "fact": "Tarrant County is a county located in the U.S. state of Texas with a 2020 U.S. census population of 2,110,640, making it the third-most populous county in Texas and the 15th-most populous in the United States. Its county seat is Fort Worth. Tarrant County, one of 26 counties created out of the Peters Colony, was established in 1849 and organized the next year.",
+      "subquestion": "What is the county seat of Tarrant County from <hop 1 answer>?",
+      "answer": "Fort Worth is the county seat of Tarrant County"
+    },
+    "7": {
+      "source": "wikipedia/Bexar_County,_Texas/content.txt",
+      "fact": "Bexar County (  or  ;  ) is a county in the U.S. state of Texas. It is in South Texas and its county seat is San Antonio.",
+      "subquestion": "What is the county seat of Bexar County from <hop 1 answer>?",
+      "answer": "San Antonio is the county seat of Bexar County"
+    },
+    "8": {
+      "source": "wikipedia/Houston/content.txt",
+      "fact": "Houston was founded by land investors on August 30, 1836, at the confluence of Buffalo Bayou and White Oak Bayou (a point now known as Allen's Landing) and incorporated as a city on June 5, 1837.",
+      "subquestion": "When was Houston from <hop 2 answer> founded?",
+      "answer": "Houston was founded on August 30, 1836"
+    },
+    "9": {
+      "source": "wikipedia/Dallas/content.txt",
+      "fact": "Two years later, in 1841, he returned to establish a permanent settlement named Dallas.",
+      "subquestion": "When was Dallas from <hop 2 answer> established?",
+      "answer": "Dallas was established in 1841"
+    },
+    "10": {
+      "source": "wikipedia/Fort_Worth,_Texas/content.txt",
+      "fact": "The city of Fort Worth was established in 1849 as an army outpost on a bluff overlooking the Trinity River.",
+      "subquestion": "When was Fort Worth from <hop 2 answer> established?",
+      "answer": "Fort Worth was established in 1849"
+    },
+    "11": {
+      "source": "wikipedia/San_Antonio/content.txt",
+      "fact": "Founded in 1718 as a Spanish mission and colonial outpost, San Antonio became the first chartered civil settlement in present-day Texas in 1731.",
+      "subquestion": "When was San Antonio from <hop 2 answer> founded?",
+      "answer": "San Antonio was established in 1718"
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Harris_County,_Texas/content.txt",
+    "wikipedia/Dallas_County,_Texas/content.txt",
+    "wikipedia/Tarrant_County,_Texas/content.txt",
+    "wikipedia/Bexar_County,_Texas/content.txt",
+    "wikipedia/Houston/content.txt",
+    "wikipedia/Dallas/content.txt",
+    "wikipedia/Fort_Worth,_Texas/content.txt",
+    "wikipedia/San_Antonio/content.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2021/signed-metadata.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop_id": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: Group 2019 rows by `County`, count rows, sort descending, and keep the statewide top five counties by release count.",
+        "Node 2: Group 2020 rows by `County`, count rows, sort descending, and keep the statewide top five counties by release count.",
+        "Node 3: Group 2021 rows by `County`, count rows, sort descending, and keep the statewide top five counties by release count.",
+        "Hop result: intersect the three yearly top-five county sets to keep the counties that remained statewide top five across 2019 through 2021: Harris, Dallas, Tarrant, and Bexar."
+      ],
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Tarrant",
+        "Bexar"
+      ]
+    },
+    {
+      "hop_id": 2,
+      "node_ids": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "reasoning": [
+        "Node 4: Retrieve the county seat of Harris County from <hop 1 answer>.",
+        "Node 5: Retrieve the county seat of Dallas County from <hop 1 answer>.",
+        "Node 6: Retrieve the county seat of Tarrant County from <hop 1 answer>.",
+        "Node 7: Retrieve the county seat of Bexar County from <hop 1 answer>.",
+        "Hop result: the county seats are Houston, Dallas, Fort Worth, and San Antonio."
+      ],
+      "answer": {
+        "Harris": "Houston",
+        "Dallas": "Dallas",
+        "Tarrant": "Fort Worth",
+        "Bexar": "San Antonio"
+      }
+    },
+    {
+      "hop_id": 3,
+      "node_ids": [
+        8,
+        9,
+        10,
+        11
+      ],
+      "reasoning": [
+        "Nodes 8, 9, 10, and 11 retrieve the founding or establishment years for the county seats in <hop 2 answer>: Houston 1836, Dallas 1841, Fort Worth 1849, and San Antonio 1718.",
+        "Hop result: the latest year is 1849 and the earliest year is 1718, so the difference is 131 years."
+      ],
+      "answer": 131
+    }
+  ]
+}

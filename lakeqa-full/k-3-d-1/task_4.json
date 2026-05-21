@@ -1,0 +1,66 @@
+{
+    "question": "Identify the northernmost New York City borough, then count how many NYPD shooting incidents occurred in that borough in 2023. Using that count and the borough's 2020 census population, what is the shooting-incident count per 100,000 residents, rounded to one decimal? Your response should be in the format [Answer].",
+    "answer": "29.8",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/The_Bronx/content.txt",
+            "fact": "The Bronx article states that The Bronx is the northernmost of the five boroughs of New York City.",
+            "subquestion": "Which New York City borough is described as the northernmost of the five boroughs?",
+            "answer": "BRONX"
+        },
+        "2": {
+            "source": "datagov/nypd-shooting-incident-data-historic/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/nypd-shooting-incident-data-historic/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nnode_1_answer = \"BRONX\"\n\nfiltered = df[\n    df[\"OCCUR_DATE\"].astype(str).str.contains(\"2023\", na=False)\n    & df[\"BORO\"].astype(str).str.strip().str.upper().eq(node_1_answer.upper())\n]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In 2023 NYPD shooting incident data, how many shooting incidents occurred in borough <node_1 answer>?",
+            "answer": "439"
+        },
+        "3": {
+            "source": "wikipedia/Demographics_of_the_Bronx/content.txt",
+            "fact": "In the 2020 census data from New York City Department of City Planning, there was a total population of 1,472,654 residents with 806,463 Hispanic residents making up 54.8%, 419,393 Black residents making up 28.5%, 130,796 White residents making up 8.9%, and 67,766 Asian residents making up 4.6%.",
+            "subquestion": "Using <hop 2 answer> and the borough's 2020 census population of 1,472,654, what is the shooting-incident count per 100,000 residents, rounded to one decimal?",
+            "answer": "29.8"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/The_Bronx/content.txt",
+        "datagov/nypd-shooting-incident-data-historic/files/rows.txt",
+        "datagov/nypd-shooting-incident-data-historic/signed-metadata.txt",
+        "datagov/nypd-shooting-incident-data-historic/files/833y-fsy8.txt",
+        "wikipedia/Demographics_of_the_Bronx/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: The Bronx is the northernmost of the five boroughs of New York City.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "BRONX"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter NYPD shooting-incident records where `OCCUR_DATE` contains 2023 and `BORO` equals <hop 1 answer>, then count the matching rows.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "439"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Divide <hop 2 answer> by the Bronx's 2020 census population of 1,472,654, multiply by 100,000, and round to one decimal.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "29.8"
+        }
+    ]
+}

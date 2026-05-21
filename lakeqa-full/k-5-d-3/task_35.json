@@ -1,0 +1,131 @@
+{
+    "question": "Start with the Oklahoma county that has the most listings in the public library directory. Then find the city in that county with the highest total number of units across multi-family developments funded by the Oklahoma Housing Finance Agency. In that city, collect the 5-digit ZIP codes that appear among higher-education institutions, public libraries, and chambers of commerce. Keep only the ZIP codes that appear in at least two of those three lists, sort them by area in square miles, and take the second-smallest one. How many health care facilities are listed in that city in that ZIP code? Return just the number.",
+    "answer": "10",
+    "nodes": {
+        "1": {
+            "source": "datagov/oklahoma-public-library-directory-c11a9/files/data-oklahoma-public-library-directory.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/oklahoma-public-library-directory-c11a9/files/data-oklahoma-public-library-directory.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['county_norm'] = df['COUNTY'].astype(str).str.strip().str.upper()\ncounty_counts = df.groupby('county_norm', dropna=True).size().sort_values(ascending=False)\nanswer = str(county_counts.idxmax()).title()\n",
+            "subquestion": "Which Oklahoma county has the most listings in the public library directory?",
+            "answer": "Tulsa"
+        },
+        "2": {
+            "source": "datagov/oklahoma-housing-finance-agency-funded-developments-in-service/files/t-ohfa-funded-multi-family-developments.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/oklahoma-housing-finance-agency-funded-developments-in-service/files/t-ohfa-funded-multi-family-developments.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_1_answer = 'Tulsa'\ndf['county_norm'] = df['COUNTY'].astype(str).str.strip().str.upper()\ndf['city_norm'] = df['Location 1'].astype(str).str.extract(r'\\n([^\\n,]+),\\s*OK\\s+\\d{5}', expand=False).astype(str).str.strip().str.upper()\ndf['units'] = pd.to_numeric(df['Total # units'], errors='coerce')\nfiltered = df[df['county_norm'].eq(str(node_1_answer).strip().upper())].copy()\ncity_totals = filtered.groupby('city_norm', dropna=True)['units'].sum().sort_values(ascending=False)\nanswer = str(city_totals.idxmax()).title()\n",
+            "subquestion": "Within <node_1 answer> County, which city has the highest total number of units across multi-family developments funded by the Oklahoma Housing Finance Agency?",
+            "answer": "Tulsa"
+        },
+        "3": {
+            "source": "datagov/oklahoma-institutions-of-higher-education-e95d9/files/data-oklahoma-institutions-of-higher-education.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/oklahoma-institutions-of-higher-education-e95d9/files/data-oklahoma-institutions-of-higher-education.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_2_answer = 'Tulsa'\nfiltered = df[df['CITY'].astype(str).str.strip().str.upper().eq(str(node_2_answer).strip().upper())].copy()\nfiltered['zip5'] = filtered['ZIP'].astype(str).str.extract(r'(\\d{5})', expand=False)\nzip_codes = sorted(filtered['zip5'].dropna().unique())\nanswer = '; '.join(zip_codes)\n",
+            "subquestion": "Which 5-digit ZIP codes appear among the higher-education institutions listed in <node_2 answer>?",
+            "answer": "74104; 74106; 74107; 74116; 74134; 74135; 74171"
+        },
+        "4": {
+            "source": "datagov/oklahoma-public-libraries-d068d/files/data-oklahoma-public-libraries.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/oklahoma-public-libraries-d068d/files/data-oklahoma-public-libraries.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_2_answer = 'Tulsa'\nfiltered = df[df['CITY'].astype(str).str.strip().str.upper().eq(str(node_2_answer).strip().upper())].copy()\nfiltered['zip5'] = filtered['ZIP'].astype(str).str.extract(r'(\\d{5})', expand=False)\nzip_codes = sorted(filtered['zip5'].dropna().unique())\nanswer = '; '.join(zip_codes)\n",
+            "subquestion": "Which 5-digit ZIP codes appear among the public libraries listed in <node_2 answer>?",
+            "answer": "74103; 74104; 74105; 74106; 74114; 74115; 74129; 74133; 74135; 74137"
+        },
+        "5": {
+            "source": "datagov/oklahoma-chambers-of-commerce-88a08/files/data-oklahoma-chambers-of-commerce.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/oklahoma-chambers-of-commerce-88a08/files/data-oklahoma-chambers-of-commerce.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.loads(obj['Body'].read().decode('utf-8'))\ncolumns = ['sid', 'id', 'position', 'created_at', 'created_meta', 'updated_at', 'updated_meta', 'meta', 'CHAMBER OF COMMERCE', 'ADDRESS', 'CITY', 'STATE', 'ZIP', 'PHONE', 'LONGITUDE', 'LATITUDE', 'Location']\ndf = pd.DataFrame(payload['data'], columns=columns)\n\nnode_2_answer = 'Tulsa'\nfiltered = df[df['CITY'].astype(str).str.strip().str.upper().eq(str(node_2_answer).strip().upper())].copy()\nfiltered['zip5'] = filtered['ZIP'].astype(str).str.extract(r'(\\d{5})', expand=False)\nzip_codes = sorted(filtered['zip5'].dropna().unique())\nanswer = '; '.join(zip_codes)\n",
+            "subquestion": "Which 5-digit ZIP codes appear among the chambers of commerce listed in <node_2 answer>?",
+            "answer": "74107; 74120; 74135; 74137; 74146"
+        },
+        "6": {
+            "source": "datagov/boundaries-us-zip-codes/files/rows.txt",
+            "fact": "import io\nfrom collections import Counter\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/boundaries-us-zip-codes/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_3_answer = '74104; 74106; 74107; 74116; 74134; 74135; 74171'\nnode_4_answer = '74103; 74104; 74105; 74106; 74114; 74115; 74129; 74133; 74135; 74137'\nnode_5_answer = '74107; 74120; 74135; 74137; 74146'\nzip_lists = []\nfor raw in [node_3_answer, node_4_answer, node_5_answer]:\n    zip_lists.append([part.strip() for part in str(raw).split(';') if part.strip()])\ncounts = Counter()\nfor zip_list in zip_lists:\n    counts.update(set(zip_list))\ncandidate_zips = sorted([zip_code for zip_code, count in counts.items() if count >= 2])\nfiltered = df[df['ZIPCODE'].astype(str).str.extract(r'(\\d{5})', expand=False).isin(candidate_zips)].copy()\nfiltered['zip5'] = filtered['ZIPCODE'].astype(str).str.extract(r'(\\d{5})', expand=False)\nfiltered['sqmi_num'] = pd.to_numeric(filtered['SQMI'], errors='coerce')\nordered = filtered[['zip5', 'sqmi_num']].dropna().drop_duplicates().sort_values(['sqmi_num', 'zip5'], ascending=[True, True])\nanswer = str(ordered.iloc[1]['zip5']).strip()\n",
+            "subquestion": "Looking at the ZIP-code lists from nodes 3, 4, and 5, which ZIP code appears in at least two of them and has the second-smallest area in square miles?",
+            "answer": "74135"
+        },
+        "7": {
+            "source": "datagov/oklahoma-health-care-facilities-cb20d/files/data-oklahoma-health-care-facilities.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/oklahoma-health-care-facilities-cb20d/files/data-oklahoma-health-care-facilities.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_2_answer = 'Tulsa'\nnode_6_answer = '74135'\nfiltered = df[df['CITY'].astype(str).str.strip().str.upper().eq(str(node_2_answer).strip().upper())].copy()\nfiltered['zip5'] = filtered['ZIP'].astype(str).str.extract(r'(\\d{5})', expand=False)\nanswer = str(int(filtered['zip5'].eq(str(node_6_answer).strip()).sum()))\n",
+            "subquestion": "How many health care facilities are listed in <node_2 answer> in ZIP code <node_6 answer>?",
+            "answer": "10"
+        }
+    },
+    "datasets_used": [
+        "datagov/oklahoma-public-library-directory-c11a9/files/data-oklahoma-public-library-directory.txt",
+        "datagov/oklahoma-public-library-directory-c11a9/signed-metadata.txt",
+        "datagov/oklahoma-housing-finance-agency-funded-developments-in-service/files/t-ohfa-funded-multi-family-developments.txt",
+        "datagov/oklahoma-housing-finance-agency-funded-developments-in-service/signed-metadata.txt",
+        "datagov/oklahoma-housing-finance-agency-funded-developments-in-service/files/data-oklahoma-housing-finance-agency-funded-developments-in-service.txt",
+        "datagov/oklahoma-institutions-of-higher-education-e95d9/files/data-oklahoma-institutions-of-higher-education.txt",
+        "datagov/oklahoma-institutions-of-higher-education-e95d9/signed-metadata.txt",
+        "datagov/oklahoma-institutions-of-higher-education-e95d9/files/m-ok-higher-ed-map.txt",
+        "datagov/oklahoma-public-libraries-d068d/files/data-oklahoma-public-libraries.txt",
+        "datagov/oklahoma-public-libraries-d068d/signed-metadata.txt",
+        "datagov/oklahoma-public-libraries-d068d/files/m-oklahoma-public-libraries-map.txt",
+        "datagov/oklahoma-chambers-of-commerce-88a08/files/data-oklahoma-chambers-of-commerce.txt",
+        "datagov/oklahoma-chambers-of-commerce-88a08/signed-metadata.txt",
+        "datagov/oklahoma-chambers-of-commerce-88a08/files/m-oklahoma-chambers-of-commerce-map.txt",
+        "datagov/boundaries-us-zip-codes/files/rows.txt",
+        "datagov/boundaries-us-zip-codes/signed-metadata.txt",
+        "datagov/oklahoma-health-care-facilities-cb20d/files/data-oklahoma-health-care-facilities.txt",
+        "datagov/oklahoma-health-care-facilities-cb20d/signed-metadata.txt",
+        "datagov/oklahoma-health-care-facilities-cb20d/files/m-map-of-oklahoma-health-care-facilities.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: In the Oklahoma public library directory, Tulsa County has the most listings with 27, ahead of Oklahoma County with 20.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Tulsa"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Within Tulsa County, Tulsa has the largest total number of OHFA-funded development units, with 5,142 units.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Tulsa"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 3: In Tulsa, the higher-education institutions dataset includes ZIP codes 74104, 74106, 74107, 74116, 74134, 74135, and 74171.",
+                "Node 4: In Tulsa, the public libraries dataset includes ZIP codes 74103, 74104, 74105, 74106, 74114, 74115, 74129, 74133, 74135, and 74137.",
+                "Node 5: In Tulsa, the chambers of commerce dataset includes ZIP codes 74107, 74120, 74135, 74137, and 74146.",
+                "ZIP codes that appear in at least two of the three lists are 74104, 74106, 74107, 74135, and 74137.",
+                "Hop result: 74104, 74106, 74107, 74135, and 74137"
+            ],
+            "answer": "74104, 74106, 74107, 74135, and 74137"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: In the ZIP boundaries dataset, the overlap ZIP codes 74104, 74106, 74107, 74135, and 74137 have land areas of 2.71, 7.73, 24.98, 6.00, and 10.95 square miles respectively, so the second-smallest is 74135.",
+                "Hop result: <node_6 answer>"
+            ],
+            "answer": "74135"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: In the Tulsa health care facilities dataset, ZIP code 74135 has 10 listed health care facilities.",
+                "Hop result: <node_7 answer>"
+            ],
+            "answer": "10"
+        }
+    ]
+}

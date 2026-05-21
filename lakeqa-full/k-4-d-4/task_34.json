@@ -1,0 +1,212 @@
+{
+  "question": "Which original Texas county is also in the top five for Capital Outlay expenditures in each year from 2018 through 2021? Among those counties, pick the one with the lower average TDCJ release count across 2019 and 2020. For that county's county-seat city, subtract its Texas population rank from its United States population rank. Your response should be in the format [Answer].",
+  "answer": 5,
+  "nodes": {
+    "1": {
+      "source": "wikipedia/List_of_counties_in_Texas/content.txt",
+      "fact": "The Republic of Texas created 23 original counties in 1836: Austin, Bastrop, Bexar, Brazoria, Colorado, Fayette, Goliad, Gonzales, Harris, Jackson, Jasper, Jefferson, Liberty, Matagorda, Milam, Nacogdoches, Red River, Refugio, Sabine, San Augustine, San Patricio, Shelby, and Victoria.",
+      "subquestion": "Which counties were among the original 23 counties of Texas?",
+      "answer": [
+        "Austin",
+        "Bastrop",
+        "Bexar",
+        "Brazoria",
+        "Colorado",
+        "Fayette",
+        "Goliad",
+        "Gonzales",
+        "Harris",
+        "Jackson",
+        "Jasper",
+        "Jefferson",
+        "Liberty",
+        "Matagorda",
+        "Milam",
+        "Nacogdoches",
+        "Red River",
+        "Refugio",
+        "Sabine",
+        "San Augustine",
+        "San Patricio",
+        "Shelby",
+        "Victoria"
+      ]
+    },
+    "2": {
+      "source": "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/texas-state-expenditures-by-county-2018/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ncounty = df['County'].astype(str).str.strip().str.title()\ncategory = df['Major Spending Category'].astype(str).str.strip().str.upper()\namount = pd.to_numeric(df['Amount'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'County': county, 'Amount': amount})[\n    fiscal_year.eq(2018)\n    & county.ne('')\n    & county.ne('Nan')\n    & category.str.contains('CAPITAL OUTLAY', regex=False, na=False)\n].copy()\nanswer = filtered.groupby('County')['Amount'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+      "subquestion": "Which Texas counties were in the top 5 by Capital Outlay expenditures in 2018?",
+      "answer": {
+        "Harris": 1303630847.3,
+        "Dallas": 838316444.65,
+        "Travis": 427160745.36,
+        "Montgomery": 424383088.05,
+        "Bexar": 269462082.97
+      }
+    },
+    "3": {
+      "source": "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/texas-state-expenditures-by-county-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ncounty = df['County'].astype(str).str.strip().str.title()\ncategory = df['Major Spending Category'].astype(str).str.strip().str.upper()\namount = pd.to_numeric(df['Amount'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'County': county, 'Amount': amount})[\n    fiscal_year.eq(2019)\n    & county.ne('')\n    & county.ne('Nan')\n    & category.str.contains('CAPITAL OUTLAY', regex=False, na=False)\n].copy()\nanswer = filtered.groupby('County')['Amount'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+      "subquestion": "Which Texas counties were in the top 5 by Capital Outlay expenditures in 2019?",
+      "answer": {
+        "Harris": 1391779835.06,
+        "Dallas": 827510409.8,
+        "Travis": 614936080.37,
+        "Montgomery": 416744287.28,
+        "Bexar": 302940592.72
+      }
+    },
+    "4": {
+      "source": "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/texas-state-expenditures-by-county-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ncounty = df['County'].astype(str).str.strip().str.title()\ncategory = df['Major Spending Category'].astype(str).str.strip().str.upper()\namount = pd.to_numeric(df['Amount'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'County': county, 'Amount': amount})[\n    fiscal_year.eq(2020)\n    & county.ne('')\n    & county.ne('Nan')\n    & category.str.contains('CAPITAL OUTLAY', regex=False, na=False)\n].copy()\nanswer = filtered.groupby('County')['Amount'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+      "subquestion": "Which Texas counties were in the top 5 by Capital Outlay expenditures in 2020?",
+      "answer": {
+        "Harris": 1663151150.96,
+        "Dallas": 1324261419.12,
+        "Travis": 821945717.49,
+        "Montgomery": 612813968.49,
+        "Bexar": 494340352.72
+      }
+    },
+    "5": {
+      "source": "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/texas-state-expenditures-by-county-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ncounty = df['County'].astype(str).str.strip().str.title()\ncategory = df['Major Spending Category'].astype(str).str.strip().str.upper()\namount = pd.to_numeric(df['Amount'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'County': county, 'Amount': amount})[\n    fiscal_year.eq(2021)\n    & county.ne('')\n    & county.ne('Nan')\n    & category.str.contains('CAPITAL OUTLAY', regex=False, na=False)\n].copy()\nanswer = filtered.groupby('County')['Amount'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+      "subquestion": "Which Texas counties were in the top 5 by Capital Outlay expenditures in 2021?",
+      "answer": {
+        "Harris": 1741663003.68,
+        "Dallas": 1171406639.17,
+        "Travis": 774601022.23,
+        "Montgomery": 705433711.03,
+        "Bexar": 596386366.99
+      }
+    },
+    "6": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ncandidates = ['Harris', 'Bexar']\ncounty = df['County'].astype(str).str.strip().str.title()\ncounts = county[county.isin(candidates)].value_counts()\nanswer = {name: int(counts.get(name, 0)) for name in sorted(candidates, key=lambda name: (-int(counts.get(name, 0)), name))}",
+      "subquestion": "For the counties in <hop 2 answer>, what were the Texas Department of Criminal Justice release counts in 2019?",
+      "answer": {
+        "Harris": 9029,
+        "Bexar": 4545
+      }
+    },
+    "7": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ncandidates = ['Harris', 'Bexar']\ncounty = df['County'].astype(str).str.strip().str.title()\ncounts = county[county.isin(candidates)].value_counts()\nanswer = {name: int(counts.get(name, 0)) for name in sorted(candidates, key=lambda name: (-int(counts.get(name, 0)), name))}",
+      "subquestion": "For the counties in <hop 2 answer>, what were the Texas Department of Criminal Justice release counts in 2020?",
+      "answer": {
+        "Harris": 7059,
+        "Bexar": 3917
+      }
+    },
+    "8": {
+      "source": "wikipedia/San_Antonio/content.txt",
+      "fact": "San Antonio ( ; Spanish for \"Saint Anthony\") is a city in the U.S. state of Texas. It is the seventh-most populous city in the United States, second-most populous city in Texas and second-most populous city in the Southern U.S., with a population of 1.43 million at the 2020 census. The San Antonio metropolitan area, with an estimated 2.76 million residents, ranks as the third-largest metropolitan area in Texas and the 24th-largest in the nation. It is the county seat of Bexar County.",
+      "subquestion": "What are the Texas and United States population ranks of the county-seat city of <hop 3 answer>?",
+      "answer": {
+        "Texas rank": 2,
+        "United States rank": 7
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: The source lists the 23 original counties created by the Republic of Texas in 1836.",
+        "Hop result: keep the set of original Texas counties."
+      ],
+      "answer": [
+        "Austin",
+        "Bastrop",
+        "Bexar",
+        "Brazoria",
+        "Colorado",
+        "Fayette",
+        "Goliad",
+        "Gonzales",
+        "Harris",
+        "Jackson",
+        "Jasper",
+        "Jefferson",
+        "Liberty",
+        "Matagorda",
+        "Milam",
+        "Nacogdoches",
+        "Red River",
+        "Refugio",
+        "Sabine",
+        "San Augustine",
+        "San Patricio",
+        "Shelby",
+        "Victoria"
+      ]
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 2: In `datagov/texas-state-expenditures-by-county-2018/files/rows.txt`, group by `County`, filter `Major Spending Category` to Capital Outlay, and sum `Amount`; the top five are Harris, Dallas, Travis, Montgomery, and Bexar.",
+        "Node 3: In `datagov/texas-state-expenditures-by-county-2019/files/rows.txt`, group by `County`, filter `Major Spending Category` to Capital Outlay, and sum `Amount`; the top five are Harris, Dallas, Travis, Montgomery, and Bexar.",
+        "Node 4: In `datagov/texas-state-expenditures-by-county-2020/files/rows.txt`, group by `County`, filter `Major Spending Category` to Capital Outlay, and sum `Amount`; the top five are Harris, Dallas, Travis, Montgomery, and Bexar.",
+        "Node 5: In `datagov/texas-state-expenditures-by-county-2021/files/rows.txt`, group by `County`, filter `Major Spending Category` to Capital Outlay, and sum `Amount`; the top five are Harris, Dallas, Travis, Montgomery, and Bexar.",
+        "Hop result: intersect the recurring capital-outlay top-five counties with <hop 1 answer>; the original counties that remain are Harris and Bexar."
+      ],
+      "answer": [
+        "Harris",
+        "Bexar"
+      ]
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        6,
+        7
+      ],
+      "reasoning": [
+        "Node 6: In `datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt`, count rows by `County` for <hop 2 answer>: Harris 9,029 and Bexar 4,545.",
+        "Node 7: In `datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt`, count rows by `County` for <hop 2 answer>: Harris 7,059 and Bexar 3,917.",
+        "Hop result: the 2019-2020 average release count is lower for Bexar, so the answer is Bexar County."
+      ],
+      "answer": "Bexar County"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        8
+      ],
+      "reasoning": [
+        "Node 8: The county-seat city of <hop 3 answer> is ranked `2` in Texas population and `7` in United States population.",
+        "Hop result: `7 - 2 = 5`."
+      ],
+      "answer": 5
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/List_of_counties_in_Texas/content.txt",
+    "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2018/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2018/files/f2iw-dtqt.txt",
+    "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2019/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2019/files/2x5x-m677.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2020/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/aact-g69n.publisher-view.json",
+    "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2021/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2021/files/tup7-smjg.publisher-view.json",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
+    "wikipedia/San_Antonio/content.txt"
+  ]
+}

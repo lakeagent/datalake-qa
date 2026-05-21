@@ -1,0 +1,241 @@
+{
+    "question": "Identify the two Texas counties that are in the top 5 in the number of home-based day care sites participating in the federal meal-reimbursement program for children and adults from 2018-2022, while also having less than 14.5% of reported adult-protection victims involved in repeat investigations in 2022. Both counties are named after figures from the Texas Revolution. What is the difference in birth years between the namesakes of these two counties? Your response should be in the format [Answer].",
+    "answer": "13",
+    "nodes": {
+        "1": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nanswer = (\n    df.loc[df[\"ProgramYear\"].astype(str) == \"2018-2019\", \"CECounty\"]\n    .value_counts()\n    .sort_index()\n    .to_dict()\n)",
+            "subquestion": "What is the number of home-based day care sites in each Texas county participating in the federal meal-reimbursement program for children and adults for 2018-2019?",
+            "answer": {
+                "BELL": 7,
+                "BEXAR": 132,
+                "COOKE": 44,
+                "DALLAS": 238,
+                "EL PASO": 143,
+                "FORT BEND": 5,
+                "GRAYSON": 28,
+                "HARRIS": 1342,
+                "HIDALGO": 307,
+                "HUNT": 145,
+                "LUBBOCK": 11,
+                "RANDALL": 48,
+                "ROCKWALL": 27,
+                "TARRANT": 336,
+                "TAYLOR": 691,
+                "TRAVIS": 1287
+            }
+        },
+        "2": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nanswer = (\n    df.loc[df[\"ProgramYear\"].astype(str) == \"2019-2020\", \"CECounty\"]\n    .value_counts()\n    .sort_index()\n    .to_dict()\n)",
+            "subquestion": "What is the number of home-based day care sites in each Texas county participating in the federal meal-reimbursement program for children and adults for 2019-2020?",
+            "answer": {
+                "BELL": 9,
+                "BEXAR": 114,
+                "COOKE": 70,
+                "DALLAS": 243,
+                "EL PASO": 135,
+                "FORT BEND": 3,
+                "GRAYSON": 27,
+                "HARRIS": 1174,
+                "HIDALGO": 271,
+                "HUNT": 133,
+                "LUBBOCK": 7,
+                "RANDALL": 39,
+                "ROCKWALL": 26,
+                "TARRANT": 266,
+                "TAYLOR": 647,
+                "TRAVIS": 1236,
+                "WICHITA": 1
+            }
+        },
+        "3": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nanswer = (\n    df.loc[df[\"ProgramYear\"].astype(str) == \"2020-2021\", \"CECounty\"]\n    .value_counts()\n    .sort_index()\n    .to_dict()\n)",
+            "subquestion": "What is the number of home-based day care sites in each Texas county participating in the federal meal-reimbursement program for children and adults for 2020-2021?",
+            "answer": {
+                "BELL": 10,
+                "BEXAR": 102,
+                "COOKE": 101,
+                "DALLAS": 239,
+                "EL PASO": 120,
+                "FORT BEND": 26,
+                "GRAYSON": 23,
+                "HARRIS": 1046,
+                "HIDALGO": 252,
+                "HUNT": 128,
+                "RANDALL": 34,
+                "ROCKWALL": 25,
+                "TARRANT": 232,
+                "TAYLOR": 643,
+                "TRAVIS": 1175
+            }
+        },
+        "4": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nanswer = (\n    df.loc[df[\"ProgramYear\"].astype(str) == \"2021-2022\", \"CECounty\"]\n    .value_counts()\n    .sort_index()\n    .to_dict()\n)",
+            "subquestion": "What is the number of home-based day care sites in each Texas county participating in the federal meal-reimbursement program for children and adults for 2021-2022?",
+            "answer": {
+                "BELL": 10,
+                "BEXAR": 92,
+                "COOKE": 109,
+                "DALLAS": 218,
+                "EL PASO": 113,
+                "FORT BEND": 359,
+                "GRAYSON": 20,
+                "HARRIS": 759,
+                "HIDALGO": 225,
+                "HUNT": 109,
+                "RANDALL": 25,
+                "ROCKWALL": 22,
+                "TARRANT": 197,
+                "TAYLOR": 726,
+                "TRAVIS": 1139
+            }
+        },
+        "5": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nanswer = (\n    df.loc[df[\"ProgramYear\"].astype(str) == \"2022-2023\", \"CECounty\"]\n    .value_counts()\n    .sort_index()\n    .to_dict()\n)",
+            "subquestion": "What is the number of home-based day care sites in each Texas county participating in the federal meal-reimbursement program for children and adults for 2022-2023?",
+            "answer": {
+                "BELL": 6,
+                "BEXAR": 82,
+                "COOKE": 145,
+                "DALLAS": 255,
+                "EL PASO": 95,
+                "FORT BEND": 193,
+                "HARRIS": 523,
+                "HIDALGO": 215,
+                "TARRANT": 272,
+                "TAYLOR": 807,
+                "TRAVIS": 1214
+            }
+        },
+        "6": {
+            "source": "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ncandidate_counties = [\"Travis\", \"Harris\", \"Taylor\", \"Tarrant\", \"Hidalgo\"]\nanswer = sorted(\n    df.loc[\n        (df[\"Fiscal Year\"] == 2022)\n        & (df[\"County\"].isin(candidate_counties))\n        & (df[\"Recidivism\"] < 0.145),\n        \"County\"\n    ]\n    .tolist()\n)\n",
+            "subquestion": "Among <hop 1 answer>, which counties had less than 14.5% of reported adult-protection victims involved in repeat investigations in 2022?",
+            "answer": [
+                "Tarrant",
+                "Travis"
+            ]
+        },
+        "7": {
+            "source": "wikipedia/Travis_County,_Texas/content.txt",
+            "fact": "The county was established in 1840 and is named in honor of William Barret Travis, the commander of the Republic of Texas forces at the Battle of the Alamo.",
+            "subquestion": "Who is Travis County from <node 6 answer> named after?",
+            "answer": "William Barret Travis"
+        },
+        "8": {
+            "source": "wikipedia/Tarrant_County,_Texas/content.txt",
+            "fact": "It is named after Edward H. Tarrant, a lawyer, politician, and militia leader.",
+            "subquestion": "Who is Tarrant County from <node 6 answer> named after?",
+            "answer": "Edward H. Tarrant"
+        },
+        "9": {
+            "source": "wikipedia/William_B._Travis/content.txt",
+            "fact": "William Barret \"Buck\" Travis (August 1, 1809 – March 6, 1836)",
+            "subquestion": "In what year was <node 7 answer> born?",
+            "answer": "1809"
+        },
+        "10": {
+            "source": "wikipedia/Edward_H._Tarrant/content.txt",
+            "fact": "Edward H. Tarrant (1796 – August 2, 1858)",
+            "subquestion": "In what year was <node 8 answer> born?",
+            "answer": "1796"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Travis_County,_Texas/content.txt",
+        "wikipedia/Tarrant_County,_Texas/content.txt",
+        "wikipedia/William_B._Travis/content.txt",
+        "wikipedia/Edward_H._Tarrant/content.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2018/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2018/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2018/files/ux5j-isg4.publisher-view.json",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2019/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2019/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2019/files/w3xz-zgcf.publisher-view.json",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2020/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2020/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2020/files/mrs3-qzeu.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2021/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2021/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2021/files/xcvs-4au5.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/eyah-a2pn.publisher-view.json",
+        "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt",
+        "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `ProgramYear` equals `2018-2019`, count rows by `CECounty`, and return the county-to-count mapping.",
+                "Node 2: Filter rows where `ProgramYear` equals `2019-2020`, count rows by `CECounty`, and return the county-to-count mapping.",
+                "Node 3: Filter rows where `ProgramYear` equals `2020-2021`, count rows by `CECounty`, and return the county-to-count mapping.",
+                "Node 4: Filter rows where `ProgramYear` equals `2021-2022`, count rows by `CECounty`, and return the county-to-count mapping.",
+                "Node 5: Filter rows where `ProgramYear` equals `2022-2023`, count rows by `CECounty`, and return the county-to-count mapping.",
+                "Hop result: Average the `CECounty` counts across nodes 1-5 and keep the 5 counties with the highest averages: `TRAVIS`, `HARRIS`, `TAYLOR`, `TARRANT`, `HIDALGO`."
+            ],
+            "answer": [
+                "TRAVIS",
+                "HARRIS",
+                "TAYLOR",
+                "TARRANT",
+                "HIDALGO"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Filter rows where `Fiscal Year` equals `2022`, keep counties in <hop 1 answer>, and keep rows where `Recidivism` is less than `0.145`.",
+                "Hop result: The counties from <hop 1 answer> that satisfy the APS recidivism condition are `Tarrant` and `Travis`."
+            ],
+            "answer": [
+                "Tarrant",
+                "Travis"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: Travis County is named in honor of William Barret Travis.",
+                "Node 8: Tarrant County is named after Edward H. Tarrant, a lawyer, politician, and militia leader.",
+                "Hop result: The namesakes of the counties in <hop 2 answer> are `William Barret Travis` and `Edward H. Tarrant`."
+            ],
+            "answer": [
+                "William Barret Travis",
+                "Edward H. Tarrant"
+            ]
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                9,
+                10
+            ],
+            "reasoning": [
+                "Node 9: `William Barret Travis` was born in `1809`.",
+                "Node 10: `Edward H. Tarrant` was born in `1796`.",
+                "Hop result: The difference in birth years is `1809 - 1796 = 13`."
+            ],
+            "answer": "13"
+        }
+    ]
+}

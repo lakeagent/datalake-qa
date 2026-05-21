@@ -1,0 +1,132 @@
+{
+    "question": "From 2015 to 2020, after aggregating across all counties, which three years have the most currently publicly-assisted child support cases, which three years collected the least total funds for currently publicly-assisted child support cases, and which three years have the most children with paternity established? Across the distinct years from those three results, considering children, which counties were in the top 10 every year for adults investigated in abuse-neglect investigations involving those children? Among the counties from that result, how many have a county seat with the same name as the county? Please return only the number in the format [Answer].",
+    "answer": 2,
+    "nodes": {
+        "1": {
+            "source": "datagov/department-of-child-support-services-case-overview-ffy-2015-ffy-2020/files/department-of-child-support-services-case-overview-ffy-2015-ffy-2023.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/department-of-child-support-services-case-overview-ffy-2015-ffy-2020/files/department-of-child-support-services-case-overview-ffy-2015-ffy-2023.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Year\"] = df[\"Year\"].fillna(\"\").astype(str).str.strip()\ndf = df[df[\"Year\"].isin([\"2015\", \"2016\", \"2017\", \"2018\", \"2019\", \"2020\"])].copy()\ndf[\"Case Type\"] = df[\"Case Type\"].fillna(\"\").astype(str).str.strip()\ndf[\"Cases\"] = pd.to_numeric(df[\"Cases\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[df[\"Case Type\"].eq(\"Current Public Assistance\")].copy()\nranked = filtered.groupby(\"Year\", as_index=False)[\"Cases\"].sum().sort_values([\"Cases\", \"Year\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.head(3)[\"Year\"].tolist())\n",
+            "subquestion": "From 2015 to 2020 and after aggregating across all counties, which three years have the largest number of child support cases that are currently receiving public assistance?",
+            "answer": "2015, 2016, 2017"
+        },
+        "2": {
+            "source": "datagov/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-f/files/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-ffy-202.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-f/files/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-ffy-202.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Year\"] = df[\"Year\"].fillna(\"\").astype(str).str.strip()\ndf = df[df[\"Year\"].isin([\"2015\", \"2016\", \"2017\", \"2018\", \"2019\", \"2020\"])].copy()\ndf[\"Assistance Status\"] = df[\"Assistance Status\"].fillna(\"\").astype(str).str.strip()\ndf[\"Amount_num\"] = pd.to_numeric(df[\"Amount\"].astype(str).str.replace(\"$\", \"\", regex=False).str.replace(\",\", \"\", regex=False).str.strip(), errors=\"coerce\")\nstatus_family = {\n    \"Current Public Assistance\": \"Current Assistance Family\",\n    \"Current Assistance\": \"Current Assistance Family\",\n    \"Former Public Assistance\": \"Former Assistance Family\",\n    \"Former Assistance\": \"Former Assistance Family\",\n    \"Never Assisted\": \"Never Assisted Family\",\n    \"Never Assistance\": \"Never Assisted Family\",\n}\ndf[\"assistance_family\"] = df[\"Assistance Status\"].map(status_family)\nfiltered = df[df[\"assistance_family\"].eq(\"Current Assistance Family\")].copy()\nranked = filtered.groupby(\"Year\", as_index=False)[\"Amount_num\"].sum().sort_values([\"Amount_num\", \"Year\"], ascending=[True, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.head(3)[\"Year\"].tolist())\n",
+            "subquestion": "From 2015 to 2020 and after aggregating across all counties, which three years collected the least total funds for currently publicly-assisted child support cases?",
+            "answer": "2019, 2018, 2020"
+        },
+        "3": {
+            "source": "datagov/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2020/files/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2023.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2020/files/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2023.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ncol = \"Children with Paternity Established During Federal Fiscal Year\"\ndf[\"Year\"] = df[\"Year\"].fillna(\"\").astype(str).str.strip()\ndf = df[df[\"Year\"].isin([\"2015\", \"2016\", \"2017\", \"2018\", \"2019\", \"2020\"])].copy()\ndf[col] = pd.to_numeric(df[col].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nranked = df.groupby(\"Year\", as_index=False)[col].sum().sort_values([col, \"Year\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.head(3)[\"Year\"].tolist())\n",
+            "subquestion": "From 2015 to 2020 and after aggregating across all counties, which three years have the largest number of children claimed paternity?",
+            "answer": "2015, 2016, 2017"
+        },
+        "4": {
+            "source": "datagov/cpi-3-7-adults-and-children-in-abuse-neglect-investigations-fy2013-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/cpi-3-7-adults-and-children-in-abuse-neglect-investigations-fy2013-2022/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_1_answer = \"2015, 2016, 2017; 2019, 2018, 2020; 2015, 2016, 2017\"\ntarget_years = []\nfor value in [part.strip() for part in str(hop_1_answer).split(\";\") if part.strip()]:\n    target_years.extend([part.strip() for part in str(value).split(\",\") if part.strip()])\ntarget_years = sorted(set(target_years), key=int)\n\ndf[\"Fiscal Year\"] = df[\"Fiscal Year\"].fillna(\"\").astype(str).str.strip()\ndf[\"County\"] = df[\"County\"].fillna(\"\").astype(str).str.strip()\ndf[\"Client Type\"] = df[\"Client Type\"].fillna(\"\").astype(str).str.strip()\ndf[\"Principals in Investigations_num\"] = pd.to_numeric(df[\"Principals in Investigations\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nper_year_top10 = []\nfor year in target_years:\n    yearly = df[\n        df[\"Fiscal Year\"].eq(year)\n        & df[\"Client Type\"].eq(\"Children\")\n        & df[\"County\"].ne(\"\")\n        & df[\"Principals in Investigations_num\"].notna()\n    ].copy()\n    ranked = yearly.groupby(\"County\", as_index=False)[\"Principals in Investigations_num\"].sum().sort_values(\n        [\"Principals in Investigations_num\", \"County\"],\n        ascending=[False, True],\n        kind=\"mergesort\"\n    ).reset_index(drop=True)\n    per_year_top10.append(set(ranked.head(10)[\"County\"].tolist()))\ncommon_counties = sorted(set.intersection(*per_year_top10))\nanswer = \", \".join(common_counties)\n",
+            "subquestion": "Across the distinct years in <hop 1 answer>, considering children, which counties were in the top 10 every year for adults investigated in abuse-neglect investigations involving those children?",
+            "answer": "Bexar, Dallas, El Paso, Harris, Hidalgo, Tarrant, Travis"
+        },
+        "5": {
+            "source": "wikipedia/Bexar_County,_Texas/content.txt",
+            "fact": "Bexar County (  or  ;  ) is a county in the U.S. state of Texas. It is in South Texas and its county seat is San Antonio.\n\nAs of the 2020 census, the population was 2,009,324, making it the state's fourth-most populous county.",
+            "subquestion": "What is the county seat of the first county in <hop 2 answer> (Bexar County)?",
+            "answer": "San Antonio"
+        },
+        "6": {
+            "source": "wikipedia/Dallas_County,_Texas/content.txt",
+            "fact": "Dallas County is a county located in the U.S. state of Texas. As of the 2020 census, the population was 2,613,539, and was estimated to be 2,656,028 in 2024, making it the second-most populous county in Texas and the eighth-most populous county in the United States. Its county seat is Dallas, the third-most populous city in Texas and the ninth-most populous city in the United States.",
+            "subquestion": "What is the county seat of the second county in <hop 2 answer> (Dallas County)?",
+            "answer": "Dallas"
+        },
+        "7": {
+            "source": "wikipedia/El_Paso_County,_Texas/content.txt",
+            "fact": "El Paso County is the westernmost county in the U.S. state of Texas. As of the 2020 census, its population was 865,657, making it the ninth-most populous county in Texas. Its county seat is the city of El Paso, the sixth-most populous city in Texas and the 22nd-most populous city in the United States.",
+            "subquestion": "What is the county seat of the third county in <hop 2 answer> (El Paso County)?",
+            "answer": "El Paso"
+        },
+        "8": {
+            "source": "wikipedia/Harris_County,_Texas/content.txt",
+            "fact": "Harris County is a county located in the U.S. state of Texas. As of the 2020 census, the population was 4,731,145, and was estimated to be 5,009,302 in 2024, making it the most populous county in Texas and the third-most populous county in the United States. Its county seat is Houston, the most populous city in Texas and the fourth-most populous city in the United States.",
+            "subquestion": "What is the county seat of the fourth county in <hop 2 answer> (Harris County)?",
+            "answer": "Houston"
+        },
+        "9": {
+            "source": "wikipedia/Hidalgo_County,_Texas/content.txt",
+            "fact": "Hidalgo County (; ) is located in the U.S. state of Texas. As of the 2024 census estimate, its population was 914,820, making it the ninth-most populous county in Texas, and the most populous county outside of the counties in the Texas Triangle. However, based on housing permits and service usage, county officials believe the true population is around 1.2 million, if 'a full and accurate census count is completed.' The county seat is Edinburg and the largest city is McAllen.",
+            "subquestion": "What is the county seat of the fifth county in <hop 2 answer> (Hidalgo County)?",
+            "answer": "Edinburg"
+        },
+        "10": {
+            "source": "wikipedia/Tarrant_County,_Texas/content.txt",
+            "fact": "Tarrant County is a county located in the U.S. state of Texas with a 2020 U.S. census population of 2,110,640, making it the third-most populous county in Texas and the 15th-most populous in the United States. Its county seat is Fort Worth.",
+            "subquestion": "What is the county seat of the sixth county in <hop 2 answer> (Tarrant County)?",
+            "answer": "Fort Worth"
+        },
+        "11": {
+            "source": "wikipedia/Travis_County,_Texas/content.txt",
+            "fact": "Travis County is located in Central Texas. As of the 2020 census, the population was 1,290,188. It is the fifth-most populous county in Texas. Its county seat and most populous city is Austin, the state's capital.",
+            "subquestion": "What is the county seat of the seventh county in <hop 2 answer> (Travis County)?",
+            "answer": "Austin"
+        }
+    },
+    "datasets_used": [
+        "datagov/department-of-child-support-services-case-overview-ffy-2015-ffy-2020/files/department-of-child-support-services-case-overview-ffy-2015-ffy-2023.txt",
+        "datagov/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-f/files/department-of-child-support-services-distributed-collections-by-assistance-type-ffy-2015-ffy-202.txt",
+        "datagov/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2020/files/department-of-child-support-services-paternity-establishment-ffy-2015-ffy-2023.txt",
+        "datagov/cpi-3-7-adults-and-children-in-abuse-neglect-investigations-fy2013-2022/files/rows.txt",
+        "wikipedia/Bexar_County,_Texas/content.txt",
+        "wikipedia/Dallas_County,_Texas/content.txt",
+        "wikipedia/El_Paso_County,_Texas/content.txt",
+        "wikipedia/Harris_County,_Texas/content.txt",
+        "wikipedia/Hidalgo_County,_Texas/content.txt",
+        "wikipedia/Tarrant_County,_Texas/content.txt",
+        "wikipedia/Travis_County,_Texas/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: After aggregating all counties from 2015 to 2020, the three years with the largest number of child support cases involving families currently receiving public assistance are 2015, 2016, and 2017.",
+                "Node 2: After aggregating all counties from 2015 to 2020 and treating the two current-assistance naming variants as the same group, the three years with the smallest total collections are 2019, 2018, and 2020.",
+                "Node 3: After aggregating all counties from 2015 to 2020, the three years with the largest number of children for whom paternity was established are 2015, 2016, and 2017.",
+                "Hop result: 2015, 2016, 2017; 2019, 2018, 2020; 2015, 2016, 2017"
+            ],
+            "answer": "2015, 2016, 2017; 2019, 2018, 2020; 2015, 2016, 2017"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Collect every distinct year that appears in <hop 1 answer>, which gives 2015, 2016, 2017, 2018, 2019, and 2020.",
+                "In the abuse-neglect investigations dataset, keep only Client Type = Children, rank counties within each of those years by principals in investigations, and take the top 10 each year.",
+                "The counties that appear in the top 10 in every one of those years are Bexar, Dallas, El Paso, Harris, Hidalgo, Tarrant, and Travis."
+            ],
+            "answer": "Bexar, Dallas, El Paso, Harris, Hidalgo, Tarrant, Travis"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11
+            ],
+            "reasoning": [
+                "Nodes 5 through 11 give the county seats for the counties in <hop 2 answer>: Bexar -> San Antonio, Dallas -> Dallas, El Paso -> El Paso, Harris -> Houston, Hidalgo -> Edinburg, Tarrant -> Fort Worth, and Travis -> Austin.",
+                "Only Dallas County and El Paso County have county seats with the same name as the county.",
+                "Hop result: 2."
+            ],
+            "answer": 2
+        }
+    ]
+}

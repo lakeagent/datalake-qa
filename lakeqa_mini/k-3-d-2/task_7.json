@@ -1,0 +1,79 @@
+{
+    "question": "For the largest city in Illinois, what is the number of private schools in its county in school year 2021-2022 minus the number of postsecondary institutions in that county in school year 2022-2023? Your response should be in the format [Answer].",
+    "answer": "146",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Illinois/content.txt",
+            "fact": "Illinois's largest city is Chicago.",
+            "subquestion": "What is the largest city in Illinois?",
+            "answer": "Chicago"
+        },
+        "2": {
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Chicago'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n]\nanswer = filtered[\"NMCNTY\"].dropna().astype(str).str.strip().iloc[0]\n",
+            "subquestion": "In school year 2022-2023, among school district offices located in the city of <node_1 answer>, what is the county name?",
+            "answer": "Cook County"
+        },
+        "3": {
+            "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Chicago'\nnode_2_answer = 'Cook County'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2021-2022')\n].copy()\nfiltered = filtered[filtered[\"NMCNTY\"].astype(str).str.strip().str.lower().eq(str(node_2_answer).strip().lower())]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In school year 2021-2022, how many private schools are located in the city of <node_1 answer> in <node_2 answer>?",
+            "answer": "218"
+        },
+        "4": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Chicago'\nnode_2_answer = 'Cook County'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n].copy()\nfiltered = filtered[filtered[\"NMCNTY\"].astype(str).str.strip().str.lower().eq(str(node_2_answer).strip().lower())]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In school year 2022-2023, how many postsecondary institutions are located in the city of <node_1 answer> in <node_2 answer>?",
+            "answer": "72"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Illinois/content.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+        "datagov/private-school-locations-current-f7d96/signed-metadata.txt",
+        "datagov/private-school-locations-current-f7d96/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Chicago is the largest city in Illinois.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Chicago"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `CITY` is <hop 1 answer> and `SCHOOLYEAR` is 2022-2023, then take the `NMCNTY` value from the first matching record.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Cook County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `CITY` is <hop 1 answer>, `SCHOOLYEAR` is 2021-2022, and `NMCNTY` is <hop 2 answer>, then count the matching records.",
+                "Node 4: Filter rows where `CITY` is <hop 1 answer>, `SCHOOLYEAR` is 2022-2023, and `NMCNTY` is <hop 2 answer>, then count the matching records.",
+                "Hop result: <node_3 answer> - <node_4 answer> = 218 - 72 = 146."
+            ],
+            "answer": "146"
+        }
+    ]
+}

@@ -1,0 +1,256 @@
+{
+    "question": "I'm looking for a specific Texas county that was among the top five counties by average capital outlay spending from 2018 to 2021. Among those five, this county was one of the two highest for average prison releases in 2019-2020, and unlike its peer, it saw an increase in veterans who are receiving disability-compensation payments from 2020 to 2023. Once you identify this county, tell me which University of Houston System university located in its county seat was founded earliest. Only report the name of the university. Your response should be in the format [Answer].",
+    "answer": "University of Houston",
+    "nodes": {
+        "1": {
+            "source": "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-state-expenditures-by-county-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[\n        (df[\"Fiscal Year\"] == 2018)\n        & df[\"Major Spending Category\"].astype(str).str.contains(\"CAPITAL OUTLAY\", case=False, na=False)\n        & df[\"County\"].notna()\n        & (df[\"County\"].astype(str).str.strip() != \"\")\n    ]\n    .groupby(\"County\", as_index=False)[\"Amount\"]\n    .sum()\n    .sort_values(\"Amount\", ascending=False)\n    .reset_index(drop=True)\n)\nresult[\"Amount\"] = result[\"Amount\"].round(2)\nanswer = dict(result.itertuples(index=False, name=None))",
+            "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2018?",
+            "limit": 5,
+            "answer": {
+                "HARRIS": 1303630847.3,
+                "DALLAS": 838316444.65,
+                "TRAVIS": 427160745.36,
+                "MONTGOMERY": 424383088.05,
+                "BEXAR": 269462082.97
+            }
+        },
+        "2": {
+            "source": "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-state-expenditures-by-county-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[\n        (df[\"Fiscal Year\"] == 2019)\n        & df[\"Major Spending Category\"].astype(str).str.contains(\"CAPITAL OUTLAY\", case=False, na=False)\n        & df[\"County\"].notna()\n        & (df[\"County\"].astype(str).str.strip() != \"\")\n    ]\n    .groupby(\"County\", as_index=False)[\"Amount\"]\n    .sum()\n    .sort_values(\"Amount\", ascending=False)\n    .reset_index(drop=True)\n)\n\nanswer = dict(result.itertuples(index=False, name=None))",
+            "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2019?",
+            "limit": 5,
+            "answer": {
+                "HARRIS": 1391779835.06,
+                "DALLAS": 827510409.8,
+                "TRAVIS": 614936080.37,
+                "MONTGOMERY": 416744287.28000003,
+                "BEXAR": 302940592.71999997
+            }
+        },
+        "3": {
+            "source": "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-state-expenditures-by-county-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[\n        (df[\"Fiscal Year\"] == 2020)\n        & df[\"Major Spending Category\"].astype(str).str.contains(\"CAPITAL OUTLAY\", case=False, na=False)\n        & df[\"County\"].notna()\n        & (df[\"County\"].astype(str).str.strip() != \"\")\n    ]\n    .groupby(\"County\", as_index=False)[\"Amount\"]\n    .sum()\n    .sort_values(\"Amount\", ascending=False)\n    .reset_index(drop=True)\n)\n\nanswer = dict(result.itertuples(index=False, name=None))",
+            "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2020?",
+            "limit": 5,
+            "answer": {
+                "HARRIS": 1663151150.96,
+                "DALLAS": 1324261419.12,
+                "TRAVIS": 821945717.49,
+                "MONTGOMERY": 612813968.49,
+                "BEXAR": 494340352.72
+            }
+        },
+        "4": {
+            "source": "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-state-expenditures-by-county-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[\n        (df[\"Fiscal Year\"] == 2021)\n        & df[\"Major Spending Category\"].astype(str).str.contains(\"CAPITAL_OUTLAY|CAPITAL OUTLAY\", case=False, na=False, regex=True)\n        & df[\"County\"].notna()\n        & (df[\"County\"].astype(str).str.strip() != \"\")\n    ]\n    .groupby(\"County\", as_index=False)[\"Amount\"]\n    .sum()\n    .sort_values(\"Amount\", ascending=False)\n    .reset_index(drop=True)\n)\n\nanswer = dict(result.itertuples(index=False, name=None))",
+            "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2021?",
+            "limit": 5,
+            "answer": {
+                "HARRIS": 1741663003.6799998,
+                "DALLAS": 1171406639.17,
+                "TRAVIS": 774601022.23,
+                "MONTGOMERY": 705433711.03,
+                "BEXAR": 596386366.99
+            }
+        },
+        "5": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncandidate_counties = {\"HARRIS\", \"DALLAS\", \"BEXAR\", \"TRAVIS\", \"MONTGOMERY\"}\ncounty_col = df[\"County\"].astype(str).str.upper().str.strip()\n\nresult = (\n    df.assign(County=county_col)\n    .loc[county_col.isin(candidate_counties)]\n    .groupby(\"County\", as_index=False)\n    .size()\n    .rename(columns={\"size\": \"Releases\"})\n    .sort_values(\"Releases\", ascending=False)\n    .reset_index(drop=True)\n)\n\nanswer = dict(result[[\"County\", \"Releases\"]].itertuples(index=False, name=None))",
+            "subquestion": "In 2019, among <hop 1 answer>, which counties were in the statewide top 5 for releases from the Texas state prison system?",
+            "answer": {
+                "HARRIS": 9029,
+                "DALLAS": 5355,
+                "BEXAR": 4545,
+                "TRAVIS": 1857,
+                "MONTGOMERY": 1315
+            }
+        },
+        "6": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncandidate_counties = {\"HARRIS\", \"DALLAS\", \"BEXAR\", \"TRAVIS\", \"MONTGOMERY\"}\ncounty_col = df[\"County\"].astype(str).str.upper().str.strip()\n\nresult = (\n    df.assign(County=county_col)\n    .loc[county_col.isin(candidate_counties)]\n    .groupby(\"County\", as_index=False)\n    .size()\n    .rename(columns={\"size\": \"Releases\"})\n    .sort_values(\"Releases\", ascending=False)\n    .reset_index(drop=True)\n)\n\nanswer = dict(result[[\"County\", \"Releases\"]].itertuples(index=False, name=None))",
+            "subquestion": "In 2020, among <hop 1 answer>, which counties were in the statewide top 5 for releases from the Texas state prison system?",
+            "answer": {
+                "HARRIS": 7059,
+                "DALLAS": 4540,
+                "BEXAR": 3917,
+                "TRAVIS": 1596,
+                "MONTGOMERY": 1250
+            }
+        },
+        "7": {
+            "source": "datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncandidate_counties = {\"Harris\", \"Dallas\"}\n\nresult = (\n    df[\n        (df[\"State\"] == \"Texas\")\n        & df[\"County Name\"].isin(candidate_counties)\n    ][[\"County Name\", \"Total: Disability Compensation Recipients\"]]\n    .sort_values(\"Total: Disability Compensation Recipients\", ascending=False)\n    .reset_index(drop=True)\n)\n\nanswer = dict(result.itertuples(index=False, name=None))",
+            "subquestion": "For <hop 2 answer>, what were the number of veterans who are receiving disability-compensation payments in 2020?",
+            "answer": {
+                "Harris": 49804.0,
+                "Dallas": 26317.0
+            }
+        },
+        "8": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncandidate_counties = {\"Harris\", \"Dallas\"}\n\nresult = (\n    df[\n        (df[\"State\"] == \"Texas\")\n        & df[\"County Name\"].isin(candidate_counties)\n    ][[\"County Name\", \"Total: Disability Compensation Recipients\"]]\n    .sort_values(\"Total: Disability Compensation Recipients\", ascending=False)\n    .reset_index(drop=True)\n)\n\nanswer = dict(result.itertuples(index=False, name=None))",
+            "subquestion": "For <hop 2 answer>, what were the number of veterans who are receiving disability-compensation payments in 2023?",
+            "answer": {
+                "Harris": 54266.0,
+                "Dallas": 25704.0
+            }
+        },
+        "9": {
+            "source": "wikipedia/Harris_County,_Texas/content.txt",
+            "fact": "Its county seat is Houston, the most populous city in Texas and the fourth-most populous city in the United States.",
+            "subquestion": "What is the county seat of <hop 3 answer>?",
+            "answer": "Houston"
+        },
+        "10": {
+            "source": "wikipedia/Houston/content.txt",
+            "fact": "The University of Houston has nearly 44,000 students on its campus in the Third Ward. The University of Houston–Clear Lake and the University of Houston–Downtown are universities within the University of Houston System; they are not branch campuses of the University of Houston.",
+            "subquestion": "Which University of Houston System universities are identified in <hop 4 answer> as being in that city?",
+            "answer": [
+                "University of Houston",
+                "University of Houston–Clear Lake",
+                "University of Houston–Downtown"
+            ]
+        },
+        "11": {
+            "source": "wikipedia/University_of_Houston/content.txt",
+            "fact": "It was established in 1927 as Houston Junior College, a coeducational institution and one of multiple junior colleges formed in the first decades of the 20th century.",
+            "subquestion": "When was University of Houston established?",
+            "answer": 1927
+        },
+        "12": {
+            "source": "wikipedia/University_of_Houston–Clear_Lake/content.txt",
+            "fact": "It is part of the University of Houston System. Founded in 1971, UHCL had an enrollment of more than 9,000 students for fall 2019.",
+            "subquestion": "When was University of Houston-Clear Lake established?",
+            "answer": 1971
+        },
+        "13": {
+            "source": "wikipedia/University_of_Houston–Downtown/content.txt",
+            "fact": "Established in 1974 as University of Houston-Downtown College (UH-DC), it has a campus in Downtown Houston with a satellite location, UHD-Northwest, inside Lone Star College-University Park.",
+            "subquestion": "When was University of Houston-Downtown established?",
+            "answer": 1974
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Group the FY2018 expenditures table by `County`, sum `Amount` where `Fiscal Year` = 2018 and `Major Spending Category` contains `CAPITAL OUTLAY`, and keep the full county-to-total map.",
+                "Node 2: Group the FY2019 expenditures table by `County`, sum `Amount` where `Fiscal Year` = 2019 and `Major Spending Category` contains `CAPITAL OUTLAY`, and keep the full county-to-total map.",
+                "Node 3: Group the FY2020 expenditures table by `County`, sum `Amount` where `Fiscal Year` = 2020 and `Major Spending Category` contains `CAPITAL OUTLAY`, and keep the full county-to-total map.",
+                "Node 4: Group the FY2021 expenditures table by `County`, sum `Amount` where `Fiscal Year` = 2021 and `Major Spending Category` contains `CAPITAL OUTLAY`, and keep the full county-to-total map.",
+                "Hop result: average each county's capital outlay total across FY2018-FY2021 and keep the five counties with the highest averages: HARRIS, DALLAS, TRAVIS, MONTGOMERY, and BEXAR."
+            ],
+            "answer": [
+                "HARRIS",
+                "DALLAS",
+                "TRAVIS",
+                "MONTGOMERY",
+                "BEXAR"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Count FY2019 TDCJ release rows by `County`, normalize county names to uppercase, and keep the counts for the counties in <hop 1 answer>.",
+                "Node 6: Count FY2020 TDCJ release rows by `County`, normalize county names to uppercase, and keep the counts for the counties in <hop 1 answer>.",
+                "Hop result: average the FY2019 and FY2020 release counts for the counties in <hop 1 answer> and keep the two counties with the highest averages: HARRIS and DALLAS."
+            ],
+            "answer": [
+                "HARRIS",
+                "DALLAS"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: Read the FY2020 `Total: Disability Compensation Recipients` values for the Texas counties in <hop 2 answer>.",
+                "Node 8: Read the FY2023 `Total: Disability Compensation Recipients` values for the Texas counties in <hop 2 answer>.",
+                "Hop result: compare the FY2023 minus FY2020 change for the two counties; Harris increases while Dallas decreases, so the target county is Harris County."
+            ],
+            "answer": "Harris County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: Read the county seat of <hop 3 answer> from the cited Wikipedia source.",
+                "Hop result: the county seat is Houston."
+            ],
+            "answer": "Houston"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: Read the University of Houston System universities located in <hop 4 answer> from the cited Wikipedia source.",
+                "Hop result: the universities are University of Houston, University of Houston–Clear Lake, and University of Houston–Downtown."
+            ],
+            "answer": [
+                "University of Houston",
+                "University of Houston–Clear Lake",
+                "University of Houston–Downtown"
+            ]
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                11,
+                12,
+                13
+            ],
+            "reasoning": [
+                "Node 11: Read the founding year of the University of Houston from the cited Wikipedia source.",
+                "Node 12: Read the founding year of the University of Houston–Clear Lake from the cited Wikipedia source.",
+                "Node 13: Read the founding year of the University of Houston–Downtown from the cited Wikipedia source.",
+                "Hop result: compare the three founding years and select the earliest university; 1927 is earlier than 1971 and 1974, so the answer is University of Houston."
+            ],
+            "answer": "University of Houston"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Harris_County,_Texas/content.txt",
+        "wikipedia/Houston/content.txt",
+        "wikipedia/University_of_Houston/content.txt",
+        "wikipedia/University_of_Houston–Clear_Lake/content.txt",
+        "wikipedia/University_of_Houston–Downtown/content.txt",
+        "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2018/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2018/files/f2iw-dtqt.txt",
+        "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2019/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2019/files/2x5x-m677.txt",
+        "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2020/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2020/files/aact-g69n.publisher-view.json",
+        "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2021/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2021/files/tup7-smjg.publisher-view.json",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
+        "datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2020-disability-compensation-recipients-by-county/signed-metadata.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt"
+    ]
+}

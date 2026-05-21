@@ -1,0 +1,198 @@
+{
+    "question": "What is the non-profit initiative for computer science education founded by Ali Partovi in 2013? Within its based state, consider counties that are in the top 3 by public schools, in the top 3 by private schools, and in the top 3 by school district offices. Using postsecondary institution counts for those counties, identify the single county with the most postsecondary institutions. For that county, compute public schools + private schools - postsecondary institutions - school district offices. Give the final answer as an integer.",
+    "answer": "668",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Ali_Partovi/content.txt",
+            "fact": "Ali and Hadi created Code.org in 2013 as a non-profit initiative to promote computer science",
+            "subquestion": "Ali Partovi co-founded which nonprofit initiative focused on computer science education?",
+            "answer": "Code.org"
+        },
+        "2": {
+            "source": "wikipedia/Code.org/content.txt",
+            "fact": "Category:Non-profit organizations based in Seattle",
+            "subquestion": "<hop 1 answer> is based in what city?",
+            "answer": "Seattle"
+        },
+        "3": {
+            "source": "wikipedia/Seattle/content.txt",
+            "fact": "The city is the county seat of King County",
+            "subquestion": "<hop 2 answer> is a city in which county?",
+            "answer": "King County"
+        },
+        "4": {
+            "source": "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+            "fact": "In the school district office listings, there are 5 entry(ies) with CITY='Seattle' and NMCNTY='King County', and they all use the same two-digit state FIPS code (STFIP): 53.",
+            "subquestion": "In the school district office listings, entries with CITY='<hop 2 answer>' and NMCNTY='<hop 3 answer>' share what two-digit state FIPS code (STFIP)?",
+            "answer": "53"
+        },
+        "5": {
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "For STFIP=53, the 3 counties with the most public schools are: King County (539); Pierce County (287); Snohomish County (229). The next county is Spokane County (184), so the cut is unique.",
+            "subquestion": "For STFIP='<node_4 answer>', which 3 county names have the most public schools? Return the county names separated by '; '.",
+            "answer": "King County; Pierce County; Snohomish County"
+        },
+        "6": {
+            "source": "datagov/private-school-locations-2021-22-1ec7b/files/nces::private-school-locations-2021-22.txt",
+            "fact": "For STFIP=53, the 3 counties with the most private schools are: King County (210); Spokane County (40); Pierce County (37). The next county is Snohomish County (36), so the cut is unique.",
+            "subquestion": "For STFIP='<node_4 answer>', which 3 county names have the most private schools? Return the county names separated by '; '.",
+            "answer": "King County; Spokane County; Pierce County"
+        },
+        "7": {
+            "source": "datagov/school-district-office-locations-2021-22-4ff1f/files/nces::school-district-office-locations-2021-22.txt",
+            "fact": "import io\nimport json\nimport csv\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-2021-22-4ff1f/files/nces::school-district-office-locations-2021-22.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\"\\x01\", header=None, names=[\"line\"], engine=\"python\", quoting=csv.QUOTE_NONE)\ngeojson = json.loads(\"\\n\".join(df[\"line\"].tolist()))\nproperties = pd.json_normalize([feature[\"properties\"] for feature in geojson[\"features\"]])\n\ncounty_counts = (\n    properties.loc[properties[\"STFIP\"].astype(str) == \"53\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .reset_index(name=\"school_district_office_count\")\n    .sort_values([\"school_district_office_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = \"; \".join(county_counts.head(3)[\"NMCNTY\"].tolist())",
+            "subquestion": "For STFIP='<node_4 answer>', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+            "answer": "King County; Pierce County; Spokane County"
+        },
+        "8": {
+            "source": "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+            "fact": "import io\nimport json\nimport csv\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\"\\x01\", header=None, names=[\"line\"], engine=\"python\", quoting=csv.QUOTE_NONE)\ngeojson = json.loads(\"\\n\".join(df[\"line\"].tolist()))\nproperties = pd.json_normalize([feature[\"properties\"] for feature in geojson[\"features\"]])\n\npublic_top3 = {\"King County\", \"Pierce County\", \"Snohomish County\"}\nprivate_top3 = {\"King County\", \"Spokane County\", \"Pierce County\"}\ndistrict_top3 = {\"King County\", \"Pierce County\", \"Spokane County\"}\ncandidate_counties = public_top3 & private_top3 & district_top3\n\ncounty_counts = (\n    properties.loc[\n        (properties[\"STFIP\"].astype(str) == \"53\")\n        & (properties[\"NMCNTY\"].isin(candidate_counties))\n    ]\n    .groupby(\"NMCNTY\")\n    .size()\n    .reset_index(name=\"postsecondary_count\")\n    .sort_values([\"postsecondary_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = county_counts.iloc[0][\"NMCNTY\"]",
+            "subquestion": "Among the counties in <hop 5 answer>, what are the postsecondary institution counts in STFIP='53', and which county is highest?",
+            "answer": "King County"
+        },
+        "9": {
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "import io\nimport json\nimport csv\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-current-23297/files/data-oyCYxF.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\"\\x01\", header=None, names=[\"line\"], engine=\"python\", quoting=csv.QUOTE_NONE)\ngeojson = json.loads(\"\\n\".join(df[\"line\"].tolist()))\nproperties = pd.json_normalize([feature[\"properties\"] for feature in geojson[\"features\"]])\n\nanswer = int(\n    properties.loc[\n        (properties[\"STFIP\"].astype(str) == \"53\")\n        & (properties[\"NMCNTY\"] == \"King County\")\n    ].shape[0]\n)",
+            "subquestion": "How many public schools have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 539
+        },
+        "10": {
+            "source": "datagov/private-school-locations-2021-22-1ec7b/files/nces::private-school-locations-2021-22.txt",
+            "fact": "import io\nimport json\nimport csv\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-2021-22-1ec7b/files/nces::private-school-locations-2021-22.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\"\\x01\", header=None, names=[\"line\"], engine=\"python\", quoting=csv.QUOTE_NONE)\ngeojson = json.loads(\"\\n\".join(df[\"line\"].tolist()))\nproperties = pd.json_normalize([feature[\"properties\"] for feature in geojson[\"features\"]])\n\nanswer = int(\n    properties.loc[\n        (properties[\"STFIP\"].astype(str) == \"53\")\n        & (properties[\"NMCNTY\"] == \"King County\")\n    ].shape[0]\n)",
+            "subquestion": "How many private schools have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 210
+        },
+        "11": {
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import io\nimport json\nimport csv\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\"\\x01\", header=None, names=[\"line\"], engine=\"python\", quoting=csv.QUOTE_NONE)\ngeojson = json.loads(\"\\n\".join(df[\"line\"].tolist()))\nproperties = pd.json_normalize([feature[\"properties\"] for feature in geojson[\"features\"]])\n\nanswer = int(\n    properties.loc[\n        (properties[\"STFIP\"].astype(str) == \"53\")\n        & (properties[\"NMCNTY\"] == \"King County\")\n    ].shape[0]\n)",
+            "subquestion": "How many school district offices have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 33
+        },
+        "12": {
+            "source": "datagov/postsecondary-school-locations-2016-17-cf06a/files/data-umq4xU.txt",
+            "fact": "import io\nimport json\nimport csv\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-2016-17-cf06a/files/data-umq4xU.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\"\\x01\", header=None, names=[\"line\"], engine=\"python\", quoting=csv.QUOTE_NONE)\ngeojson = json.loads(\"\\n\".join(df[\"line\"].tolist()))\nproperties = pd.json_normalize([feature[\"properties\"] for feature in geojson[\"features\"]])\n\nanswer = int(\n    properties.loc[\n        (properties[\"STFIP\"].astype(str) == \"53\")\n        & (properties[\"NMCNTY\"].astype(str).str.lower() == \"king county\")\n    ].shape[0]\n)",
+            "subquestion": "How many postsecondary institutions have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>' (case insensitive)?",
+            "answer": 48
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Read the nonprofit initiative focused on computer science education that Ali Partovi co-founded from the cited Wikipedia source.",
+                "Hop result: the nonprofit is Code.org."
+            ],
+            "answer": "Code.org"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Read the city where <hop 1 answer> is based from the cited Wikipedia source.",
+                "Hop result: the city is Seattle."
+            ],
+            "answer": "Seattle"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Read the county containing <hop 2 answer> from the cited Seattle Wikipedia source.",
+                "Hop result: the county is King County."
+            ],
+            "answer": "King County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3 establishes that <hop 2 answer> is in the U.S. state of Washington.",
+                "Node 4 maps the city/county pair `<hop 2 answer>`, `<hop 3 answer>` to the shared two-digit state FIPS code `53`, which is the dataset key needed for the downstream statewide queries.",
+                "Hop result: the relevant state is Washington, queried downstream via `STFIP` 53."
+            ],
+            "answer": "Washington"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5,
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 5: For `STFIP` = `53`, count public schools by county and keep the top three county names.",
+                "Node 6: For `STFIP` = `53`, count private schools by county and keep the top three county names.",
+                "Node 7: For `STFIP` = `53`, count school district offices by county and keep the top three county names.",
+                "Hop result: intersect the three top-three county sets; the shared counties are King County and Pierce County."
+            ],
+            "answer": [
+                "King County",
+                "Pierce County"
+            ]
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: For `STFIP` = `53`, count postsecondary institutions by county, restrict to the counties in <hop 5 answer>, and keep the county with the highest count.",
+                "Hop result: the county is King County."
+            ],
+            "answer": "King County"
+        },
+        {
+            "hop": 7,
+            "node_ids": [
+                9,
+                10,
+                11,
+                12
+            ],
+            "reasoning": [
+                "Node 9: For `STFIP` = `53` and `NMCNTY` = <hop 6 answer>, count public schools.",
+                "Node 10: For `STFIP` = `53` and `NMCNTY` = <hop 6 answer>, count private schools.",
+                "Node 11: For `STFIP` = `53` and `NMCNTY` = <hop 6 answer>, count school district offices.",
+                "Node 12: For `STFIP` = `53` and `NMCNTY` matching <hop 6 answer> case-insensitively, count postsecondary institutions.",
+                "Hop result: compute `(539 + 210) - (48 + 33) = 668`."
+            ],
+            "answer": 668
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Ali_Partovi/content.txt",
+        "wikipedia/Code.org/content.txt",
+        "wikipedia/Seattle/content.txt",
+        "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+        "datagov/school-district-office-locations-current-d848f/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-d848f/files/0.arcgis-layer.json",
+        "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+        "datagov/public-school-locations-current-23297/signed-metadata.txt",
+        "datagov/public-school-locations-current-23297/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-2021-22-1ec7b/files/nces::private-school-locations-2021-22.txt",
+        "datagov/private-school-locations-2021-22-1ec7b/signed-metadata.txt",
+        "datagov/private-school-locations-2021-22-1ec7b/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2021-22-4ff1f/files/nces::school-district-office-locations-2021-22.txt",
+        "datagov/school-district-office-locations-2021-22-4ff1f/signed-metadata.txt",
+        "datagov/school-district-office-locations-2021-22-4ff1f/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+        "datagov/postsecondary-school-locations-2022-23/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2022-23/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2016-17-cf06a/files/data-umq4xU.txt",
+        "datagov/postsecondary-school-locations-2016-17-cf06a/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2016-17-cf06a/files/0.arcgis-layer.json"
+    ]
+}

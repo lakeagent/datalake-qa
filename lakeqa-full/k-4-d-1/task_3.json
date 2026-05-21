@@ -1,0 +1,85 @@
+{
+    "question": "I’m interested in the northernmost borough of New York City. Within that borough, identify the NYPD precinct with the most shooting cases in 2021. Then, for that same borough and precinct, count how many shooting cases in 2022 occurred in the same location-position category as the most common (non-null) location-position category in complaint incidents reported by NYPD in 2021. Only report the 2022 count. Your response should be in the format [Answer].",
+    "answer": "64",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/The_Bronx/content.txt",
+            "fact": "The Bronx is described as the northernmost of New York City’s five boroughs.",
+            "subquestion": "Which New York City borough is described as the northernmost of the five boroughs?",
+            "answer": "BRONX"
+        },
+        "2": {
+            "source": "datagov/nypd-shooting-incident-data-historic/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = \"datagov/nypd-shooting-incident-data-historic/files/rows.txt\"\nbucket = os.environ.get(\"LAKEQA_BUCKET\", \"lakeqa-yc4103-datalake\")\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\n\nnode_1_answer = \"BRONX\"\ncounts = {}\n\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"OCCUR_DATE\", \"BORO\", \"PRECINCT\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    years = pd.to_datetime(chunk[\"OCCUR_DATE\"], errors=\"coerce\").dt.year\n    filtered = chunk[\n        years.eq(2021)\n        & chunk[\"BORO\"].astype(str).str.strip().str.upper().eq(node_1_answer.upper())\n    ]\n\n    precinct_counts = (\n        pd.to_numeric(filtered[\"PRECINCT\"], errors=\"coerce\")\n        .dropna()\n        .astype(int)\n        .value_counts()\n    )\n    for precinct, cnt in precinct_counts.items():\n        counts[int(precinct)] = counts.get(int(precinct), 0) + int(cnt)\n\nif not counts:\n    raise ValueError(\"No 2021 shooting incidents found for the specified borough.\")\n\nanswer = str(int(max(counts, key=counts.get)))\n",
+            "subquestion": "In the 2021 NYPD shooting incident data, within borough <node_1 answer>, which precinct recorded the most shooting incidents?",
+            "answer": "44"
+        },
+        "3": {
+            "source": "datagov/nypd-complaint-data-historic/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = \"datagov/nypd-complaint-data-historic/files/rows.txt\"\nbucket = os.environ.get(\"LAKEQA_BUCKET\", \"lakeqa-yc4103-datalake\")\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\n\nnode_1_answer = \"BRONX\"\nnode_2_answer = \"44\"\nprecinct_value = pd.to_numeric(pd.Series([node_2_answer]), errors=\"coerce\").iloc[0]\ncounts = {}\n\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"CMPLNT_FR_DT\", \"BORO_NM\", \"ADDR_PCT_CD\", \"LOC_OF_OCCUR_DESC\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    years = pd.to_datetime(chunk[\"CMPLNT_FR_DT\"], errors=\"coerce\").dt.year\n    precincts = pd.to_numeric(chunk[\"ADDR_PCT_CD\"], errors=\"coerce\")\n\n    filtered = chunk[\n        years.eq(2021)\n        & chunk[\"BORO_NM\"].astype(str).str.strip().str.upper().eq(node_1_answer.upper())\n        & precincts.eq(precinct_value)\n    ].copy()\n\n    loc_counts = (\n        filtered[\"LOC_OF_OCCUR_DESC\"]\n        .astype(str)\n        .str.strip()\n        .replace({\"\": pd.NA, \"nan\": pd.NA, \"None\": pd.NA, \"NULL\": pd.NA})\n        .dropna()\n        .value_counts()\n    )\n\n    for loc, cnt in loc_counts.items():\n        counts[loc] = counts.get(loc, 0) + int(cnt)\n\nif not counts:\n    raise ValueError(\"No matching non-null complaint location descriptions found for the specified borough, precinct, and year.\")\n\nanswer = str(max(counts, key=counts.get))\n",
+            "subquestion": "In 2021, within borough <node_1 answer> and precinct <node_2 answer>, which non-null location-position category was most common in NYPD complaint incidents?",
+            "answer": "INSIDE"
+        },
+        "4": {
+            "source": "datagov/nypd-shooting-incident-data-historic/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = \"datagov/nypd-shooting-incident-data-historic/files/rows.txt\"\nbucket = os.environ.get(\"LAKEQA_BUCKET\", \"lakeqa-yc4103-datalake\")\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\n\nnode_1_answer = \"BRONX\"\nnode_3_answer = \"INSIDE\"\ncount = 0\n\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"OCCUR_DATE\", \"BORO\", \"LOC_OF_OCCUR_DESC\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    years = pd.to_datetime(chunk[\"OCCUR_DATE\"], errors=\"coerce\").dt.year\n    boros = chunk[\"BORO\"].astype(str).str.strip().str.upper()\n    locs = chunk[\"LOC_OF_OCCUR_DESC\"].astype(str).str.strip().str.upper()\n\n    mask = (\n        years.eq(2022)\n        & boros.eq(node_1_answer.upper())\n        & locs.eq(node_3_answer.upper())\n    )\n    count += int(mask.sum())\n\nanswer = str(count)\n",
+            "subquestion": "In 2022, within borough <node_1 answer>, how many NYPD shooting incidents occurred in the location-position category from node 3?",
+            "answer": "64"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/The_Bronx/content.txt",
+        "datagov/nypd-shooting-incident-data-historic/files/rows.txt",
+        "datagov/nypd-shooting-incident-data-historic/signed-metadata.txt",
+        "datagov/nypd-shooting-incident-data-historic/files/833y-fsy8.txt",
+        "datagov/nypd-complaint-data-historic/files/rows.txt",
+        "datagov/nypd-complaint-data-historic/signed-metadata.txt",
+        "datagov/nypd-complaint-data-historic/files/qgea-i56i.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: The Bronx is described as the northernmost of New York City’s five boroughs.",
+                "Derive hop 1 answer using node 1."
+            ],
+            "answer": "BRONX"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: In 2021, within borough BRONX, precinct 44 recorded the most shooting incidents (no ties observed within scope).",
+                "Derive hop 2 answer using node 2."
+            ],
+            "answer": "44"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: In 2021, within borough BRONX and precinct 44, the most common non-null complaint LOC_OF_OCCUR_DESC is INSIDE (no ties observed within scope).",
+                "Derive hop 3 answer using node 3."
+            ],
+            "answer": "INSIDE"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In 2022, within borough BRONX, there were 64 shooting incidents with LOC_OF_OCCUR_DESC = INSIDE.",
+                "Derive hop 4 answer using node 4."
+            ],
+            "answer": "64"
+        }
+    ]
+}

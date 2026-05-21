@@ -1,0 +1,84 @@
+{
+    "question": "I'm researching the origins of county names in the American West. In the Idaho county between 100-120 veteran disability recipients and a license plate code starting with 'L', find the person it is named after, and report the county this person is borned in?. Your response should be in the format [Answer].",
+    "answer": "Albemarle County",
+    "nodes": {
+        "1": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Idaho'.lower())].copy()\nfiltered['Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['Total: Disability Compensation Recipients'] >= 100) & (filtered['Total: Disability Compensation Recipients'] < 120)]\ncounty_names = filtered['County Name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Idaho counties had 100-120 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Caribou County",
+                "Power County",
+                "Lewis County",
+                "Custer County"
+            ]
+        },
+        "2": {
+            "source": "wikipedia/List_of_counties_in_Idaho/content.txt",
+            "fact": "Since 1945, each Idaho county has used a license plate code based on its first letter.",
+            "subquestion": "Which Idaho counties have license plate codes beginning with the letter 'L'?",
+            "answer": [
+                "Latah County",
+                "Lemhi County",
+                "Lewis County",
+                "Lincoln County"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Lewis_County,_Idaho/content.txt",
+            "fact": "It was named after the explorer Meriwether Lewis, who along with William Clark led the Corps of Discovery expedition through the region in 1805-1806.",
+            "subquestion": "After which explorer is <intersection of node_1, node_2> named?",
+            "answer": "Meriwether Lewis"
+        },
+        "4": {
+            "source": "wikipedia/Meriwether_Lewis/content.txt",
+            "fact": "Meriwether Lewis was born August 18, 1774, on Locust Hill Plantation in Albemarle County, Colony of Virginia, in the present-day community of Ivy.",
+            "subquestion": "In which Virginia county was <node_3 answer> born?",
+            "answer": "Albemarle County"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/List_of_counties_in_Idaho/content.txt",
+        "wikipedia/Lewis_County,_Idaho/content.txt",
+        "wikipedia/Meriwether_Lewis/content.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `State` is Idaho, keep counties with `Total: Disability Compensation Recipients` from 100 to under 120, normalize `County Name`, and take the unique counties.",
+                "Node 2: Latah County, Lemhi County, Lewis County, and Lincoln County are Idaho counties whose license plate codes begin with L.",
+                "Hop result: intersection of <node_1 answer> and <node_2 answer> = ['Lewis County']."
+            ],
+            "answer": "Lewis County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Meriwether Lewis is the person after whom <hop 1 answer> was named.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Meriwether Lewis"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Albemarle County is where <hop 2 answer> was born.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "Albemarle County"
+        }
+    ]
+}

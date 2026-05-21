@@ -1,0 +1,117 @@
+{
+    "question": "We define 'high-level activity' as achieving at least 300 minutes of moderate or 150 minutes of vigorous aerobic activity per week. In 2015, which state has the 5th highest percentage of adults reaching this high-level activity?, In that state, we define a year is dangerous when the murder and assault cases are high. Which five years A, B, C, D, and E are the 2nd to 6th least dangerous in that state? We the define the 'Fixed Cost' for schools as the average of the department of education's operation cost, debt, and pensions. Among years in those five years A, B, C, D, and E, which years M and N have the top 2 fixed cost? In the first, second, and third years that are in year A, B, C, D, and E but not year M and N, which two agencies spent the most on outside contractors using funds provided by the federal and state governments? Finally, across all agencies appearing in those three answers, what was the average fund provided by federal and state government that were spent on outside contractors? Please return only the number in the format [Answer].",
+    "answer": "17116198.45",
+    "nodes": {
+        "1": {
+            "source": "datagov/nutrition-physical-activity-and-obesity-behavioral-risk-factor-surveillance-system/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nutrition-physical-activity-and-obesity-behavioral-risk-factor-surveillance-system/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nstates = {'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'}\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['val_num'] = pd.to_numeric(df['Data_Value'], errors='coerce')\nfiltered = df[\n    df['YearStart'].eq('2015')\n    & df['LocationAbbr'].isin(states)\n    & df['Total'].eq('Total')\n    & df['Question'].eq('Percent of adults who achieve at least 300 minutes a week of moderate-intensity aerobic physical activity or 150 minutes a week of vigorous-intensity aerobic activity (or an equivalent combination)')\n    & df['val_num'].notna()\n].copy()\nranked = filtered.sort_values(['val_num', 'LocationDesc'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = str(ranked.iloc[4]['LocationDesc'])\n",
+            "subquestion": "We define 'high-level activity' as achieving at least 300 minutes of moderate or 150 minutes of vigorous aerobic activity per week. In 2015, which state has the 5th highest percentage of adults reaching this high-level activity?",
+            "answer": "Washington"
+        },
+        "2": {
+            "source": "datagov/washington-state-uniform-crime-reporting-summary-reporting-system/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/washington-state-uniform-crime-reporting-summary-reporting-system/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfor col in ['Murder', 'Assault']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace(',', '', regex=False), errors='coerce')\nfiltered = df[\n    df['county'].eq('STATEWIDE')\n    & df['Location'].eq('STATEWIDE TOTALS')\n].copy()\nfiltered['danger_score'] = filtered['Murder_num'].fillna(0) + filtered['Assault_num'].fillna(0)\nfiltered['year_num'] = pd.to_numeric(filtered['IndexYear'], errors='coerce')\nranked = filtered.sort_values(['danger_score', 'year_num'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nyears = sorted(ranked.iloc[1:6]['IndexYear'].tolist())\nanswer = ', '.join(years)\n",
+            "subquestion": "For <node_1 answer>, we define a year is dangerous when the murder and assault cases are high. Which five years are the 2nd to 6th least dangerous?",
+            "answer": "2013, 2014, 2015, 2016, 2018"
+        },
+        "3": {
+            "source": "datagov/school-spending-since-1990/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/school-spending-since-1990/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ncategories = ['DOE operations (all funds)', 'Debt service', 'Additional pension contributions']\ndef parse_value(value):\n    if pd.isna(value):\n        return None\n    s = str(value).strip()\n    if not s or s.lower() == 'nan':\n        return None\n    negative = '(' in s and ')' in s\n    s = s.replace('$', '').replace(',', '').replace('%', '').replace('(', '').replace(')', '').strip()\n    try:\n        num = float(s)\n    except Exception:\n        return None\n    return -num if negative else num\n\ndf['Category'] = df['Category'].fillna('').astype(str).str.strip()\nvalue_cols = [c for c in df.columns if c != 'Category']\nfor col in value_cols:\n    df[col] = df[col].map(parse_value)\nsub = df[df['Category'].isin(categories)].copy().set_index('Category')\navg_by_year = sub.loc[categories, value_cols].mean(axis=0, skipna=True).dropna().sort_values(ascending=False, kind='mergesort')\nanswer = ', '.join(sorted(avg_by_year.head(3).index.tolist()))\n",
+            "subquestion": "Define the 'Fixed Cost' for schools are the average of the department of education's operation cost, debt, and pensions. Among years in <node_2 answer>, which years have the top 2 fixed cost?",
+            "answer": "2015, 2016"
+        },
+        "4": {
+            "source": "datagov/agency-contracts-fiscal-year-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/agency-contracts-fiscal-year-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_2_answer = '2013, 2014, 2015, 2016, 2018'\nnode_3_answer = '2015, 2016, 2017'\nremaining_years = sorted(set(part.strip() for part in node_2_answer.split(',') if part.strip()) - set(part.strip() for part in node_3_answer.split(',') if part.strip()))\ntarget_year = remaining_years[0]\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfor src in ['Contract Effective Start Date', 'Period of Performance Start Date']:\n    df[src + '_year'] = df[src].astype(str).str.extract(r'(19\\d{2}|20\\d{2})', expand=False).fillna('')\ndf['year'] = df['Contract Effective Start Date_year']\ndf.loc[df['year'].eq(''), 'year'] = df.loc[df['year'].eq(''), 'Period of Performance Start Date_year']\nfor col in ['Federal Amount', 'State Amount']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace('$', '', regex=False).str.replace(',', '', regex=False), errors='coerce').fillna(0)\ndf['fed_state'] = df['Federal Amount_num'] + df['State Amount_num']\nfiltered = df[\n    df['year'].eq(target_year)\n    & df['Purpose of the Contract'].eq('ER - Other Contractual Services')\n].copy()\nranked = filtered.groupby('Agency Name', as_index=False)['fed_state'].sum().sort_values(['fed_state', 'Agency Name'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[0:2]['Agency Name'].tolist())\n",
+            "subquestion": "For the first year that appears in <node_2 answer> but not in <node_3 answer>, which two agencies spent the most on outside contractors using funds provided by the federal and state governments?",
+            "answer": "107 - State Health Care Authority; 405 - Department of Transportation"
+        },
+        "5": {
+            "source": "datagov/agency-contracts-fiscal-year-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/agency-contracts-fiscal-year-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_2_answer = '2013, 2014, 2015, 2016, 2018'\nnode_3_answer = '2015, 2016, 2017'\nremaining_years = sorted(set(part.strip() for part in node_2_answer.split(',') if part.strip()) - set(part.strip() for part in node_3_answer.split(',') if part.strip()))\ntarget_year = remaining_years[1]\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfor src in ['Contract Effective Start Date', 'Period of Performance Start Date']:\n    df[src + '_year'] = df[src].astype(str).str.extract(r'(19\\d{2}|20\\d{2})', expand=False).fillna('')\ndf['year'] = df['Contract Effective Start Date_year']\ndf.loc[df['year'].eq(''), 'year'] = df.loc[df['year'].eq(''), 'Period of Performance Start Date_year']\nfor col in ['Federal Amount', 'State Amount']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace('$', '', regex=False).str.replace(',', '', regex=False), errors='coerce').fillna(0)\ndf['fed_state'] = df['Federal Amount_num'] + df['State Amount_num']\nfiltered = df[\n    df['year'].eq(target_year)\n    & df['Purpose of the Contract'].eq('ER - Other Contractual Services')\n].copy()\nranked = filtered.groupby('Agency Name', as_index=False)['fed_state'].sum().sort_values(['fed_state', 'Agency Name'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[0:2]['Agency Name'].tolist())\n",
+            "subquestion": "For the second year that appears in <node_2 answer> but not in <node_3 answer>, which two agencies spent the most on outside contractors using funds provided by the federal and state governments?",
+            "answer": "405 - Department of Transportation; 350 - Superintendent of Public Instruction"
+        },
+        "6": {
+            "source": "datagov/agency-contracts-fiscal-year-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/agency-contracts-fiscal-year-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_2_answer = '2013, 2014, 2015, 2016, 2018'\nnode_3_answer = '2015, 2016, 2017'\nremaining_years = sorted(set(part.strip() for part in node_2_answer.split(',') if part.strip()) - set(part.strip() for part in node_3_answer.split(',') if part.strip()))\ntarget_year = remaining_years[2]\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfor src in ['Contract Effective Start Date', 'Period of Performance Start Date']:\n    df[src + '_year'] = df[src].astype(str).str.extract(r'(19\\d{2}|20\\d{2})', expand=False).fillna('')\ndf['year'] = df['Contract Effective Start Date_year']\ndf.loc[df['year'].eq(''), 'year'] = df.loc[df['year'].eq(''), 'Period of Performance Start Date_year']\nfor col in ['Federal Amount', 'State Amount']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace('$', '', regex=False).str.replace(',', '', regex=False), errors='coerce').fillna(0)\ndf['fed_state'] = df['Federal Amount_num'] + df['State Amount_num']\nfiltered = df[\n    df['year'].eq(target_year)\n    & df['Purpose of the Contract'].eq('ER - Other Contractual Services')\n].copy()\nranked = filtered.groupby('Agency Name', as_index=False)['fed_state'].sum().sort_values(['fed_state', 'Agency Name'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[0:2]['Agency Name'].tolist())\n",
+            "subquestion": "For the third year that appears in <node_2 answer> but not in <node_3 answer>, which two agencies spent the most on outside contractors using funds provided by the federal and state governments?",
+            "answer": "107 - State Health Care Authority; 405 - Department of Transportation"
+        },
+        "7": {
+            "source": "datagov/agency-contracts-fiscal-year-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/agency-contracts-fiscal-year-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_4_answer = '107 - State Health Care Authority; 405 - Department of Transportation'\nnode_5_answer = '405 - Department of Transportation; 350 - Superintendent of Public Instruction'\nnode_6_answer = '107 - State Health Care Authority; 405 - Department of Transportation'\ntarget_agencies = []\nfor value in [node_4_answer, node_5_answer, node_6_answer]:\n    target_agencies.extend([part.strip() for part in str(value).split(';') if part.strip()])\ntarget_agencies = list(dict.fromkeys(target_agencies))\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfor src in ['Contract Effective Start Date', 'Period of Performance Start Date']:\n    df[src + '_year'] = df[src].astype(str).str.extract(r'(19\\d{2}|20\\d{2})', expand=False).fillna('')\ndf['year'] = df['Contract Effective Start Date_year']\ndf.loc[df['year'].eq(''), 'year'] = df.loc[df['year'].eq(''), 'Period of Performance Start Date_year']\nfor col in ['Federal Amount', 'State Amount']:\n    df[col + '_num'] = pd.to_numeric(df[col].astype(str).str.replace('$', '', regex=False).str.replace(',', '', regex=False), errors='coerce').fillna(0)\ndf['fed_state'] = df['Federal Amount_num'] + df['State Amount_num']\nfiltered = df[\n    df['year'].eq('2017')\n    & df['Purpose of the Contract'].eq('ER - Other Contractual Services')\n].copy()\nranked = filtered.groupby('Agency Name', as_index=False)['fed_state'].sum()\nselected = ranked[ranked['Agency Name'].isin(target_agencies)].copy().sort_values(['Agency Name'], ascending=[True], kind='mergesort').reset_index(drop=True)\navg_value = round(selected['fed_state'].mean(), 2)\nanswer = f'{avg_value:.2f}'\n",
+            "subquestion": "Across all agencies appearing in <node_4 answer>, <node_5 answer>, and <node_6 answer>, what was the average fund provided by federal and state government that were spent on outside contractors?",
+            "answer": "17116198.45"
+        }
+    },
+    "datasets_used": [
+        "datagov/nutrition-physical-activity-and-obesity-behavioral-risk-factor-surveillance-system/files/rows.txt",
+        "datagov/nutrition-physical-activity-and-obesity-behavioral-risk-factor-surveillance-system/signed-metadata.txt",
+        "datagov/nutrition-physical-activity-and-obesity-behavioral-risk-factor-surveillance-system/files/hn4x-zwk7.txt",
+        "datagov/washington-state-uniform-crime-reporting-summary-reporting-system/files/rows.txt",
+        "datagov/washington-state-uniform-crime-reporting-summary-reporting-system/signed-metadata.txt",
+        "datagov/washington-state-uniform-crime-reporting-summary-reporting-system/files/SRS_Dictionary.pdf",
+        "datagov/school-spending-since-1990/files/rows.txt",
+        "datagov/school-spending-since-1990/signed-metadata.txt",
+        "datagov/agency-contracts-fiscal-year-2020/files/rows.txt",
+        "datagov/agency-contracts-fiscal-year-2020/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: In the nutrition and physical activity surveillance data, keep total statewide rows for the 50 states only.",
+                "For 2015 and the question about achieving at least 300 minutes of moderate-intensity activity or 150 minutes of vigorous-intensity activity, rank states from highest to lowest by Data_Value.",
+                "The 5th-highest state is Washington."
+            ],
+            "answer": "Washington"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 2: In the Washington statewide crime totals, define danger as murder plus assault and rank years from least dangerous upward.",
+                "The years ranked 2nd through 6th least dangerous are 2013, 2014, 2015, 2016, and 2018.",
+                "Node 3: In the school-spending table, average DOE operations, debt service, and additional pension contributions by year and rank from highest to lowest.",
+                "The three most resource-intensive years are 2015, 2016, and 2017."
+            ],
+            "answer": "2013, 2014, 2015, 2016, 2018; 2015, 2016, 2017"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Remove node 3's years from node 2's years, leaving 2013, 2014, and 2018.",
+                "Node 4: In 2013 under ER - Other Contractual Services, the two agencies with the highest combined federal and state amounts are 107 - State Health Care Authority and 405 - Department of Transportation.",
+                "Node 5: In 2014, the top two are 405 - Department of Transportation and 350 - Superintendent of Public Instruction.",
+                "Node 6: In 2018, the top two are 107 - State Health Care Authority and 405 - Department of Transportation.",
+                "The union of these answers contains three agencies: 107 - State Health Care Authority, 405 - Department of Transportation, and 350 - Superintendent of Public Instruction."
+            ],
+            "answer": "107 - State Health Care Authority; 405 - Department of Transportation; 350 - Superintendent of Public Instruction"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: In 2017 under ER - Other Contractual Services, compute combined federal and state amounts for the three agencies from the previous hop.",
+                "Their values are 28,406,261.78 for State Health Care Authority, 17,135,937.57 for Department of Transportation, and 5,806,396.00 for Superintendent of Public Instruction.",
+                "The average of those three values is 17,116,198.45.",
+                "Therefore, the final answer is 17116198.45."
+            ],
+            "answer": "17116198.45"
+        }
+    ]
+}

@@ -1,0 +1,198 @@
+{
+    "question": "Which New York City middle schools located in Queens District 26 had (1) at least 50 offers to specialized high schools on specialized high school admissions test in every school year from 2015-19, and (2) are named after scientists. In what year was the research institute founded and first directed by the older of these two scientists? Please return the year only. Your response should be in the format [Answer].",
+    "answer": "1887",
+    "nodes": {
+        "1": {
+            "source": "datagov/2015-2016-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2015-2016-shsat-admissions-test-offers-by-sending-school/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\noffers = pd.to_numeric(df[\"Count of Offers\"], errors=\"coerce\")\nmask = offers >= 50\n\nanswer = dict(zip(df.loc[mask, \"Feeder School Name\"], df.loc[mask, \"Feeder School DBN\"]))\nprint(answer)",
+            "subquestion": "Which NYC middle schools had at least 50 SHSAT offers to specialized high schools in school year 2015-16?",
+            "answer": {
+                "NEW EXPLORATIONS INTO SCIENCE, TECHNOLOGY AND MATH SCHOOL": "01M539",
+                "J.H.S. 104 SIMON BARUCH": "02M104",
+                "EAST SIDE MIDDLE SCHOOL": "02M114",
+                "J.H.S. 167 ROBERT F. WAGNER": "02M167",
+                "M.S. 255 SALK SCHOOL OF SCIENCE": "02M255",
+                "NEW YORK CITY LAB MIDDLE SCHOOL FOR COLLABORATIVE STUDIES": "02M312",
+                "J.H.S. 054 BOOKER T. WASHINGTON": "03M054",
+                "THE ANDERSON SCHOOL": "03M334",
+                "M.S. 51 WILLIAM ALEXANDER": "15K051",
+                "THE MATH & SCIENCE EXPLORATORY SCHOOL": "15K447"
+            },
+            "limit": 10
+        },
+        "2": {
+            "source": "datagov/2016-2017-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2016-2017-shsat-admissions-test-offers-by-sending-school/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\noffers = pd.to_numeric(df[\"Count of Offers\"], errors=\"coerce\")\nmask = offers >= 50\n\nanswer = dict(zip(df.loc[mask, \"Feeder School Name\"], df.loc[mask, \"Feeder School DBN\"]))\nprint(answer)",
+            "subquestion": "Which NYC middle schools had at least 50 SHSAT offers to specialized high schools in school year 2016-17?",
+            "answer": {
+                "NEW EXPLORATIONS INTO SCIENCE, TECHNOLOGY AND MATH SCHOOL": "01M539",
+                "J.H.S. 104 SIMON BARUCH": "02M104",
+                "EAST SIDE MIDDLE SCHOOL": "02M114",
+                "J.H.S. 167 ROBERT F. WAGNER": "02M167",
+                "M.S. 255 SALK SCHOOL OF SCIENCE": "02M255",
+                "NEW YORK CITY LAB MIDDLE SCHOOL FOR COLLABORATIVE STUDIES": "02M312",
+                "J.H.S. 054 BOOKER T. WASHINGTON": "03M054",
+                "THE ANDERSON SCHOOL": "03M334",
+                "M.S. 51 WILLIAM ALEXANDER": "15K051",
+                "THE MATH & SCIENCE EXPLORATORY SCHOOL": "15K447"
+            },
+            "limit": 10
+        },
+        "3": {
+            "source": "datagov/2017-2018-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2017-2018-shsat-admissions-test-offers-by-sending-school/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\noffers = pd.to_numeric(df[\"Count of Offers\"], errors=\"coerce\")\nmask = offers >= 50\n\nanswer = dict(zip(df.loc[mask, \"Feeder School Name\"], df.loc[mask, \"Feeder School DBN\"]))\nprint(answer)",
+            "subquestion": "Which NYC middle schools had at least 50 SHSAT offers to specialized high schools in school year 2017-18?",
+            "answer": {
+                "NEW EXPLORATIONS INTO SCIENCE, TECHNOLOGY AND MATH SCHOOL": "01M539",
+                "J.H.S. 104 SIMON BARUCH": "02M104",
+                "EAST SIDE MIDDLE SCHOOL": "02M114",
+                "J.H.S. 167 ROBERT F. WAGNER": "02M167",
+                "M.S. 255 SALK SCHOOL OF SCIENCE": "02M255",
+                "NEW YORK CITY LAB MIDDLE SCHOOL FOR COLLABORATIVE STUDIES": "02M312",
+                "J.H.S. 054 BOOKER T. WASHINGTON": "03M054",
+                "THE ANDERSON SCHOOL": "03M334",
+                "M.S. 51 WILLIAM ALEXANDER": "15K051",
+                "THE MATH & SCIENCE EXPLORATORY SCHOOL": "15K447"
+            },
+            "limit": 10
+        },
+        "4": {
+            "source": "datagov/2018-2019-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2018-2019-shsat-admissions-test-offers-by-sending-school/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\noffers = pd.to_numeric(df[\"Number of Offers\"], errors=\"coerce\")\nmask = offers >= 50\n\nanswer = dict(zip(df.loc[mask, \"Feeder School Name\"], df.loc[mask, \"Feeder School DBN\"]))\nprint(answer)",
+            "subquestion": "Which NYC middle schools had at least 50 SHSAT offers to specialized high schools in school year 2018-19?",
+            "answer": {
+                "NEW EXPLORATIONS INTO SCIENCE, TECHNOLOGY AND MATH HIGH SCHOOL": "01M539",
+                "J.H.S. 104 SIMON BARUCH": "02M104",
+                "EAST SIDE MIDDLE SCHOOL": "02M114",
+                "J.H.S. 167 ROBERT F. WAGNER": "02M167",
+                "M.S. 255 SALK SCHOOL OF SCIENCE": "02M255",
+                "NEW YORK CITY LAB MIDDLE SCHOOL FOR COLLABORATIVE": "02M312",
+                "J.H.S. 054 BOOKER T. WASHINGTON": "03M054",
+                "M.S. 51 WILLIAM ALEXANDER": "15K051",
+                "THE MATH & SCIENCE EXPLORATORY SCHOOL": "15K447",
+                "THE CHRISTA MCAULIFFE SCHOOL\\I.S. 187": "20K187"
+            },
+            "limit": 10
+        },
+        "5": {
+            "source": "datagov/2016-2017-school-locations/files/rows.txt",
+            "fact": "According to NYC DOE School Locations data for 2016-17, four schools from the intersection are in Queens District 26: J.H.S. 067 Louis Pasteur (26Q067) in Douglas Manor-Douglaston-Little Neck (NTA QN45), J.H.S. 074 Nathaniel Hawthorne (26Q074) in Oakland Gardens (NTA QN42), M.S. 158 Marie Curie (26Q158) in Bayside-Bayside Hills (NTA QN46), and J.H.S. 216 George J. Ryan (26Q216) in Fresh Meadows-Utopia (NTA QN41). The GEOGRAPHICAL_DISTRICT_CODE for all four is 26.",
+            "subquestion": "Which of the schools with at least 50 specialized high school admissions test offers in all four years are located in Queens District 26?",
+            "answer": {
+                "J.H.S. 067 Louis Pasteur": "26Q067, District 26",
+                "J.H.S. 074 Nathaniel Hawthorne": "26Q074, District 26",
+                "M.S. 158 Marie Curie": "26Q158, District 26",
+                "J.H.S. 216 George J. Ryan": "26Q216, District 26"
+            }
+        },
+        "6": {
+            "source": "wikipedia/Louis_Pasteur/content.txt",
+            "fact": "Louis Pasteur (27 December 1822 - 28 September 1895) was a French chemist, pharmacist, and microbiologist renowned for his discoveries of the principles of vaccination, microbial fermentation, and pasteurization. He was a scientist who made groundbreaking contributions to medicine and biology.",
+            "subquestion": "Was Louis Pasteur a scientist, and when was he born?",
+            "answer": "Yes, scientist; born December 27, 1822"
+        },
+        "7": {
+            "source": "wikipedia/Marie_Curie/content.txt",
+            "fact": "Maria Salomea Sklodowska-Curie (7 November 1867 - 4 July 1934), better known as Marie Curie, was a Polish and naturalised-French physicist and chemist who conducted pioneering research on radioactivity. She was a scientist who won two Nobel Prizes.",
+            "subquestion": "Was Marie Curie a scientist, and when was she born?",
+            "answer": "Yes, scientist; born November 7, 1867"
+        },
+        "8": {
+            "source": "wikipedia/Nathaniel_Hawthorne/content.txt",
+            "fact": "Nathaniel Hawthorne (July 4, 1804 - May 19, 1864) was an American novelist and short story writer. His works often focus on history, morality, and religion. He was not a scientist but a literary figure.",
+            "subquestion": "Was Nathaniel Hawthorne a scientist?",
+            "answer": "No, he was a novelist"
+        },
+        "9": {
+            "source": "wikipedia/Board_of_Regents_of_the_University_of_the_State_of_New_York/content.txt",
+            "fact": "At Large Seat 2 George J. Ryan February 10, 1937 replaced Robert W. Higbie March 31, 1941 term ended.",
+            "subquestion": "Was George J. Ryan a scientist?",
+            "answer": "No, he was an education/governance figure"
+        },
+        "10": {
+            "source": "wikipedia/Pasteur_Institute/content.txt",
+            "fact": "The Pasteur Institute is a French non-profit private foundation dedicated to the study of biology, micro-organisms, diseases, and vaccines. It is named after Louis Pasteur. The institute was founded on 4 June 1887 and inaugurated on 14 November 1888.",
+            "subquestion": "In what year was the research institute named after <hop 3 answer> founded?",
+            "answer": "1887"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Louis_Pasteur/content.txt",
+        "wikipedia/Marie_Curie/content.txt",
+        "wikipedia/Nathaniel_Hawthorne/content.txt",
+        "wikipedia/Board_of_Regents_of_the_University_of_the_State_of_New_York/content.txt",
+        "wikipedia/Pasteur_Institute/content.txt",
+        "datagov/2015-2016-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+        "datagov/2015-2016-shsat-admissions-test-offers-by-sending-school/files/columns.txt",
+        "datagov/2016-2017-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+        "datagov/2016-2017-shsat-admissions-test-offers-by-sending-school/files/8ws3-956v.txt",
+        "datagov/2017-2018-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+        "datagov/2017-2018-shsat-admissions-test-offers-by-sending-school/files/vsgi-eeb5.txt",
+        "datagov/2018-2019-shsat-admissions-test-offers-by-sending-school/files/rows.txt",
+        "datagov/2018-2019-shsat-admissions-test-offers-by-sending-school/signed-metadata.txt",
+        "datagov/2016-2017-school-locations/files/rows.txt",
+        "datagov/2016-2017-school-locations/files/ahjc-fdu3.txt",
+        "datagov/2016-2017-school-locations/files/ahjc-fdu3.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Count of Offers` is at least 50, then keep `Feeder School Name` -> `Feeder School DBN`.",
+                "Node 2: Filter rows where `Count of Offers` is at least 50, then keep `Feeder School Name` -> `Feeder School DBN`.",
+                "Node 3: Filter rows where `Count of Offers` is at least 50, then keep `Feeder School Name` -> `Feeder School DBN`.",
+                "Node 4: Filter rows where `Number of Offers` is at least 50, then keep `Feeder School Name` -> `Feeder School DBN`.",
+                "Hop result: semantically intersect the yearly school sets from nodes 1-4 = 21 schools."
+            ],
+            "answer": "21 schools"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Among the schools from <hop 1 answer>, keep rows where `GEOGRAPHICAL_DISTRICT_CODE` equals 26."
+            ],
+            "answer": {
+                "J.H.S. 067 Louis Pasteur": "26Q067, District 26",
+                "J.H.S. 074 Nathaniel Hawthorne": "26Q074, District 26",
+                "M.S. 158 Marie Curie": "26Q158, District 26",
+                "J.H.S. 216 George J. Ryan": "26Q216, District 26"
+            }
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6,
+                7,
+                8,
+                9
+            ],
+            "reasoning": [
+                "Node 6: Louis Pasteur was a scientist and was born on 27 December 1822.",
+                "Node 7: Marie Curie was a scientist and was born on 7 November 1867.",
+                "Node 8: Nathaniel Hawthorne was not a scientist.",
+                "Node 9: George J. Ryan appears in the Board of Regents source, so he is an education/governance figure rather than a scientist.",
+                "Hop result: among the scientist namesakes in <hop 2 answer>, Louis Pasteur is older than Marie Curie."
+            ],
+            "answer": "Louis Pasteur"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: The Pasteur Institute, named after <hop 3 answer>, was founded on 4 June 1887."
+            ],
+            "answer": "1887"
+        }
+    ]
+}

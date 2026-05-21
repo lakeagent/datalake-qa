@@ -1,0 +1,146 @@
+{
+    "question": "The GRE is owned and administered by an organization. Determine the city where that organization has a New Jersey address, then the county it is in and the two-digit state FIPS code from school district office listings. In that state, find the counties that rank in the top three for public schools, private schools, and school district offices; among their intersection, what is the highest postsecondary institution count? Only report the number. Your response should be in the format [Answer].",
+    "answer": "16",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Graduate_Record_Examinations/content.txt",
+            "fact": "The GRE is owned and administered by the Educational Testing Service (ETS).",
+            "subquestion": "The GRE is owned and administered by which organization?",
+            "answer": "Educational Testing Service"
+        },
+        "2": {
+            "source": "wikipedia/Educational_Testing_Service/content.txt",
+            "fact": "It is headquartered in Lawrence Township, Mercer County, New Jersey, but has a Princeton, New Jersey, address.",
+            "subquestion": "<hop 1 answer> has a New Jersey address. What city appears in that address?",
+            "answer": "Princeton"
+        },
+        "3": {
+            "source": "wikipedia/Princeton,_New_Jersey/content.txt",
+            "fact": "The Municipality of Princeton is a borough in Mercer County, New Jersey, United States.",
+            "subquestion": "<hop 2 answer> is a borough in which county?",
+            "answer": "Mercer County"
+        },
+        "4": {
+            "source": "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\nmatches = df.loc[\n    (df[\"CITY\"] == \"Princeton\") & (df[\"NMCNTY\"] == \"Mercer County\"),\n    [\"CITY\", \"NMCNTY\", \"STFIP\"]\n].copy()\n\nstfip_values = matches[\"STFIP\"].dropna().drop_duplicates().tolist()\nanswer = stfip_values[0] if len(stfip_values) == 1 else stfip_values",
+            "subquestion": "In the school district office listings, entries with CITY='<hop 2 answer>' and NMCNTY='<hop 3 answer>' share what two-digit state FIPS code (STFIP)?",
+            "answer": "34"
+        },
+        "5": {
+            "source": "datagov/public-school-locations-2021-22-5a116/files/data.txt",
+            "fact": "import io\nimport xml.etree.ElementTree as ET\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-2021-22-5a116/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\nroot = ET.parse(io.BytesIO(obj[\"Body\"].read())).getroot()\nns = {\"kml\": \"http://www.opengis.net/kml/2.2\"}\nrows = []\nfor placemark in root.findall('.//kml:Placemark', ns):\n    row = {}\n    for simple_data in placemark.findall('.//kml:SimpleData', ns):\n        row[simple_data.attrib[\"name\"]] = simple_data.text\n    if row:\n        rows.append(row)\ndf = pd.DataFrame(rows)\n\ncounty_counts = (\n    df.loc[df[\"STFIP\"] == \"34\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .reset_index(name=\"public_school_count\")\n    .sort_values([\"public_school_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\ntop3 = county_counts.head(3)\nanswer = \"; \".join(top3[\"NMCNTY\"].tolist())",
+            "subquestion": "For STFIP='<hop 4 answer>', which 3 county names have the most public schools? Return the county names separated by '; '.",
+            "answer": "Bergen County; Essex County; Middlesex County"
+        },
+        "6": {
+            "source": "datagov/private-school-locations-2019-20-ee873/files/data.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-2019-20-ee873/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\ncounty_counts = (\n    df.loc[df[\"STFIP\"] == \"34\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .reset_index(name=\"private_school_count\")\n    .sort_values([\"private_school_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\ntop3 = county_counts.head(3)\nanswer = \"; \".join(top3[\"NMCNTY\"].tolist())",
+            "subquestion": "For STFIP='<hop 4 answer>', which 3 county names have the most private schools? Return the county names separated by '; '.",
+            "answer": "Bergen County; Middlesex County; Essex County"
+        },
+        "7": {
+            "source": "datagov/school-district-office-locations-2021-22-d5dd7/files/data-TEK2ZS.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-2021-22-d5dd7/files/data-TEK2ZS.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\ncounty_counts = (\n    df.loc[df[\"STFIP\"] == \"34\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .reset_index(name=\"school_district_office_count\")\n    .sort_values([\"school_district_office_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\ntop3 = county_counts.head(3)\nanswer = \"; \".join(top3[\"NMCNTY\"].tolist())",
+            "subquestion": "For STFIP='<hop 4 answer>', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+            "answer": "Bergen County; Monmouth County; Camden County"
+        },
+        "8": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.DataFrame(feature[\"properties\"] for feature in data[\"features\"])\n\ncounty_counts = (\n    df.loc[(df[\"STFIP\"] == \"34\") & (df[\"NMCNTY\"] == \"Bergen County\")]\n    .groupby(\"NMCNTY\")\n    .size()\n    .reset_index(name=\"postsecondary_institution_count\")\n    .sort_values([\"postsecondary_institution_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = int(county_counts.iloc[0][\"postsecondary_institution_count\"])",
+            "subquestion": "For STFIP='<hop 4 answer>', what is the postsecondary institution count for <hop 5 answer>?",
+            "answer": 16
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Read which organization owns and administers the GRE from the cited Wikipedia source.",
+                "Hop result: the organization is Educational Testing Service."
+            ],
+            "answer": "Educational Testing Service"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Read the New Jersey address city for <hop 1 answer> from the cited Wikipedia source.",
+                "Hop result: the city is Princeton."
+            ],
+            "answer": "Princeton"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Read which county contains <hop 2 answer> from the cited Wikipedia source.",
+                "Hop result: the county is Mercer County."
+            ],
+            "answer": "Mercer County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Filter the school district office listings to rows with `CITY` = '<hop 2 answer>' and `NMCNTY` = '<hop 3 answer>', then read the shared two-digit `STFIP` value.",
+                "Hop result: the shared state FIPS code is 34."
+            ],
+            "answer": "34"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5,
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 5: For `STFIP` = '<hop 4 answer>', group public-school rows by `NMCNTY`, count rows, and take the top three counties.",
+                "Node 6: For `STFIP` = '<hop 4 answer>', group private-school rows by `NMCNTY`, count rows, and take the top three counties.",
+                "Node 7: For `STFIP` = '<hop 4 answer>', group school-district-office rows by `NMCNTY`, count rows, and take the top three counties.",
+                "Hop result: intersect the three top-three county sets; the only shared county is Bergen County."
+            ],
+            "answer": "Bergen County"
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: For `STFIP` = '<hop 4 answer>', filter postsecondary-school rows to `NMCNTY` = '<hop 5 answer>', group by `NMCNTY`, and count rows.",
+                "Hop result: <hop 5 answer> has 16 postsecondary institutions."
+            ],
+            "answer": 16
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Graduate_Record_Examinations/content.txt",
+        "wikipedia/Educational_Testing_Service/content.txt",
+        "wikipedia/Princeton,_New_Jersey/content.txt",
+        "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+        "datagov/school-district-office-locations-current-d848f/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-d848f/files/0.arcgis-layer.json",
+        "datagov/public-school-locations-2021-22-5a116/files/data.txt",
+        "datagov/public-school-locations-2021-22-5a116/signed-metadata.txt",
+        "datagov/public-school-locations-2021-22-5a116/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-2019-20-ee873/files/data.txt",
+        "datagov/private-school-locations-2019-20-ee873/signed-metadata.txt",
+        "datagov/private-school-locations-2019-20-ee873/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2021-22-d5dd7/files/data-TEK2ZS.txt",
+        "datagov/school-district-office-locations-2021-22-d5dd7/signed-metadata.txt",
+        "datagov/school-district-office-locations-2021-22-d5dd7/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt"
+    ]
+}

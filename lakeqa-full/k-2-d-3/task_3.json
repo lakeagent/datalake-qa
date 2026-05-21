@@ -1,0 +1,87 @@
+{
+  "question": "In the state with two-digit FIPS code 06, which counties rank in the top three for each of public schools, private schools, and school district offices? Among those county seats, how many more people did the more populous county seat have at the 2020 census? Your response should be in the format [Answer].",
+  "answer": 2511815,
+  "nodes": {
+    "1": {
+      "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/public-school-locations-current-23297/files/data-oyCYxF.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\nschool_year = df[\"SCHOOLYEAR\"].astype(str).str.strip()\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\n\nfiltered = df[state_fips.eq(6) & school_year.eq(\"2022-2023\")].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+      "subquestion": "For STFIP='06', which 3 county names have the most public schools? Return the county names separated by '; '.",
+      "answer": "Los Angeles County; San Diego County; Orange County"
+    },
+    "2": {
+      "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\n\nfiltered = df[state_fips.eq(6)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+      "subquestion": "For STFIP='06', which 3 county names have the most private schools? Return the county names separated by '; '.",
+      "answer": "Los Angeles County; Orange County; San Diego County"
+    },
+    "3": {
+      "source": "datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\n\nfiltered = df[state_fips.eq(6)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+      "subquestion": "For STFIP='06', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+      "answer": "Los Angeles County; San Diego County; San Bernardino County"
+    },
+    "4": {
+      "source": "wikipedia/Los_Angeles/content.txt",
+      "fact": "Los Angeles is the county seat and most populated city of Los Angeles County. The 2020 U.S. census reported Los Angeles had a population of 3,898,747.",
+      "subquestion": "For the county seat of this county from <hop 1 answer>, what was its 2020 census population?",
+      "answer": {
+        "county": "Los Angeles County",
+        "county_seat": "Los Angeles",
+        "population_2020": 3898747
+      }
+    },
+    "5": {
+      "source": "wikipedia/San_Diego/content.txt",
+      "fact": "San Diego is the county seat of San Diego County. The 2020 census total population for San Diego was 1,386,932.",
+      "subquestion": "For the county seat of this county from <hop 1 answer>, what was its 2020 census population?",
+      "answer": {
+        "county": "San Diego County",
+        "county_seat": "San Diego",
+        "population_2020": 1386932
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: Using rows where `STFIP='06'`, the three counties with the most public schools are `Los Angeles County`, `San Diego County`, and `Orange County`.",
+        "Node 2: Using rows where `STFIP='06'`, the three counties with the most private schools are `Los Angeles County`, `Orange County`, and `San Diego County`.",
+        "Node 3: Using rows where `STFIP='06'`, the three counties with the most school district offices are `Los Angeles County`, `San Diego County`, and `San Bernardino County`.",
+        "Hop result: intersecting the three top-three sets gives `Los Angeles County` and `San Diego County`."
+      ],
+      "answer": "Los Angeles County and San Diego County"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 4: The county seat of one county from <hop 1 answer>, `Los Angeles`, had a 2020 census population of `3,898,747`.",
+        "Node 5: The county seat of one county from <hop 1 answer>, `San Diego`, had a 2020 census population of `1,386,932`.",
+        "Hop result: the more populous county seat had `3,898,747`; `3,898,747 - 1,386,932 = 2,511,815`."
+      ],
+      "answer": 2511815
+    }
+  ],
+  "datasets_used": [
+    "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+    "datagov/public-school-locations-current-23297/signed-metadata.txt",
+    "datagov/public-school-locations-current-23297/files/0.arcgis-layer.json",
+    "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+    "datagov/private-school-locations-current-f7d96/signed-metadata.txt",
+    "datagov/private-school-locations-current-f7d96/files/0.arcgis-layer.json",
+    "datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt",
+    "datagov/school-district-office-locations-2022-23/signed-metadata.txt",
+    "datagov/school-district-office-locations-2022-23/files/0.arcgis-layer.json",
+    "wikipedia/Los_Angeles/content.txt",
+    "wikipedia/San_Diego/content.txt"
+  ]
+}

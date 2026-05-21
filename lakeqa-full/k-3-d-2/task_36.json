@@ -1,0 +1,81 @@
+{
+    "question": "Identify the South Dakota county that had at least 275 and fewer than 290 VA disability compensation recipients in FY 2019 and at least 295 and no more than 310 VA disability compensation recipients in FY 2023. Then identify that county's county seat. Which newspaper founded in 1881 serves that city and the surrounding region? Your response should be in the format [Answer].",
+    "answer": "Capital Journal",
+    "nodes": {
+        "1": {
+            "source": "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('South Dakota'.lower())].copy()\nfiltered['# Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['# Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['# Total: Disability Compensation Recipients'] >= 275) & (filtered['# Total: Disability Compensation Recipients'] < 290)]\ncounty_names = filtered['County name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which South Dakota counties had at least 275 and fewer than 290 VA disability compensation recipients in FY 2019?",
+            "answer": [
+                "Hughes County",
+                "Custer County"
+            ]
+        },
+        "2": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('South Dakota'.lower())].copy()\nfiltered['Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['Total: Disability Compensation Recipients'] >= 295) & (filtered['Total: Disability Compensation Recipients'] <= 310)]\ncounty_names = filtered['County Name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which South Dakota counties had at least 295 and no more than 310 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Hughes County",
+                "Butte County"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Pierre,_South_Dakota/content.txt",
+            "fact": "Pierre is the capital city of the U.S. state of South Dakota and the county seat of Hughes County. As of the 2020 census, its population was 14,091.",
+            "subquestion": "What is the county seat of <hop 1 answer>?",
+            "answer": "Pierre"
+        },
+        "4": {
+            "source": "wikipedia/Capital_Journal/content.txt",
+            "fact": "The Capital Journal is a newspaper in Pierre, South Dakota, founded in 1881. It serves the South Dakota capital city of Pierre and the surrounding region, including Fort Pierre.",
+            "subquestion": "Which newspaper founded in 1881 serves <hop 2 answer> and the surrounding region?",
+            "answer": "Capital Journal"
+        }
+    },
+    "datasets_used": [
+        "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+        "datagov/fy-2019-disability-pension-recipient-by-county/signed-metadata.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt",
+        "wikipedia/Pierre,_South_Dakota/content.txt",
+        "wikipedia/Capital_Journal/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `State` is South Dakota, keep records with `# Total: Disability Compensation Recipients` at least 275 and fewer than 290, and return the unique county names.",
+                "Node 2: Filter rows where `State` is South Dakota, keep records with `Total: Disability Compensation Recipients` at least 295 and no more than 310, and return the unique county names.",
+                "Hop result: intersection of <node_1 answer> and <node_2 answer> = ['Hughes County']."
+            ],
+            "answer": "Hughes County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Pierre is the county seat of <hop 1 answer>.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Pierre"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: The Capital Journal is the newspaper founded in 1881 that serves <hop 2 answer> and the surrounding region.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "Capital Journal"
+        }
+    ]
+}

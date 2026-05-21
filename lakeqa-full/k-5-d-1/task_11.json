@@ -1,0 +1,105 @@
+{
+  "question": "Find the birth state of the candidate in the New York election campaign with the most sponsors that sponsored through agents in 2021. Rank that state by total expenditure across all categories in 2021 in the U.S., then find the state with the same rank by total amenities across all categories in 2021 among all states in the U.S. As of 2007, how many ranks apart are that state's goat-farming rank and corn-production rank among U.S. states? Please return only the number in the format [Answer].",
+  "answer": 9,
+  "nodes": {
+    "1": {
+      "source": "datagov/2021-intermediaries/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2021-intermediaries/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj[\"Body\"].read()),\n    usecols=[\"ELECTION\", \"CANDFIRST\", \"CANDMI\", \"CANDLAST\", \"EMPNAME\"],\n    dtype=str,\n    low_memory=False,\n)\n\nfiltered = df[df[\"ELECTION\"].fillna(\"\").str.strip().eq(\"2021\")].copy()\nfiltered[\"candidate\"] = filtered[[\"CANDFIRST\", \"CANDMI\", \"CANDLAST\"]].fillna(\"\").apply(\n    lambda row: \" \".join(part.strip() for part in row if str(part).strip()),\n    axis=1,\n)\nfiltered[\"EMPNAME\"] = filtered[\"EMPNAME\"].fillna(\"\").str.strip()\nfiltered = filtered[(filtered[\"candidate\"] != \"\") & (filtered[\"EMPNAME\"] != \"\")]\ncounts = filtered.groupby(\"candidate\")[\"EMPNAME\"].nunique().sort_values(ascending=False)\nanswer = str(counts.index[0])\n",
+      "subquestion": "Which candidate in the New York election campaign has the most sponsors that sponsored through agents in 2021?",
+      "answer": "Brad Lander"
+    },
+    "2": {
+      "source": "wikipedia/Brad_Lander/content.txt",
+      "fact": "Brad Lander was born in St. Louis, Missouri, United States.",
+      "subquestion": "Which state was <hop 1 answer> born in?",
+      "answer": "Missouri"
+    },
+    "3": {
+      "source": "datagov/fy-2021-ncvas-expenditures-data-for-state-summaries/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/fy-2021-ncvas-expenditures-data-for-state-summaries/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nnode_2_answer = \"Missouri\"\nstate_cols = [col for col in df.columns if col not in [\"Programs\", \"Total\"]]\nfor col in state_cols:\n    df[col] = pd.to_numeric(df[col], errors=\"coerce\")\n\ntotals = df[state_cols].sum(axis=0).sort_values(ascending=False)\nrank = totals.rank(method=\"min\", ascending=False)\nanswer = str(int(rank.loc[str(node_2_answer).strip()]))\n",
+      "subquestion": "What is the rank of <hop 2 answer> on the total expenditure across all categories in the U.S. in 2021?",
+      "answer": "16"
+    },
+    "4": {
+      "source": "datagov/fy-2021-ncvas-facilities-data-for-state-including-pr/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/fy-2021-ncvas-facilities-data-for-state-including-pr/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nnode_3_answer = \"16\"\nstate_cols = [col for col in df.columns if col not in [\"Facility Type\", \"Total\"]]\nfor col in state_cols:\n    df[col] = pd.to_numeric(df[col], errors=\"coerce\")\n\ntotals = df[state_cols].sum(axis=0).sort_values(ascending=False)\nrank = totals.rank(method=\"min\", ascending=False)\nmatched_states = rank[rank.eq(int(str(node_3_answer).strip()))].index.tolist()\nanswer = str(matched_states[0])\n",
+      "subquestion": "Which state ranked <hop 3 answer> in the total amenities amount across all categories in the U.S. in 2021?",
+      "answer": "Kentucky"
+    },
+    "5": {
+      "source": "wikipedia/Kentucky/content.txt",
+      "fact": "Kentucky ranks fifth nationally in goat farming, eighth in beef cattle production, and fourteenth in corn production.",
+      "subquestion": "As of 2007, how many ranks apart are <hop 4 answer>'s goat-farming rank and corn-production rank among U.S. states?",
+      "answer": 9
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Brad_Lander/content.txt",
+    "datagov/2021-intermediaries/files/rows.txt",
+    "datagov/2021-intermediaries/signed-metadata.txt",
+    "datagov/2021-intermediaries/files/tcwb-nry3.publisher-view.json",
+    "datagov/fy-2021-ncvas-expenditures-data-for-state-summaries/files/rows.txt",
+    "datagov/fy-2021-ncvas-expenditures-data-for-state-summaries/signed-metadata.txt",
+    "datagov/fy-2021-ncvas-facilities-data-for-state-including-pr/files/rows.txt",
+    "datagov/fy-2021-ncvas-facilities-data-for-state-including-pr/signed-metadata.txt",
+    "wikipedia/Kentucky/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Count distinct sponsor employer names for each 2021 candidate and select the candidate with the largest count.",
+        "Hop result: Brad Lander."
+      ],
+      "answer": "Brad Lander"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: The page for <hop 1 answer> says he was born in St. Louis, Missouri.",
+        "Hop result: Missouri."
+      ],
+      "answer": "Missouri"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: Sum the 2021 expenditure categories by state and rank states by total expenditure; <hop 2 answer> ranks 16th.",
+        "Hop result: 16."
+      ],
+      "answer": "16"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: Sum the 2021 amenities categories by state and select the state at rank <hop 3 answer>.",
+        "Hop result: Kentucky."
+      ],
+      "answer": "Kentucky"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: <hop 4 answer> ranks fifth in goat farming and fourteenth in corn production among U.S. states.",
+        "Compute the absolute rank difference: 14 - 5 = 9.",
+        "Hop result: 9."
+      ],
+      "answer": 9
+    }
+  ]
+}

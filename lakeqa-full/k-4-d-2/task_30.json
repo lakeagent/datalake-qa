@@ -1,0 +1,97 @@
+{
+    "question": "I want to study the North of Massachusetts Avenue neighborhood in Washington, D.C. Identify the ward it is in, find the most common offense in that ward in 2019, and report the maximum of the incidents for that offense in 2018 and 2021. Using the list of neighborhoods shown for that ward, what is that maximum incident count per listed neighborhood? Round your answer to one decimal. Your response should be in the format [Answer].",
+    "answer": "223.8",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/NoMa/content.txt",
+            "fact": "The NoMa article states that NoMa is located in Ward 6 of Washington, D.C.",
+            "subquestion": "NoMa is located in which Washington, D.C. ward?",
+            "answer": "6"
+        },
+        "2": {
+            "source": "datagov/crime-incidents-in-2019/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = '6'\n\n\nward_value = str(node_1_answer).strip()\nfiltered = df[df[\"WARD\"].astype(str).str.strip().eq(ward_value)]\ncounts = filtered[\"OFFENSE\"].astype(str).str.strip().value_counts()\nanswer = str(counts.index[0])\n",
+            "subquestion": "In 2019 Washington, D.C. crime-incidents data, within Ward <node_1 answer>, which offense is most common?",
+            "answer": "THEFT/OTHER"
+        },
+        "3": {
+            "source": "datagov/crime-incidents-in-2018/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2018/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = '6'\nnode_2_answer = 'THEFT/OTHER'\n\n\nward_value = str(node_1_answer).strip()\noffense_value = str(node_2_answer).strip()\nfiltered = df[\n    df[\"WARD\"].astype(str).str.strip().eq(ward_value)\n    & df[\"OFFENSE\"].astype(str).str.strip().eq(offense_value)\n]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In 2018 Washington, D.C. crime-incidents data, how many incidents with offense <node_2 answer> occurred in Ward <node_1 answer>?",
+            "answer": "2238"
+        },
+        "4": {
+            "source": "datagov/crime-incidents-in-2021/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2021/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = '6'\nnode_2_answer = 'THEFT/OTHER'\n\n\nward_value = str(node_1_answer).strip()\noffense_value = str(node_2_answer).strip()\nfiltered = df[\n    df[\"WARD\"].astype(str).str.strip().eq(ward_value)\n    & df[\"OFFENSE\"].astype(str).str.strip().eq(offense_value)\n]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In 2021 Washington, D.C. crime-incidents data, how many incidents with offense <node_2 answer> occurred in Ward <node_1 answer>?",
+            "answer": "1655"
+        },
+        "5": {
+            "source": "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+            "fact": "Ward 6 Councilmember: Charles Allen Population (2022): 99,652 Buzzard Point Capitol Hill Lincoln Park Judiciary Square Mount Vernon Triangle Near Northeast NoMa Southwest Waterfront Sursum Corda Swampoodle. Computation: 2,238 divided by the 10 listed Ward 6 neighborhoods is 223.8.",
+            "subquestion": "Using the list of neighborhoods shown for Ward <hop 1 answer>, what is <hop 3 answer> per listed neighborhood? Round your answer to one decimal.",
+            "answer": "223.8"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/NoMa/content.txt",
+        "datagov/crime-incidents-in-2019/files/data.txt",
+        "datagov/crime-incidents-in-2019/signed-metadata.txt",
+        "datagov/crime-incidents-in-2019/files/1.arcgis-layer.json",
+        "datagov/crime-incidents-in-2018/files/data.txt",
+        "datagov/crime-incidents-in-2018/signed-metadata.txt",
+        "datagov/crime-incidents-in-2018/files/0.arcgis-layer.json",
+        "datagov/crime-incidents-in-2021/files/data.txt",
+        "datagov/crime-incidents-in-2021/signed-metadata.txt",
+        "datagov/crime-incidents-in-2021/files/3.arcgis-layer.json",
+        "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: 6 is the ward where NoMa is located in Washington, D.C.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "6"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `WARD` equals <hop 1 answer>, count records by `OFFENSE`, and select the most common offense.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "THEFT/OTHER"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `WARD` equals <hop 1 answer> and `OFFENSE` equals <hop 2 answer>, then count the matching incidents.",
+                "Node 4: Filter rows where `WARD` equals <hop 1 answer> and `OFFENSE` equals <hop 2 answer>, then count the matching incidents.",
+                "Hop result: max(<node_3 answer>, <node_4 answer>) = max(2238, 1655) = 2238."
+            ],
+            "answer": "2238"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Count the listed Ward <hop 1 answer> neighborhoods, then divide <hop 3 answer> by that count and round to one decimal.",
+                "Hop result: <node_5 answer>"
+            ],
+            "answer": "223.8"
+        }
+    ]
+}

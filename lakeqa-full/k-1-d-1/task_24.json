@@ -1,0 +1,30 @@
+{
+    "question": "Which year from 2011-2015 has the lowest number of births to unmarried females ages 15-19 in the United States? Your response should be in the format [Answer].",
+    "answer": "2015",
+    "nodes": {
+        "1": {
+            "source": "datagov/nchs-births-to-unmarried-women-by-age-group-united-states/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/nchs-births-to-unmarried-women-by-age-group-united-states/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Number of Births\"] = pd.to_numeric(df[\"Number of Births\"], errors=\"coerce\")\nfiltered = df[df[\"Year\"].between(2011, 2015) & df[\"Age Group\"].eq(\"15-19 years\")].copy()\nranked = filtered.sort_values([\"Number of Births\", \"Year\"], ascending=[True, True], kind=\"mergesort\")\nanswer = str(int(ranked.iloc[0][\"Year\"]))\n",
+            "subquestion": "Which year from 2011-2015 has the lowest number of births to unmarried females ages 15-19 in the United States?",
+            "answer": "2015"
+        }
+    },
+    "datasets_used": [
+        "datagov/nchs-births-to-unmarried-women-by-age-group-united-states/files/rows.txt",
+        "datagov/nchs-births-to-unmarried-women-by-age-group-united-states/signed-metadata.txt",
+        "datagov/nchs-births-to-unmarried-women-by-age-group-united-states/files/g6qk-ngsf.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter to `Age Group` = `15-19 years` within 2011-2015 and select the year with the smallest `Number of Births`. The answer is 2015.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2015"
+        }
+    ]
+}

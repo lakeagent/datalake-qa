@@ -1,0 +1,30 @@
+{
+    "question": "Which fiscal year from 2011-2016 has the highest total approved authorization amount for FEMA Hazard Mitigation Assistance (HMA) grant program funded projects? Your response should be in the format [Answer].",
+    "answer": "2012",
+    "nodes": {
+        "1": {
+            "source": "datagov/authorizations-from-10-01-2006-thru-12-31-2022/files/Data.gov+-+FY24+Q2.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/authorizations-from-10-01-2006-thru-12-31-2022/files/Data.gov+-+FY24+Q2.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Fiscal Year\"] = pd.to_numeric(df[\"Fiscal Year\"], errors=\"coerce\")\ndf[\"Approved/Declined Amount\"] = pd.to_numeric(df[\"Approved/Declined Amount\"], errors=\"coerce\")\nfiltered = df[df[\"Fiscal Year\"].between(2011, 2016) & df[\"Decision\"].eq(\"Approved\")].copy()\nyearly_totals = filtered.groupby(\"Fiscal Year\", dropna=True)[\"Approved/Declined Amount\"].sum()\nanswer = str(int(yearly_totals.idxmax()))\n",
+            "subquestion": "Which fiscal year from 2011-2016 has the highest total approved authorization amount for FEMA Hazard Mitigation Assistance (HMA) grant program funded projects?",
+            "answer": "2012"
+        }
+    },
+    "datasets_used": [
+        "datagov/authorizations-from-10-01-2006-thru-12-31-2022/files/Data.gov+-+FY24+Q2.txt",
+        "datagov/authorizations-from-10-01-2006-thru-12-31-2022/signed-metadata.txt",
+        "datagov/authorizations-from-10-01-2006-thru-12-31-2022/files/vbhv-d8am.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter to `Decision` = `Approved`, sum `Approved/Declined Amount` by `Fiscal Year` within 2011-2016, and select the fiscal year with the largest total. The answer is 2012.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2012"
+        }
+    ]
+}

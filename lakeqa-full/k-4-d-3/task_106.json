@@ -1,0 +1,129 @@
+{
+    "question": "Start with the states listed for the tribal land cession with the largest recorded area. Rank those states three ways: by their 2020 tribal-area population living in areas with fewer than three fixed broadband providers offering at least 25 Mbps service, by their number of census tracts marked as tribal communities, and by their average county estimate for the share of adults who were hesitant or unsure about getting a COVID-19 vaccine. Choose the state with the smallest sum of ranks, then find the county in that state with the largest share of non-Hispanic American Indian or Alaska Native residents. How many counties adjacent to that county are in another state? Please return only the number in the format [Answer].",
+    "answer": 2,
+    "nodes": {
+        "1": {
+            "source": "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/data.txt",
+            "fact": "import json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(obj['Body'])\nrows = [feature['properties'] for feature in data['features']]\ntop = max(rows, key=lambda row: float(row['TribalCededLandsNewSHAPE_Area'] or 0))\nstates = [state.strip() for state in top['TribalCededLandsTableState'].split(';')]\nanswer = sorted(states)\n",
+            "subquestion": "Which states are listed for the tribal land cession with the largest recorded area?",
+            "answer": [
+                "CO",
+                "KS",
+                "TX"
+            ]
+        },
+        "2": {
+            "source": "datagov/area-table-december-2020/files/rows.txt",
+            "fact": "import csv\nimport io\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/area-table-december-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = ['CO', 'KS', 'TX']\nstate_prefixes = {'CO': '08', 'KS': '20', 'TX': '48'}\ncounts = {state: 0 for state in node_1_answer}\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\nreader = csv.DictReader(io.TextIOWrapper(obj['Body'], encoding='utf-8'))\nfor row in reader:\n    if row['type'] == 'county' and row['tech'] == 'acfosw' and row['tribal_non'] == 'T' and row['speed'] == '25':\n        for state, prefix in state_prefixes.items():\n            if row['id'].startswith(prefix):\n                counts[state] += int(row['has_0']) + int(row['has_1']) + int(row['has_2'])\n                break\nanswer = dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))\n",
+            "subquestion": "For each state from <hop 1 answer>, what tribal-area population lived in areas with fewer than three fixed broadband providers offering at least 25 Mbps service in 2020?",
+            "answer": {
+                "CO": 1405,
+                "TX": 89,
+                "KS": 70
+            }
+        },
+        "3": {
+            "source": "datagov/covid-19-community-vulnerability-crosswalk-rank-ordered-by-score/files/rows.txt",
+            "fact": "import csv\nimport io\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/covid-19-community-vulnerability-crosswalk-rank-ordered-by-score/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = ['CO', 'KS', 'TX']\ncounts = {state: 0 for state in node_1_answer}\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\nreader = csv.DictReader(io.TextIOWrapper(obj['Body'], encoding='utf-8'))\nfor row in reader:\n    state = row['ST_ABBR']\n    if state in counts and 'Tribal' in row['Tribal Community\\n(1 if yes)']:\n        counts[state] += 1\nanswer = dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))\n",
+            "subquestion": "For each state from <hop 1 answer>, how many census tracts are marked as tribal communities?",
+            "answer": {
+                "TX": 5254,
+                "CO": 1249,
+                "KS": 770
+            }
+        },
+        "4": {
+            "source": "datagov/vaccine-hesitancy-for-covid-19-county-and-local-estimates/files/rows.txt",
+            "fact": "import csv\nimport io\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/vaccine-hesitancy-for-covid-19-county-and-local-estimates/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = ['CO', 'KS', 'TX']\nstate_names = {'COLORADO': 'CO', 'KANSAS': 'KS', 'TEXAS': 'TX'}\nsums = {state: 0.0 for state in node_1_answer}\ncounts = {state: 0 for state in node_1_answer}\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\nreader = csv.DictReader(io.TextIOWrapper(obj['Body'], encoding='utf-8'))\nfor row in reader:\n    state = state_names.get(row['State'])\n    if state in sums:\n        sums[state] += float(row['Estimated hesitant or unsure'])\n        counts[state] += 1\naverages = {state: round(sums[state] / counts[state], 4) for state in node_1_answer}\nanswer = dict(sorted(averages.items(), key=lambda item: (-item[1], item[0])))\n",
+            "subquestion": "For each state from <hop 1 answer>, what is the average county estimate for the share of adults who were hesitant or unsure about getting a COVID-19 vaccine?",
+            "answer": {
+                "KS": 0.2058,
+                "TX": 0.182,
+                "CO": 0.1226
+            }
+        },
+        "5": {
+            "source": "datagov/vaccine-hesitancy-for-covid-19-county-and-local-estimates/files/rows.txt",
+            "fact": "import csv\nimport io\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/vaccine-hesitancy-for-covid-19-county-and-local-estimates/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nhop_2_answer = 'Texas'\nstate_name = hop_2_answer.upper()\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\nreader = csv.DictReader(io.TextIOWrapper(obj['Body'], encoding='utf-8'))\nrows = [row for row in reader if row['State'] == state_name]\ntop = sorted(rows, key=lambda row: (-float(row['Percent non-Hispanic American Indian/Alaska Native']), row['County Name']))[0]\nanswer = '{} | {} | {} non-Hispanic American Indian/Alaska Native share'.format(top['County Name'], top['FIPS Code'].strip().zfill(5), top['Percent non-Hispanic American Indian/Alaska Native'])\n",
+            "subquestion": "In <hop 2 answer>, which county has the largest share of non-Hispanic American Indian or Alaska Native residents?",
+            "answer": "Loving County, Texas | 48301 | 0.0306 non-Hispanic American Indian/Alaska Native share"
+        },
+        "6": {
+            "source": "wikipedia/Loving_County,_Texas/content.txt",
+            "fact": "Adjacent counties\n Lea County, New Mexico (north/Mountain Time Zone)\n Winkler County (east)\n Ward County (southeast)\n Reeves County (southwest)\n Eddy County, New Mexico (northwest/Mountain Time Zone)",
+            "subquestion": "How many counties adjacent to the county from <hop 3 answer> are in another state?",
+            "answer": 2
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Identify the tribal land cession with the largest recorded area and read the states listed for it.",
+                "Hop result: the states are CO, KS, and TX."
+            ],
+            "answer": "CO, KS, TX"
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 2: Rank the states from <hop 1 answer> by 2020 county-level FCC tribal-area population with fewer than three fixed broadband providers: CO first, TX second, KS third.",
+                "Node 3: Rank the states from <hop 1 answer> by census tracts flagged as tribal communities: TX first, CO second, KS third.",
+                "Node 4: Rank the states from <hop 1 answer> by average county hesitant-or-unsure vaccine share: KS first, TX second, CO third.",
+                "Rank sums are TX = 2 + 1 + 2 = 5, CO = 1 + 2 + 3 = 6, and KS = 3 + 3 + 1 = 7.",
+                "Hop result: Texas has the smallest rank sum."
+            ],
+            "answer": "Texas"
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In <hop 2 answer>, find the county with the largest non-Hispanic American Indian or Alaska Native share.",
+                "Hop result: Loving County, Texas has the largest share."
+            ],
+            "answer": "Loving County, Texas | 48301 | 0.0306 non-Hispanic American Indian/Alaska Native share"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Identify the adjacent counties for the county from <hop 3 answer> and count those that are in another state.",
+                "Hop result: Lea County and Eddy County are in another state, so the count is 2."
+            ],
+            "answer": 2
+        }
+    ],
+    "datasets_used": [
+        "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/data.txt",
+        "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/signed-metadata.txt",
+        "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/0.txt",
+        "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/metadata.txt",
+        "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/gmi.txt",
+        "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/usfs::tribal-lands-ceded-to-the-united-states-feature-layer.txt",
+        "datagov/area-table-december-2020/files/rows.txt",
+        "datagov/area-table-december-2020/signed-metadata.txt",
+        "datagov/covid-19-community-vulnerability-crosswalk-rank-ordered-by-score/files/rows.txt",
+        "datagov/covid-19-community-vulnerability-crosswalk-rank-ordered-by-score/signed-metadata.txt",
+        "datagov/covid-19-community-vulnerability-crosswalk-rank-ordered-by-score/files/columns.txt",
+        "datagov/covid-19-community-vulnerability-crosswalk-rank-ordered-by-score/files/rnkf-8dm6.txt",
+        "datagov/vaccine-hesitancy-for-covid-19-county-and-local-estimates/files/rows.txt",
+        "datagov/vaccine-hesitancy-for-covid-19-county-and-local-estimates/signed-metadata.txt",
+        "datagov/vaccine-hesitancy-for-covid-19-county-and-local-estimates/files/q9mh-h2tw.txt",
+        "datagov/vaccine-hesitancy-for-covid-19-county-and-local-estimates/files/vaccine-hesitancy-covid-19-state-county-local-estimates.txt",
+        "datagov/area-table-december-2020/files/ymd4-xaiz.publisher-view.json",
+        "wikipedia/Loving_County,_Texas/content.txt"
+    ]
+}

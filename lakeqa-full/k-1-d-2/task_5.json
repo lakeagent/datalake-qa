@@ -1,0 +1,48 @@
+{
+    "question": "Which state appears in both of these groups: the states ranked 4th through 6th by the average amount a donor had already contributed earlier in the 2003 election cycle, and the states whose highest 2014 ZIP-code annual average price of electricity for business customers falls between 12.07 and 12.17 cents per kilowatt-hour? Break ties alphabetically by state name. Respond with [Answer].",
+    "answer": "Florida",
+    "nodes": {
+        "1": {
+            "source": "datagov/2003-campaign-contributions/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2003-campaign-contributions/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\ndf[\"PREVAMNT\"] = pd.to_numeric(df[\"PREVAMNT\"], errors=\"coerce\")\ndf = df.dropna(subset=[\"State\", \"PREVAMNT\"]).copy()\ndf[\"normalized_state\"] = df[\"State\"].astype(str).str.strip().map(state_map)\ndf = df.dropna(subset=[\"normalized_state\"])\n\nstate_metric = (\n    df.groupby(\"normalized_state\", as_index=False)[\"PREVAMNT\"].mean()\n      .rename(columns={\"PREVAMNT\": \"avg_prevamnt\"})\n)\nranked = state_metric.sort_values([\"avg_prevamnt\", \"normalized_state\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = ranked.iloc[3:6][\"normalized_state\"].tolist()",
+            "subquestion": "Which states are ranked 4th through 6th by the average amount a donor had already contributed earlier in the 2003 election cycle, breaking ties alphabetically by state name?",
+            "answer": [
+                "Florida",
+                "New Jersey",
+                "New York"
+            ]
+        },
+        "2": {
+            "source": "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2014-64e74/files/iouzipcodes2014.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2014-64e74/files/iouzipcodes2014.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\ndf[\"comm_rate\"] = pd.to_numeric(df[\"comm_rate\"], errors=\"coerce\")\ndf = df.dropna(subset=[\"state\", \"comm_rate\"]).copy()\ndf[\"normalized_state\"] = df[\"state\"].astype(str).str.strip().map(state_map)\ndf = df.dropna(subset=[\"normalized_state\"])\n\nstate_peak_rate = (\n    df.groupby(\"normalized_state\", as_index=False)[\"comm_rate\"].max()\n      .rename(columns={\"comm_rate\": \"max_comm_rate\"})\n)\nfiltered = state_peak_rate[(state_peak_rate[\"max_comm_rate\"] >= 0.1207) & (state_peak_rate[\"max_comm_rate\"] <= 0.1217)]\nanswer = filtered.sort_values(\"normalized_state\")[\"normalized_state\"].tolist()",
+            "subquestion": "Which states had a highest 2014 ZIP-code annual average price of electricity for business customers between 12.07 and 12.17 cents per kilowatt-hour?",
+            "answer": [
+                "Florida",
+                "Maine"
+            ]
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Normalize `State` to full state names, compute the mean `PREVAMNT` by state, sort by that mean descending with state name ascending as the tiebreaker, and take ranks 4 through 6.",
+                "Node 2: Normalize `state` to full state names, compute the maximum `comm_rate` by state, filter states whose maximum `comm_rate` is between 0.1207 and 0.1217 inclusive, and sort the matching state names alphabetically.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Florida."
+            ],
+            "answer": "Florida"
+        }
+    ],
+    "datasets_used": [
+        "datagov/2003-campaign-contributions/files/rows.txt",
+        "datagov/2003-campaign-contributions/signed-metadata.txt",
+        "datagov/2003-campaign-contributions/files/Key-Contribution.csv",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2014-64e74/files/iouzipcodes2014.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2014-64e74/signed-metadata.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2014-64e74/files/iouzipcodes2014_2.txt"
+    ]
+}

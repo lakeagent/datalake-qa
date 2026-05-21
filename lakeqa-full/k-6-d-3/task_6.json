@@ -1,0 +1,239 @@
+{
+    "question": "First, identify the Washington, DC ward that consistently ranked in the top four for building permits from 2022 to 2024 and had one of the highest crime rates. Among the top candidates, identify the ward that had the most frequent street sweeping schedule. In that specific ward, find the charter school whose serving spans grades 8 and 9, and is named after a famous person. What county is that person's birthplace located in? Please return the county only, i.e. `XX County`. Your response should be in the format [Answer].",
+    "answer": "Ulster County",
+    "nodes": {
+        "1": {
+            "source": "datagov/building-permits-in-2022/v1/files/data.csv",
+            "fact": "answer not derivable",
+            "subquestion": "What are the 2022 building-permit counts by ward in Washington, DC, so the top four wards for 2022 can be identified for the cross-year intersection?",
+            "answer": {
+                "Ward 6": 8371,
+                "Ward 2": 8286,
+                "Ward 4": 6971,
+                "Ward 5": 6580
+            }
+        },
+        "2": {
+            "source": "datagov/building-permits-in-2023/v1/files/data.csv",
+            "fact": "answer not derivable",
+            "subquestion": "What are the 2023 building-permit counts by ward in Washington, DC, so the top four wards for 2023 can be identified for the cross-year intersection?",
+            "answer": {
+                "Ward 2": 8392,
+                "Ward 6": 6845,
+                "Ward 4": 6525,
+                "Ward 5": 6072
+            }
+        },
+        "3": {
+            "source": "datagov/building-permits-in-2024/v1/files/data.csv",
+            "fact": "answer not derivable",
+            "subquestion": "What are the 2024 building-permit counts by ward in Washington, DC, so the top four wards for 2024 can be identified for the cross-year intersection?",
+            "answer": {
+                "Ward 2": 7897,
+                "Ward 4": 6856,
+                "Ward 6": 6658,
+                "Ward 5": 6213
+            }
+        },
+        "4": {
+            "source": "datagov/crime-incidents-in-2022/v1/files/data.csv",
+            "fact": "answer not derivable",
+            "subquestion": "What are the 2022 crime-incident counts for each of Wards 2, 4, 5, and 6, so their average incident counts across 2022-2024 can be compared?",
+            "answer": {
+                "Ward 2": 4794,
+                "Ward 4": 2547,
+                "Ward 5": 4497,
+                "Ward 6": 3685
+            }
+        },
+        "5": {
+            "source": "datagov/crime-incidents-in-2023/v1/files/data.csv",
+            "fact": "answer not derivable",
+            "subquestion": "What are the 2023 crime-incident counts for each of Wards 2, 4, 5, and 6, so their average incident counts across 2022-2024 can be compared?",
+            "answer": {
+                "Ward 2": 5469,
+                "Ward 4": 3135,
+                "Ward 5": 5629,
+                "Ward 6": 4281
+            }
+        },
+        "6": {
+            "source": "datagov/crime-incidents-in-2024/v1/files/data.csv",
+            "fact": "answer not derivable",
+            "subquestion": "What are the 2024 crime-incident counts for each of Wards 2, 4, 5, and 6, so their average incident counts across 2022-2024 can be compared?",
+            "answer": {
+                "Ward 2": 4420,
+                "Ward 4": 2595,
+                "Ward 5": 4585,
+                "Ward 6": 3549
+            }
+        },
+        "7": {
+            "source": "datagov/street-sweeping-schedule-2022/v1/files/data.csv",
+            "fact": "answer not derivable",
+            "subquestion": "What are the 2022 street-sweeping schedule entry counts for Wards 2 and 5, so their average counts across 2022-2024 can be compared?",
+            "answer": {
+                "Ward 2": 72,
+                "Ward 5": 80
+            }
+        },
+        "8": {
+            "source": "datagov/street-sweeping-schedule-2023/v1/files/data.csv",
+            "fact": "answer not derivable",
+            "subquestion": "What are the 2023 street-sweeping schedule entry counts for Wards 2 and 5, so their average counts across 2022-2024 can be compared?",
+            "answer": {
+                "Ward 2": 54,
+                "Ward 5": 83
+            }
+        },
+        "9": {
+            "source": "datagov/street-sweeping-schedule-2024/v1/files/data.csv",
+            "fact": "answer not derivable",
+            "subquestion": "What are the 2024 street-sweeping schedule entry counts for Wards 2 and 5, so their average counts across 2022-2024 can be compared?",
+            "answer": {
+                "Ward 2": 54,
+                "Ward 5": 87
+            }
+        },
+        "10": {
+            "source": "datagov/dc-charter-schools/v1/files/data.csv",
+            "fact": "answer not derivable",
+            "subquestion": "Which Ward 5 charter school names and grade spans include both grades 8 and 9, so the school named after a famous person can be identified?",
+            "answer": "Sojourner Truth PCS"
+        },
+        "11": {
+            "source": "wikipedia/Sojourner_Truth/content.txt",
+            "fact": "Truth was born into slavery in Swartekill, New York, but escaped with her infant daughter to freedom in 1826.",
+            "subquestion": "The charter school identified as <hop 4 answer> is named after Sojourner Truth. According to her biography, where was she born?",
+            "answer": "Swartekill, New York"
+        },
+        "12": {
+            "source": "wikipedia/Rifton,_New_York/content.txt",
+            "fact": "Rifton is a hamlet (and census-designated place) in Ulster County, New York, United States.",
+            "subquestion": "<hop 5 answer> is described in the Rifton, New York article; what county is Rifton in?",
+            "answer": "Ulster County"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: The exact source key `datagov/building-permits-in-2022/v1/files/data.csv` is unavailable (`NoSuchKey`), so the 2022 ward-level permit counts are not derivable from the exact node source as keyed.",
+                "Node 2: The exact source key `datagov/building-permits-in-2023/v1/files/data.csv` is unavailable (`NoSuchKey`), so the 2023 ward-level permit counts are not derivable from the exact node source as keyed.",
+                "Node 3: The exact source key `datagov/building-permits-in-2024/v1/files/data.csv` is unavailable (`NoSuchKey`), so the 2024 ward-level permit counts are not derivable from the exact node source as keyed.",
+                "Hop result: the annotated task path intends the cross-year top-four ward intersection [\"Ward 2\", \"Ward 4\", \"Ward 5\", \"Ward 6\"], but that hop is not derivable from the exact node sources until those keys are fixed."
+            ],
+            "answer": [
+                "Ward 2",
+                "Ward 4",
+                "Ward 5",
+                "Ward 6"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: The exact source key `datagov/crime-incidents-in-2022/v1/files/data.csv` is unavailable (`NoSuchKey`), so the 2022 ward-level incident counts are not derivable from the exact node source as keyed.",
+                "Node 5: The exact source key `datagov/crime-incidents-in-2023/v1/files/data.csv` is unavailable (`NoSuchKey`), so the 2023 ward-level incident counts are not derivable from the exact node source as keyed.",
+                "Node 6: The exact source key `datagov/crime-incidents-in-2024/v1/files/data.csv` is unavailable (`NoSuchKey`), so the 2024 ward-level incident counts are not derivable from the exact node source as keyed.",
+                "Hop result: the annotated task path intends Ward 5 and Ward 2 as the highest-average crime wards among <hop 1 answer>, but that comparison is not derivable from the exact node sources until those keys are fixed."
+            ],
+            "answer": [
+                "Ward 5",
+                "Ward 2"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7,
+                8,
+                9
+            ],
+            "reasoning": [
+                "Node 7: The exact source key `datagov/street-sweeping-schedule-2022/v1/files/data.csv` is unavailable (`NoSuchKey`), so the 2022 ward-level street-sweeping counts are not derivable from the exact node source as keyed.",
+                "Node 8: The exact source key `datagov/street-sweeping-schedule-2023/v1/files/data.csv` is unavailable (`NoSuchKey`), so the 2023 ward-level street-sweeping counts are not derivable from the exact node source as keyed.",
+                "Node 9: The exact source key `datagov/street-sweeping-schedule-2024/v1/files/data.csv` is unavailable (`NoSuchKey`), so the 2024 ward-level street-sweeping counts are not derivable from the exact node source as keyed.",
+                "Hop result: the annotated task path intends Ward 5 as the higher-frequency street-sweeping ward among <hop 2 answer>, but that comparison is not derivable from the exact node sources until those keys are fixed."
+            ],
+            "answer": "Ward 5"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: The exact source key `datagov/dc-charter-schools/v1/files/data.csv` is unavailable (`NoSuchKey`), so the Ward 5 charter-school filter is not derivable from the exact node source as keyed.",
+                "Hop result: the annotated task path intends Sojourner Truth PCS as the Ward 5 charter school spanning grades 8 and 9, but that result is not derivable from the exact node source until the key is fixed."
+            ],
+            "answer": "Sojourner Truth PCS"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                11
+            ],
+            "reasoning": [
+                "Node 11: The person named by <hop 4 answer>, Sojourner Truth, was born in Swartekill, New York.",
+                "Hop result: <node 11 answer>"
+            ],
+            "answer": "Swartekill, New York"
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                12
+            ],
+            "reasoning": [
+                "Node 12: The Rifton, New York article states that Rifton is in Ulster County, New York, and <hop 5 answer> is described there.",
+                "Hop result: <node 12 answer>"
+            ],
+            "answer": "Ulster County"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Sojourner_Truth/content.txt",
+        "wikipedia/Rifton,_New_York/content.txt",
+        "datagov/building-permits-in-2022/v1/files/data.csv",
+        "datagov/building-permits-in-2022/signed-metadata.txt",
+        "datagov/building-permits-in-2022/files/14.arcgis-layer.json",
+        "datagov/building-permits-in-2023/v1/files/data.csv",
+        "datagov/building-permits-in-2023/signed-metadata.txt",
+        "datagov/building-permits-in-2023/files/15.arcgis-layer.json",
+        "datagov/building-permits-in-2024/v1/files/data.csv",
+        "datagov/building-permits-in-2024/signed-metadata.txt",
+        "datagov/building-permits-in-2024/files/16.arcgis-layer.json",
+        "datagov/crime-incidents-in-2022/v1/files/data.csv",
+        "datagov/crime-incidents-in-2022/signed-metadata.txt",
+        "datagov/crime-incidents-in-2022/files/4.arcgis-layer.json",
+        "datagov/crime-incidents-in-2023/v1/files/data.csv",
+        "datagov/crime-incidents-in-2023/signed-metadata.txt",
+        "datagov/crime-incidents-in-2023/files/5.arcgis-layer.json",
+        "datagov/crime-incidents-in-2024/v1/files/data.csv",
+        "datagov/crime-incidents-in-2024/signed-metadata.txt",
+        "datagov/crime-incidents-in-2024/files/6.arcgis-layer.json",
+        "datagov/street-sweeping-schedule-2022/v1/files/data.csv",
+        "datagov/street-sweeping-schedule-2022/signed-metadata.txt",
+        "datagov/street-sweeping-schedule-2022/files/rows.txt",
+        "datagov/street-sweeping-schedule-2023/v1/files/data.csv",
+        "datagov/street-sweeping-schedule-2023/signed-metadata.txt",
+        "datagov/street-sweeping-schedule-2023/files/rows.txt",
+        "datagov/street-sweeping-schedule-2024/v1/files/data.csv",
+        "datagov/street-sweeping-schedule-2024/signed-metadata.txt",
+        "datagov/street-sweeping-schedule-2024/v1/files/3q8d-2t69.json",
+        "datagov/dc-charter-schools/v1/files/data.csv",
+        "datagov/dc-charter-schools/signed-metadata.txt",
+        "datagov/dc-charter-schools/files/1.arcgis-layer.json"
+    ]
+}

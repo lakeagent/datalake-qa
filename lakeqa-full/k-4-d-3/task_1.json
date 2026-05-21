@@ -1,0 +1,130 @@
+{
+    "question": "In which Virginia county is the NASA facility where the equipment used to collect the bare earth elevation data for the 2007 USGS survey of the national monument honoring a U.S. president born in Virginia who also held a general officer rank and appears on current U.S. currency was developed? Your response should be in the format [Answer].",
+    "answer": "Accomack County",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/List_of_presidents_of_the_United_States_by_home_state/content.txt",
+            "fact": "Eight: Virginia\n\nPresidentImageHistoric siteGeorge WashingtonGeorge Washington Birthplace National Monument, Colonial Beach, VirginiaJohn AdamsJohn Adams Birthplace, Quincy, MassachusettsJames MadisonBelle Grove Plantation, Port Conway, VirginiaJames MonroeJames Monroe Birthplace Park & Museum, Colonial Beach, VirginiaJohn Quincy AdamsJohn Quincy Adams Birthplace, Quincy, MassachusettsWilliam Henry HarrisonBerkeley Plantation, Charles City County, VirginiaZachary Taylor100pxHare Forest Farm, Orange County, VirginiaZachary Taylor House, Louisville, KentuckyJohn TylerGreenway Plantation, Charles City County, Virginia",
+            "subquestion": "Which U.S. presidents were born in Virginia?",
+            "answer": [
+                "George Washington",
+                "Thomas Jefferson",
+                "James Madison",
+                "James Monroe",
+                "William Henry Harrison",
+                "John Tyler",
+                "Zachary Taylor",
+                "Woodrow Wilson"
+            ]
+        },
+        "2": {
+            "source": "wikipedia/List_of_presidents_of_the_United_States_by_military_rank/content.txt",
+            "fact": "Presidents who held a general officer rank include George Washington, Ulysses S. Grant, Dwight D. Eisenhower, Andrew Jackson, William H. Harrison, Zachary Taylor, James A. Garfield, William Howard Taft, Franklin Pierce, Chester A. Arthur, Andrew Johnson, Rutherford B. Hayes, and Benjamin Harrison.",
+            "subquestion": "Which U.S. presidents held a general officer rank?",
+            "answer": [
+                "George Washington",
+                "Ulysses S. Grant",
+                "Dwight D. Eisenhower",
+                "Andrew Jackson",
+                "William Henry Harrison",
+                "Zachary Taylor",
+                "James A. Garfield",
+                "William Howard Taft",
+                "Franklin Pierce",
+                "Chester A. Arthur",
+                "Andrew Johnson",
+                "Rutherford B. Hayes",
+                "Benjamin Harrison"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/United_States_dollar/content.txt",
+            "fact": "Current U.S. currency portraits include George Washington, Thomas Jefferson, Abraham Lincoln, Andrew Jackson, Ulysses S. Grant, Franklin D. Roosevelt, and John F. Kennedy.",
+            "subquestion": "Which U.S. presidents appear on current U.S. currency?",
+            "answer": [
+                "George Washington",
+                "Thomas Jefferson",
+                "Abraham Lincoln",
+                "Andrew Jackson",
+                "Ulysses S. Grant",
+                "Franklin D. Roosevelt",
+                "John F. Kennedy"
+            ]
+        },
+        "4": {
+            "source": "wikipedia/George_Washington_Birthplace_National_Monument/content.txt",
+            "fact": "The George Washington Birthplace National Monument is a national monument in Westmoreland County, Virginia, commemorating the birthplace of George Washington, who was born there on February 22, 1732.",
+            "subquestion": "Which national monument commemorates the birthplace of <intersection of node_1, node_2, node_3>?",
+            "answer": "George Washington Birthplace National Monument"
+        },
+        "5": {
+            "source": "datagov/eaarl-topography-george-washington-birthplace-national-monument/files/USGS.cc604b53-f943-4516-a7a2-7d6e3d12beef.txt",
+            "fact": "In 2007, USGS published Open File Report 1179 containing bare earth elevation data for George Washington Birthplace National Monument, collected using the NASA EAARL (Experimental Advanced Airborne Research Lidar) system. The EAARL was developed by NASA at Wallops Flight Facility in Virginia.",
+            "subquestion": "At which NASA facility was equipment used collect the bare earth elevation data for <node_4 answer> in USGS's survey in 2007 developed?",
+            "answer": "Wallops Flight Facility"
+        },
+        "6": {
+            "source": "wikipedia/Wallops_Island/content.txt",
+            "fact": "Wallops Island is an island in Accomack County, Virginia, and the island is used primarily for the Wallops Flight Facility.",
+            "subquestion": "In which Virginia county is <node_5 answer> located?",
+            "answer": "Accomack County"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: The page states `Eight: Virginia` and explicitly lists George Washington, James Madison, James Monroe, William Henry Harrison, Zachary Taylor, John Tyler, and Woodrow Wilson with Virginia birthplaces.",
+                "Node 2: George Washington, William H. Harrison, and Zachary Taylor are among the presidents listed as having held general officer rank.",
+                "Node 3: George Washington and Thomas Jefferson are among the presidents shown on current U.S. currency.",
+                "Hop result: the president supported across all three nodes is George Washington."
+            ],
+            "answer": "George Washington"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: George Washington Birthplace National Monument commemorates the birthplace of <hop 1 answer>."
+            ],
+            "answer": "George Washington Birthplace National Monument"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Wallops Flight Facility is where NASA developed the EAARL system used in the 2007 USGS survey of <hop 2 answer>."
+            ],
+            "answer": "Wallops Flight Facility"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Accomack County is the Virginia county containing Wallops Island, which is used primarily for <hop 3 answer>."
+            ],
+            "answer": "Accomack County"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/List_of_presidents_of_the_United_States_by_home_state/content.txt",
+        "wikipedia/List_of_presidents_of_the_United_States_by_military_rank/content.txt",
+        "wikipedia/United_States_dollar/content.txt",
+        "wikipedia/George_Washington_Birthplace_National_Monument/content.txt",
+        "wikipedia/Wallops_Island/content.txt",
+        "datagov/eaarl-topography-george-washington-birthplace-national-monument/files/USGS.cc604b53-f943-4516-a7a2-7d6e3d12beef.txt",
+        "datagov/eaarl-topography-george-washington-birthplace-national-monument/signed-metadata.txt",
+        "datagov/eaarl-topography-george-washington-birthplace-national-monument/files/of2007-1179metadata.html"
+    ]
+}

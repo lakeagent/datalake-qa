@@ -1,0 +1,5 @@
+openai
+boto3
+pandas
+python-dotenv
+requests

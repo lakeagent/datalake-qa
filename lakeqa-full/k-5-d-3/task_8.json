@@ -1,0 +1,133 @@
+{
+    "question": "Among the Missouri Department of Corrections, the Missouri Department of Social Services, and the Missouri Department of Transportation, which had the highest average employee count from 2021 through 2023? In that agency's headquarters city, who founded the historically Black university there? In what year did this person die? Return the year only. Your response should be in the format [Answer].",
+    "answer": "1915",
+    "nodes": {
+        "1": {
+            "source": "datagov/2021-state-employee-pay/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2021-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df[df[\"Agency Name\"].isin([\"CORRECTIONS\", \"SOCIAL SERVICES\", \"TRANSPORTATION\"])]\n    [\"Agency Name\"]\n    .value_counts()\n    .reindex([\"CORRECTIONS\", \"SOCIAL SERVICES\", \"TRANSPORTATION\"])\n    .to_dict()\n)",
+            "subquestion": "For calendar year 2021, how many employee rows are there for each of CORRECTIONS, SOCIAL SERVICES, and TRANSPORTATION?",
+            "answer": {
+                "CORRECTIONS": 12530,
+                "SOCIAL SERVICES": 8362,
+                "TRANSPORTATION": 7170
+            }
+        },
+        "2": {
+            "source": "datagov/2022-state-employee-pay/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2022-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df[df[\"Agency Name\"].isin([\"CORRECTIONS\", \"SOCIAL SERVICES\", \"TRANSPORTATION\"])]\n    [\"Agency Name\"]\n    .value_counts()\n    .reindex([\"CORRECTIONS\", \"SOCIAL SERVICES\", \"TRANSPORTATION\"])\n    .to_dict()\n)",
+            "subquestion": "For calendar year 2022, how many employee rows are there for each of CORRECTIONS, SOCIAL SERVICES, and TRANSPORTATION?",
+            "answer": {
+                "CORRECTIONS": 12380,
+                "SOCIAL SERVICES": 8723,
+                "TRANSPORTATION": 6917
+            }
+        },
+        "3": {
+            "source": "datagov/2023-state-employee-pay/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2023-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df[df[\"Agency Name\"].isin([\"CORRECTIONS\", \"SOCIAL SERVICES\", \"TRANSPORTATION\"])]\n    .groupby(\"Agency Name\")\n    .size()\n    .to_dict()\n)",
+            "subquestion": "For calendar year 2023, how many employee rows are there for each of CORRECTIONS, SOCIAL SERVICES, and TRANSPORTATION?",
+            "answer": {
+                "CORRECTIONS": 13107,
+                "SOCIAL SERVICES": 8932,
+                "TRANSPORTATION": 6956
+            }
+        },
+        "4": {
+            "source": "wikipedia/Missouri_Department_of_Corrections/content.txt",
+            "fact": "The Missouri Department of Corrections has its headquarters in Missouri's capital of Jefferson City.",
+            "subquestion": "What city is the headquarters of <hop 1 answer>?",
+            "answer": "Jefferson City"
+        },
+        "5": {
+            "source": "wikipedia/Jefferson_City,_Missouri/content.txt",
+            "fact": "Jefferson City is home to Lincoln University, a public historically Black university founded in 1866.",
+            "subquestion": "What is the historically Black university located in <hop 2 answer>?",
+            "answer": "Lincoln University"
+        },
+        "6": {
+            "source": "wikipedia/Lincoln_University_(Missouri)/content.txt",
+            "fact": "At the end of the war it raised $6,300 to set up a Black school, headed by a white abolitionist officer, Richard Foster, and founded by James Milton Turner.",
+            "subquestion": "Who founded <hop 3 answer>?",
+            "answer": "James Milton Turner"
+        },
+        "7": {
+            "source": "wikipedia/James_Milton_Turner/content.txt",
+            "fact": "James Milton Turner (c. 1840 - November 1, 1915) was an American political leader, activist, educator, and diplomat during the Reconstruction era.",
+            "subquestion": "In what year did <hop 4 answer> die?",
+            "answer": "1915"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Missouri_Department_of_Corrections/content.txt",
+        "wikipedia/Jefferson_City,_Missouri/content.txt",
+        "wikipedia/Lincoln_University_(Missouri)/content.txt",
+        "wikipedia/James_Milton_Turner/content.txt",
+        "datagov/2021-state-employee-pay/files/rows.txt",
+        "datagov/2021-state-employee-pay/signed-metadata.txt",
+        "datagov/2022-state-employee-pay/files/rows.txt",
+        "datagov/2022-state-employee-pay/signed-metadata.txt",
+        "datagov/2023-state-employee-pay/files/rows.txt",
+        "datagov/2023-state-employee-pay/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Filter 2021 employee-pay rows where `Agency Name` is CORRECTIONS, SOCIAL SERVICES, or TRANSPORTATION, group by `Agency Name`, count rows, and return the yearly employee counts.",
+                "Node 2: Filter 2022 employee-pay rows where `Agency Name` is CORRECTIONS, SOCIAL SERVICES, or TRANSPORTATION, group by `Agency Name`, count rows, and return the yearly employee counts.",
+                "Node 3: Filter 2023 employee-pay rows where `Agency Name` is CORRECTIONS, SOCIAL SERVICES, or TRANSPORTATION, group by `Agency Name`, count rows, and return the yearly employee counts.",
+                "Hop result: average the three yearly employee counts and select CORRECTIONS because it has the highest overall average."
+            ],
+            "answer": "CORRECTIONS"
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Retrieve the headquarters city of <hop 1 answer>.",
+                "Hop result: the headquarters city is Jefferson City."
+            ],
+            "answer": "Jefferson City"
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Retrieve the historically Black university located in <hop 2 answer>.",
+                "Hop result: the university is Lincoln University."
+            ],
+            "answer": "Lincoln University"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Retrieve the founder of <hop 3 answer>.",
+                "Hop result: the founder is James Milton Turner."
+            ],
+            "answer": "James Milton Turner"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Retrieve the year when <hop 4 answer> died.",
+                "Hop result: the year is 1915."
+            ],
+            "answer": 1915
+        }
+    ]
+}

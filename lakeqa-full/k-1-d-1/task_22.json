@@ -1,0 +1,30 @@
+{
+    "question": "Which year from 2011-2016 has the lowest death rate for ages 1-4 in the United States? Your response should be in the format [Answer].",
+    "answer": "2014",
+    "nodes": {
+        "1": {
+            "source": "datagov/nchs-childhood-mortality-rates/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/nchs-childhood-mortality-rates/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Death Rate\"] = pd.to_numeric(df[\"Death Rate\"], errors=\"coerce\")\nfiltered = df[df[\"Year\"].between(2011, 2016) & df[\"Age Group\"].eq(\"1-4 Years\")].copy()\nranked = filtered.sort_values([\"Death Rate\", \"Year\"], ascending=[True, True], kind=\"mergesort\")\nanswer = str(int(ranked.iloc[0][\"Year\"]))\n",
+            "subquestion": "Which year from 2011-2016 has the lowest death rate for ages 1-4 in the United States?",
+            "answer": "2014"
+        }
+    },
+    "datasets_used": [
+        "datagov/nchs-childhood-mortality-rates/files/rows.txt",
+        "datagov/nchs-childhood-mortality-rates/signed-metadata.txt",
+        "datagov/nchs-childhood-mortality-rates/files/v6ab-adf5.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter to `Age Group` = `1-4 Years` within 2011-2016 and select the year with the smallest `Death Rate`. The answer is 2014.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2014"
+        }
+    ]
+}

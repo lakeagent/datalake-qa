@@ -1,0 +1,87 @@
+{
+    "question": "Among New York counties outside of NYC, identify the top two by total mental health service recipients from 2017 to 2018. For those counties, identify their county seats. Among the professional sports teams in those county seats, which team has won the most titles? Your response should be in the format [Answer].",
+    "answer": "Rochester Red Wings",
+    "nodes": {
+        "1": {
+            "source": "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\ndf[\"Service Year\"] = pd.to_numeric(df[\"Service Year\"], errors=\"coerce\")\ndf[\"Count of Recipients by Rate Code Group and County\"] = pd.to_numeric(df[\"Count of Recipients by Rate Code Group and County\"], errors=\"coerce\")\nfiltered = df[df[\"Service Year\"].isin([2017, 2018])]\ncounty_totals = filtered.groupby(\"County Label\", dropna=True)[\"Count of Recipients by Rate Code Group and County\"].sum()\nexclude_nyc = {\"Bronx\", \"Kings\", \"New York\", \"Queens\", \"Richmond\"}\ncounty_totals = county_totals[[idx not in exclude_nyc for idx in county_totals.index]]\ntop2 = county_totals.sort_values(ascending=False).head(2).index.tolist()\nanswer = [c if str(c).lower().endswith(\"county\") else f\"{c} County\" for c in top2]\n",
+            "subquestion": "Which non-NYC NY counties are in the top 2 by total mental health service recipients (2017-2018)?",
+            "answer": [
+                "Erie County",
+                "Monroe County"
+            ]
+        },
+        "2": {
+            "source": "wikipedia/Erie_County,_New_York/content.txt",
+            "fact": "Erie County is a county along the shore of Lake Erie in western New York State. As of the 2020 census, the population was 954,236. However, in 2023 the estimated population was 946,147. The county seat is Buffalo, which makes up about 28% of the county's population.",
+            "subquestion": "What is the county seat of each county in <hop 1 answer>?",
+            "answer": "Buffalo"
+        },
+        "3": {
+            "source": "wikipedia/Monroe_County,_New_York/content.txt",
+            "fact": "Monroe County is a county in the U.S. state of New York, located along Lake Ontario's southern shore. As of 2022, the population was 752,035, according to Census Bureau estimates. Its county seat and largest city is Rochester. The county is named after James Monroe, the fifth president of the United States.",
+            "subquestion": "What is the county seat of each county in <hop 1 answer>?",
+            "answer": "Rochester"
+        },
+        "4": {
+            "source": "wikipedia/Buffalo,_New_York/content.txt",
+            "fact": "+ Professional sports teams in Buffalo Team  Sport  League  Founded  Venue (capacity)  Championships Buffalo Bills  American football  NFL 1959  Highmark Stadium (71,608)  1964 and 1965 Buffalo Bisons  Baseball  IL  1979  Sahlen Field (16,600)  1997, 1998, 2004 Buffalo Sabres  Ice hockey  NHL  1970  KeyBank Center (19,070)  Buffalo Bandits  Lacrosse  NLL  1992  KeyBank Center (19,070)  1992, 1993, 1996, 2008, 2023, 2024, 2025 Buffalo Pro Soccer  Soccer  USLC  2024  TBD",
+            "subquestion": "Among the professional sports teams in each county seat in <hop 2 answer>, which local team has won the most titles?",
+            "answer": "Buffalo Bandits (7 titles)"
+        },
+        "5": {
+            "source": "wikipedia/Rochester,_New_York/content.txt",
+            "fact": "Professional sports\nRochester has several professional sports teams:\n\nthumb|right|Frontier Field, including the Rochester skyline\nthumb|right|Rochester Community Sports Complex Stadium\n Club Sport Began play League Venue Titles Rochester Red Wings Baseball 1899 IL innovative Field 20 Rochester Royal Ballers Basketball 2024 ABA Roberts Wesleyan University 0 Rochester Americans Ice hockey 1956 AHL Blue Cross Arena 6 Rochester Knighthawks Indoor lacrosse 2019 NLL Blue Cross Arena 0 Flower City Union Soccer 2021 NPSL Rochester Community Sports Complex Stadium 1",
+            "subquestion": "Among the professional sports teams in each county seat in <hop 2 answer>, which local team has won the most titles?",
+            "answer": "Rochester Red Wings (20 titles)"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Erie_County,_New_York/content.txt",
+        "wikipedia/Monroe_County,_New_York/content.txt",
+        "wikipedia/Buffalo,_New_York/content.txt",
+        "wikipedia/Rochester,_New_York/content.txt",
+        "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt",
+        "datagov/county-mental-health-profiles-phase-2-beginning-2014/signed-metadata.txt",
+        "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/4uks-kzmv.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Service Year` is 2017 or 2018, group by `County Label`, sum `Count of Recipients by Rate Code Group and County`, exclude NYC counties, and select the top two counties by total recipients.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Erie County and Monroe County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 2: Buffalo is the county seat of Erie County in <hop 1 answer>.",
+                "Node 3: Rochester is the county seat of Monroe County in <hop 1 answer>.",
+                "Hop result: report <node_2 answer>, <node_3 answer> as this hop answer."
+            ],
+            "answer": "Buffalo and Rochester"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 4: Among Buffalo's professional sports teams, Buffalo Bandits has the most titles with 7.",
+                "Node 5: Among Rochester's professional sports teams, Rochester Red Wings has the most titles with 20.",
+                "Hop result: Compare the two local maxima; Rochester Red Wings has won the most titles."
+            ],
+            "answer": "Rochester Red Wings"
+        }
+    ]
+}

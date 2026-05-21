@@ -1,0 +1,79 @@
+{
+    "question": "I'm trying to estimate how many taser-use incidents per century Austin has using 2023 data. Find the Austin petrol sector (excluding Unknown) with the most officer-conducted checks, then within that sector find the council district with the most response log records in 2023. Count the 2023 incidents in that district where officers used tasers, then use Austin's incorporation year to compute the average per century. Please return only the rounded integer in the format [Answer].",
+    "answer": "32",
+    "nodes": {
+        "1": {
+            "source": "datagov/apd-searches-by-type/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/apd-searches-by-type/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nyear = pd.to_numeric(df[\"Occurred Year\"], errors=\"coerce\")\nsector = df[\"Sector\"].astype(str).str.strip()\nfiltered = df[\n    year.eq(2023)\n    & sector.ne(\"\")\n    & sector.str.lower().ne(\"unknown\")\n]\nanswer = str(filtered[\"Sector\"].astype(str).str.strip().value_counts().index[0])\n",
+            "subquestion": "In 2023 APD searches-by-type data (excluding Sector = \"Unknown\"), which sector has the most searches?",
+            "answer": "Charlie"
+        },
+        "2": {
+            "source": "datagov/apd-computer-aided-dispatch-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/apd-computer-aided-dispatch-incidents/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ncsv_path = io.BytesIO(obj[\"Body\"].read())\n\nnode_1_answer = \"Charlie\"\n\ncounts = {}\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"Response Year\", \"Sector\", \"Council District\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    filtered = chunk[\n        pd.to_numeric(chunk[\"Response Year\"], errors=\"coerce\").eq(2023)\n        & chunk[\"Sector\"].astype(str).str.strip().str.lower().eq(node_1_answer.lower())\n    ]\n    vc = filtered[\"Council District\"].astype(str).str.strip().replace(\"\", pd.NA).dropna().value_counts()\n    for district, cnt in vc.items():\n        counts[district] = counts.get(district, 0) + int(cnt)\n\nanswer = str(max(counts, key=counts.get)).strip()\n",
+            "subquestion": "In 2023 APD computer-aided-dispatch incidents data, within sector <node_1 answer>, which council district has the most incidents?",
+            "answer": "1"
+        },
+        "3": {
+            "source": "wikipedia/Austin,_Texas/content.txt",
+            "fact": "The Austin, Texas article states that Austin was founded in 1839.",
+            "subquestion": "According to the Austin, Texas article, in what year was Austin founded?",
+            "answer": "1839"
+        },
+        "4": {
+            "source": "datagov/apd-use-of-force/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/apd-use-of-force/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nnode_2_answer = \"1\"\n\nfiltered = df[df[\"Occurred Date\"].astype(str).str.contains(\"2023\", na=False)].copy()\nfiltered[\"Council District Numeric\"] = pd.to_numeric(filtered[\"Council District\"], errors=\"coerce\")\nfiltered = filtered[filtered[\"Council District Numeric\"].eq(pd.to_numeric(node_2_answer, errors=\"coerce\"))]\nused_taser = pd.to_numeric(filtered[\"Used Taser(s)\"], errors=\"coerce\").fillna(0)\nanswer = str(int((used_taser > 0).sum()))\n",
+            "subquestion": "In 2023 APD use-of-force data, how many incidents with Used Taser(s) > 0 occurred in council district <node_2 answer>?",
+            "answer": "59"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Austin,_Texas/content.txt",
+        "datagov/apd-searches-by-type/files/rows.txt",
+        "datagov/apd-searches-by-type/signed-metadata.txt",
+        "datagov/apd-searches-by-type/files/j8ta-6rms.publisher-view.json",
+        "datagov/apd-computer-aided-dispatch-incidents/files/rows.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/signed-metadata.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/files/22de-7rzg.publisher-view.json",
+        "datagov/apd-use-of-force/files/rows.txt",
+        "datagov/apd-use-of-force/signed-metadata.txt",
+        "datagov/apd-use-of-force/files/8dc8-gj97.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Occurred Year` is 2023 and `Sector` is nonblank and not Unknown, count records by `Sector`, and select the most frequent sector.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Charlie"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `Response Year` is 2023 and `Sector` equals <hop 1 answer>, count records by `Council District`, and select the district with the highest count.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "District 1"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: 1839 is the year Austin was founded.",
+                "Node 4: Filter rows whose `Occurred Date` contains 2023 and whose `Council District` equals <hop 2 answer>, then count records where `Used Taser(s)` is greater than 0.",
+                "Hop result: round(<node_4 answer> * 100 / (2023 - <node_3 answer>)) = round(59 * 100 / (2023 - 1839)) = 32."
+            ],
+            "answer": "32"
+        }
+    ]
+}

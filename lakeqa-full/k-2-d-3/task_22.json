@@ -1,0 +1,71 @@
+{
+    "question": "Start with the states listed for the tribal land cession with the largest recorded area. Among those states, what is the difference between the largest and smallest numbers of counties? Please return only the number in the format [Answer].",
+    "answer": 190,
+    "nodes": {
+        "1": {
+            "source": "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/data.txt",
+            "fact": "import json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(obj['Body'])\nrows = [feature['properties'] for feature in data['features']]\ntop = max(rows, key=lambda row: float(row['TribalCededLandsNewSHAPE_Area'] or 0))\nstates = [state.strip() for state in top['TribalCededLandsTableState'].split(';')]\nanswer = sorted(states)\n",
+            "subquestion": "Which states are listed for the tribal land cession with the largest recorded area?",
+            "answer": [
+                "CO",
+                "KS",
+                "TX"
+            ]
+        },
+        "2": {
+            "source": "wikipedia/List_of_counties_in_Colorado/content.txt",
+            "fact": "The U.S. State of Colorado is divided into 64 counties.",
+            "subquestion": "How many counties does the Colorado state from <hop 1 answer> have?",
+            "answer": 64
+        },
+        "3": {
+            "source": "wikipedia/List_of_counties_in_Kansas/content.txt",
+            "fact": "Kansas has 105 counties, the fifth-highest total of any state.",
+            "subquestion": "How many counties does the Kansas state from <hop 1 answer> have?",
+            "answer": 105
+        },
+        "4": {
+            "source": "wikipedia/List_of_counties_in_Texas/content.txt",
+            "fact": "The U.S. state of Texas is divided into 254 counties, more than any other U.S. state.",
+            "subquestion": "How many counties does the Texas state from <hop 1 answer> have?",
+            "answer": 254
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Identify the tribal land cession with the largest recorded area and read the states listed for it.",
+                "Hop result: the states are CO, KS, and TX."
+            ],
+            "answer": "CO, KS, TX"
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Nodes 2, 3, and 4 retrieve the county counts for the states in <hop 1 answer>.",
+                "Hop result: the largest count is 254 and the smallest is 64, so the difference is 190."
+            ],
+            "answer": 190
+        }
+    ],
+    "datasets_used": [
+        "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/data.txt",
+        "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/signed-metadata.txt",
+        "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/0.txt",
+        "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/metadata.txt",
+        "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/gmi.txt",
+        "datagov/tribal-lands-ceded-to-the-united-states-feature-layer-cf3ca/files/usfs::tribal-lands-ceded-to-the-united-states-feature-layer.txt",
+        "wikipedia/List_of_counties_in_Colorado/content.txt",
+        "wikipedia/List_of_counties_in_Kansas/content.txt",
+        "wikipedia/List_of_counties_in_Texas/content.txt"
+    ]
+}

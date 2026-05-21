@@ -1,0 +1,52 @@
+{
+    "question": "Which state appears in both groups: states ranked 6th through 10th by their statewide unemployment-insurance contribution rate in 2018, and states ranked 6th through 10th by how much average industrial electricity rates varied across ZIP-code listings for investor-owned utilities in 2020? Respond with [Answer].",
+    "answer": "Montana",
+    "nodes": {
+        "1": {
+            "source": "datagov/choose-maryland-compare-states-taxes/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/choose-maryland-compare-states-taxes/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmetric_col = \"Unemployment Insurance Average Tax Rate on Total Wages (%)\"\ndf = df[[\"State\", metric_col]].copy()\ndf[metric_col] = pd.to_numeric(df[metric_col].astype(str).str.replace(\"%\", \"\", regex=False), errors=\"coerce\")\n\nresult = (\n    df.dropna(subset=[\"State\", metric_col])\n    .rename(columns={metric_col: \"statewide_unemployment_insurance_contribution_rate\"})\n    .sort_values(\n        [\"statewide_unemployment_insurance_contribution_rate\", \"State\"],\n        ascending=[False, True],\n    )\n    .reset_index(drop=True)\n)\n\nanswer = result.iloc[5:10][\"State\"].tolist()",
+            "subquestion": "Which states are ranked 6th through 10th by their statewide unemployment-insurance contribution rate in 2018?",
+            "answer": [
+                "Alaska",
+                "West Virginia",
+                "Montana",
+                "Connecticut",
+                "New Jersey"
+            ]
+        },
+        "2": {
+            "source": "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2020/files/iou_zipcodes_2020.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2020/files/iou_zipcodes_2020.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\ndf = df[[\"state\", \"ind_rate\"]].copy()\ndf[\"ind_rate\"] = pd.to_numeric(df[\"ind_rate\"], errors=\"coerce\")\ndf[\"state\"] = df[\"state\"].map(state_map)\ndf = df.dropna(subset=[\"state\", \"ind_rate\"])\n\nresult = (\n    df.groupby(\"state\", as_index=False)[\"ind_rate\"]\n    .std()\n    .rename(columns={\"state\": \"State\", \"ind_rate\": \"sample_stddev_ind_rate\"})\n    .sort_values([\"sample_stddev_ind_rate\", \"State\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = result.iloc[5:10][\"State\"].tolist()",
+            "subquestion": "Which states are ranked 6th through 10th by how much average industrial electricity rates varied across ZIP-code listings for investor-owned utilities in 2020?",
+            "answer": [
+                "Maine",
+                "Montana",
+                "Pennsylvania",
+                "New York",
+                "Washington"
+            ]
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Convert the listed 2018 statewide unemployment-insurance contribution rate to numeric after removing `%`, sort by that rate descending and state name ascending to break ties alphabetically, and take ranks 6 through 10.",
+                "Node 2: Map `state` abbreviations to full state names, convert `ind_rate` to numeric, group by state to compute the sample standard deviation, sort by that standard deviation descending and state name ascending to break ties alphabetically, and take ranks 6 through 10.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Montana."
+            ],
+            "answer": "Montana"
+        }
+    ],
+    "datasets_used": [
+        "datagov/choose-maryland-compare-states-taxes/files/rows.txt",
+        "datagov/choose-maryland-compare-states-taxes/signed-metadata.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2020/files/iou_zipcodes_2020.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2020/signed-metadata.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2020/files/non_iou_zipcodes_2020.txt"
+    ]
+}

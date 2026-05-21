@@ -1,0 +1,30 @@
+{
+    "question": "For each year from 2005 through 2010, define Bonus Volatility-Adjusted Level (BVAL) as the draws' average New York Lotto bonus ball number plus half of the standard deviation of bonus ball numbers. Which year has the highest BVAL? If there is a tie, choose the earlier year. Your response should be in the format [Answer].",
+    "answer": "2007",
+    "nodes": {
+        "1": {
+            "source": "datagov/lottery-ny-lotto-winning-numbers-beginning-2001/files/rows.txt",
+            "fact": "import pandas as pd\n\ndf = pd.read_csv(\"datagov/lottery-ny-lotto-winning-numbers-beginning-2001/files/rows.txt\", sep=None, engine=\"python\")\ndf[\"Draw Date\"] = pd.to_datetime(df[\"Draw Date\"], errors=\"coerce\")\ndf[\"Bonus #\"] = pd.to_numeric(df[\"Bonus #\"], errors=\"coerce\")\ndf[\"Year\"] = df[\"Draw Date\"].dt.year\n\nfiltered = df[df[\"Year\"].between(2005, 2010)].copy()\nyear_stats = (\n    filtered.groupby(\"Year\")[\"Bonus #\"]\n    .agg(\n        avg_bonus=\"mean\",\n        bonus_std=lambda s: s.std(ddof=0)\n    )\n    .reset_index()\n)\nyear_stats[\"BVAL\"] = year_stats[\"avg_bonus\"] + 0.5 * year_stats[\"bonus_std\"]\n\nanswer = str(int(year_stats.sort_values([\"BVAL\", \"Year\"], ascending=[False, True]).iloc[0][\"Year\"]))\n",
+            "subquestion": "For each year from 2005 through 2010, define Bonus Volatility-Adjusted Level (BVAL) as the draws' average New York Lotto bonus ball number plus half of the standard deviation of bonus ball numbers. Which year has the highest BVAL? If there is a tie, choose the earlier year.",
+            "answer": "2007"
+        }
+    },
+    "datasets_used": [
+        "datagov/lottery-ny-lotto-winning-numbers-beginning-2001/files/rows.txt",
+        "datagov/lottery-ny-lotto-winning-numbers-beginning-2001/signed-metadata.txt",
+        "datagov/lottery-ny-lotto-winning-numbers-beginning-2001/files/6nbc-h7bj.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Extract `Year` from `Draw Date`, keep rows where `Year` is between 2005 and 2010, group by `Year`, compute the mean and population standard deviation of `Bonus #`, calculate BVAL as mean plus 0.5 times the standard deviation, and select the year with the largest BVAL using earlier `Year` as the tie-breaker.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2007"
+        }
+    ]
+}

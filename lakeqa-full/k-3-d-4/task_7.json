@@ -1,0 +1,119 @@
+{
+    "question": "Find the Missouri state agency with 3rd average spending from 2007-10. Identify the city where its Southwest district is based. What highway was born in that city? Return the highway name only. Your response should be in the format [Answer].",
+    "answer": "Route 66",
+    "nodes": {
+        "1": {
+            "source": "datagov/2007-state-expenditures/files/rows.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2007-state-expenditures/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.loads(obj['Body'].read())\nname_to_index = {column['name']: index for index, column in enumerate(payload['meta']['view']['columns'])}\ndf = pd.DataFrame([\n    {\n        'Fiscal Year': row[name_to_index['Fiscal Year']],\n        'Agency Name': row[name_to_index['Agency Name']],\n        'Payments Total': row[name_to_index['Payments Total']],\n    }\n    for row in payload['data']\n])\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\nagency = df['Agency Name'].astype(str).str.strip().str.upper()\npayments = pd.to_numeric(df['Payments Total'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'Agency Name': agency, 'Payments Total': payments})[fiscal_year.eq(2007) & agency.ne('') & agency.ne('NAN')].copy()\nanswer = filtered.groupby('Agency Name')['Payments Total'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+            "subquestion": "Which Missouri state agency had the 3rd highest average expenditure from FY2007-FY2010?",
+            "answer": {
+                "SOCIAL SERVICES": 5528171459.84,
+                "ELEMENTARY AND SECONDARY EDUCATION": 4893252163.41,
+                "TRANSPORTATION": 1922237354.88,
+                "HIGHER EDUCATION AND WORKFORCE DEV": 1062578010.95,
+                "MENTAL HEALTH": 759892459.14
+            }
+        },
+        "2": {
+            "source": "datagov/2008-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2008-state-expenditures/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\nagency = df['Agency Name'].astype(str).str.strip().str.upper()\npayments = pd.to_numeric(df['Payments Total'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'Agency Name': agency, 'Payments Total': payments})[fiscal_year.eq(2008) & agency.ne('') & agency.ne('NAN')].copy()\nanswer = filtered.groupby('Agency Name')['Payments Total'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+            "subquestion": "Which Missouri state agency had the 3rd highest average expenditure from FY2007-FY2010?",
+            "answer": {
+                "SOCIAL SERVICES": 5988522037.62,
+                "ELEMENTARY AND SECONDARY EDUCATION": 5048553721.08,
+                "TRANSPORTATION": 1786534604.37,
+                "HIGHER EDUCATION AND WORKFORCE DEV": 1220312581.65,
+                "MENTAL HEALTH": 813799778.73
+            }
+        },
+        "3": {
+            "source": "datagov/2009-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2009-state-expenditures/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\nagency = df['Agency Name'].astype(str).str.strip().str.upper()\npayments = pd.to_numeric(df['Payments Total'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'Agency Name': agency, 'Payments Total': payments})[fiscal_year.eq(2009) & agency.ne('') & agency.ne('NAN')].copy()\nanswer = filtered.groupby('Agency Name')['Payments Total'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+            "subquestion": "Which Missouri state agency had the 3rd highest average expenditure from FY2007-FY2010?",
+            "answer": {
+                "SOCIAL SERVICES": 6707806742.86,
+                "ELEMENTARY AND SECONDARY EDUCATION": 5170194688.51,
+                "TRANSPORTATION": 2000940522.19,
+                "HIGHER EDUCATION AND WORKFORCE DEV": 1291298943.33,
+                "MENTAL HEALTH": 877438429.19
+            }
+        },
+        "4": {
+            "source": "datagov/2010-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2010-state-expenditures/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\nagency = df['Agency Name'].astype(str).str.strip().str.upper()\npayments = pd.to_numeric(df['Payments Total'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'Agency Name': agency, 'Payments Total': payments})[fiscal_year.eq(2010) & agency.ne('') & agency.ne('NAN')].copy()\nanswer = filtered.groupby('Agency Name')['Payments Total'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+            "subquestion": "Which Missouri state agency had the 3rd highest average expenditure from FY2007-FY2010?",
+            "answer": {
+                "SOCIAL SERVICES": 7141666880.32,
+                "ELEMENTARY AND SECONDARY EDUCATION": 5351561573.54,
+                "TRANSPORTATION": 2144139919.08,
+                "HIGHER EDUCATION AND WORKFORCE DEV": 1320888790.61,
+                "MENTAL HEALTH": 921056914.52
+            }
+        },
+        "5": {
+            "source": "wikipedia/Missouri_Department_of_Transportation/content.txt",
+            "fact": "According to the Wikipedia article for Missouri Department of Transportation, 'MoDOT operates seven districts throughout the state: Northwest, based in St. Joseph; Northeast, based in Hannibal; Kansas City, based in Lee's Summit; Central, based in Jefferson City; St. Louis, based in Chesterfield; Southwest, based in Springfield; and Southeast, based in Sikeston.'",
+            "subquestion": "In which city is the Southwest district of the agency (from hop 1: TRANSPORTATION/MoDOT) based?",
+            "answer": "Springfield"
+        },
+        "6": {
+            "source": "wikipedia/Springfield,_Missouri/content.txt",
+            "fact": "According to the Wikipedia article for Springfield, Missouri, 'Springfield's nicknames include \"Queen City of the Ozarks\" and \"The Birthplace of Route 66\"...Officially recognized as the birthplace of Route 66, it was in Springfield on April 30, 1926, that officials first proposed the name of the new Chicago-to-Los Angeles highway.'",
+            "subquestion": "What highway was born in the city identified in the previous step?",
+            "answer": "Route 66"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: In FY2007 Missouri State Expenditures, the top 5 agencies by total expenditure were: SOCIAL SERVICES ($5,528,171,459.84), ELEMENTARY AND SECONDARY EDUCATION ($4,893,252,163.41), TRANSPORTATION ($1,922,237,354.88), HIGHER EDUCATION AND WORKFORCE DEV ($1,062,578,010.95), and MENTAL HEALTH ($759,892,459.14).",
+                "Node 2: In FY2008 Missouri State Expenditures, the top 5 agencies by total expenditure were: SOCIAL SERVICES ($5,988,522,037.62), ELEMENTARY AND SECONDARY EDUCATION ($5,048,553,721.08), TRANSPORTATION ($1,786,534,604.37), HIGHER EDUCATION AND WORKFORCE DEV ($1,220,312,581.65), and MENTAL HEALTH ($813,799,778.73).",
+                "Node 3: In FY2009 Missouri State Expenditures, the top 5 agencies by total expenditure were: SOCIAL SERVICES ($6,707,806,742.86), ELEMENTARY AND SECONDARY EDUCATION ($5,170,194,688.51), TRANSPORTATION ($2,000,940,522.19), HIGHER EDUCATION AND WORKFORCE DEV ($1,291,298,943.33), and MENTAL HEALTH ($877,438,429.19).",
+                "Node 4: In FY2010 Missouri State Expenditures, the top 5 agencies by total expenditure were: SOCIAL SERVICES ($7,141,666,880.32), ELEMENTARY AND SECONDARY EDUCATION ($5,351,561,573.54), TRANSPORTATION ($2,144,139,919.08), HIGHER EDUCATION AND WORKFORCE DEV ($1,320,888,790.61), and MENTAL HEALTH ($921,056,914.52).",
+                "Derive hop 1 answer using nodes 1, 2, 3, 4: Nodes 1-4 provide yearly Missouri agency spending totals from 2007 to 2010; averaging across years keeps Transportation as the third-highest agency. Hop answer: Transportation (MoDOT)."
+            ],
+            "answer": "Transportation (MoDOT)"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: According to the Wikipedia article for Missouri Department of Transportation, 'MoDOT operates seven districts throughout the state: Northwest, based in St. Joseph; Northeast, based in Hannibal; Kansas City, based in Lee's Summit; Central, based in Jefferson City; St. Louis, based in Chesterfield; Southwest, based in Springfield; and Southeast, based in Sikeston.'",
+                "Derive hop 2 answer from node 5: Node 5 depends on hop 1 and asks for the city where MoDOT's Southwest district is based. Hop answer: Springfield."
+            ],
+            "answer": "Springfield"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: According to the Wikipedia article for Springfield, Missouri, 'Springfield's nicknames include \"Queen City of the Ozarks\" and \"The Birthplace of Route 66\"...Officially recognized as the birthplace of Route 66, it was in Springfield on April 30, 1926, that officials first proposed the name of the new Chicago-to-Los Angeles highway.'",
+                "Derive hop 3 answer from node 6: Node 6 depends on hop 2 and asks which highway was born in Springfield; this is the final requested highway name. Hop answer: Route 66."
+            ],
+            "answer": "Route 66"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Missouri_Department_of_Transportation/content.txt",
+        "wikipedia/Springfield,_Missouri/content.txt",
+        "datagov/2007-state-expenditures/files/rows.txt",
+        "datagov/2007-state-expenditures/signed-metadata.txt",
+        "datagov/2008-state-expenditures/files/rows.txt",
+        "datagov/2008-state-expenditures/signed-metadata.txt",
+        "datagov/2009-state-expenditures/files/rows.txt",
+        "datagov/2009-state-expenditures/signed-metadata.txt",
+        "datagov/2010-state-expenditures/files/rows.txt",
+        "datagov/2010-state-expenditures/signed-metadata.txt"
+    ]
+}

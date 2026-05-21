@@ -1,0 +1,118 @@
+{
+    "question": "What are the ten fiscal years with the highest total amount of money New York City currently owes that must be paid back using our tax dollars? What are the ten fiscal years with the highest total amount of money spent by the hygiene department? What are the ten fiscal years with the highest amount of money spent on sanitation? Across the years appearing in all three answers, among metropolitan residents ages 0-74 and are died because of cancer and heart disease, which state had the 7th highest number of deaths? In the largest city of that state, define a strong math school as one with both high growth in math scores and high scores on current math exams. What are the ten strongest math schools? Among those schools, for schools with at least one specialized admissions program, what are the five schools located farthest south? Finally, for those five schools, what is the average number of low-income students in 2017-18? Please return only the number in the format [Answer].",
+    "answer": "214",
+    "nodes": {
+        "1": {
+            "source": "datagov/nyc-independent-budget-office-ibo-debt-outstanding-since-fy-2000/files/rows.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nyc-independent-budget-office-ibo-debt-outstanding-since-fy-2000/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\ndef money_to_float(value):\n    if pd.isna(value):\n        return None\n    text = str(value).replace('$', '').replace(',', '').strip()\n    if text in ['', '-']:\n        return None\n    if text == '- 0':\n        return 0.0\n    negative = text.startswith('(') and text.endswith(')')\n    if negative:\n        text = text[1:-1]\n    try:\n        number = float(text)\n    except ValueError:\n        return None\n    return -number if negative else number\n\nfy_cols = [col for col in df.columns if str(col).strip().startswith('FY')]\nrow = df[df['New York City Debt Outstanding (Dollars in millions)'].fillna('').astype(str).str.strip().eq('General Obligation (GO) (2)')].iloc[0]\nrecords = []\nfor col in fy_cols:\n    year = re.search(r'\\d{4}', col).group(0)\n    value = money_to_float(row[col])\n    if value is not None:\n        records.append((year, value))\nranked = sorted(records, key=lambda item: (-item[1], item[0]))\nanswer = '; '.join(year for year, _ in ranked[:10])\n",
+            "subquestion": "What are the ten fiscal years with the highest total amount of money New York City currently owes that must be paid back using our tax dollars?",
+            "answer": "2012; 2011; 2014; 2013; 2010; 2015; 2009; 2020; 2018; 2016"
+        },
+        "2": {
+            "source": "datagov/nyc-independent-budget-office-ibo-agency-expenditures-fy-1980-2018/files/rows.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nyc-independent-budget-office-ibo-agency-expenditures-fy-1980-2018/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\ndef money_to_float(value):\n    if pd.isna(value):\n        return None\n    text = str(value).replace('$', '').replace(',', '').strip()\n    if text in ['', '-']:\n        return None\n    if text == '- 0':\n        return 0.0\n    negative = text.startswith('(') and text.endswith(')')\n    if negative:\n        text = text[1:-1]\n    try:\n        number = float(text)\n    except ValueError:\n        return None\n    return -number if negative else number\n\nfy_cols = [col for col in df.columns if str(col).strip().startswith('FY')]\ncurrent_agency = None\ntarget_row = None\nfor _, row in df.iterrows():\n    label = '' if pd.isna(row.iloc[0]) else str(row.iloc[0]).strip()\n    if label and row[fy_cols].isna().all():\n        current_agency = label\n    elif label == 'TOTAL DEPT.' and current_agency == 'Department of Health and Mental Hygiene':\n        target_row = row\n        break\nrecords = []\nfor col in fy_cols:\n    year = re.search(r'\\d{4}', col).group(0)\n    value = money_to_float(target_row[col])\n    if value is not None:\n        records.append((year, value))\nranked = sorted(records, key=lambda item: (-item[1], item[0]))\nanswer = '; '.join(year for year, _ in ranked[:10])\n",
+            "subquestion": "What are the ten fiscal years with the highest total amount of money spent by the hygiene department?",
+            "answer": "2009; 2018; 2010; 2017; 2011; 2008; 2012; 2007; 2013; 2015"
+        },
+        "3": {
+            "source": "datagov/nyc-independent-budget-office-ibo-capital-expenditures-since-1985/files/rows.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nyc-independent-budget-office-ibo-capital-expenditures-since-1985/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\ndef money_to_float(value):\n    if pd.isna(value):\n        return None\n    text = str(value).replace('$', '').replace(',', '').strip()\n    if text in ['', '-']:\n        return None\n    if text == '- 0':\n        return 0.0\n    negative = text.startswith('(') and text.endswith(')')\n    if negative:\n        text = text[1:-1]\n    try:\n        number = float(text)\n    except ValueError:\n        return None\n    return -number if negative else number\n\nfy_cols = [col for col in df.columns if str(col).strip().startswith('FY')]\nmask = df['AGENCY CAPITAL EXPENDITURES BY PURPOSE'].fillna('').astype(str).str.strip().eq('Environmental Protection and Sanitation') & df['CATEGORY'].fillna('').astype(str).str.strip().eq('')\nrow = df[mask].iloc[0]\nrecords = []\nfor col in fy_cols:\n    year = re.search(r'\\d{4}', col).group(0)\n    value = money_to_float(row[col])\n    if value is not None:\n        records.append((year, value))\nranked = sorted(records, key=lambda item: (-item[1], item[0]))\nanswer = '; '.join(year for year, _ in ranked[:10])\n",
+            "subquestion": "What are the ten fiscal years with the highest amount of money spent on sanitation?",
+            "answer": "2011; 2009; 2010; 2012; 2008; 2019; 2007; 2020; 2013; 2006"
+        },
+        "4": {
+            "source": "datagov/nchs-potentially-excess-deaths-from-the-five-leading-causes-of-death/files/rows.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nchs-potentially-excess-deaths-from-the-five-leading-causes-of-death/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = '2012; 2011; 2014; 2013; 2010; 2015; 2009; 2020; 2018; 2016'\nnode_2_answer = '2009; 2018; 2010; 2017; 2011; 2008; 2012; 2007; 2013; 2015'\nnode_3_answer = '2011; 2009; 2010; 2012; 2008; 2019; 2007; 2020; 2013; 2006'\nyears_1 = {part.strip() for part in node_1_answer.split(';') if part.strip()}\nyears_2 = {part.strip() for part in node_2_answer.split(';') if part.strip()}\nyears_3 = {part.strip() for part in node_3_answer.split(';') if part.strip()}\ncommon_years = sorted(years_1 & years_2 & years_3, key=int)\nraw = json.loads(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read())\ncolumns = [col.get('name') for col in raw['meta']['view']['columns']]\ndf = pd.DataFrame(raw['data'], columns=columns)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['Observed Deaths_num'] = pd.to_numeric(df['Observed Deaths'], errors='coerce')\nfiltered = df[\n    df['Year'].isin(common_years)\n    & df['Cause of Death'].isin(['Cancer', 'Heart Disease'])\n    & df['Age Range'].eq('0-74')\n    & df['Benchmark'].eq('Floating')\n    & df['Locality'].eq('Metropolitan')\n    & df['Observed Deaths_num'].notna()\n].copy()\nranked = filtered.groupby('State', as_index=False)['Observed Deaths_num'].sum().sort_values(['Observed Deaths_num', 'State'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = str(ranked.iloc[6]['State'])\n",
+            "subquestion": "Across the years appearing in all of <node_1 answer>, <node_2 answer>, and <node_3 answer>, among metropolitan residents ages 0-74 and are died because of cancer and heart disease, which state had the 7th highest number of deaths?",
+            "answer": "Illinois"
+        },
+        "5": {
+            "source": "datagov/chicago-public-schools-school-progress-reports-sy1617/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/chicago-public-schools-school-progress-reports-sy1617/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_4_answer = 'Illinois'\ncity = 'Chicago' if node_4_answer == 'Illinois' else node_4_answer\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfor col in ['Growth_Math_Grades_Tested_Pct_ES', 'Attainment_Math_Pct_ES']:\n    df[col + '_num'] = pd.to_numeric(df[col].str.replace('%', '', regex=False), errors='coerce')\nfiltered = df[\n    df['City'].str.lower().eq(city.lower())\n    & df['Primary_Category'].eq('ES')\n    & df['Growth_Math_Grades_Tested_Pct_ES_num'].notna()\n    & df['Attainment_Math_Pct_ES_num'].notna()\n].copy()\nfiltered['growth_rank'] = filtered['Growth_Math_Grades_Tested_Pct_ES_num'].rank(method='min', ascending=False)\nfiltered['attainment_rank'] = filtered['Attainment_Math_Pct_ES_num'].rank(method='min', ascending=False)\nfiltered['rank_sum'] = filtered['growth_rank'] + filtered['attainment_rank']\nranked = filtered.sort_values(['rank_sum', 'growth_rank', 'attainment_rank', 'School_ID'], ascending=[True, True, True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[:10]['School_ID'].astype(str).tolist())\n",
+            "subquestion": "In the largest city in <node_4 answer>, define a strong math school as one with both high growth in math scores and high scores on current math exams. What are the ten strongest math schools? Return school IDs.",
+            "answer": "610225; 609794; 610084; 610298; 610155; 609996; 609820; 610039; 609990; 609959"
+        },
+        "6": {
+            "source": "datagov/chicago-public-schools-school-admissions-information-sy1718/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/chicago-public-schools-school-admissions-information-sy1718/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_5_answer = '610225; 609794; 610084; 610298; 610155; 609996; 609820; 610039; 609990; 609959'\nschool_ids = [part.strip() for part in node_5_answer.split(';') if part.strip()]\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[df['School_ID'].isin(school_ids) & ~df['Program_Group'].eq('General Education')].copy()\nfiltered['School_Latitude_num'] = pd.to_numeric(filtered['School_Latitude'], errors='coerce')\nschool_rows = filtered.groupby('School_ID', as_index=False).agg(School_Latitude_num=('School_Latitude_num', 'first'))\nranked = school_rows.sort_values(['School_Latitude_num', 'School_ID'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[:5]['School_ID'].astype(str).tolist())\n",
+            "subquestion": "Among the schools in <node_5 answer>, for schools with at least one specialized admissions program, what are the five schools located farthest south? Return school IDs.",
+            "answer": "610084; 610298; 609996; 609959; 609990"
+        },
+        "7": {
+            "source": "datagov/chicago-public-schools-school-profile-information-sy1718/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/chicago-public-schools-school-profile-information-sy1718/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_6_answer = '610084; 610298; 609996; 609959; 609990'\nschool_ids = [part.strip() for part in node_6_answer.split(';') if part.strip()]\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['Student_Count_Low_Income_num'] = pd.to_numeric(df['Student_Count_Low_Income'], errors='coerce')\nfiltered = df[df['School_ID'].isin(school_ids) & df['Student_Count_Low_Income_num'].notna()].copy()\nmean_value = float(filtered['Student_Count_Low_Income_num'].mean())\nanswer = str(int(mean_value)) if mean_value.is_integer() else str(round(mean_value, 2))\n",
+            "subquestion": "For the five schools in <node_6 answer>, what is the average number of low-income students in 2017-18?",
+            "answer": "214"
+        }
+    },
+    "datasets_used": [
+        "datagov/nyc-independent-budget-office-ibo-debt-outstanding-since-fy-2000/files/rows.txt",
+        "datagov/nyc-independent-budget-office-ibo-debt-outstanding-since-fy-2000/signed-metadata.txt",
+        "datagov/nyc-independent-budget-office-ibo-agency-expenditures-fy-1980-2018/files/rows.txt",
+        "datagov/nyc-independent-budget-office-ibo-agency-expenditures-fy-1980-2018/signed-metadata.txt",
+        "datagov/nyc-independent-budget-office-ibo-capital-expenditures-since-1985/files/rows.txt",
+        "datagov/nyc-independent-budget-office-ibo-capital-expenditures-since-1985/signed-metadata.txt",
+        "datagov/nchs-potentially-excess-deaths-from-the-five-leading-causes-of-death/files/rows.txt",
+        "datagov/nchs-potentially-excess-deaths-from-the-five-leading-causes-of-death/signed-metadata.txt",
+        "datagov/chicago-public-schools-school-progress-reports-sy1617/files/rows.txt",
+        "datagov/chicago-public-schools-school-progress-reports-sy1617/signed-metadata.txt",
+        "datagov/chicago-public-schools-school-progress-reports-sy1617/files/cp7s-7gxg.txt",
+        "datagov/chicago-public-schools-school-admissions-information-sy1718/files/rows.txt",
+        "datagov/chicago-public-schools-school-admissions-information-sy1718/signed-metadata.txt",
+        "datagov/chicago-public-schools-school-admissions-information-sy1718/files/xc8g-xha7.txt",
+        "datagov/chicago-public-schools-school-profile-information-sy1718/files/rows.txt",
+        "datagov/chicago-public-schools-school-profile-information-sy1718/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1 ranks fiscal years by New York City general-obligation debt outstanding.",
+                "Node 2 ranks fiscal years by total spending for the Department of Health and Mental Hygiene.",
+                "Node 3 ranks fiscal years by environmental protection and sanitation capital spending.",
+                "The fiscal years common to all three answers are 2009, 2010, 2011, 2012, and 2013."
+            ],
+            "answer": "2009; 2010; 2011; 2012; 2013"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4 filters to the common fiscal years, metropolitan locality, ages 0-74, and the cancer and heart-disease causes.",
+                "It aggregates observed deaths by state and ranks states from highest to lowest.",
+                "The 7th ranked state is Illinois."
+            ],
+            "answer": "Illinois"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5 uses the largest city in Illinois, Chicago, and ranks elementary schools by combined math-growth and math-attainment rank.",
+                "Node 6 keeps schools among those ten that have specialized admissions programs and selects the five farthest south by latitude."
+            ],
+            "answer": "610084; 610298; 609996; 609959; 609990"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7 looks up the five selected school IDs in the 2017-18 profile data and averages their low-income student counts.",
+                "The average is 214."
+            ],
+            "answer": "214"
+        }
+    ]
+}

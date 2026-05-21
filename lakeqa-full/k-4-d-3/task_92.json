@@ -1,0 +1,108 @@
+{
+  "question": "To scout fireworks competition in Iowa, look at counties that rank in the top five for 2022 personal income, 2023 population, and 2023 total motor-fuel sales. From that overlap, take the county with the lowest average unemployment rate in 2024. Use that county's county seat. In 1967, how many city council members in that city became elected from individual city wards rather than citywide? Please return only the number in the format [Answer].",
+  "answer": 4,
+  "nodes": {
+    "1": {
+      "source": "datagov/annual-personal-income-for-state-of-iowa-by-county/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/annual-personal-income-for-state-of-iowa-by-county/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['Value'] = pd.to_numeric(df['Value'], errors='coerce')\ndf['year'] = pd.to_datetime(df['Date'], errors='coerce').dt.year\n\nfiltered = df[\n    df['Variable'].astype(str).str.strip().eq('Personal income')\n    & df['year'].eq(2022)\n].copy()\nranked = filtered.groupby('Name', dropna=True)['Value'].sum().sort_values(ascending=False)\nassert ranked.iloc[4] > ranked.iloc[5]\n\ntop_five = [f\"{name.strip()} County\" for name in ranked.head(5).index.tolist()]\nanswer = '; '.join(top_five)\n",
+      "subquestion": "Which Iowa counties had the five largest total personal incomes in 2022?",
+      "answer": "Polk County; Linn County; Scott County; Johnson County; Dallas County"
+    },
+    "2": {
+      "source": "datagov/county-population-in-iowa-by-year/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/county-population-in-iowa-by-year/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['Population'] = pd.to_numeric(df['Population'], errors='coerce')\ndf['year'] = pd.to_datetime(df['Year'], errors='coerce').dt.year\ndf['County'] = df['County'].astype(str).str.strip()\n\nfiltered = df[df['year'].eq(2023)].copy()\nranked = filtered.groupby('County', dropna=True)['Population'].sum().sort_values(ascending=False)\nassert ranked.iloc[4] > ranked.iloc[5]\n\nanswer = '; '.join(ranked.head(5).index.tolist())\n",
+      "subquestion": "Which Iowa counties were the five most populous in 2023?",
+      "answer": "Polk County; Linn County; Scott County; Johnson County; Black Hawk County"
+    },
+    "3": {
+      "source": "datagov/iowa-motor-fuel-sales-by-county-and-year/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/iowa-motor-fuel-sales-by-county-and-year/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nsales_cols = [col for col in df.columns if 'Sales' in col]\nfor col in sales_cols:\n    df[col] = pd.to_numeric(df[col].astype(str).str.replace(',', '').str.strip(), errors='coerce').fillna(0)\n\ndf['Calendar Year'] = pd.to_numeric(df['Calendar Year'], errors='coerce')\ndf['County'] = df['County'].astype(str).str.strip()\ndf['total_sales'] = df[sales_cols].sum(axis=1)\n\nfiltered = df[df['Calendar Year'].eq(2023)].copy()\nranked = filtered.groupby('County', dropna=True)['total_sales'].sum().sort_values(ascending=False)\nassert ranked.iloc[4] > ranked.iloc[5]\n\ntop_five = [f\"{name} County\" for name in ranked.head(5).index.tolist()]\nanswer = '; '.join(top_five)\n",
+      "subquestion": "After combining gasoline, diesel, and biodiesel sales, which five Iowa counties sold the most total motor fuel in 2023?",
+      "answer": "Polk County; Scott County; Linn County; Pottawattamie County; Black Hawk County"
+    },
+    "4": {
+      "source": "datagov/iowa-local-area-unemployment-statistics/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/iowa-local-area-unemployment-statistics/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ncandidate_sets = []\nfor upstream_answer in [node_1_answer, node_2_answer, node_3_answer]:\n    candidate_sets.append({part.strip() for part in upstream_answer.split(';') if part.strip()})\ntarget_counties = sorted(set.intersection(*candidate_sets))\nassert target_counties == ['Linn County', 'Polk County', 'Scott County']\n\ndf['AREA TYPE'] = df['AREA TYPE'].astype(str).str.strip()\ndf['AREA NAME'] = df['AREA NAME'].astype(str).str.strip()\ndf['YEAR'] = pd.to_numeric(df['YEAR'], errors='coerce')\ndf['UNEMPLOYMENT RATE'] = pd.to_numeric(df['UNEMPLOYMENT RATE'], errors='coerce')\n\nfiltered = df[\n    df['AREA TYPE'].eq('County')\n    & df['YEAR'].eq(2024)\n    & df['AREA NAME'].isin(target_counties)\n].copy()\nsummary = filtered.groupby('AREA NAME', as_index=False)['UNEMPLOYMENT RATE'].mean()\nsummary = summary.sort_values(['UNEMPLOYMENT RATE', 'AREA NAME'], ascending=[True, True]).reset_index(drop=True)\nassert summary.loc[0, 'UNEMPLOYMENT RATE'] < summary.loc[1, 'UNEMPLOYMENT RATE']\n\nanswer = str(summary.loc[0, 'AREA NAME'])\n",
+      "subquestion": "Among the counties that appear in all three answers from nodes 1, 2, and 3, which one had the lowest average unemployment rate in 2024?",
+      "answer": "Polk County"
+    },
+    "5": {
+      "source": "wikipedia/Polk_County,_Iowa/content.txt",
+      "fact": "import os\nimport re\n\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'wikipedia/Polk_County,_Iowa/content.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:\n        text = f.read()\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    text = obj['Body'].read().decode('utf-8', errors='ignore')\n\ncounty = str(node_4_answer).strip()\nassert county in text\nmatch = re.search(r'The county seat is ([A-Z][A-Za-z .-]+?)(?:,|\\.)', text)\nassert match is not None\nanswer = match.group(1).strip()\n",
+      "subquestion": "What is the county seat of the county identified in node 4?",
+      "answer": "Des Moines"
+    },
+    "6": {
+      "source": "wikipedia/Des_Moines,_Iowa/content.txt",
+      "fact": "In 1967, the city changed its government to elect four of the seven city council members from single-member districts or wards, rather than at-large.",
+      "subquestion": "In 1967, how many city council members in <hop 3 answer> became elected from individual city wards rather than citywide?",
+      "answer": 4
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Polk_County,_Iowa/content.txt",
+    "datagov/annual-personal-income-for-state-of-iowa-by-county/files/rows.txt",
+    "datagov/annual-personal-income-for-state-of-iowa-by-county/signed-metadata.txt",
+    "datagov/annual-personal-income-for-state-of-iowa-by-county/files/st2k-2ti2.txt",
+    "datagov/county-population-in-iowa-by-year/files/rows.txt",
+    "datagov/county-population-in-iowa-by-year/signed-metadata.txt",
+    "datagov/county-population-in-iowa-by-year/files/qtnr-zsrc.txt",
+    "datagov/iowa-motor-fuel-sales-by-county-and-year/files/rows.txt",
+    "datagov/iowa-motor-fuel-sales-by-county-and-year/signed-metadata.txt",
+    "datagov/iowa-motor-fuel-sales-by-county-and-year/files/hbwp-wys3.publisher-view.json",
+    "datagov/iowa-local-area-unemployment-statistics/files/rows.txt",
+    "datagov/iowa-local-area-unemployment-statistics/signed-metadata.txt",
+    "datagov/iowa-local-area-unemployment-statistics/files/tjnj-ed6z.txt",
+    "wikipedia/Des_Moines,_Iowa/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: The five Iowa counties with the largest total personal incomes in 2022 are Polk County, Linn County, Scott County, Johnson County, and Dallas County.",
+        "Node 2: The five most populous Iowa counties in 2023 are Polk County, Linn County, Scott County, Johnson County, and Black Hawk County.",
+        "Node 3: After combining the fuel-sale categories in the 2023 motor-fuel data, the five highest-selling counties are Polk County, Scott County, Linn County, Pottawattamie County, and Black Hawk County.",
+        "Hop result: The counties that appear in all three top-five lists are Polk County, Linn County, and Scott County."
+      ],
+      "answer": "Polk County; Linn County; Scott County"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: Among Polk County, Linn County, and Scott County, Polk County had the lowest average 2024 unemployment rate at 3.00%, compared with 3.42% in Linn County and 3.73% in Scott County.",
+        "Hop result: Polk County"
+      ],
+      "answer": "Polk County"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: The Polk County, Iowa article states that the county seat of Polk County is Des Moines.",
+        "Hop result: Des Moines"
+      ],
+      "answer": "Des Moines"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: <hop 3 answer> changed its government in 1967 so four city council members became elected from individual city wards rather than citywide.",
+        "Hop result: 4."
+      ],
+      "answer": 4
+    }
+  ]
+}

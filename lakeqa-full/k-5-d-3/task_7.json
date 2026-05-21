@@ -1,0 +1,176 @@
+{
+    "question": "Across 2021-2023, which Missouri state agency stayed in the top five for professional services spending and also had the highest average employee count? In its headquarters city, a historically Black university was founded. Who founded that university? Return the name only. Your response should be in the format [Answer].",
+    "answer": "James Milton Turner",
+    "nodes": {
+        "1": {
+            "source": "datagov/2021-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2021-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[df[\"Category Description\"] == \"PROFESSIONAL SERVICES\"]\n    .groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .reset_index()\n)\nanswer = result.head(5)[\"Agency Name\"].tolist()",
+            "subquestion": "What were the top 5 Missouri state agencies by total professional services spending in fiscal year 2021?",
+            "answer": [
+                "SOCIAL SERVICES",
+                "CORRECTIONS",
+                "PUBLIC SAFETY",
+                "TRANSPORTATION",
+                "ELEMENTARY AND SECONDARY EDUCATION"
+            ]
+        },
+        "2": {
+            "source": "datagov/2022-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2022-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[df[\"Category Description\"] == \"PROFESSIONAL SERVICES\"]\n    .groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .reset_index()\n)\nanswer = result.head(5)[\"Agency Name\"].tolist()",
+            "subquestion": "What were the top 5 Missouri state agencies by total professional services spending in fiscal year 2022?",
+            "answer": [
+                "SOCIAL SERVICES",
+                "CORRECTIONS",
+                "TRANSPORTATION",
+                "PUBLIC SAFETY",
+                "ELEMENTARY AND SECONDARY EDUCATION"
+            ]
+        },
+        "3": {
+            "source": "datagov/2023-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2023-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[df[\"Category Description\"] == \"PROFESSIONAL SERVICES\"]\n    .groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .reset_index()\n)\nanswer = result.head(5)[\"Agency Name\"].tolist()",
+            "subquestion": "What were the top 5 Missouri state agencies by total professional services spending in fiscal year 2023?",
+            "answer": [
+                "CORRECTIONS",
+                "SOCIAL SERVICES",
+                "TRANSPORTATION",
+                "OFFICE OF ADMINISTRATION",
+                "MENTAL HEALTH"
+            ]
+        },
+        "4": {
+            "source": "datagov/2021-state-employee-pay/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2021-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nagencies = [\"CORRECTIONS\", \"SOCIAL SERVICES\", \"TRANSPORTATION\"]\nresult = (\n    df[df[\"Agency Name\"].isin(agencies)]\n    .groupby(\"Agency Name\", dropna=False)\n    .size()\n    .sort_values(ascending=False)\n)\nanswer = result.to_dict()",
+            "subquestion": "For calendar year 2021, how many employee records were there for each of the candidate agencies CORRECTIONS, SOCIAL SERVICES, and TRANSPORTATION?",
+            "answer": {
+                "CORRECTIONS": 12530,
+                "SOCIAL SERVICES": 8362,
+                "TRANSPORTATION": 7170
+            }
+        },
+        "5": {
+            "source": "datagov/2022-state-employee-pay/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2022-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nagencies = [\"CORRECTIONS\", \"SOCIAL SERVICES\", \"TRANSPORTATION\"]\nresult = (\n    df[df[\"Agency Name\"].isin(agencies)]\n    .groupby(\"Agency Name\", dropna=False)\n    .size()\n    .sort_values(ascending=False)\n)\nanswer = result.to_dict()",
+            "subquestion": "For calendar year 2022, how many employee records were there for each of the candidate agencies CORRECTIONS, SOCIAL SERVICES, and TRANSPORTATION?",
+            "answer": {
+                "CORRECTIONS": 12380,
+                "SOCIAL SERVICES": 8723,
+                "TRANSPORTATION": 6917
+            }
+        },
+        "6": {
+            "source": "datagov/2023-state-employee-pay/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2023-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df[df[\"Agency Name\"].isin([\"CORRECTIONS\", \"SOCIAL SERVICES\", \"TRANSPORTATION\"])]\n    .groupby(\"Agency Name\")\n    .size()\n    .to_dict()\n)",
+            "subquestion": "For calendar year 2023, how many employee records were there for each of the candidate agencies CORRECTIONS, SOCIAL SERVICES, and TRANSPORTATION?",
+            "answer": {
+                "CORRECTIONS": 13107,
+                "SOCIAL SERVICES": 8932,
+                "TRANSPORTATION": 6956
+            }
+        },
+        "7": {
+            "source": "wikipedia/Missouri_Department_of_Corrections/content.txt",
+            "fact": "The Missouri Department of Corrections has its headquarters in Missouri's capital of Jefferson City.",
+            "subquestion": "What city is the headquarters of <hop 2 answer>?",
+            "answer": "Jefferson City"
+        },
+        "8": {
+            "source": "wikipedia/Jefferson_City,_Missouri/content.txt",
+            "fact": "Jefferson City is home to Lincoln University, a public historically Black university founded in 1866.",
+            "subquestion": "What historically Black university is located in <hop 3 answer>?",
+            "answer": "Lincoln University"
+        },
+        "9": {
+            "source": "wikipedia/Lincoln_University_(Missouri)/content.txt",
+            "fact": "Lincoln University was founded in 1866. The 62nd Colored Infantry regiment raised $6,300 to set up a Black school, headed by a white abolitionist officer, Richard Foster, and founded by James Milton Turner.",
+            "subquestion": "Who founded <hop 4 answer>?",
+            "answer": "James Milton Turner"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Missouri_Department_of_Corrections/content.txt",
+        "wikipedia/Jefferson_City,_Missouri/content.txt",
+        "wikipedia/Lincoln_University_(Missouri)/content.txt",
+        "datagov/2021-state-expenditures/files/rows.txt",
+        "datagov/2021-state-expenditures/signed-metadata.txt",
+        "datagov/2022-state-expenditures/files/rows.txt",
+        "datagov/2022-state-expenditures/signed-metadata.txt",
+        "datagov/2023-state-expenditures/files/rows.txt",
+        "datagov/2023-state-expenditures/signed-metadata.txt",
+        "datagov/2021-state-employee-pay/files/rows.txt",
+        "datagov/2021-state-employee-pay/signed-metadata.txt",
+        "datagov/2022-state-employee-pay/files/rows.txt",
+        "datagov/2022-state-employee-pay/signed-metadata.txt",
+        "datagov/2023-state-employee-pay/files/rows.txt",
+        "datagov/2023-state-employee-pay/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Filter 2021 rows where `Category Description` = `PROFESSIONAL SERVICES`, group by `Agency Name`, sum `Payments To Vendors`, sort descending, and keep the top five agencies.",
+                "Node 2: Filter 2022 rows where `Category Description` = `PROFESSIONAL SERVICES`, group by `Agency Name`, sum `Payments To Vendors`, sort descending, and keep the top five agencies.",
+                "Node 3: Filter 2023 rows where `Category Description` = `PROFESSIONAL SERVICES`, group by `Agency Name`, sum `Payments To Vendors`, sort descending, and keep the top five agencies.",
+                "Hop result: intersect the three yearly top-five agency sets to keep the agencies that stayed in the top five across 2021 through 2023: CORRECTIONS, SOCIAL SERVICES, and TRANSPORTATION."
+            ],
+            "answer": [
+                "CORRECTIONS",
+                "SOCIAL SERVICES",
+                "TRANSPORTATION"
+            ]
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: Filter 2021 employee-pay rows where `Agency Name` is CORRECTIONS, SOCIAL SERVICES, or TRANSPORTATION, group by `Agency Name`, count rows, and return the yearly employee counts.",
+                "Node 5: Filter 2022 employee-pay rows where `Agency Name` is CORRECTIONS, SOCIAL SERVICES, or TRANSPORTATION, group by `Agency Name`, count rows, and return the yearly employee counts.",
+                "Node 6: Filter 2023 employee-pay rows where `Agency Name` is CORRECTIONS, SOCIAL SERVICES, or TRANSPORTATION, group by `Agency Name`, count rows, and return the yearly employee counts.",
+                "Hop result: average the three yearly employee counts and select CORRECTIONS because it has the highest overall average."
+            ],
+            "answer": "CORRECTIONS"
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Retrieve the headquarters city of <hop 2 answer>.",
+                "Hop result: the headquarters city is Jefferson City."
+            ],
+            "answer": "Jefferson City"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Retrieve the historically Black university located in <hop 3 answer>.",
+                "Hop result: the university is Lincoln University."
+            ],
+            "answer": "Lincoln University"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: Retrieve the founder of <hop 4 answer>.",
+                "Hop result: the founder is James Milton Turner."
+            ],
+            "answer": "James Milton Turner"
+        }
+    ]
+}

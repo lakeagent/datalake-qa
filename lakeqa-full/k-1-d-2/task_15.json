@@ -1,0 +1,52 @@
+{
+    "question": "Which state appears in both groups: vendor states ranked 9th through 13th by the sample standard deviation of 2021 campaign expenditure amounts, and recipient states ranked 6th through 10th by the median amount approved for Maryland Commerce financial assistance in 2020? Break ties alphabetically by state name. Respond with [Answer].",
+    "answer": "Minnesota",
+    "nodes": {
+        "1": {
+            "source": "datagov/2021-campaign-expenditure/files/rows.txt",
+            "fact": "`filtered = FILTER(\"ELECTION\" == 2021)`\n`normalized_state = normalize_to_full_us_state_names(\"STATE\")`\n`state_metric = GROUP_AGG(TO_NUMERIC(\"AMNT\"), by=normalized_state, rows=filtered, agg=SAMPLE_STDDEV)`\n`ranked = SORT(state_metric, by=[metric DESC, normalized_state ASC])`\n`result = TAKE_WITH_OFFSET(ranked, limit=5, offset=8)`\n`result = [\"California\", \"Pennsylvania\", \"Ohio\", \"Massachusetts\", \"Minnesota\"]`",
+            "subquestion": "Which vendor states are ranked 9th through 13th by the sample standard deviation of 2021 campaign expenditure amounts, breaking ties alphabetically by state name?",
+            "answer": [
+                "California",
+                "Pennsylvania",
+                "Ohio",
+                "Massachusetts",
+                "Minnesota"
+            ]
+        },
+        "2": {
+            "source": "datagov/maryland-commerce-consolidated-finance-tracker-data/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/maryland-commerce-consolidated-finance-tracker-data/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"DC\": \"District of Columbia\",\n    \"FL\": \"Florida\", \"GA\": \"Georgia\", \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\",\n    \"IN\": \"Indiana\", \"IA\": \"Iowa\", \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\",\n    \"ME\": \"Maine\", \"MD\": \"Maryland\", \"MA\": \"Massachusetts\", \"MI\": \"Michigan\",\n    \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\", \"MT\": \"Montana\",\n    \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\",\n    \"OH\": \"Ohio\", \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\",\n    \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\", \"SD\": \"South Dakota\", \"TN\": \"Tennessee\",\n    \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\", \"VA\": \"Virginia\", \"WA\": \"Washington\",\n    \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\"\n}\n\ndef normalize_state(value):\n    if pd.isna(value):\n        return pd.NA\n    parts = [part.strip() for part in str(value).splitlines() if part.strip()]\n    if not parts:\n        return pd.NA\n    if len(set(parts)) == 1:\n        token = parts[0]\n    else:\n        token = \" \".join(parts)\n    return state_map.get(token, state_map.get(token.upper(), pd.NA))\n\ndf[\"Fiscal Year\"] = pd.to_numeric(df[\"Fiscal Year\"], errors=\"coerce\")\ndf = df[df[\"Fiscal Year\"] == 2020].copy()\ndf[\"normalized_state\"] = df[\"State\"].apply(normalize_state)\ndf[\"Approved Amount\"] = pd.to_numeric(df[\"Approved Amount\"], errors=\"coerce\")\n\nranked = (\n    df.dropna(subset=[\"normalized_state\", \"Approved Amount\"])\n      .groupby(\"normalized_state\", as_index=False)[\"Approved Amount\"]\n      .median()\n      .rename(columns={\"Approved Amount\": \"median_approved_amount\"})\n      .sort_values([\"median_approved_amount\", \"normalized_state\"], ascending=[False, True])\n      .reset_index(drop=True)\n)\n\nresult = ranked.iloc[5:10].reset_index(drop=True)\nanswer = result[\"normalized_state\"].tolist()",
+            "subquestion": "Which recipient states are ranked 6th through 10th by the median amount approved for Maryland Commerce financial assistance in 2020, breaking ties alphabetically by state name?",
+            "answer": [
+                "Delaware",
+                "Minnesota",
+                "Arizona",
+                "North Carolina",
+                "Indiana"
+            ]
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Keep 2021 campaign expenditure records, normalize vendor states to full state names, convert expenditure amounts to numeric, group by state to compute the sample standard deviation, sort by that standard deviation descending and state name ascending to break ties alphabetically, and take ranks 9 through 13.",
+                "Node 2: Keep 2020 Maryland Commerce financial assistance records, normalize recipient states to full state names, convert amounts approved for assistance to numeric, group by state to compute the median amount approved, sort by that median descending and normalized state name ascending to break ties alphabetically, and take ranks 6 through 10.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Minnesota."
+            ],
+            "answer": "Minnesota"
+        }
+    ],
+    "datasets_used": [
+        "datagov/2021-campaign-expenditure/files/rows.txt",
+        "datagov/2021-campaign-expenditure/files/columns.txt",
+        "datagov/2021-campaign-expenditure/files/qxzj-vkn2.publisher-view.json",
+        "datagov/maryland-commerce-consolidated-finance-tracker-data/files/rows.txt",
+        "datagov/maryland-commerce-consolidated-finance-tracker-data/signed-metadata.txt"
+    ]
+}

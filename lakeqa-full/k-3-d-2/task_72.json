@@ -1,0 +1,86 @@
+{
+  "question": "Among DC wards 7 and 8, identify which ward had the higher average 311 service requests from 2019 through 2020. Who represents that ward on the DC Council? How many universities did that councilmember receive a B.S. and an M.A. from? Return the number only. Your response should be in the format [Answer].",
+  "answer": 2,
+  "nodes": {
+    "1": {
+      "source": "datagov/311-city-service-requests-in-2019/files/data.txt",
+      "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/311-city-service-requests-in-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\nward_col = \"properties.WARD\"\nresult = (\n    df[df[ward_col].isin([\"7\", \"8\", 7, 8])]\n    .groupby(ward_col)\n    .size()\n    .reset_index(name=\"request_count\")\n)\nresult[ward_col] = result[ward_col].astype(str)\nresult = result.sort_values(\"request_count\", ascending=False).reset_index(drop=True)\nanswer = [f\"Ward {row[ward_col]} ({row['request_count']:,})\" for _, row in result.iterrows()]",
+      "subquestion": "For 2019, how many 311 service requests were recorded in Ward 7 and Ward 8?",
+      "answer": [
+        "Ward 7 (42,226)",
+        "Ward 8 (34,959)"
+      ]
+    },
+    "2": {
+      "source": "datagov/311-city-service-requests-in-2020/files/data.txt",
+      "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/311-city-service-requests-in-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\nward_col = \"properties.WARD\"\nresult = (\n    df[df[ward_col].isin([\"7\", \"8\", 7, 8])]\n    .groupby(ward_col)\n    .size()\n    .reset_index(name=\"request_count\")\n)\nresult[ward_col] = result[ward_col].astype(str)\nresult = result.sort_values(\"request_count\", ascending=False).reset_index(drop=True)\nanswer = [f\"Ward {row[ward_col]} ({row['request_count']:,})\" for _, row in result.iterrows()]",
+      "subquestion": "For 2020, how many 311 service requests were recorded in Ward 7 and Ward 8?",
+      "answer": [
+        "Ward 8 (37,124)",
+        "Ward 7 (36,113)"
+      ]
+    },
+    "3": {
+      "source": "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+      "fact": "Ward 7\nthumb|170px|Ward 7 (2023\u2013present)\nWard 7 Councilmember: Wendell Felder\nPopulation (2022): 77,456 \n\nBenning\nBenning Heights\nBenning Ridge\nBurrville\nCapitol View\nCentral Northeast\nCivic Betterment\nDeanwood\nDupont Park\nEast Corner\nEast River Heights\nEastland Gardens\nFairfax Village\nFort Davis\nFort Dupont\nFort Stanton\nGreenway\nHill East\nHillbrook\nHillcrest\nKenilworth\nKingman Park\nLincoln Heights\nMarshall Heights\nMayfair\nNaylor Gardens\nNortheast Boundary\nPenn Branch\nRandle Highlands\nRiver Terrace\nTwining",
+      "subquestion": "Who represents <hop 1 answer> on the DC Council?",
+      "answer": "Wendell Felder"
+    },
+    "4": {
+      "source": "wikipedia/Wendell_Felder/content.txt",
+      "fact": "Felder went on to receive a B.S. from Bowie State University and a M.A. from Georgetown University.",
+      "subquestion": "How many universities did <hop 2 answer> receive a B.S. and an M.A. from?",
+      "answer": 2
+    }
+  },
+  "datasets_used": [
+    "datagov/311-city-service-requests-in-2019/files/data.txt",
+    "datagov/311-city-service-requests-in-2019/signed-metadata.txt",
+    "datagov/311-city-service-requests-in-2019/files/10.arcgis-layer.json",
+    "datagov/311-city-service-requests-in-2020/files/data.txt",
+    "datagov/311-city-service-requests-in-2020/signed-metadata.txt",
+    "datagov/311-city-service-requests-in-2020/files/11.arcgis-layer.json",
+    "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+    "wikipedia/Wendell_Felder/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "title": "Compare The Two Wards",
+      "reasoning": [
+        "Node 1 retrieves the 2019 311 request counts for Ward 7 and Ward 8.",
+        "Node 2 retrieves the 2020 311 request counts for Ward 7 and Ward 8.",
+        "Hop result: averaging the two years shows `Ward 7` has the higher average 311 service requests."
+      ],
+      "answer": "Ward 7"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3
+      ],
+      "title": "Identify The Councilmember",
+      "reasoning": [
+        "Node 3 retrieves the DC Council representative for `<hop 1 answer>`.",
+        "Hop result: `Wendell Felder`."
+      ],
+      "answer": "Wendell Felder"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        4
+      ],
+      "title": "Count Named Degree Institutions",
+      "reasoning": [
+        "Node 4 uses the councilmember from `<hop 2 answer>` and counts the universities named for the B.S. and M.A. degrees.",
+        "Hop result: `2`."
+      ],
+      "answer": 2
+    }
+  ]
+}

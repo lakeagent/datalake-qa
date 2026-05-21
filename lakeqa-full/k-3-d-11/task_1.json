@@ -1,0 +1,176 @@
+{
+  "question": "If the dangerousness of a school is defined by the combined total of drug, alcohol, and bomb related incidents, identify the New York City schools ranked 5th to 10th in the school years of 2012-2013, 2013-2014, and 2014-2015. For all schools in those three answers, find the top 11 schools with the most students residing in shelter in 2019-2020. Among those 11 schools, how many are in Manhattan? Return only the number in the format [Answer].",
+  "answer": 3,
+  "nodes": {
+    "1": {
+      "source": "datagov/2012-2013-vadir-incidents/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2012-2013-vadir-incidents/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nincident_cols = [\"Drug Possession\", \"Alcohol Possession\", \"Bomb Threat\"]\nfor col in incident_cols:\n    df[col] = pd.to_numeric(df[col], errors=\"coerce\").fillna(0)\n\ndf[\"School Name\"] = df[\"School Name\"].fillna(\"\").str.strip()\ndf[\"BEDS Code\"] = df[\"BEDS Code\"].fillna(\"\").str.strip()\ndf[\"Need/Resource Category\"] = df[\"Need/Resource Category\"].fillna(\"\").str.strip()\nfiltered = df[\n    df[\"Need/Resource Category\"].eq(\"New York City\")\n    & df[\"School Name\"].ne(\"\")\n].copy()\naggregated = filtered.groupby([\"School Name\", \"BEDS Code\"], as_index=False)[incident_cols].sum()\naggregated[\"dangerous_total\"] = aggregated[incident_cols].sum(axis=1)\nranked = aggregated.sort_values(\n    [\"dangerous_total\", \"School Name\", \"BEDS Code\"],\n    ascending=[False, True, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[4:10][\"School Name\"].tolist())\n",
+      "subquestion": "If the dangerousness of a school is defined by the combined total of drug, alcohol, and bomb related incidents, which New York City schools are the 5th to 10th most dangerous in New York in the school year of 2012-2013? Rank alphabetically if there is a tie and split with comma.",
+      "answer": "Richmond Hill High School, Stuyvesant High School, High School Of Arts And Technology, Abraham Lincoln High School, Brooklyn Technical High School, Queens Metropolitan High School"
+    },
+    "2": {
+      "source": "datagov/2013-2014-vadir-incidents/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2013-2014-vadir-incidents/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nincident_cols = [\"Drug Possession\", \"Alcohol Possession\", \"Bomb Threat\"]\nfor col in incident_cols:\n    df[col] = pd.to_numeric(df[col], errors=\"coerce\").fillna(0)\n\ndf[\"School Name\"] = df[\"School Name\"].fillna(\"\").str.strip()\ndf[\"BEDS Code\"] = df[\"BEDS Code\"].fillna(\"\").str.strip()\ndf[\"Need/Resource Category\"] = df[\"Need/Resource Category\"].fillna(\"\").str.strip()\nfiltered = df[\n    df[\"Need/Resource Category\"].eq(\"New York City\")\n    & df[\"School Name\"].ne(\"\")\n].copy()\naggregated = filtered.groupby([\"School Name\", \"BEDS Code\"], as_index=False)[incident_cols].sum()\naggregated[\"dangerous_total\"] = aggregated[incident_cols].sum(axis=1)\nranked = aggregated.sort_values(\n    [\"dangerous_total\", \"School Name\", \"BEDS Code\"],\n    ascending=[False, True, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[4:10][\"School Name\"].tolist())\n",
+      "subquestion": "If the dangerousness of a school is defined by the combined total of drug, alcohol, and bomb related incidents, which New York City schools are the 5th to 10th most dangerous in New York in the school year of 2013-2014? Rank alphabetically if there is a tie and split with comma.",
+      "answer": "Richmond Hill High School, James Madison High School, Queens Vocational And Technical High School, Art And Design High School, High School Of Graphic Communication Arts, John Bowne High School"
+    },
+    "3": {
+      "source": "datagov/2014-2015-vadir-incidents/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2014-2015-vadir-incidents/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nincident_cols = [\"Drug Possession\", \"Alcohol Possession\", \"Bomb Threat\"]\nfor col in incident_cols:\n    df[col] = pd.to_numeric(df[col], errors=\"coerce\").fillna(0)\n\ndf[\"School Name\"] = df[\"School Name\"].fillna(\"\").str.strip()\ndf[\"BEDS Code\"] = df[\"BEDS Code\"].fillna(\"\").str.strip()\ndf[\"Need/Resource Category\"] = df[\"Need/Resource Category\"].fillna(\"\").str.strip()\nfiltered = df[\n    df[\"Need/Resource Category\"].eq(\"New York City\")\n    & df[\"School Name\"].ne(\"\")\n].copy()\naggregated = filtered.groupby([\"School Name\", \"BEDS Code\"], as_index=False)[incident_cols].sum()\naggregated[\"dangerous_total\"] = aggregated[incident_cols].sum(axis=1)\nranked = aggregated.sort_values(\n    [\"dangerous_total\", \"School Name\", \"BEDS Code\"],\n    ascending=[False, True, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[4:10][\"School Name\"].tolist())\n",
+      "subquestion": "If the dangerousness of a school is defined by the combined total of drug, alcohol, and bomb related incidents, which New York City schools are the 5th to 10th most dangerous in New York in the school year of 2014-2015? Rank alphabetically if there is a tie and split with comma.",
+      "answer": "Tottenville High School, Bronx High School Of Science, Fort Hamilton High School, High School For Health Professions & Human Services, Long Island City High School, Benjamin N Cardozo High School"
+    },
+    "4": {
+      "source": "datagov/2019-20-students-in-temporary-housing/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2019-20-students-in-temporary-housing/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_1_answer = \"Richmond Hill High School, Stuyvesant High School, High School Of Arts And Technology, Abraham Lincoln High School, Brooklyn Technical High School, Queens Metropolitan High School\"\nnode_2_answer = \"Richmond Hill High School, James Madison High School, Queens Vocational And Technical High School, Art And Design High School, High School Of Graphic Communication Arts, John Bowne High School\"\nnode_3_answer = \"Tottenville High School, Bronx High School Of Science, Fort Hamilton High School, High School For Health Professions & Human Services, Long Island City High School, Benjamin N Cardozo High School\"\n\nall_schools = []\nfor value in [node_1_answer, node_2_answer, node_3_answer]:\n    all_schools.extend([part.strip() for part in str(value).split(\",\") if part.strip()])\ntarget_schools = sorted(set(all_schools))\nname_to_dbn = {\n    \"Abraham Lincoln High School\": \"21K410\",\n    \"Art And Design High School\": \"02M630\",\n    \"Benjamin N Cardozo High School\": \"26Q415\",\n    \"Bronx High School Of Science\": \"10X445\",\n    \"Brooklyn Technical High School\": \"13K430\",\n    \"Fort Hamilton High School\": \"20K490\",\n    \"High School For Health Professions & Human Services\": \"02M420\",\n    \"High School Of Arts And Technology\": \"03M494\",\n    \"High School Of Graphic Communication Arts\": \"02M625\",\n    \"James Madison High School\": \"22K425\",\n    \"John Bowne High School\": \"25Q425\",\n    \"Long Island City High School\": \"30Q450\",\n    \"Queens Metropolitan High School\": \"28Q686\",\n    \"Queens Vocational And Technical High School\": \"24Q600\",\n    \"Richmond Hill High School\": \"27Q475\",\n    \"Stuyvesant High School\": \"02M475\",\n    \"Tottenville High School\": \"31R455\",\n}\nrecords = pd.DataFrame([{\"School Name\": name, \"DBN\": name_to_dbn[name]} for name in target_schools if name in name_to_dbn])\n\ndf[\"DBN\"] = df[\"DBN\"].fillna(\"\").str.strip()\ndf[\"# Students Residing in Shelter\"] = df[\"# Students Residing in Shelter\"].fillna(\"\").str.strip()\ndf[\"shelter_num\"] = pd.to_numeric(df[\"# Students Residing in Shelter\"].replace({\"s\": pd.NA}), errors=\"coerce\")\nmerged = records.merge(df[[\"DBN\", \"shelter_num\"]], on=\"DBN\", how=\"left\")\nfiltered = merged[merged[\"shelter_num\"].notna() & merged[\"shelter_num\"].ne(0)].copy()\nranked = filtered.sort_values([\"shelter_num\", \"School Name\", \"DBN\"], ascending=[False, True, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked[\"School Name\"].tolist())\n",
+      "subquestion": "For all schools in <hop 1 answer>, what are the top 11 schools with most students residing in shelter in the school year of 2019-2020?",
+      "answer": "Long Island City High School, Abraham Lincoln High School, High School For Health Professions & Human Services, John Bowne High School, High School Of Arts And Technology, Benjamin N Cardozo High School, Richmond Hill High School, James Madison High School, Art And Design High School, Fort Hamilton High School, Brooklyn Technical High School"
+    },
+    "5": {
+      "source": "wikipedia/Long_Island_City_High_School/content.txt",
+      "fact": "Long Island City High School, commonly abbreviated L.I.C. or LICHS, is a public high school in Long Island City, Queens, New York City.",
+      "subquestion": "Which borough contains the first school from <hop 2 answer>?",
+      "answer": "Queens"
+    },
+    "6": {
+      "source": "wikipedia/Abraham_Lincoln_High_School_(Brooklyn)/content.txt",
+      "fact": "Abraham Lincoln High School is a public high school located at 2800 Ocean Parkway, Brooklyn, New York under the jurisdiction of the New York City Department of Education.",
+      "subquestion": "Which borough contains the second school from <hop 2 answer>?",
+      "answer": "Brooklyn"
+    },
+    "7": {
+      "source": "wikipedia/High_School_for_Health_Professions_and_Human_Services/content.txt",
+      "fact": "The High School for Health Professions and Human Services is a public high school in Manhattan, New York City.",
+      "subquestion": "Which borough contains the third school from <hop 2 answer>?",
+      "answer": "Manhattan"
+    },
+    "8": {
+      "source": "wikipedia/John_Bowne_High_School/content.txt",
+      "fact": "John Bowne High School is a public high school located in Flushing, Queens, New York City, next to Queens College, City University of New York.",
+      "subquestion": "Which borough contains the fourth school from <hop 2 answer>?",
+      "answer": "Queens"
+    },
+    "9": {
+      "source": "wikipedia/List_of_high_schools_in_New_York_City/content.txt",
+      "fact": "Manhattan\nSchoolP.S. numberTypeReligious affiliationWebsiteNYC DOESchoolA. Philip Randolph Campus High SchoolM540Public Aaron School Private  Abraham Joshua Heschel School Private, co-edJewish Academy of Environmental Science Secondary High SchoolM635Public  Academy for Social Action: A College Board SchoolM367Public Aichhorn School Private  The American Sign Language and English Secondary SchoolM047Public, deaf  Avenues: The World School Private, for-profit  Bard High School Early College(see also Bard High School Early College II in Queens)M696Public Ballet Tech, NYC Public School for DanceM442Public Baruch College Campus High SchoolM411Public Bayard Rustin Educational ComplexM440Public  The Beacon School(Beacon High School)M479Public The Beekman School Private, co-ed  Bread & Roses Integrated Arts High SchoolM685Public  Brearley School Private, girls  The Browning School Private, boys  The Calhoun School Private, co-ed  Cascades High School(Cascades Center for Teaching & Learning)M650Public  Cathedral High School Private, girlsRoman Catholic Central Park East High SchoolM555Public  Chapin School (Manhattan) Private, girls  Chelsea Career and Technical Education High School)M615Public  The Child School Legacy High School, Roosevelt Island Private, co-ed  Choir Academy of HarlemM469Public Churchill School Private, co-ed  City-As-School(High School M560 - City As School)M560Public Coalition School for Social ChangeM409Public Collegiate School Private, boys  Columbia Grammar & Preparatory School Private, co-ed  Columbia Secondary School(Columbia Secondary School for Math, Science & Engineering)M362Public Cooke School Private  Cristo Rey New York High School Private, co-edRoman Catholic, Jesuit Convent of the Sacred Heart Private, girlsRoman Catholic The Dalton School Private, co-ed  Daytop Preparatory School Private  Dominican Academy Private, girlsRoman Catholic, Dominican The Dwight School Private, co-ed  East Side Community High SchoolM450Public Edward A. Reynolds West Side High SchoolM505Public Eleanor Roosevelt High SchoolM416Public Elisabeth Irwin High School(Little Red Schoolhouse & Elisabeth Irwin High School) (LREI) Private, co-ed  Essex Street Academy(Seward Park campus)M294Public The Facing History School(Park West campus)M303Public Fiorello H. LaGuardia High School of Music & Art and Performing ArtsM485Public Food and Finance High School(Park West campus)M288Public  Frederick Douglass AcademySee also:\nFrederick Douglass Academy II Secondary School (Manhattan)\nFrederick Douglass Academy III Secondary School (Bronx)\nFrederick Douglass Academy IV Secondary School (Brooklyn)\nFrederick Douglass Academy VI High School (Queens)\nFrederick Douglass Academy VII High School (Brooklyn)M499Public Frederick Douglass Academy II Secondary SchoolM860Public Friends Seminary Private, co-edQuaker Fusion Academy & Learning Center Private, co-ed  George Washington High SchoolSee:\nHigh School for Health Careers and Sciences\nHigh School for International Business and Finance\nHigh School for Law and Public Service\nHigh School for Media and Communications(split)Public   Gramercy Arts High SchoolM374Public  Greenwich Village High SchoolPrivate   Gregorio Luperon High School for Math & Science(Gregorio Luperon High School for Science and Mathematics)M552Public Harlem Renaissance High SchoolM285Public Harvey Milk High SchoolM586Public Henry Street School for International StudiesM292Public The Heritage SchoolM680Public  The Hewitt School Private, girls  High School for Arts, Imagination and Inquiry(Martin Luther King, Jr. campus)M299Public  High School for Dual Language and Asian Studies(Seward Park campus)M545Public  High School For Environmental StudiesM400Public High School for Health Careers and Sciences(George Washington campus)M468Public  High School for Health Professions and Human ServicesM420Public High School for Humanities Educational CampusSee:\nBayard Rustin High School for the Humanities\nHumanities Preparatory Academy\nThe James Baldwin School     High School for International Business and Finance(George Washington campus)M462Public High School for Law, Advocacy, and Community Justice(Martin Luther King, Jr. campus)M492Public  High School for Law and Public Service(George Washington campus)M467Public IDEAL School Private  High School for Leadership and Public ServiceM425Public  High School for Math, Science and Engineering at City CollegeM692Public High School for Media and Communications(George Washington campus)M463Public  High School of Art and DesignM630Public High School of Arts and Technology(Martin Luther King, Jr. campus)M494Public  High School of Economics and FinanceM489Public",
+      "subquestion": "Which borough contains the fifth school from <hop 2 answer>?",
+      "answer": "Manhattan"
+    },
+    "10": {
+      "source": "wikipedia/Benjamin_N._Cardozo_High_School/content.txt",
+      "fact": "Benjamin N. Cardozo High School is a public high school in the Bayside neighborhood of Queens, New York City.",
+      "subquestion": "Which borough contains the sixth school from <hop 2 answer>?",
+      "answer": "Queens"
+    },
+    "11": {
+      "source": "wikipedia/Richmond_Hill_High_School_(Queens)/content.txt",
+      "fact": "Richmond Hill High School is a four-year public high school in Richmond Hill, Queens, New York City, part of the New York City Department of Education.",
+      "subquestion": "Which borough contains the seventh school from <hop 2 answer>?",
+      "answer": "Queens"
+    },
+    "12": {
+      "source": "wikipedia/James_Madison_High_School_(Brooklyn)/content.txt",
+      "fact": "James Madison High School is a public high school in Midwood, Brooklyn.",
+      "subquestion": "Which borough contains the eighth school from <hop 2 answer>?",
+      "answer": "Brooklyn"
+    },
+    "13": {
+      "source": "wikipedia/High_School_of_Art_and_Design/content.txt",
+      "fact": "The High School of Art and Design is a career and technical education high school in Manhattan, New York City.",
+      "subquestion": "Which borough contains the ninth school from <hop 2 answer>?",
+      "answer": "Manhattan"
+    },
+    "14": {
+      "source": "wikipedia/Fort_Hamilton_High_School/content.txt",
+      "fact": "Fort Hamilton High School (HS 490) is a public high school in Brooklyn, New York, United States, under the jurisdiction of the New York City Department of Education.",
+      "subquestion": "Which borough contains the tenth school from <hop 2 answer>?",
+      "answer": "Brooklyn"
+    },
+    "15": {
+      "source": "wikipedia/Brooklyn_Technical_High_School/content.txt",
+      "fact": "Category:Public high schools in Brooklyn",
+      "subquestion": "Which borough contains the eleventh school from <hop 2 answer>?",
+      "answer": "Brooklyn"
+    }
+  },
+  "datasets_used": [
+    "datagov/2012-2013-vadir-incidents/files/rows.txt",
+    "datagov/2012-2013-vadir-incidents/files/columns.txt",
+    "datagov/2013-2014-vadir-incidents/files/rows.txt",
+    "datagov/2013-2014-vadir-incidents/files/columns.txt",
+    "datagov/2014-2015-vadir-incidents/files/rows.txt",
+    "datagov/2014-2015-vadir-incidents/files/vadir-glossary.html",
+    "datagov/2019-20-students-in-temporary-housing/files/rows.txt",
+    "datagov/2019-20-students-in-temporary-housing/signed-metadata.txt",
+    "wikipedia/Abraham_Lincoln_High_School_(Brooklyn)/content.txt",
+    "wikipedia/Benjamin_N._Cardozo_High_School/content.txt",
+    "wikipedia/Brooklyn_Technical_High_School/content.txt",
+    "wikipedia/Fort_Hamilton_High_School/content.txt",
+    "wikipedia/High_School_for_Health_Professions_and_Human_Services/content.txt",
+    "wikipedia/High_School_of_Art_and_Design/content.txt",
+    "wikipedia/James_Madison_High_School_(Brooklyn)/content.txt",
+    "wikipedia/John_Bowne_High_School/content.txt",
+    "wikipedia/List_of_high_schools_in_New_York_City/content.txt",
+    "wikipedia/Long_Island_City_High_School/content.txt",
+    "wikipedia/Richmond_Hill_High_School_(Queens)/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: In the 2012-2013 VADIR incidents dataset, ranking New York City schools by the combined drug, alcohol, and bomb-related incident total gives the 5th to 10th schools listed in node 1.",
+        "Node 2: In the 2013-2014 VADIR incidents dataset, the same ranking gives the 5th to 10th schools listed in node 2.",
+        "Node 3: In the 2014-2015 VADIR incidents dataset, the same ranking gives the 5th to 10th schools listed in node 3.",
+        "Hop result: the combined school set from nodes 1-3."
+      ],
+      "answer": "Richmond Hill High School, Stuyvesant High School, High School Of Arts And Technology, Abraham Lincoln High School, Brooklyn Technical High School, Queens Metropolitan High School; Richmond Hill High School, James Madison High School, Queens Vocational And Technical High School, Art And Design High School, High School Of Graphic Communication Arts, John Bowne High School; Tottenville High School, Bronx High School Of Science, Fort Hamilton High School, High School For Health Professions & Human Services, Long Island City High School, Benjamin N Cardozo High School"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: Taking the union of schools from <hop 1 answer> and ranking by 2019-2020 shelter-resident count gives the 11 schools in node 4.",
+        "Hop result: the 11-school set from node 4."
+      ],
+      "answer": "Long Island City High School, Abraham Lincoln High School, High School For Health Professions & Human Services, John Bowne High School, High School Of Arts And Technology, Benjamin N Cardozo High School, Richmond Hill High School, James Madison High School, Art And Design High School, Fort Hamilton High School, Brooklyn Technical High School"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "reasoning": [
+        "Node 5: Long Island City High School is in Queens.",
+        "Node 6: Abraham Lincoln High School is in Brooklyn.",
+        "Node 7: High School For Health Professions & Human Services is in Manhattan.",
+        "Node 8: John Bowne High School is in Queens.",
+        "Node 9: High School Of Arts And Technology is in Manhattan.",
+        "Node 10: Benjamin N Cardozo High School is in Queens.",
+        "Node 11: Richmond Hill High School is in Queens.",
+        "Node 12: James Madison High School is in Brooklyn.",
+        "Node 13: Art And Design High School is in Manhattan.",
+        "Node 14: Fort Hamilton High School is in Brooklyn.",
+        "Node 15: Brooklyn Technical High School is in Brooklyn.",
+        "Hop result: the Manhattan schools are High School For Health Professions & Human Services, High School Of Arts And Technology, and Art And Design High School, so the count is `3`."
+      ],
+      "answer": 3
+    }
+  ]
+}

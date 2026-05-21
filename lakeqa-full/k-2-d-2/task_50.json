@@ -1,0 +1,69 @@
+{
+    "question": "First identify the state that appears in both of these data.gov-derived groups: Among states in the 2023 Medicaid spending records tied to the temporary increase in the federal matching rate, which ones rank 14th through 18th when ordered by the median amount the federal government paid toward overall Medicaid benefit spending? Break ties alphabetically by state name.; and Among states in the Medicaid spending records for adults covered through expansion, which ones rank 9th through 13th when ordered by how much the state's overall Medicaid spending eligible for federal matching varies from report to report? Break ties alphabetically by state name.. After identifying that state, what fossil was declared the state fossil of that state in 2022? Your response should be in the format [Answer].",
+    "answer": "mastodon",
+    "nodes": {
+        "1": {
+            "source": "datagov/medicaid-cms-64-caa-2023-increased-fmap-expenditure-data-collected-through-mbes-cbes/files/Medicaid-CMS-64-CAA-2023-Increased-FMAP-Expenditure-Data-Collected-through-MBES-CBES-03082024.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/medicaid-cms-64-caa-2023-increased-fmap-expenditure-data-collected-through-mbes-cbes/files/Medicaid-CMS-64-CAA-2023-Increased-FMAP-Expenditure-Data-Collected-through-MBES-CBES-03082024.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\"Dist. Of Col.\": \"District of Columbia\"}\nvalid_states = {\n    \"Alabama\", \"Alaska\", \"Arizona\", \"Arkansas\", \"California\", \"Colorado\", \"Connecticut\", \"Delaware\",\n    \"Florida\", \"Georgia\", \"Hawaii\", \"Idaho\", \"Illinois\", \"Indiana\", \"Iowa\", \"Kansas\", \"Kentucky\",\n    \"Louisiana\", \"Maine\", \"Maryland\", \"Massachusetts\", \"Michigan\", \"Minnesota\", \"Mississippi\",\n    \"Missouri\", \"Montana\", \"Nebraska\", \"Nevada\", \"New Hampshire\", \"New Jersey\", \"New Mexico\",\n    \"New York\", \"North Carolina\", \"North Dakota\", \"Ohio\", \"Oklahoma\", \"Oregon\", \"Pennsylvania\",\n    \"Rhode Island\", \"South Carolina\", \"South Dakota\", \"Tennessee\", \"Texas\", \"Utah\", \"Vermont\",\n    \"Virginia\", \"Washington\", \"West Virginia\", \"Wisconsin\", \"Wyoming\", \"District of Columbia\"\n}\n\ndf[\"normalized_state\"] = df[\"State\"].replace(state_map)\ndf = df[df[\"normalized_state\"].isin(valid_states)].copy()\ndf[\"Federal Share All Medical Assistance Expenditures\"] = pd.to_numeric(\n    df[\"Federal Share All Medical Assistance Expenditures\"].astype(str).str.replace(\",\", \"\", regex=False),\n    errors=\"coerce\"\n)\n\nstate_metric = (\n    df.groupby(\"normalized_state\", dropna=False)[\"Federal Share All Medical Assistance Expenditures\"]\n    .median()\n    .reset_index(name=\"median_federal_share_all_medical_assistance_expenditures\")\n)\n\nranked = state_metric.sort_values(\n    [\"median_federal_share_all_medical_assistance_expenditures\", \"normalized_state\"],\n    ascending=[False, True]\n).reset_index(drop=True)\n\nanswer = ranked.iloc[13:18][\"normalized_state\"].tolist()",
+            "subquestion": "Among states in the 2023 Medicaid spending records tied to the temporary increase in the federal matching rate, which ones rank 14th through 18th when ordered by the median amount the federal government paid toward overall Medicaid benefit spending? Break ties alphabetically by state name.",
+            "answer": [
+                "North Carolina",
+                "Indiana",
+                "Louisiana",
+                "New Jersey",
+                "Missouri"
+            ]
+        },
+        "2": {
+            "source": "datagov/medicaid-cms-64-new-adult-group-expenditures-d89ee/files/medicaid-cms-64-new-adult-group-expenditures-dataset03062024.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/medicaid-cms-64-new-adult-group-expenditures-d89ee/files/medicaid-cms-64-new-adult-group-expenditures-dataset03062024.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\"Dist. Of Col.\": \"District of Columbia\"}\nvalid_states = {\n    \"Alabama\", \"Alaska\", \"Arizona\", \"Arkansas\", \"California\", \"Colorado\", \"Connecticut\", \"Delaware\",\n    \"Florida\", \"Georgia\", \"Hawaii\", \"Idaho\", \"Illinois\", \"Indiana\", \"Iowa\", \"Kansas\", \"Kentucky\",\n    \"Louisiana\", \"Maine\", \"Maryland\", \"Massachusetts\", \"Michigan\", \"Minnesota\", \"Mississippi\",\n    \"Missouri\", \"Montana\", \"Nebraska\", \"Nevada\", \"New Hampshire\", \"New Jersey\", \"New Mexico\",\n    \"New York\", \"North Carolina\", \"North Dakota\", \"Ohio\", \"Oklahoma\", \"Oregon\", \"Pennsylvania\",\n    \"Rhode Island\", \"South Carolina\", \"South Dakota\", \"Tennessee\", \"Texas\", \"Utah\", \"Vermont\",\n    \"Virginia\", \"Washington\", \"West Virginia\", \"Wisconsin\", \"Wyoming\", \"District of Columbia\"\n}\n\ndf[\"normalized_state\"] = df[\"State\"].replace(state_map)\ndf = df[df[\"normalized_state\"].isin(valid_states)].copy()\ndf[\"Total Computable All Medical Assistance Expenditures\"] = pd.to_numeric(\n    df[\"Total Computable All Medical Assistance Expenditures\"].astype(str).str.replace(\",\", \"\", regex=False),\n    errors=\"coerce\"\n)\n\nstate_metric = (\n    df.groupby(\"normalized_state\", dropna=False)[\"Total Computable All Medical Assistance Expenditures\"]\n    .std(ddof=1)\n    .reset_index(name=\"sample_std_total_computable_all_medical_assistance_expenditures\")\n)\n\nranked = state_metric.sort_values(\n    [\"sample_std_total_computable_all_medical_assistance_expenditures\", \"normalized_state\"],\n    ascending=[False, True]\n).reset_index(drop=True)\n\nanswer = ranked.iloc[8:13][\"normalized_state\"].tolist()",
+            "subquestion": "Among states in the Medicaid spending records for adults covered through expansion, which ones rank 9th through 13th when ordered by how much the state's overall Medicaid spending eligible for federal matching varies from report to report? Break ties alphabetically by state name.",
+            "answer": [
+                "Virginia",
+                "Ohio",
+                "Arizona",
+                "Minnesota",
+                "Indiana"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/List_of_Indiana_state_symbols/content.txt",
+            "fact": "The List of Indiana state symbols page states that the newest symbol of Indiana is the state fossil, mastodon, which was declared in 2022.",
+            "subquestion": "What fossil was declared the state fossil of <hop 1 answer> in 2022?",
+            "answer": "mastodon"
+        }
+    },
+    "datasets_used": [
+        "datagov/medicaid-cms-64-caa-2023-increased-fmap-expenditure-data-collected-through-mbes-cbes/files/Medicaid-CMS-64-CAA-2023-Increased-FMAP-Expenditure-Data-Collected-through-MBES-CBES-03082024.txt",
+        "datagov/medicaid-cms-64-caa-2023-increased-fmap-expenditure-data-collected-through-mbes-cbes/signed-metadata.txt",
+        "datagov/medicaid-cms-64-new-adult-group-expenditures-d89ee/files/medicaid-cms-64-new-adult-group-expenditures-dataset03062024.txt",
+        "datagov/medicaid-cms-64-new-adult-group-expenditures-d89ee/signed-metadata.txt",
+        "wikipedia/List_of_Indiana_state_symbols/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Normalize `State` values to full state names, keep actual U.S. states plus the District of Columbia, convert `Federal Share All Medical Assistance Expenditures` to numeric, group by normalized state to compute the median federal-share expenditure, sort by median descending and state ascending to break ties alphabetically, and take ranks 14 through 18.",
+                "Node 2: Normalize `State` values to full state names, keep actual U.S. states plus the District of Columbia, convert `Total Computable All Medical Assistance Expenditures` to numeric, group by normalized state to compute the sample standard deviation of total-computable expenditures, sort by standard deviation descending and state ascending to break ties alphabetically, and take ranks 9 through 13.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Indiana."
+            ],
+            "answer": "Indiana"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: The List of Indiana state symbols page identifies mastodon as the fossil declared the computed state\u2019s state fossil in 2022.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "mastodon"
+        }
+    ]
+}

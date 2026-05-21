@@ -1,0 +1,158 @@
+{
+  "question": "Across 2019-2021, identify the Texas counties that consistently rank in the top five for capital outlay spending. From those, keep only the counties that also rank in the statewide top five for releases from the Department of Criminal Justice in each of those years. Among the county seats of those counties, which had the largest population at the 2020 census? Return the city name only. Your response should be in the format [Answer].",
+  "answer": "Houston",
+  "nodes": {
+    "1": {
+      "source": "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/texas-state-expenditures-by-county-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nfiltered = df[df[\"Major Spending Category\"].astype(str).str.strip().str.upper().eq(\"CAPITAL OUTLAY\")].copy()\nfiltered[\"Amount\"] = pd.to_numeric(filtered[\"Amount\"], errors=\"coerce\")\nfiltered = filtered[filtered[\"County\"].notna()].copy()\nfiltered[\"County\"] = filtered[\"County\"].astype(str).str.strip().str.title()\ncounty_totals = filtered.groupby(\"County\", dropna=True)[\"Amount\"].sum().sort_values(ascending=False)\nanswer = county_totals.head(5).index.tolist()\n",
+      "subquestion": "In fiscal year 2019, which Texas counties were in the top 5 for Capital Outlay spending?",
+      "answer": [
+        "Harris",
+        "Travis",
+        "Dallas",
+        "Hardin",
+        "Bexar"
+      ]
+    },
+    "2": {
+      "source": "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/texas-state-expenditures-by-county-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nfiltered = df[df[\"Major Spending Category\"].astype(str).str.strip().str.upper().eq(\"CAPITAL OUTLAY\")].copy()\nfiltered[\"Amount\"] = pd.to_numeric(filtered[\"Amount\"], errors=\"coerce\")\nfiltered = filtered[filtered[\"County\"].notna()].copy()\nfiltered[\"County\"] = filtered[\"County\"].astype(str).str.strip().str.title()\ncounty_totals = filtered.groupby(\"County\", dropna=True)[\"Amount\"].sum().sort_values(ascending=False)\nanswer = county_totals.head(5).index.tolist()\n",
+      "subquestion": "In fiscal year 2020, which Texas counties were in the top 5 for Capital Outlay spending?",
+      "answer": [
+        "Travis",
+        "Harris",
+        "Dallas",
+        "Bexar",
+        "Grayson"
+      ]
+    },
+    "3": {
+      "source": "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/texas-state-expenditures-by-county-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nfiltered = df[df[\"Major Spending Category\"].astype(str).str.strip().str.upper().eq(\"CAPITAL OUTLAY\")].copy()\nfiltered[\"Amount\"] = pd.to_numeric(filtered[\"Amount\"], errors=\"coerce\")\nfiltered = filtered[filtered[\"County\"].notna()].copy()\nfiltered[\"County\"] = filtered[\"County\"].astype(str).str.strip().str.title()\ncounty_totals = filtered.groupby(\"County\", dropna=True)[\"Amount\"].sum().sort_values(ascending=False)\nanswer = county_totals.head(5).index.tolist()\n",
+      "subquestion": "In fiscal year 2021, which Texas counties were in the top 5 for Capital Outlay spending?",
+      "answer": [
+        "Harris",
+        "Travis",
+        "Dallas",
+        "Bexar",
+        "Guadalupe"
+      ]
+    },
+    "4": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['Harris', 'Travis', 'Dallas', 'Hardin', 'Bexar']\nnode_2_answer = ['Travis', 'Harris', 'Dallas', 'Bexar', 'Grayson']\nnode_3_answer = ['Harris', 'Travis', 'Dallas', 'Bexar', 'Guadalupe']\n\nfixed_candidate_mode = False\ndef norm_county(x):\n    return str(x).strip().title()\n\ncounty_counts = df[\"County\"].dropna().astype(str).map(norm_county).value_counts()\ntop5 = county_counts.head(5)\n\nif fixed_candidate_mode:\n    candidates = {\"Harris\", \"Travis\", \"Dallas\", \"Bexar\"}\nelse:\n    candidates = set(norm_county(x) for x in node_1_answer) & set(norm_county(x) for x in node_2_answer) & set(norm_county(x) for x in node_3_answer)\n\nanswer = [county for county in top5.index.tolist() if county in candidates]\n",
+      "subquestion": "In fiscal year 2019, among the counties in <hop 1 answer>, which were in the overall top 5 for releases from the Department of Criminal Justice?",
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Bexar"
+      ]
+    },
+    "5": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['Harris', 'Travis', 'Dallas', 'Hardin', 'Bexar']\nnode_2_answer = ['Travis', 'Harris', 'Dallas', 'Bexar', 'Grayson']\nnode_3_answer = ['Harris', 'Travis', 'Dallas', 'Bexar', 'Guadalupe']\n\nfixed_candidate_mode = False\ndef norm_county(x):\n    return str(x).strip().title()\n\ncounty_counts = df[\"County\"].dropna().astype(str).map(norm_county).value_counts()\ntop5 = county_counts.head(5)\n\nif fixed_candidate_mode:\n    candidates = {\"Harris\", \"Travis\", \"Dallas\", \"Bexar\"}\nelse:\n    candidates = set(norm_county(x) for x in node_1_answer) & set(norm_county(x) for x in node_2_answer) & set(norm_county(x) for x in node_3_answer)\n\nanswer = [county for county in top5.index.tolist() if county in candidates]\n",
+      "subquestion": "In fiscal year 2020, among the counties in <hop 1 answer>, which were in the overall top 5 for releases from the Department of Criminal Justice?",
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Bexar",
+        "Travis"
+      ]
+    },
+    "6": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['Harris', 'Travis', 'Dallas', 'Hardin', 'Bexar']\nnode_2_answer = ['Travis', 'Harris', 'Dallas', 'Bexar', 'Grayson']\nnode_3_answer = ['Harris', 'Travis', 'Dallas', 'Bexar', 'Guadalupe']\n\nfixed_candidate_mode = False\ndef norm_county(x):\n    return str(x).strip().title()\n\ncounty_counts = df[\"County\"].dropna().astype(str).map(norm_county).value_counts()\ntop5 = county_counts.head(5)\n\nif fixed_candidate_mode:\n    candidates = {\"Harris\", \"Travis\", \"Dallas\", \"Bexar\"}\nelse:\n    candidates = set(norm_county(x) for x in node_1_answer) & set(norm_county(x) for x in node_2_answer) & set(norm_county(x) for x in node_3_answer)\n\nanswer = [county for county in top5.index.tolist() if county in candidates]\n",
+      "subquestion": "In fiscal year 2021, among the counties in <hop 1 answer>, which were in the overall top 5 for releases from the Department of Criminal Justice?",
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Bexar"
+      ]
+    },
+    "7": {
+      "source": "wikipedia/Houston/content.txt",
+      "fact": "Houston ( ) is the most populous city in the U.S. state of Texas and the Southern United States. It is the fourth-most populous city in the United States, with a population of 2.3 million at the 2020 census. The Greater Houston metropolitan area, at 7.8 million residents, is the fifth-most populous metropolitan area in the nation and second-most populous in Texas. Located in Southeast Texas near Galveston Bay and the Gulf of Mexico, Houston is the seat of Harris County. Covering a total area of , it is the ninth largest city in the country and the largest whose municipal government is not consolidated with a county, parish, or borough.",
+      "subquestion": "For this county seat of a county in <hop 2 answer>, what 2020 census population is stated?",
+      "answer": "2.3 million"
+    },
+    "8": {
+      "source": "wikipedia/Dallas/content.txt",
+      "fact": "Dallas is a city in the U.S. state of Texas. Located in the state's northern region, it is the ninth-most populous city in the United States and third-most populous city in Texas, with a population of 1.3 million at the 2020 census, after Houston and San Antonio.  Along with the city of Fort Worth, Dallas anchors the Dallas\u2013Fort Worth metroplex, the fourth-most populous metropolitan area in the U.S. and the most populous metropolitan area in Texas, at 7.5\u00a0million people. Dallas is a core city of the largest metropolitan area in the Southern U.S. and the largest inland metropolitan area in the U.S. that lacks any navigable link to the sea. It is the seat of Dallas County, covering nearly  and extending into Collin, Denton, Kaufman, and Rockwall counties.",
+      "subquestion": "For this county seat of a county in <hop 2 answer>, what 2020 census population is stated?",
+      "answer": "1.3 million"
+    },
+    "9": {
+      "source": "wikipedia/San_Antonio/content.txt",
+      "fact": "San Antonio ( ; Spanish for \"Saint Anthony\") is a city in the U.S. state of Texas. It is the seventh-most populous city in the United States, second-most populous city in Texas and second-most populous city in the Southern U.S., with a population of 1.43 million at the 2020 census. The San Antonio metropolitan area, with an estimated 2.76 million residents, ranks as the third-largest metropolitan area in Texas and the 24th-largest in the nation. It is the county seat of Bexar County.\n\nFounded in 1718 as a Spanish mission and colonial outpost, San Antonio became the first chartered civil settlement in present-day Texas in 1731.",
+      "subquestion": "For this county seat of a county in <hop 2 answer>, what 2020 census population is stated?",
+      "answer": "1.43 million"
+    }
+  },
+  "datasets_used": [
+    "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2019/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2019/files/2x5x-m677.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2020/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/aact-g69n.publisher-view.json",
+    "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2021/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2021/files/tup7-smjg.publisher-view.json",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2021/signed-metadata.txt",
+    "wikipedia/Houston/content.txt",
+    "wikipedia/Dallas/content.txt",
+    "wikipedia/San_Antonio/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: According to Texas state expenditure data for fiscal year 2019, the top 5 counties by Capital Outlay spending were: HARRIS ($222,408,956.01), TRAVIS ($130,659,552.92), DALLAS ($87,456,413.40), HARDIN ($44,254,637.81), and BEXAR ($32,102,175.63).",
+        "Node 2: According to Texas state expenditure data for fiscal year 2020, the top 5 counties by Capital Outlay spending were: TRAVIS ($279,580,855.70), HARRIS ($182,107,791.26), DALLAS ($124,333,498.09), BEXAR ($96,531,261.46), and GRAYSON ($29,683,297.03).",
+        "Node 3: According to Texas state expenditure data for fiscal year 2021, the top 5 counties by Capital Outlay spending were: HARRIS ($339,910,977.18), TRAVIS ($171,854,028.76), DALLAS ($131,046,497.37), BEXAR ($104,956,196.72), and GUADALUPE ($49,356,346.09).",
+        "Hop result: <node_1 answer> \u2229 <node_2 answer> \u2229 <node_3 answer> = [\"Bexar\", \"Dallas\", \"Harris\", \"Travis\"]."
+      ],
+      "answer": "Harris, Travis, Dallas, Bexar"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 4: According to Texas Department of Criminal Justice release data for fiscal year 2019, the overall top 5 counties by releases were Harris (9,029), Dallas (5,355), Tarrant (4,769), Bexar (4,545), and Hidalgo (1,861). Among the hop 1 counties, Harris, Dallas, and Bexar were in that top 5.",
+        "Node 5: According to Texas Department of Criminal Justice release data for fiscal year 2020, the overall top 5 counties by releases were Harris (7,059), Dallas (4,540), Tarrant (4,450), Bexar (3,917), and Travis (1,596). Among the hop 1 counties, Harris, Dallas, Bexar, and Travis were in that top 5.",
+        "Node 6: According to Texas Department of Criminal Justice release data for fiscal year 2021, the overall top 5 counties by releases were Harris (5,210), Dallas (3,565), Tarrant (3,252), Bexar (3,236), and Hidalgo (1,147). Among the hop 1 counties, Harris, Dallas, and Bexar were in that top 5.",
+        "Hop result: <node_4 answer> \u2229 <node_5 answer> \u2229 <node_6 answer> = [\"Bexar\", \"Dallas\", \"Harris\"]."
+      ],
+      "answer": "Harris, Dallas, Bexar"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        7,
+        8,
+        9
+      ],
+      "reasoning": [
+        "Node 7: Houston, the seat of Harris County, had a population of 2.3 million at the 2020 census.",
+        "Node 8: Dallas, the seat of Dallas County, had a population of 1.3 million at the 2020 census.",
+        "Node 9: San Antonio, the seat of Bexar County, had a population of 1.43 million at the 2020 census.",
+        "Hop result: among the county seats of <hop 2 answer>, Houston had the largest 2020 census population."
+      ],
+      "answer": "Houston"
+    }
+  ]
+}

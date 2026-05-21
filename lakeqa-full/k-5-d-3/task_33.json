@@ -1,0 +1,127 @@
+{
+    "question": "From 2010 through 2012, first find the Missouri county with the highest average monthly number of first reports of injury after excluding Saint Louis. In the city from that county with the most active alcohol license records, compare the ZIP codes for the university law-enforcement agency with the highest ZIP code, the municipal fire department in that county, and all job centers there. Which of those ZIP codes covers the most land, and how many businesses on the beer, wine, and liquor solicitor list are in that city and ZIP code? Return just the number.",
+    "answer": "19",
+    "nodes": {
+        "1": {
+            "source": "datagov/missouri-first-reports-of-injury-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/missouri-first-reports-of-injury-by-county/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\ndef normalize_county(value):\n    value = str(value).strip().upper()\n    value = value.replace('SAINT', 'ST').replace('ST.', 'ST')\n    value = value.replace(' COUNTY', '').replace(' CO.', ' CO')\n    value = ' '.join(value.split())\n    return value\n\nfiltered = df[\n    df['county'].astype(str).str.strip().ne('MISSING')\n    & pd.to_numeric(df['year'], errors='coerce').between(2010, 2012)\n].copy()\nfiltered['county_norm'] = filtered['county'].map(normalize_county)\nfiltered = filtered[~filtered['county_norm'].str.startswith('ST LOUIS')].copy()\nfiltered['count'] = pd.to_numeric(filtered['count'], errors='coerce')\navg_counts = filtered.groupby('county_norm')['count'].mean().sort_values(ascending=False)\nanswer = str(avg_counts.idxmax()).title()\n",
+            "subquestion": "From 2010 through 2012, which Missouri county had the highest average monthly number of first reports of injury after excluding Saint Louis?",
+            "answer": "Jackson"
+        },
+        "2": {
+            "source": "datagov/missouri-active-alcohol-license-data/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/missouri-active-alcohol-license-data/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nnode_1_answer = 'Jackson'\n\ndef normalize_county(value):\n    value = str(value).strip().upper()\n    value = value.replace('SAINT', 'ST').replace('ST.', 'ST')\n    value = value.replace(' COUNTY', '').replace(' CO.', ' CO')\n    value = ' '.join(value.split())\n    return value\n\ndef normalize_city(value):\n    value = str(value).strip().upper()\n    value = value.replace('SAINT', 'ST').replace('ST.', 'ST')\n    value = ' '.join(value.split())\n    return value\n\nfiltered = df[df['COUNTY'].map(normalize_county).eq(str(node_1_answer).upper())].copy()\nfiltered['city_norm'] = filtered['CITY'].map(normalize_city)\ncity_counts = filtered['city_norm'].value_counts()\nanswer = str(city_counts.idxmax()).title()\n",
+            "subquestion": "Within the county from node 1, which city has the most active alcohol license records?",
+            "answer": "Kansas City"
+        },
+        "3": {
+            "source": "datagov/missouri-law-enforcement-agencies/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/missouri-law-enforcement-agencies/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nnode_2_answer = 'Kansas City'\n\nfiltered = df[\n    df['City'].astype(str).str.strip().str.upper().eq(str(node_2_answer).upper())\n    & df['Agency_Type'].astype(str).str.strip().eq('University')\n].copy()\nfiltered['zip_num'] = pd.to_numeric(filtered['Zip'], errors='coerce')\nselected = filtered.sort_values(['zip_num', 'Agency Name'], ascending=[False, True]).iloc[0]\nanswer = f\"{str(selected['Agency Name']).strip()}, {int(selected['zip_num'])}\"\n",
+            "subquestion": "In the city from node 2, which university law-enforcement agency has the highest ZIP code, and what is that ZIP code?",
+            "answer": "University of MO - K.C. Police Dept., 64112"
+        },
+        "4": {
+            "source": "datagov/missouri-fire-departments/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/missouri-fire-departments/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nnode_1_answer = 'Jackson'\nnode_2_answer = 'Kansas City'\n\nfiltered = df[\n    df['CityPhysical'].astype(str).str.strip().str.upper().eq(str(node_2_answer).upper())\n    & df['CountyName'].astype(str).str.strip().str.upper().eq(str(node_1_answer).upper())\n    & df['DepartmentType'].astype(str).str.strip().str.upper().eq('MUNICIPALITY')\n].copy()\nselected = filtered.sort_values(['DepartmentName', 'ZipCodePhysical']).iloc[0]\nanswer = str(selected['ZipCodePhysical']).strip()\n",
+            "subquestion": "In the city from node 2, what ZIP code is listed for the physical address of the municipal fire department in the county from node 1?",
+            "answer": "64105"
+        },
+        "5": {
+            "source": "datagov/missouri-job-centers/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/missouri-job-centers/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nnode_2_answer = 'Kansas City'\n\nfiltered = df[df['City'].astype(str).str.strip().str.upper().eq(str(node_2_answer).upper())].copy()\nfiltered['zip5'] = filtered['Zipcode'].astype(str).str.extract(r'(\\d{5})', expand=False)\nzip_codes = filtered['zip5'].dropna().unique()\nassert len(zip_codes) == 1\nanswer = str(zip_codes[0])\n",
+            "subquestion": "In the city from node 2, what ZIP code is shared by all job centers there?",
+            "answer": "64108"
+        },
+        "6": {
+            "source": "datagov/missouri-zipcode-data/files/rows.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/missouri-zipcode-data/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nnode_3_answer = 'University of MO - K.C. Police Dept., 64112'\nnode_4_answer = '64105'\nnode_5_answer = '64108'\n\nzip_from_node_3 = re.search(r'(\\d{5})$', node_3_answer).group(1)\ncandidate_zips = [zip_from_node_3, node_4_answer, node_5_answer]\nfiltered = df[df['ZCTA5CE'].astype(str).isin(candidate_zips)].copy()\nfiltered['ALAND'] = pd.to_numeric(filtered['ALAND'], errors='coerce')\nselected = filtered.sort_values(['ALAND', 'ZCTA5CE'], ascending=[False, True]).iloc[0]\nanswer = str(selected['ZCTA5CE']).strip()\n",
+            "subquestion": "Which of the ZIP codes from nodes 3 through 5 covers the most land?",
+            "answer": "64108"
+        },
+        "7": {
+            "source": "datagov/missouri-beer-wine-and-liquor-solicitor-list-with-zip-code/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/missouri-beer-wine-and-liquor-solicitor-list-with-zip-code/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nnode_2_answer = 'Kansas City'\nnode_6_answer = '64108'\n\nfiltered = df[df['City'].astype(str).str.strip().str.upper().eq(str(node_2_answer).upper())].copy()\nfiltered['zip5'] = filtered['Zip Code'].astype(str).str.extract(r'(\\d{5})', expand=False)\nanswer = str(filtered['zip5'].eq(str(node_6_answer)).sum())\n",
+            "subquestion": "How many businesses on the beer, wine, and liquor solicitor list are in the city from node 2 and have the ZIP code from node 6? Treat ZIP+4 entries as belonging to that ZIP code.",
+            "answer": "19"
+        }
+    },
+    "datasets_used": [
+        "datagov/missouri-first-reports-of-injury-by-county/files/rows.txt",
+        "datagov/missouri-first-reports-of-injury-by-county/signed-metadata.txt",
+        "datagov/missouri-active-alcohol-license-data/files/rows.txt",
+        "datagov/missouri-active-alcohol-license-data/signed-metadata.txt",
+        "datagov/missouri-active-alcohol-license-data/files/yyhn-562y.txt",
+        "datagov/missouri-law-enforcement-agencies/files/rows.txt",
+        "datagov/missouri-law-enforcement-agencies/signed-metadata.txt",
+        "datagov/missouri-fire-departments/files/rows.txt",
+        "datagov/missouri-fire-departments/signed-metadata.txt",
+        "datagov/missouri-job-centers/files/rows.txt",
+        "datagov/missouri-job-centers/signed-metadata.txt",
+        "datagov/missouri-zipcode-data/files/rows.txt",
+        "datagov/missouri-zipcode-data/files/columns.txt",
+        "datagov/missouri-beer-wine-and-liquor-solicitor-list-with-zip-code/files/rows.txt",
+        "datagov/missouri-beer-wine-and-liquor-solicitor-list-with-zip-code/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Across 2010 through 2012, after excluding the St. Louis naming cluster, Jackson has the highest average monthly first-reported injury count at 1,163.972.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Jackson"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Within Jackson County, Kansas City has the most alcohol-license records in the Missouri active alcohol license dataset, with 1,147 records.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Kansas City"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 3: In Kansas City, the university-type law-enforcement agency with the higher ZIP code is University of MO - K.C. Police Dept., listed at ZIP 64112.",
+                "Node 4: In Kansas City, the Jackson County municipal fire department is listed at ZIP 64105.",
+                "Node 5: The Kansas City job centers in the Missouri job-centers dataset both list ZIP 64108.",
+                "Combining nodes 3-5 gives the candidate ZIP codes 64112, 64105, and 64108.",
+                "Hop result: 64105, 64108, and 64112"
+            ],
+            "answer": "64105, 64108, and 64112"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Among ZIP codes 64112, 64105, and 64108, ZIP 64108 has the largest land area in the Missouri ZIP-code geography dataset, with ALAND 9,418,079.",
+                "Hop result: <node_6 answer>"
+            ],
+            "answer": "64108"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: In the Missouri solicitor list, Kansas City has 19 listed beer, wine, and liquor solicitor businesses whose ZIP code begins with 64108.",
+                "Hop result: <node_7 answer>"
+            ],
+            "answer": "19"
+        }
+    ]
+}

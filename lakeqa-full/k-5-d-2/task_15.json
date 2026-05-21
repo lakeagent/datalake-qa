@@ -1,0 +1,113 @@
+{
+    "question": "Start by finding the Chicago city department with a budget of $400 million to $700 million in 2018 and $600 million to $700 million in 2019. Determine if this department became a paid professional force before or after Pittsburgh's fire bureau did, and focus on the city whose department became paid later. For that city, identify its largest airport; in its March 2019 scheduled traffic report, find the destination with the most seats and report the destination city. Please return the city only. Your response should be in the format [Answer].",
+    "answer": "Atlanta",
+    "nodes": {
+        "1": {
+            "source": "datagov/budget-2018-budget-ordinance-appropriations/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/budget-2018-budget-ordinance-appropriations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ntotals = df.groupby(\"DEPARTMENT DESCRIPTION\", as_index=True)[\"2018 ORDINANCE (AMOUNT $)\"].sum().sort_values(ascending=False)\nanswer = totals[(totals >= 400000000) & (totals <= 700000000)].index.tolist()",
+            "subquestion": "Which Chicago city departments had total 2018 ordinance appropriations between $400 million and $700 million?",
+            "answer": [
+                "CFD",
+                "CDOT"
+            ]
+        },
+        "2": {
+            "source": "datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ntotals = df.groupby(\"DEPARTMENT DESCRIPTION\", as_index=True)[\"2019 ORDINANCE (AMOUNT $)\"].sum().sort_values(ascending=False)\nanswer = totals[(totals >= 600000000) & (totals <= 700000000)].index.tolist()",
+            "subquestion": "Which Chicago city departments had total 2019 ordinance appropriations between $600 million and $700 million?",
+            "answer": [
+                "CFD",
+                "DFSS"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Chicago_Fire_Department/content.txt",
+            "fact": "The Chicago Fire Department (CFD) was organized as a paid department when the volunteer fire department was disestablished on August 2, 1858.",
+            "subquestion": "When did <hop 1 answer> become a paid professional department?",
+            "answer": "August 2, 1858"
+        },
+        "4": {
+            "source": "wikipedia/Pittsburgh_Bureau_of_Fire/content.txt",
+            "fact": "The Pittsburgh Bureau of Fire officially transitioned to a fully paid department on May 23, 1870.",
+            "subquestion": "When did the Pittsburgh Bureau of Fire become a fully paid department?",
+            "answer": "May 23, 1870"
+        },
+        "5": {
+            "source": "wikipedia/Pittsburgh/content.txt",
+            "fact": "Pittsburgh International Airport is the largest airport in Pittsburgh.",
+            "subquestion": "What is the largest airport in <hop 2 answer>?",
+            "answer": "Pittsburgh International Airport"
+        },
+        "6": {
+            "source": "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ntotals = df.groupby(\"Destination Code\", as_index=True)[\"Seats March 2019\"].sum().sort_values(ascending=False)\nanswer = totals.index[0]",
+            "subquestion": "For <hop 3 answer>, which destination airport code had the most scheduled seats in March 2019?",
+            "answer": "ATL"
+        },
+        "7": {
+            "source": "datagov/airports-5e97a/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/airports-5e97a/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncity = df.loc[df[\"Loc_Id\"] == \"ATL\", \"City\"].iloc[0]\nanswer = str(city).title()",
+            "subquestion": "In the airports dataset, what city corresponds to <hop 4 answer>?",
+            "answer": "Atlanta"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Chicago_Fire_Department/content.txt",
+        "wikipedia/Pittsburgh_Bureau_of_Fire/content.txt",
+        "wikipedia/Pittsburgh/content.txt",
+        "datagov/budget-2018-budget-ordinance-appropriations/files/rows.txt",
+        "datagov/budget-2018-budget-ordinance-appropriations/signed-metadata.txt",
+        "datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt",
+        "datagov/budget-2019-budget-ordinance-appropriations/signed-metadata.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/signed-metadata.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pit-scheduled-traffic-report-data-dictionary.txt",
+        "datagov/airports-5e97a/files/rows.txt",
+        "datagov/airports-5e97a/signed-metadata.txt",
+        "datagov/airports-5e97a/files/kfcv-nyy3.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "question": "Which Chicago city department had total appropriations between $400 million and $700 million in 2018 and between $600 million and $700 million in 2019?",
+            "answer": "CFD"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "question": "Which fire department became a paid professional department later, CFD or the Pittsburgh Bureau of Fire?",
+            "answer": "Pittsburgh"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "question": "What is the largest airport in Pittsburgh?",
+            "answer": "Pittsburgh International Airport"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "question": "For Pittsburgh International Airport, which destination airport code had the most scheduled seats in March 2019?",
+            "answer": "ATL"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "question": "In the airports dataset, what city corresponds to ATL?",
+            "answer": "Atlanta"
+        }
+    ]
+}

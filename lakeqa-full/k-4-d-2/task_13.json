@@ -1,0 +1,132 @@
+{
+    "question": "Among New York counties with violent crime rates over 300 per 100,000 in 2020 and more than 100 youth sent to jail in 2015, find the county that also had total state payments for homeowners' school taxes between $60M and $90M in 2023 and a jail population above 800. Find the county seat of that county, what year was it incorporated? Please return the year only. Your response should be in the format [Answer].",
+    "answer": "1832",
+    "nodes": {
+        "1": {
+            "source": "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Violent Rate\"] = pd.to_numeric(df[\"Violent Rate\"], errors=\"coerce\")\n\nanswer = (\n    df.loc[(df[\"Year\"] == 2020) & (df[\"Violent Rate\"] > 300), \"County\"]\n    .tolist()\n)",
+            "subquestion": "Which New York counties had a violent crime rate exceeding 300 per 100,000 population in 2020?",
+            "answer": [
+                "Albany",
+                "Bronx",
+                "Broome",
+                "Chautauqua",
+                "Erie",
+                "Greene",
+                "Kings",
+                "Monroe",
+                "New York",
+                "Niagara",
+                "Onondaga",
+                "Queens",
+                "Schenectady"
+            ]
+        },
+        "2": {
+            "source": "datagov/annual-youth-detention-admissions-by-county-beginning-2006/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/annual-youth-detention-admissions-by-county-beginning-2006/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\" Year \"] = pd.to_numeric(df[\" Year \"], errors=\"coerce\")\ndf[\"Secure/Mixed Admissions\"] = pd.to_numeric(df[\"Secure/Mixed Admissions\"], errors=\"coerce\")\n\nanswer = (\n    df.loc[\n        (df[\" Year \"] == 2015)\n        & (df[\"County\"] != \"New York City\")\n        & (df[\"Secure/Mixed Admissions\"] > 100),\n        \"County\"\n    ]\n    .tolist()\n)",
+            "subquestion": "Which New York counties had more than 100 youth sent to jail in 2015?",
+            "answer": [
+                "Erie",
+                "Monroe",
+                "Onondaga",
+                "Westchester"
+            ]
+        },
+        "3": {
+            "source": "datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Levy Year\"] = pd.to_numeric(df[\"Levy Year\"], errors=\"coerce\")\ndf[\"Total Amount of Reimbursement \"] = pd.to_numeric(df[\"Total Amount of Reimbursement \"], errors=\"coerce\")\n\nanswer = (\n    df.loc[\n        (df[\"Levy Year\"] == 2023)\n        & (df[\"Total Amount of Reimbursement \"] >= 60000000)\n        & (df[\"Total Amount of Reimbursement \"] <= 90000000),\n        \"County\"\n    ]\n    .tolist()\n)",
+            "subquestion": "From <intersection of node_1, node_2>, which counties received between $60 million and $90 million in total state payments for homeowners' school taxes in 2023?",
+            "answer": [
+                "Erie",
+                "Onondaga"
+            ]
+        },
+        "4": {
+            "source": "datagov/jail-population-by-county-beginning-1997/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/jail-population-by-county-beginning-1997/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Census\"] = pd.to_numeric(df[\"Census\"], errors=\"coerce\")\ndf = df[df[\"Facility Name (ORI)\"].str.contains(\" County \", na=False)].copy()\ndf[\"County\"] = df[\"Facility Name (ORI)\"].str.extract(r\"^(.*?) County\")\n\ncandidate_counties = [\"Erie\", \"Monroe\", \"Onondaga\"]\ncounty_totals = (\n    df.loc[(df[\"Year\"] == 2019) & (df[\"County\"].isin(candidate_counties))]\n    .groupby(\"County\", as_index=False)[\"Census\"]\n    .sum()\n)\n\nanswer = county_totals.loc[county_totals[\"Census\"] > 800, \"County\"].tolist()",
+            "subquestion": "From <intersection of node_1, node_2>, which counties had a total jail census exceeding 800 in 2019?",
+            "answer": [
+                "Erie",
+                "Monroe"
+            ]
+        },
+        "5": {
+            "source": "wikipedia/Erie_County,_New_York/content.txt",
+            "fact": "Erie County is a county along the shore of Lake Erie in western New York State. The county seat is Buffalo, which makes up about 28% of the county's population.",
+            "subquestion": "What is the county seat of <intersection of node_1, node_2, node_3, node_4>?",
+            "answer": "Buffalo"
+        },
+        "6": {
+            "source": "wikipedia/Buffalo,_New_York/content.txt",
+            "fact": "Buffalo was selected as the terminus of the Erie Canal in 1825, which led to its incorporation in 1832 and stimulated its growth as the primary inland port between the Great Lakes and Atlantic Ocean.",
+            "subquestion": "In what year was <node_5 answer> incorporated as a city?",
+            "answer": "1832"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Year` equals 2020 and `Violent Rate` is greater than 300, then return `County`.",
+                "Node 2: Filter rows where ` Year ` equals 2015, `County` is not `New York City`, and `Secure/Mixed Admissions` is greater than 100, then return `County`.",
+                "Hop result: intersect the two county lists = Erie, Monroe, Onondaga"
+            ],
+            "answer": "Erie, Monroe, Onondaga"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `Levy Year` equals 2023 and `Total Amount of Reimbursement ` is between 60000000 and 90000000, then return `County`.",
+                "Node 4: Extract `County` from `Facility Name (ORI)`, filter rows where `Year` equals 2019 and `County` is in <hop 1 answer>, sum `Census` by `County`, and keep counties with totals greater than 800.",
+                "Hop result: intersect <hop 1 answer> with the two filtered county lists = Erie"
+            ],
+            "answer": "Erie"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Buffalo is the county seat of Erie County.",
+                "Hop result: Buffalo"
+            ],
+            "answer": "Buffalo"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: 1832 is the year Buffalo was incorporated.",
+                "Hop result: 1832"
+            ],
+            "answer": "1832"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Erie_County,_New_York/content.txt",
+        "wikipedia/Buffalo,_New_York/content.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/signed-metadata.txt",
+        "datagov/annual-youth-detention-admissions-by-county-beginning-2006/files/rows.txt",
+        "datagov/annual-youth-detention-admissions-by-county-beginning-2006/signed-metadata.txt",
+        "datagov/annual-youth-detention-admissions-by-county-beginning-2006/files/ybg9-s6bm.publisher-view.json",
+        "datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/files/rows.txt",
+        "datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/signed-metadata.txt",
+        "datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/files/vdat-cgbe.txt",
+        "datagov/jail-population-by-county-beginning-1997/files/rows.txt",
+        "datagov/jail-population-by-county-beginning-1997/signed-metadata.txt",
+        "datagov/jail-population-by-county-beginning-1997/files/nymx-kgkn.txt"
+    ]
+}

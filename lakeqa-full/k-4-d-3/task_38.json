@@ -1,0 +1,199 @@
+{
+  "question": "Identify the Chicago city department that consistently ranked in the top five for ordinance appropriations (with non-zero budget) and also had the highest average salary budget recommendations from 2019 to 2021. How many years after Cook County was incorporated was that department formally established? Return the number only. Your response should be in the format [Answer].",
+  "answer": 4,
+  "nodes": {
+    "1": {
+      "source": "datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\ndf['2019 ORDINANCE (AMOUNT $)'] = pd.to_numeric(df['2019 ORDINANCE (AMOUNT $)'], errors=\"coerce\")\ndf[\"DEPARTMENT NUMBER\"] = pd.to_numeric(df[\"DEPARTMENT NUMBER\"], errors=\"coerce\")\ntotals = df.groupby(\"DEPARTMENT NUMBER\", dropna=True)['2019 ORDINANCE (AMOUNT $)'].sum().sort_values(ascending=False)\nanswer = [int(x) for x in totals.head(5).index.tolist()]\n",
+      "subquestion": "Which department numbers were in the top 5 by total ordinance appropriation in 2019?",
+      "answer": [
+        99,
+        57,
+        85,
+        59,
+        50
+      ]
+    },
+    "2": {
+      "source": "datagov/budget-2020-budget-ordinance-appropriations/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/budget-2020-budget-ordinance-appropriations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\ndf['2020 ORDINANCE (AMOUNT $)'] = pd.to_numeric(df['2020 ORDINANCE (AMOUNT $)'], errors=\"coerce\")\ndf[\"DEPARTMENT NUMBER\"] = pd.to_numeric(df[\"DEPARTMENT NUMBER\"], errors=\"coerce\")\ntotals = df.groupby(\"DEPARTMENT NUMBER\", dropna=True)['2020 ORDINANCE (AMOUNT $)'].sum().sort_values(ascending=False)\nanswer = [int(x) for x in totals.head(5).index.tolist()]\n",
+      "subquestion": "Which department numbers were in the top 5 by total ordinance appropriation in 2020?",
+      "answer": [
+        99,
+        57,
+        85,
+        50,
+        59
+      ]
+    },
+    "3": {
+      "source": "datagov/budget-2021-budget-ordinance-appropriations/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/budget-2021-budget-ordinance-appropriations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\ndf['2021 ORDINANCE (AMOUNT $)'] = pd.to_numeric(df['2021 ORDINANCE (AMOUNT $)'], errors=\"coerce\")\ndf[\"DEPARTMENT NUMBER\"] = pd.to_numeric(df[\"DEPARTMENT NUMBER\"], errors=\"coerce\")\ntotals = df.groupby(\"DEPARTMENT NUMBER\", dropna=True)['2021 ORDINANCE (AMOUNT $)'].sum().sort_values(ascending=False)\nanswer = [int(x) for x in totals.head(5).index.tolist()]\n",
+      "subquestion": "Which department numbers were in the top 5 by total ordinance appropriation in 2021?",
+      "answer": [
+        99,
+        57,
+        85,
+        50,
+        84
+      ]
+    },
+    "4": {
+      "source": "datagov/budget-2019-budget-ordinance-positions-and-salaries/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/budget-2019-budget-ordinance-positions-and-salaries/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = [99, 57, 85, 59, 50]\nnode_2_answer = [99, 57, 85, 50, 59]\nnode_3_answer = [99, 57, 85, 50, 84]\n\ncodes = set(int(float(x)) for x in node_1_answer) & set(int(float(x)) for x in node_2_answer) & set(int(float(x)) for x in node_3_answer)\n\ndf_codes = pd.to_numeric(df[\"DEPARTMENT CODE\"], errors=\"coerce\")\ndf_amt = pd.to_numeric(df[\"TOTAL BUDGETED AMOUNT\"], errors=\"coerce\")\ndf2 = pd.DataFrame({\"code\": df_codes, \"amt\": df_amt}).dropna(subset=[\"code\"])\ndf2[\"code\"] = df2[\"code\"].astype(int)\ntotals = df2.groupby(\"code\", dropna=True)[\"amt\"].sum().to_dict()\nanswer = {str(code): float(totals.get(code, 0.0)) for code in sorted(codes)}\n",
+      "subquestion": "For the department numbers in <hop 1 answer>, what were the total budgeted amounts in the Budget Ordinance Positions and Salaries dataset for 2019?",
+      "answer": {
+        "50": 42342535,
+        "57": 1293487079,
+        "85": 144020555,
+        "99": 0
+      }
+    },
+    "5": {
+      "source": "datagov/budget-2020-budget-ordinance-positions-and-salaries/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/budget-2020-budget-ordinance-positions-and-salaries/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = [99, 57, 85, 59, 50]\nnode_2_answer = [99, 57, 85, 50, 59]\nnode_3_answer = [99, 57, 85, 50, 84]\n\ncodes = set(int(float(x)) for x in node_1_answer) & set(int(float(x)) for x in node_2_answer) & set(int(float(x)) for x in node_3_answer)\n\ndf_codes = pd.to_numeric(df[\"DEPARTMENT CODE\"], errors=\"coerce\")\ndf_amt = pd.to_numeric(df[\"TOTAL BUDGETED AMOUNT\"], errors=\"coerce\")\ndf2 = pd.DataFrame({\"code\": df_codes, \"amt\": df_amt}).dropna(subset=[\"code\"])\ndf2[\"code\"] = df2[\"code\"].astype(int)\ntotals = df2.groupby(\"code\", dropna=True)[\"amt\"].sum().to_dict()\nanswer = {str(code): float(totals.get(code, 0.0)) for code in sorted(codes)}\n",
+      "subquestion": "For the department numbers in <hop 1 answer>, what were the total budgeted amounts in the Budget Ordinance Positions and Salaries dataset for 2020?",
+      "answer": {
+        "50": 42996687,
+        "57": 1308621421,
+        "85": 159362510,
+        "99": 0
+      }
+    },
+    "6": {
+      "source": "datagov/budget-2021-budget-ordinance-positions-and-salaries/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/budget-2021-budget-ordinance-positions-and-salaries/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = [99, 57, 85, 59, 50]\nnode_2_answer = [99, 57, 85, 50, 59]\nnode_3_answer = [99, 57, 85, 50, 84]\n\ncodes = set(int(float(x)) for x in node_1_answer) & set(int(float(x)) for x in node_2_answer) & set(int(float(x)) for x in node_3_answer)\n\ndf_codes = pd.to_numeric(df[\"DEPARTMENT CODE\"], errors=\"coerce\")\ndf_amt = pd.to_numeric(df[\"TOTAL BUDGETED AMOUNT\"], errors=\"coerce\")\ndf2 = pd.DataFrame({\"code\": df_codes, \"amt\": df_amt}).dropna(subset=[\"code\"])\ndf2[\"code\"] = df2[\"code\"].astype(int)\ntotals = df2.groupby(\"code\", dropna=True)[\"amt\"].sum().to_dict()\nanswer = {str(code): float(totals.get(code, 0.0)) for code in sorted(codes)}\n",
+      "subquestion": "For the department numbers in <hop 1 answer>, what were the total budgeted amounts in the Budget Ordinance Positions and Salaries dataset for 2021?",
+      "answer": {
+        "50": 43046519,
+        "57": 1277019448,
+        "85": 158941618,
+        "99": 0
+      }
+    },
+    "7": {
+      "source": "datagov/budget-2019-budget-recommendations-positions-and-salaries/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/budget-2019-budget-recommendations-positions-and-salaries/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_4_answer = {'50': 42342535.0, '57': 1293487079.0, '85': 144020555.0, '99': 0.0}\nnode_5_answer = {'50': 42996687.0, '57': 1308621421.0, '85': 159362510.0, '99': 0.0}\nnode_6_answer = {'50': 43046519.0, '57': 1277019448.0, '85': 158941618.0, '99': 0.0}\n\ndef active_codes(d):\n    out = set()\n    for k, v in d.items():\n        code = int(float(k))\n        if float(v) > 0:\n            out.add(code)\n    return out\n\ncodes = active_codes(node_4_answer) & active_codes(node_5_answer) & active_codes(node_6_answer)\n\ndf_codes = pd.to_numeric(df[\"DEPARTMENT CODE\"], errors=\"coerce\")\ndf_amt = pd.to_numeric(df[\"TOTAL BUDGETED AMOUNT\"], errors=\"coerce\")\ndf2 = pd.DataFrame({\"code\": df_codes, \"amt\": df_amt}).dropna(subset=[\"code\"])\ndf2[\"code\"] = df2[\"code\"].astype(int)\nfiltered = df2[df2[\"code\"].isin(codes)]\ntotals = filtered.groupby(\"code\", dropna=True)[\"amt\"].sum().to_dict()\nanswer = {str(code): float(totals.get(code, 0.0)) for code in sorted(codes)}\n",
+      "subquestion": "For the department codes in <hop 2 answer>, what were the total budgeted amounts in the Budget Recommendations Positions and Salaries dataset for 2019?",
+      "answer": {
+        "50": 42342535,
+        "57": 1293460481,
+        "85": 144015863
+      }
+    },
+    "8": {
+      "source": "datagov/budget-2020-budget-recommendations-positions-and-salaries/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/budget-2020-budget-recommendations-positions-and-salaries/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_4_answer = {'50': 42342535.0, '57': 1293487079.0, '85': 144020555.0, '99': 0.0}\nnode_5_answer = {'50': 42996687.0, '57': 1308621421.0, '85': 159362510.0, '99': 0.0}\nnode_6_answer = {'50': 43046519.0, '57': 1277019448.0, '85': 158941618.0, '99': 0.0}\n\ndef active_codes(d):\n    out = set()\n    for k, v in d.items():\n        code = int(float(k))\n        if float(v) > 0:\n            out.add(code)\n    return out\n\ncodes = active_codes(node_4_answer) & active_codes(node_5_answer) & active_codes(node_6_answer)\n\ndf_codes = pd.to_numeric(df[\"DEPARTMENT CODE\"], errors=\"coerce\")\ndf_amt = pd.to_numeric(df[\"TOTAL BUDGETED AMOUNT\"], errors=\"coerce\")\ndf2 = pd.DataFrame({\"code\": df_codes, \"amt\": df_amt}).dropna(subset=[\"code\"])\ndf2[\"code\"] = df2[\"code\"].astype(int)\nfiltered = df2[df2[\"code\"].isin(codes)]\ntotals = filtered.groupby(\"code\", dropna=True)[\"amt\"].sum().to_dict()\nanswer = {str(code): float(totals.get(code, 0.0)) for code in sorted(codes)}\n",
+      "subquestion": "For the department codes in <hop 2 answer>, what were the total budgeted amounts in the Budget Recommendations Positions and Salaries dataset for 2020?",
+      "answer": {
+        "50": 42996687,
+        "57": 1308615601,
+        "85": 159389114
+      }
+    },
+    "9": {
+      "source": "datagov/budget-2021-budget-recommendations-positions-and-salaries/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/budget-2021-budget-recommendations-positions-and-salaries/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_4_answer = {'50': 42342535.0, '57': 1293487079.0, '85': 144020555.0, '99': 0.0}\nnode_5_answer = {'50': 42996687.0, '57': 1308621421.0, '85': 159362510.0, '99': 0.0}\nnode_6_answer = {'50': 43046519.0, '57': 1277019448.0, '85': 158941618.0, '99': 0.0}\n\ndef active_codes(d):\n    out = set()\n    for k, v in d.items():\n        code = int(float(k))\n        if float(v) > 0:\n            out.add(code)\n    return out\n\ncodes = active_codes(node_4_answer) & active_codes(node_5_answer) & active_codes(node_6_answer)\n\ndf_codes = pd.to_numeric(df[\"DEPARTMENT CODE\"], errors=\"coerce\")\ndf_amt = pd.to_numeric(df[\"TOTAL BUDGETED AMOUNT\"], errors=\"coerce\")\ndf2 = pd.DataFrame({\"code\": df_codes, \"amt\": df_amt}).dropna(subset=[\"code\"])\ndf2[\"code\"] = df2[\"code\"].astype(int)\nfiltered = df2[df2[\"code\"].isin(codes)]\ntotals = filtered.groupby(\"code\", dropna=True)[\"amt\"].sum().to_dict()\nanswer = {str(code): float(totals.get(code, 0.0)) for code in sorted(codes)}\n",
+      "subquestion": "For the department codes in <hop 2 answer>, what were the total budgeted amounts in the Budget Recommendations Positions and Salaries dataset for 2021?",
+      "answer": {
+        "50": 43048415,
+        "57": 1277090115,
+        "85": 158946654
+      }
+    },
+    "10": {
+      "source": "wikipedia/Chicago_Police_Department/content.txt",
+      "fact": "Chicago was given authorization to establish a police force on January 31, 1835, and it was formally established on August 15, with Orsemus Morrison as its first constable.",
+      "subquestion": "In what year was <hop 3 answer> formally established?",
+      "answer": 1835
+    },
+    "11": {
+      "source": "wikipedia/Cook_County,_Illinois/content.txt",
+      "fact": "Cook County was incorporated in 1831 and named for Daniel Pope Cook, an early Illinois statesman.",
+      "subquestion": "In what year was Cook County incorporated?",
+      "answer": 1831
+    }
+  },
+  "datasets_used": [
+    "datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt",
+    "datagov/budget-2019-budget-ordinance-appropriations/signed-metadata.txt",
+    "datagov/budget-2020-budget-ordinance-appropriations/files/rows.txt",
+    "datagov/budget-2020-budget-ordinance-appropriations/signed-metadata.txt",
+    "datagov/budget-2021-budget-ordinance-appropriations/files/rows.txt",
+    "datagov/budget-2021-budget-ordinance-appropriations/signed-metadata.txt",
+    "datagov/budget-2019-budget-ordinance-positions-and-salaries/files/rows.txt",
+    "datagov/budget-2019-budget-ordinance-positions-and-salaries/signed-metadata.txt",
+    "datagov/budget-2020-budget-ordinance-positions-and-salaries/files/rows.txt",
+    "datagov/budget-2020-budget-ordinance-positions-and-salaries/signed-metadata.txt",
+    "datagov/budget-2021-budget-ordinance-positions-and-salaries/files/rows.txt",
+    "datagov/budget-2021-budget-ordinance-positions-and-salaries/signed-metadata.txt",
+    "datagov/budget-2019-budget-recommendations-positions-and-salaries/files/rows.txt",
+    "datagov/budget-2019-budget-recommendations-positions-and-salaries/signed-metadata.txt",
+    "datagov/budget-2020-budget-recommendations-positions-and-salaries/files/rows.txt",
+    "datagov/budget-2020-budget-recommendations-positions-and-salaries/signed-metadata.txt",
+    "datagov/budget-2021-budget-recommendations-positions-and-salaries/files/rows.txt",
+    "datagov/budget-2021-budget-recommendations-positions-and-salaries/signed-metadata.txt",
+    "wikipedia/Chicago_Police_Department/content.txt",
+    "wikipedia/Cook_County,_Illinois/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: According to the 2019 Chicago Budget Ordinance Appropriations dataset, the top 5 departments by total ordinance amount were: 99 FINANCE GENERAL ($4,947,717,643.00), 57 CPD ($1,656,002,057.00), 85 AVIATION ($911,289,787.00), 59 CFD ($652,282,316.00), and 50 DFSS ($633,571,744.00).",
+        "Node 2: According to the 2020 Chicago Budget Ordinance Appropriations dataset, the top 5 departments by total ordinance amount were: 99 FINANCE GENERAL ($5,914,554,145.00), 57 CPD ($1,762,078,349.00), 85 AVIATION ($871,219,092.00), 50 DFSS ($686,392,402.00), and 59 CFD ($674,228,297.00).",
+        "Node 3: According to the 2021 Chicago Budget Ordinance Appropriations dataset, the top 5 departments by total ordinance amount were: 99 FINANCE GENERAL ($5,681,317,598.00), 57 CPD ($1,698,735,503.00), 85 CDA ($1,141,154,450.00), 50 DFSS ($780,489,814.00), and 84 CDOT ($770,356,074.00).",
+        "Hop result: <node_1 answer> ∩ <node_2 answer> ∩ <node_3 answer> = [\"50\", \"57\", \"85\", \"99\"]."
+      ],
+      "answer": "99, 57, 85, 50"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 4: For 2019, total Budget Ordinance Positions and Salaries amounts for the department numbers in <hop 1 answer> were 57 ($1,293,487,079), 85 ($144,020,555), 50 ($42,342,535), and 99 ($0).",
+        "Node 5: For 2020, the amounts were 57 ($1,308,621,421), 85 ($159,362,510), 50 ($42,996,687), and 99 ($0).",
+        "Node 6: For 2021, the amounts were 57 ($1,277,019,448), 85 ($158,941,618), 50 ($43,046,519), and 99 ($0).",
+        "Hop result: using <node_4 answer>, <node_5 answer>, and <node_6 answer>, the department codes with non-zero amounts in all three years are 57, 85, and 50."
+      ],
+      "answer": "57, 85, 50"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        7,
+        8,
+        9
+      ],
+      "reasoning": [
+        "Node 7: For 2019, total Budget Recommendations Positions and Salaries amounts for the department codes in <hop 2 answer> were 57 ($1,293,460,481), 85 ($144,015,863), and 50 ($42,342,535).",
+        "Node 8: For 2020, the amounts were 57 ($1,308,615,601), 85 ($159,389,114), and 50 ($42,996,687).",
+        "Node 9: For 2021, the amounts were 57 ($1,277,090,115), 85 ($158,946,654), and 50 ($43,048,415).",
+        "Hop result: using <node_7 answer>, <node_8 answer>, and <node_9 answer>, department code 57 has the highest average budget recommendation amount; department code 57 is the Chicago Police Department."
+      ],
+      "answer": "Chicago Police Department"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        10,
+        11
+      ],
+      "reasoning": [
+        "Node 10: <hop 3 answer> was formally established in 1835.",
+        "Node 11: Cook County was incorporated in 1831.",
+        "Hop result: 1835 - 1831 = 4 years."
+      ],
+      "answer": 4
+    }
+  ]
+}

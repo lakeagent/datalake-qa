@@ -1,0 +1,97 @@
+{
+  "question": "Which years had the 4th to 7th lowest Black infant death rates? Which years up to 2010 had the top 4 lowest non-Hispanic and White female birth rates? Which years up to 2010 had the top 4 lowest nonmarital birth rates for Asian or Pacific women ages 15 to 19? Across the years common to all three answers, if we define a state as healthier if the percentage of former smokers and people who never smoked is higher, which U.S. state is the 21st healthiest? For that state, how many more incorporated cities than counties does it have? Please return only the number in the format [Answer].",
+  "answer": 844,
+  "nodes": {
+    "1": {
+      "source": "datagov/nchs-infant-mortality-rates-by-race-united-states-1915-2013/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nchs-infant-mortality-rates-by-race-united-states-1915-2013/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['rate_num'] = pd.to_numeric(df['Infant Mortality Rate'], errors='coerce')\nfiltered = df[df['Race'].eq('Black') & df['rate_num'].notna()].copy()\nranked = filtered.sort_values(['rate_num', 'Year'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[3:7]['Year'].tolist())\n",
+      "subquestion": "Which years had the 4th to 7th lowest Black infant death rates?",
+      "answer": "2010; 2009; 2008; 2006"
+    },
+    "2": {
+      "source": "datagov/nchs-natality-measures-for-females-by-race-and-hispanic-origin-united-states/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nchs-natality-measures-for-females-by-race-and-hispanic-origin-united-states/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['year_num'] = pd.to_numeric(df['Year'], errors='coerce')\ndf['birth_rate_num'] = pd.to_numeric(df['Birth Rate'], errors='coerce')\nfiltered = df[\n    df['Race'].eq('Non-Hispanic White')\n    & df['year_num'].le(2010)\n    & df['birth_rate_num'].notna()\n].copy().drop_duplicates(['Year', 'Race', 'birth_rate_num'])\nranked = filtered.sort_values(['birth_rate_num', 'Year'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[0:4]['Year'].tolist())\n",
+      "subquestion": "Which years up to 2010 had the top 4 lowest non-Hispanic and White female birth rates?",
+      "answer": "2010; 2009; 2008; 2005"
+    },
+    "3": {
+      "source": "datagov/nchs-nonmarital-birth-rates-by-age-group-for-all-women-age-15-44-united-states-1980-2013/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nchs-nonmarital-birth-rates-by-age-group-for-all-women-age-15-44-united-states-1980-2013/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['year_num'] = pd.to_numeric(df['Year'], errors='coerce')\ndf['birth_rate_num'] = pd.to_numeric(df['Birth Rate'], errors='coerce')\nfiltered = df[\n    df['Race'].eq('Asian or Pacific Islander')\n    & df['Age'].eq('15-19')\n    & df['year_num'].le(2010)\n    & df['birth_rate_num'].notna()\n].copy()\nranked = filtered.sort_values(['birth_rate_num', 'Year'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[0:4]['Year'].tolist())\n",
+      "subquestion": "Which years up to 2010 had the top 4 lowest nonmarital birth rates for Asian or Pacific women ages 15 to 19?",
+      "answer": "2010; 2009; 2008; 2005"
+    },
+    "4": {
+      "source": "datagov/brfss-prevalence-and-trends-data-tobacco-use-four-level-smoking-data-for-1995-2010/files/rows.txt",
+      "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/brfss-prevalence-and-trends-data-tobacco-use-four-level-smoking-data-for-1995-2010/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = '2010; 2009; 2008; 2006'\nnode_2_answer = '2010; 2009; 2008; 2005'\nnode_3_answer = '2010; 2009; 2008; 2005'\nyears_1 = {part.strip() for part in node_1_answer.split(';') if part.strip()}\nyears_2 = {part.strip() for part in node_2_answer.split(';') if part.strip()}\nyears_3 = {part.strip() for part in node_3_answer.split(';') if part.strip()}\nintersection_years = sorted(years_1 & years_2 & years_3)\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfor col in ['Former smoker', 'Never smoked']:\n    df[col + '_num'] = pd.to_numeric(df[col], errors='coerce')\ndf['healthy_score'] = df['Former smoker_num'] + df['Never smoked_num']\nexclude_states = {\n    'Nationwide (States, DC, and Territories)',\n    'Nationwide (States and DC)',\n    'Nationwide (States, DC, Territories)',\n    'Puerto Rico',\n    'Guam',\n    'Virgin Islands'\n}\nfiltered = df[\n    df['Year'].isin(intersection_years)\n    & ~df['State'].isin(exclude_states)\n    & df['healthy_score'].notna()\n].copy()\nranked = filtered.groupby('State', as_index=False)['healthy_score'].mean().sort_values(['healthy_score', 'State'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = str(ranked.iloc[20]['State'])\n",
+      "subquestion": "Across the years common to <node_1 answer>, <node_2 answer>, and <node_3 answer>, define a state as healthier if the percentage of former smokers and people who never smoked is higher. Which U.S. state is the 21st healthiest?",
+      "answer": "Iowa"
+    },
+    "5": {
+      "source": "wikipedia/List_of_counties_in_Iowa/content.txt",
+      "fact": "There are 99 counties in the U.S. state of Iowa.",
+      "subquestion": "How many counties does <hop 2 answer> have?",
+      "answer": 99
+    },
+    "6": {
+      "source": "wikipedia/List_of_cities_in_Iowa/content.txt",
+      "fact": "As of 2010, there are 943 incorporated cities in the U.S. state of Iowa.",
+      "subquestion": "How many incorporated cities does <hop 2 answer> have?",
+      "answer": 943
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1 ranks Black infant mortality rates from lowest to highest and returns the 4th through 7th lowest years: 2010, 2009, 2008, and 2006.",
+        "Node 2 ranks Non-Hispanic White female birth rates, keeping years up to 2010, and returns the 1st through 4th lowest years: 2010, 2009, 2008, and 2005.",
+        "Node 3 ranks nonmarital birth rates for Asian or Pacific Islander women ages 15 to 19, again keeping years up to 2010, and returns the 1st through 4th lowest years: 2010, 2009, 2008, and 2005.",
+        "The years common to all three answers are 2008, 2009, and 2010."
+      ],
+      "answer": "2008; 2009; 2010"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4 uses the common years 2008 through 2010 and computes a health score as Former smoker plus Never smoked.",
+        "After excluding nationwide totals and territories, it averages that score by state across those years and ranks states from highest to lowest.",
+        "Iowa ranks 21st."
+      ],
+      "answer": "Iowa"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5 says <hop 2 answer> has 99 counties.",
+        "Node 6 says <hop 2 answer> has 943 incorporated cities.",
+        "The difference is 943 - 99 = 844."
+      ],
+      "answer": 844
+    }
+  ],
+  "datasets_used": [
+    "datagov/nchs-infant-mortality-rates-by-race-united-states-1915-2013/files/rows.txt",
+    "datagov/nchs-infant-mortality-rates-by-race-united-states-1915-2013/signed-metadata.txt",
+    "datagov/nchs-natality-measures-for-females-by-race-and-hispanic-origin-united-states/files/rows.txt",
+    "datagov/nchs-natality-measures-for-females-by-race-and-hispanic-origin-united-states/signed-metadata.txt",
+    "datagov/nchs-nonmarital-birth-rates-by-age-group-for-all-women-age-15-44-united-states-1980-2013/files/rows.txt",
+    "datagov/nchs-nonmarital-birth-rates-by-age-group-for-all-women-age-15-44-united-states-1980-2013/signed-metadata.txt",
+    "datagov/nchs-nonmarital-birth-rates-by-age-group-for-all-women-age-15-44-united-states-1980-2013/files/jvf6-ix4w.txt",
+    "datagov/brfss-prevalence-and-trends-data-tobacco-use-four-level-smoking-data-for-1995-2010/files/rows.txt",
+    "datagov/brfss-prevalence-and-trends-data-tobacco-use-four-level-smoking-data-for-1995-2010/signed-metadata.txt",
+    "wikipedia/List_of_counties_in_Iowa/content.txt",
+    "wikipedia/List_of_cities_in_Iowa/content.txt"
+  ]
+}

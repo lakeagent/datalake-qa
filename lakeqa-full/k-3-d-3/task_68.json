@@ -1,0 +1,88 @@
+{
+  "question": "At Brady Hot Springs, find the date on which wells 56A-1, 81B-1, and SP-2 are all above their own median temperatures for the greatest total number of recorded minutes. What is the flight number of the flight that killed the most people on that day in history? Return only the flight number in the format [Answer].",
+  "answer": "MU5735",
+  "nodes": {
+    "1": {
+      "source": "datagov/bradys-geothermal-field-analysis-of-pressure-data-a791d/files/56A_1_AnalyzedPressureData_20160404%20%282%29.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/bradys-geothermal-field-analysis-of-pressure-data-a791d/files/56A_1_AnalyzedPressureData_20160404%20%282%29.txt'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), usecols=['Temperature (deg C)'], dtype=str, low_memory=False)\n\ntemps = pd.to_numeric(df['Temperature (deg C)'], errors='coerce').dropna()\nanswer = f'{temps.median():.3f}'\n",
+      "subquestion": "Across all temperature readings in the analyzed pressure data for well 56A-1, what was the median temperature in degrees C?",
+      "answer": "161.535"
+    },
+    "2": {
+      "source": "datagov/bradys-geothermal-field-analysis-of-pressure-data-a791d/files/81B_1_AnalyzedPressureData_20160404%20%282%29.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/bradys-geothermal-field-analysis-of-pressure-data-a791d/files/81B_1_AnalyzedPressureData_20160404%20%282%29.txt'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), usecols=['Temperature (deg C)'], dtype=str, low_memory=False)\n\ntemps = pd.to_numeric(df['Temperature (deg C)'], errors='coerce').dropna()\nanswer = f'{temps.median():.3f}'\n",
+      "subquestion": "Across all temperature readings in the analyzed pressure data for well 81B-1, what was the median temperature in degrees C?",
+      "answer": "7.800"
+    },
+    "3": {
+      "source": "datagov/bradys-geothermal-field-analysis-of-pressure-data-a791d/files/SP_2_AnalyzedPressureData_20160404%20%281%29.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/bradys-geothermal-field-analysis-of-pressure-data-a791d/files/SP_2_AnalyzedPressureData_20160404%20%281%29.txt'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), usecols=['Temperature (deg C)'], dtype=str, low_memory=False)\n\ntemps = pd.to_numeric(df['Temperature (deg C)'], errors='coerce').dropna()\nanswer = f'{temps.median():.3f}'\n",
+      "subquestion": "Across all temperature readings in the analyzed pressure data for well SP-2, what was the median temperature in degrees C?",
+      "answer": "8.500"
+    },
+    "4": {
+      "source": "datagov/brady-geothermal-field-borehole-pressure-data-75646/files/56A1_Final.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/brady-geothermal-field-borehole-pressure-data-75646/files/56A1_Final.txt'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nnode_1_answer = '161.535'\nnode_2_answer = '7.800'\nnode_3_answer = '8.500'\nthresholds = {\n    '56A-1': float(node_1_answer),\n    '81B-1': float(node_2_answer),\n    'SP-2': float(node_3_answer),\n}\nraw_sources = {\n    '56A-1': 'datagov/brady-geothermal-field-borehole-pressure-data-75646/files/56A1_Final.txt',\n    '81B-1': 'datagov/brady-geothermal-field-borehole-pressure-data-75646/files/81B1_Final.txt',\n    'SP-2': 'datagov/brady-geothermal-field-borehole-pressure-data-75646/files/SP2_Final.txt',\n}\n\nshared = None\nfor well, key in raw_sources.items():\n    obj = client.get_object(Bucket=bucket, Key=key)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), usecols=['Full UTC Date Time', 'Temperature (deg C)'], dtype=str, low_memory=False)\n    df['Full UTC Date Time'] = pd.to_datetime(df['Full UTC Date Time'], format='%m/%d/%y %H:%M', errors='coerce')\n    df['Temperature (deg C)'] = pd.to_numeric(df['Temperature (deg C)'], errors='coerce')\n    above = df[df['Temperature (deg C)'].gt(thresholds[well])][['Full UTC Date Time']].dropna().drop_duplicates()\n    above = above.rename(columns={'Full UTC Date Time': 'dt'})\n    shared = above if shared is None else shared.merge(above, on='dt', how='inner')\n\nshared['date'] = shared['dt'].dt.strftime('%Y-%m-%d')\ncounts = shared.groupby('date').size().sort_values(ascending=False)\nanswer = str(counts.idxmax())\n",
+      "subquestion": "On which date were wells 56A-1, 81B-1, and SP-2 all above the respective median temperatures from <hop 1 answer> for the greatest number of recorded minutes? Return the date as YYYY-MM-DD.",
+      "answer": "2016-03-21"
+    },
+    "5": {
+      "source": "wikipedia/China_Eastern_Airlines_Flight_5735/content.txt",
+      "fact": "China Eastern Airlines Flight 5735 (MU5735) was a domestic passenger flight from Kunming Changshui International Airport to its planned destination, Guangzhou Baiyun International Airport in China. At 14:23 China Standard Time (06:23 UTC) on 21 March 2022, the Boeing 737-89P aircraft descended steeply mid-flight and struck the ground at high speed in Teng County, Wuzhou, Guangxi, killing all 132 passengers and crew on board.",
+      "subquestion": "What is the flight number of the flight that killed the most people on the same month and day as <hop 2 answer>?",
+      "answer": "MU5735"
+    }
+  },
+  "datasets_used": [
+    "datagov/bradys-geothermal-field-analysis-of-pressure-data-a791d/files/56A_1_AnalyzedPressureData_20160404%20%282%29.txt",
+    "datagov/bradys-geothermal-field-analysis-of-pressure-data-a791d/files/81B_1_AnalyzedPressureData_20160404%20%282%29.txt",
+    "datagov/bradys-geothermal-field-analysis-of-pressure-data-a791d/files/SP_2_AnalyzedPressureData_20160404%20%281%29.txt",
+    "datagov/bradys-geothermal-field-analysis-of-pressure-data-a791d/signed-metadata.txt",
+    "datagov/bradys-geothermal-field-analysis-of-pressure-data-a791d/files/READ_ME.rtf",
+    "datagov/brady-geothermal-field-borehole-pressure-data-75646/files/56A1_Final.txt",
+    "datagov/brady-geothermal-field-borehole-pressure-data-75646/signed-metadata.txt",
+    "datagov/brady-geothermal-field-borehole-pressure-data-75646/files/81B1_Final.txt",
+    "wikipedia/China_Eastern_Airlines_Flight_5735/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: The 56A-1 analyzed pressure file has a median recorded temperature of 161.535 degrees C.",
+        "Node 2: The 81B-1 analyzed pressure file has a median recorded temperature of 7.800 degrees C.",
+        "Node 3: The SP-2 analyzed pressure file has a median recorded temperature of 8.500 degrees C.",
+        "These three median temperatures become the above-threshold cutoffs for the next hop's simultaneous-temperature comparison.",
+        "Hop result: 56A-1 = 161.535; 81B-1 = 7.800; SP-2 = 8.500"
+      ],
+      "answer": "56A-1 = 161.535; 81B-1 = 7.800; SP-2 = 8.500"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: In the raw borehole pressure files, using the hop-1 medians as the per-well thresholds and intersecting the shared Full UTC Date Time minute timestamps across all three wells, 2016-03-21 has 1,057 simultaneous above-median timestamps.",
+        "The next-highest shared date is 2016-03-14 with 790 simultaneous above-median timestamps, so 2016-03-21 is the clear maximum.",
+        "Hop result: 2016-03-21"
+      ],
+      "answer": "2016-03-21"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: The date from <hop 2 answer> falls on March 21. The source identifies China Eastern Airlines Flight 5735 as MU5735 and says it crashed on 21 March 2022, killing all 132 passengers and crew on board.",
+        "Hop result: MU5735."
+      ],
+      "answer": "MU5735"
+    }
+  ]
+}

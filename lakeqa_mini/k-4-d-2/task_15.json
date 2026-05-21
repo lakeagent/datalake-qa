@@ -1,0 +1,93 @@
+{
+    "question": "Consider the counties King, Clark, Pierce, Whitman, Thurston, and Spokane. Among these, identify the Eastern Washington county that borders Idaho and had a 2020 population under 300,000. In the most populous city in that county according to the 2020 census, what was the total enrollment for the school district serving that city in 2017-18? Your response should be in the format [Answer].",
+    "answer": "2941",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Eastern_Washington/content.txt",
+            "fact": "Spokane\n Stevens\n Walla Walla\n Whitman",
+            "subquestion": "Among the counties King, Clark, Pierce, Whitman, Thurston, and Spokane, which are in Eastern Washington?",
+            "answer": "Whitman and Spokane"
+        },
+        "2": {
+            "source": "wikipedia/Whitman_County,_Washington/content.txt",
+            "fact": "Whitman County is a county located in the U.S. state of Washington. As of the 2020 census, the population was 47,973. The county seat is Colfax, and its largest city is Pullman.\n\nAdjacent counties\n\nSpokane County - north\nBenewah County, Idaho - northeast\nLatah County, Idaho - east\nNez Perce County, Idaho - southeast\nAsotin County -  south/southeast\nGarfield County - south\nColumbia County - south\nFranklin County - southwest\nAdams County - west\nLincoln County - northwest",
+            "subquestion": "Does Whitman County border Idaho, and what was its 2020 census population?",
+            "answer": "Whitman County borders Idaho and had a 2020 population of 47,973, so it meets both criteria."
+        },
+        "3": {
+            "source": "wikipedia/Spokane_County,_Washington/content.txt",
+            "fact": "Spokane County is a county located in the U.S. state of Washington. As of the 2020 census, its population was 539,339, and was estimated to be 555,947 in 2024, making it the fourth-most populous county in Washington. The county seat and largest city is Spokane, the second largest city in the state after Seattle. The county is named after the Spokane people.\n\nAdjacent counties\n\n Stevens County – northwest\n Pend Oreille County – north\n Bonner County, Idaho – northeast\n Kootenai County, Idaho – east\n Benewah County, Idaho – southeast\n Whitman County – south\n Lincoln County – west",
+            "subquestion": "Does Spokane County border Idaho, and what was its 2020 census population?",
+            "answer": "Spokane County borders Idaho, but its 2020 population was 539,339, so it does not meet both criteria."
+        },
+        "4": {
+            "source": "wikipedia/Pullman,_Washington/content.txt",
+            "fact": "Pullman is the most populous city in Whitman County, located in southeastern Washington within the Palouse region of the Pacific Northwest. The population was 32,901 at the 2020 census",
+            "subquestion": "What is the most populous city in <hop 2 answer> according to the 2020 census?",
+            "answer": "Pullman is the most populous city in Whitman County (2020 census), located in southeastern Washington within the Palouse region of the Pacific Northwest"
+        },
+        "5": {
+            "source": "datagov/report-card-enrollment-2017-18-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-enrollment-2017-18-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = df[\n    (df[\"SchoolYear\"] == \"2017-18\")\n    & (df[\"OrganizationLevel\"] == \"District\")\n    & (df[\"DistrictName\"] == \"Pullman School District\")\n    & (df[\"GradeLevel\"] == \"All Grades\")\n]\n\nanswer = result.iloc[0][\"All Students\"]",
+            "subquestion": "What was the total enrollment for the school district serving <hop 3 answer> in 2017-18?",
+            "answer": "2941"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Whitman and Spokane are counties in Eastern Washington.",
+                "Hop result: Whitman and Spokane"
+            ],
+            "answer": "Whitman and Spokane"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 2: Whitman County borders Idaho and had a 2020 population of 47,973.",
+                "Node 3: Spokane County borders Idaho and had a 2020 population of 539,339.",
+                "Hop result: among <hop 1 answer>, Whitman County is the county that borders Idaho and had a 2020 population under 300,000."
+            ],
+            "answer": "Whitman County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Pullman is the most populous city in Whitman County.",
+                "Hop result: Pullman"
+            ],
+            "answer": "Pullman"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Filter rows where `SchoolYear` equals `2017-18`, `OrganizationLevel` equals `District`, `DistrictName` equals `Pullman School District`, and `GradeLevel` equals `All Grades`, then return `All Students`.",
+                "Hop result: 2941"
+            ],
+            "answer": "2941"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Eastern_Washington/content.txt",
+        "wikipedia/Whitman_County,_Washington/content.txt",
+        "wikipedia/Spokane_County,_Washington/content.txt",
+        "wikipedia/Pullman,_Washington/content.txt",
+        "datagov/report-card-enrollment-2017-18-school-year/files/rows.txt",
+        "datagov/report-card-enrollment-2017-18-school-year/signed-metadata.txt",
+        "datagov/report-card-enrollment-2017-18-school-year/files/fs63-sd8y.txt"
+    ]
+}

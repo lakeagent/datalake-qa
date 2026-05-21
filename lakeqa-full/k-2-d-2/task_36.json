@@ -1,0 +1,65 @@
+{
+    "question": "First identify the state that appears in both of these data.gov-derived groups: Which states, in 2019, had at least 5 different investor-owned electricity companies where customers received power supply and delivery from the same company, and where the average price households paid was at least $0.15 per kWh; and Which states where the payees were located met both of these conditions in Hawaii records of unpaid political-committee spending from January 1, 2008 through October 21, 2024 for committees not tied to a candidate: at least $50,000 was still owed for specialized professional work, and at least 8% of the entries involving companies rather than individuals were for that kind of work. After identifying that state, what gemstone is listed as the state gemstone of that state? Your response should be in the format [Answer].",
+    "answer": "Benitoite",
+    "nodes": {
+        "1": {
+            "source": "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2019/files/iou_zipcodes_2019.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2019/files/iou_zipcodes_2019.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\nfiltered = df[\n    (df[\"service_type\"] == \"Bundled\")\n    & (df[\"state\"].notna())\n    & (pd.to_numeric(df[\"res_rate\"], errors=\"coerce\").notna())\n].copy()\n\nfor col in [\"res_rate\", \"comm_rate\", \"ind_rate\"]:\n    filtered[col] = pd.to_numeric(filtered[col], errors=\"coerce\")\n\nfiltered[\"normalized_state\"] = filtered[\"state\"].map(state_map)\n\nresult = (\n    filtered.groupby(\"normalized_state\", dropna=False)\n    .agg(\n        utility_count=(\"utility_name\", \"nunique\"),\n        zip_rows=(\"zip\", \"size\"),\n        avg_res=(\"res_rate\", \"mean\"),\n        avg_comm=(\"comm_rate\", \"mean\"),\n        avg_ind=(\"ind_rate\", \"mean\"),\n    )\n    .reset_index()\n)\n\nresult = result[\n    (result[\"utility_count\"] >= 5)\n    & (result[\"avg_res\"] >= 0.15)\n].sort_values(\"normalized_state\").reset_index(drop=True)\n\nanswer = result[\"normalized_state\"].tolist()",
+            "subquestion": "Which states, in 2019, had at least 5 different investor-owned electricity companies where customers received power supply and delivery from the same company, and where the average price households paid was at least $0.15 per kWh?",
+            "answer": [
+                "Alaska",
+                "California",
+                "Michigan"
+            ]
+        },
+        "2": {
+            "source": "datagov/unpaid-expenditures-for-hawaii-noncandidate-committees-from-january-1-2008-through-dece-31/files/ncschd.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/unpaid-expenditures-for-hawaii-noncandidate-committees-from-january-1-2008-through-dece-31/files/ncschd.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\nfiltered = df[(df[\"Vendor Type\"] == \"Vendor / Business\") & (df[\"State\"].notna())].copy()\nfiltered[\"normalized_state\"] = filtered[\"State\"].map(state_map)\nfiltered[\"Unpaid Expenditure Amount\"] = pd.to_numeric(filtered[\"Unpaid Expenditure Amount\"], errors=\"coerce\")\n\nstate_metric = (\n    filtered.groupby(\"normalized_state\", dropna=False)\n    .agg(\n        record_count=(\"State\", \"size\"),\n        total_unpaid=(\"Unpaid Expenditure Amount\", \"sum\"),\n    )\n    .reset_index()\n)\n\nprofessional_services = filtered[filtered[\"Expenditure Category\"] == \"Professional Services\"].copy()\nprofessional_services_metric = (\n    professional_services.groupby(\"normalized_state\", dropna=False)\n    .agg(\n        professional_services_record_count=(\"State\", \"size\"),\n        professional_services_unpaid=(\"Unpaid Expenditure Amount\", \"sum\"),\n    )\n    .reset_index()\n)\n\nresult = state_metric.merge(professional_services_metric, on=\"normalized_state\", how=\"left\")\nresult[[\"professional_services_record_count\", \"professional_services_unpaid\"]] = result[[\"professional_services_record_count\", \"professional_services_unpaid\"]].fillna(0)\nresult[\"professional_services_share\"] = result[\"professional_services_record_count\"] / result[\"record_count\"]\n\nresult = result[\n    (result[\"professional_services_unpaid\"] >= 50000)\n    & (result[\"professional_services_share\"] >= 0.08)\n].sort_values(\"normalized_state\").reset_index(drop=True)\n\nanswer = result[\"normalized_state\"].tolist()",
+            "subquestion": "Which states where the payees were located met both of these conditions in Hawaii records of unpaid political-committee spending from January 1, 2008 through October 21, 2024 for committees not tied to a candidate: at least $50,000 was still owed for specialized professional work, and at least 8% of the entries involving companies rather than individuals were for that kind of work?",
+            "answer": [
+                "California",
+                "Washington"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/List_of_California_state_symbols/content.txt",
+            "fact": "The List of California state symbols page lists Gemstone: Benitoite.",
+            "subquestion": "What gemstone is listed as the state gemstone of <hop 1 answer>?",
+            "answer": "Benitoite"
+        }
+    },
+    "datasets_used": [
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2019/files/iou_zipcodes_2019.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2019/signed-metadata.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2019/files/non_iou_zipcodes_2019.txt",
+        "datagov/unpaid-expenditures-for-hawaii-noncandidate-committees-from-january-1-2008-through-dece-31/files/ncschd.txt",
+        "datagov/unpaid-expenditures-for-hawaii-noncandidate-committees-from-january-1-2008-through-dece-31/signed-metadata.txt",
+        "wikipedia/List_of_California_state_symbols/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `service_type` = `Bundled`, `state` is present, and `res_rate` is numeric, convert `res_rate`, `comm_rate`, and `ind_rate` to numeric, aggregate by normalized `state` to get distinct `utility_name` count and average residential, commercial, and industrial rates, and keep states with at least 5 distinct utilities and average residential rate at least 0.15.",
+                "Node 2: Filter rows where `Vendor Type` = `Vendor / Business` and `State` is present, normalize `State` values to full state names, convert `Unpaid Expenditure Amount` to numeric, aggregate by state to get total record count and total unpaid amount, separately aggregate `Professional Services` records to get professional-services record count and unpaid amount, compute professional-services share as professional-services record count divided by total record count, and keep states with professional-services unpaid amount at least 50000 and professional-services share at least 0.08.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = California."
+            ],
+            "answer": "California"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: The List of California state symbols page identifies benitoite as the state gemstone of the computed state.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Benitoite"
+        }
+    ]
+}

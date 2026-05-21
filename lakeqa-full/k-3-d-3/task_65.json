@@ -1,0 +1,88 @@
+{
+  "question": "In fiscal year 2022, among the Texas counties that ranked in the top five for confirmed Adult Protective Services victims, validated perpetrators, and service activity, take the county with the lowest repeated investigation rate. As of 2025, how many county-owned nature preserves were acquired through that county's Open Space Program? Please return only the number in the format [Answer].",
+  "answer": 21,
+  "nodes": {
+    "1": {
+      "source": "datagov/aps-3-4-investigations-victims-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-3-4-investigations-victims-by-county-fy2013-2022/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['County'] = df['County'].astype(str).str.strip()\ndf = df[\n    df['Fiscal Year'].astype(str).str.strip().eq('2022')\n    & df['Confirmed Victim?'].astype(str).str.strip().eq('Confirmed Victim')\n].copy()\ndf['Victims'] = pd.to_numeric(df['Victims'].astype(str).str.replace(',', '', regex=False).str.strip(), errors='coerce')\nranked = (\n    df.groupby('County', as_index=True)['Victims']\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = '; '.join(ranked.index.tolist())\n",
+      "subquestion": "In fiscal year 2022, which five Texas counties had the highest numbers of confirmed Adult Protective Services victims? Return them as a semicolon-separated list in rank order.",
+      "answer": "Harris; Bexar; Dallas; Tarrant; El Paso"
+    },
+    "2": {
+      "source": "datagov/aps-3-5-investigations-perpetrators-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-3-5-investigations-perpetrators-by-county-fy2013-2022/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['County'] = df['County'].astype(str).str.strip()\ndf = df[\n    df['Fiscal Year'].astype(str).str.strip().eq('2022')\n    & df['Confirmed Perpetrators'].astype(str).str.strip().eq('Validated')\n].copy()\ndf['Perpetrators'] = pd.to_numeric(df['Perpetrators'].astype(str).str.replace(',', '', regex=False).str.strip(), errors='coerce')\nranked = (\n    df.groupby('County', as_index=True)['Perpetrators']\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = '; '.join(ranked.index.tolist())\n",
+      "subquestion": "In fiscal year 2022, which five Texas counties had the highest numbers of validated Adult Protective Services perpetrators? Return them as a semicolon-separated list in rank order.",
+      "answer": "Harris; Bexar; Dallas; Tarrant; El Paso"
+    },
+    "3": {
+      "source": "datagov/aps-4-1-services-activity-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-4-1-services-activity-by-county-fy2013-2022/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['County'] = df['County'].astype(str).str.strip()\ndf = df[df['Fiscal Year'].astype(str).str.strip().eq('2022')].copy()\ndf['Service Stages'] = pd.to_numeric(df['Service Stages'].astype(str).str.replace(',', '', regex=False).str.strip(), errors='coerce')\nranked = (\n    df.groupby('County', as_index=True)['Service Stages']\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = '; '.join(ranked.index.tolist())\n",
+      "subquestion": "In fiscal year 2022, which five Texas counties recorded the most Adult Protective Services service activity, measured by service stages? Return them as a semicolon-separated list in rank order.",
+      "answer": "Harris; Bexar; Dallas; Tarrant; El Paso"
+    },
+    "4": {
+      "source": "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_1_answer = 'Harris; Bexar; Dallas; Tarrant; El Paso'\nnode_2_answer = 'Harris; Bexar; Dallas; Tarrant; El Paso'\nnode_3_answer = 'Harris; Bexar; Dallas; Tarrant; El Paso'\nintersection = sorted(\n    set(x.strip() for x in node_1_answer.split(';') if x.strip())\n    & set(x.strip() for x in node_2_answer.split(';') if x.strip())\n    & set(x.strip() for x in node_3_answer.split(';') if x.strip())\n)\n\ndf['County'] = df['County'].astype(str).str.strip()\ndf = df[df['Fiscal Year'].astype(str).str.strip().eq('2022')].copy()\ndf = df[df['County'].isin(intersection)].copy()\ndf['Recidivism'] = pd.to_numeric(df['Recidivism'].astype(str).str.strip(), errors='coerce')\nranked = (\n    df.groupby('County', as_index=True)['Recidivism']\n    .mean()\n    .sort_values(ascending=True)\n)\nanswer = str(ranked.index[0])\n",
+      "subquestion": "Among the counties in the shared Adult Protective Services burden intersection from hop 1, which county had the lowest repeated investigation rate in fiscal year 2022?",
+      "answer": "Dallas"
+    },
+    "5": {
+      "source": "wikipedia/Dallas_County,_Texas/content.txt",
+      "fact": "According to the United States Census Bureau, the county has a total area of , of which  is land and  (3.91%) is water. It is the 177th largest county in Texas by total area.  of the county are contained within 21 county-owned nature preserves, which were acquired through the county's Open Space Program.",
+      "subquestion": "As of 2025, how many county-owned nature preserves does the county named in <hop 2 answer> contain?",
+      "answer": 21
+    }
+  },
+  "datasets_used": [
+    "datagov/aps-3-4-investigations-victims-by-county-fy2013-2022/files/rows.txt",
+    "datagov/aps-3-4-investigations-victims-by-county-fy2013-2022/signed-metadata.txt",
+    "datagov/aps-3-5-investigations-perpetrators-by-county-fy2013-2022/files/rows.txt",
+    "datagov/aps-3-5-investigations-perpetrators-by-county-fy2013-2022/signed-metadata.txt",
+    "datagov/aps-4-1-services-activity-by-county-fy2013-2022/files/rows.txt",
+    "datagov/aps-4-1-services-activity-by-county-fy2013-2022/signed-metadata.txt",
+    "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt",
+    "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/signed-metadata.txt",
+    "wikipedia/Dallas_County,_Texas/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: In fiscal year 2022, the five Texas counties with the most confirmed Adult Protective Services victims are Harris (7,627), Bexar (4,044), Dallas (3,554), Tarrant (3,055), and El Paso (2,232).",
+        "Node 2: In fiscal year 2022, the five Texas counties with the most validated Adult Protective Services perpetrators are Harris (7,876), Bexar (4,233), Dallas (3,643), Tarrant (3,168), and El Paso (2,271).",
+        "Node 3: In fiscal year 2022, the five Texas counties with the most Adult Protective Services service stages are Harris (5,806), Bexar (3,501), Dallas (2,611), Tarrant (2,392), and El Paso (1,613).",
+        "Intersecting the three top-five county lists leaves the same shared high-burden set: Bexar, Dallas, El Paso, Harris, and Tarrant.",
+        "Hop result: Bexar; Dallas; El Paso; Harris; Tarrant"
+      ],
+      "answer": "Bexar; Dallas; El Paso; Harris; Tarrant"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: Among the counties in the shared Adult Protective Services burden intersection from hop 1, the fiscal year 2022 repeated investigation rates are Dallas (0.136), Tarrant (0.138), El Paso (0.146), Bexar (0.151), and Harris (0.151).",
+        "The lowest repeated investigation rate in that intersection belongs to Dallas.",
+        "Hop result: Dallas"
+      ],
+      "answer": "Dallas"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: The source says the county named in <hop 2 answer> contains 21 county-owned nature preserves acquired through its Open Space Program.",
+        "Hop result: 21."
+      ],
+      "answer": 21
+    }
+  ]
+}

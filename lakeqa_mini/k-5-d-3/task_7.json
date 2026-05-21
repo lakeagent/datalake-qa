@@ -1,0 +1,136 @@
+{
+    "question": "Among the United States Park Police, United States Capitol Police, and U.S. Secret Service Uniform Division, which had the highest average number of driving-related violations issued in January from 2019 to 2021? That agency is operated by which federal agency, and that agency sits within which U.S. department? Who is the head of that department, and which university did this person graduate from? Return the university name only. Your response should be in the format [Answer].",
+    "answer": "North Dakota State University",
+    "nodes": {
+        "1": {
+            "source": "datagov/moving-violations-issued-in-january-2019/files/data.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/moving-violations-issued-in-january-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ntarget_agencies = [\n    \"UNITED STATES PARK POLICE\",\n    \"UNITED STATES CAPITOL POLICE\",\n    \"US. SECRET SERVICE UNIFORM DIVISION\",\n]\nanswer = (\n    df[df[\"properties.ISSUING_AGENCY_NAME\"].isin(target_agencies)][\"properties.ISSUING_AGENCY_NAME\"]\n    .value_counts()\n    .reindex(target_agencies, fill_value=0)\n    .to_dict()\n)",
+            "subquestion": "In January 2019, how many driving-related violations did the United States Park Police, United States Capitol Police, and U.S. Secret Service Uniform Division issue?",
+            "answer": {
+                "UNITED STATES PARK POLICE": 103,
+                "UNITED STATES CAPITOL POLICE": 176,
+                "US. SECRET SERVICE UNIFORM DIVISION": 145
+            }
+        },
+        "2": {
+            "source": "datagov/moving-violations-issued-in-january-2020/files/data.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/moving-violations-issued-in-january-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ntarget_agencies = [\n    \"UNITED STATES PARK POLICE\",\n    \"UNITED STATES CAPITOL POLICE\",\n    \"US. SECRET SERVICE UNIFORM DIVISION\",\n]\nanswer = (\n    df[df[\"properties.ISSUING_AGENCY_NAME\"].isin(target_agencies)][\"properties.ISSUING_AGENCY_NAME\"]\n    .value_counts()\n    .reindex(target_agencies, fill_value=0)\n    .to_dict()\n)",
+            "subquestion": "In January 2020, how many driving-related violations did the United States Park Police, United States Capitol Police, and U.S. Secret Service Uniform Division issue?",
+            "answer": {
+                "UNITED STATES PARK POLICE": 204,
+                "UNITED STATES CAPITOL POLICE": 139,
+                "US. SECRET SERVICE UNIFORM DIVISION": 118
+            }
+        },
+        "3": {
+            "source": "datagov/moving-violations-issued-in-january-2021/files/data.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/moving-violations-issued-in-january-2021/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ntarget_agencies = [\n    \"UNITED STATES PARK POLICE\",\n    \"UNITED STATES CAPITOL POLICE\",\n    \"US. SECRET SERVICE UNIFORM DIVISION\",\n]\nanswer = (\n    df[df[\"properties.ISSUING_AGENCY_NAME\"].isin(target_agencies)][\"properties.ISSUING_AGENCY_NAME\"]\n    .value_counts()\n    .reindex(target_agencies, fill_value=0)\n    .to_dict()\n)",
+            "subquestion": "In January 2021, how many driving-related violations did the United States Park Police, United States Capitol Police, and U.S. Secret Service Uniform Division issue?",
+            "answer": {
+                "UNITED STATES PARK POLICE": 71,
+                "UNITED STATES CAPITOL POLICE": 30,
+                "US. SECRET SERVICE UNIFORM DIVISION": 32
+            }
+        },
+        "4": {
+            "source": "wikipedia/United_States_Park_Police/content.txt",
+            "fact": "The Park Police is an operation of the National Park Service, which is an agency of the Department of the Interior.",
+            "subquestion": "Which federal agency operates <hop 1 answer>?",
+            "answer": "National Park Service"
+        },
+        "5": {
+            "source": "wikipedia/National_Park_Service/content.txt",
+            "fact": "The National Park Service (NPS) is an agency of the United States federal government, within the United States Department of the Interior.",
+            "subquestion": "<hop 2 answer> is within which U.S. department?",
+            "answer": "United States Department of the Interior"
+        },
+        "6": {
+            "source": "wikipedia/United_States_Department_of_the_Interior/content.txt",
+            "fact": "The department is headed by the secretary of the interior, who reports directly to the president of the United States and is a member of the president's Cabinet. The current interior secretary is Doug Burgum, who was sworn in on February 1, 2025.",
+            "subquestion": "Who is the head of <hop 3 answer>?",
+            "answer": "Doug Burgum"
+        },
+        "7": {
+            "source": "wikipedia/Doug_Burgum/content.txt",
+            "fact": "After graduating from North Dakota State University in 1978 with a bachelor's degree in university studies and earning an MBA from Stanford University two years later,",
+            "subquestion": "Which university did <hop 4 answer> graduate from?",
+            "answer": "North Dakota State University"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/United_States_Park_Police/content.txt",
+        "wikipedia/National_Park_Service/content.txt",
+        "wikipedia/United_States_Department_of_the_Interior/content.txt",
+        "wikipedia/Doug_Burgum/content.txt",
+        "datagov/moving-violations-issued-in-january-2019/files/data.txt",
+        "datagov/moving-violations-issued-in-january-2019/signed-metadata.txt",
+        "datagov/moving-violations-issued-in-january-2019/files/0.arcgis-layer.json",
+        "datagov/moving-violations-issued-in-january-2020/files/data.txt",
+        "datagov/moving-violations-issued-in-january-2020/signed-metadata.txt",
+        "datagov/moving-violations-issued-in-january-2020/files/0.arcgis-layer.json",
+        "datagov/moving-violations-issued-in-january-2021/files/data.txt",
+        "datagov/moving-violations-issued-in-january-2021/signed-metadata.txt",
+        "datagov/moving-violations-issued-in-january-2021/files/0.arcgis-layer.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Normalize the January 2019 GeoJSON, filter rows where `properties.ISSUING_AGENCY_NAME` is UNITED STATES PARK POLICE, UNITED STATES CAPITOL POLICE, or US. SECRET SERVICE UNIFORM DIVISION, count rows by `properties.ISSUING_AGENCY_NAME`, and return the yearly moving-violation mapping.",
+                "Node 2: Normalize the January 2020 GeoJSON, filter rows where `properties.ISSUING_AGENCY_NAME` is UNITED STATES PARK POLICE, UNITED STATES CAPITOL POLICE, or US. SECRET SERVICE UNIFORM DIVISION, count rows by `properties.ISSUING_AGENCY_NAME`, and return the yearly moving-violation mapping.",
+                "Node 3: Normalize the January 2021 GeoJSON, filter rows where `properties.ISSUING_AGENCY_NAME` is UNITED STATES PARK POLICE, UNITED STATES CAPITOL POLICE, or US. SECRET SERVICE UNIFORM DIVISION, count rows by `properties.ISSUING_AGENCY_NAME`, and return the yearly moving-violation mapping.",
+                "Hop result: average the three yearly moving-violation counts and select UNITED STATES PARK POLICE because it has the highest overall average."
+            ],
+            "answer": "UNITED STATES PARK POLICE"
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Retrieve which federal agency operates <hop 1 answer>.",
+                "Hop result: the operating agency is the National Park Service."
+            ],
+            "answer": "National Park Service"
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Retrieve which U.S. department contains <hop 2 answer>.",
+                "Hop result: the department is the United States Department of the Interior."
+            ],
+            "answer": "United States Department of the Interior"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Retrieve who is the head of <hop 3 answer>.",
+                "Hop result: the department head is Doug Burgum."
+            ],
+            "answer": "Doug Burgum"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Retrieve which university <hop 4 answer> graduated from.",
+                "Hop result: the university is North Dakota State University."
+            ],
+            "answer": "North Dakota State University"
+        }
+    ]
+}

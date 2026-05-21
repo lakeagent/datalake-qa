@@ -1,0 +1,100 @@
+{
+  "question": "Which public educational institution in the 2021-2022 Texas School Nutrition Program was both managed by a food service management company and received the highest total reimbursement? What is the ZIP code of that institution's active site with the highest identified student percentage? Find the reporting month in the final quarter of 2021 with the most children served. How many people who died on that date were age 100 or older? Return only the number in the format [Answer].",
+  "answer": 1,
+  "nodes": {
+    "1": {
+      "source": "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['TypeOfAgency'] = df['TypeOfAgency'].astype(str).str.strip()\ndf['TypeOfOrg'] = df['TypeOfOrg'].astype(str).str.strip()\ndf['CEID'] = df['CEID'].astype(str).str.strip()\ndf['CEName'] = df['CEName'].astype(str).str.strip()\ndf['TotalReimbursement'] = pd.to_numeric(df['TotalReimbursement'], errors='coerce').fillna(0)\n\npublic = df[(df['TypeOfAgency'] == 'Educational Institution') & (df['TypeOfOrg'] == 'Public')].copy()\nagg = public.groupby(['CEID', 'CEName'], as_index=False)['TotalReimbursement'].sum()\nagg = agg.sort_values(['TotalReimbursement', 'CEID'], ascending=[False, True]).head(5)\n\nanswer = '; '.join(\n    f\"{row.CEID} | {row.CEName} | {row.TotalReimbursement:.2f}\"\n    for row in agg.itertuples()\n)\n",
+      "subquestion": "Which five public educational institutions received the most total reimbursement in the 2021-2022 Texas School Nutrition Program?",
+      "answer": "00654 | BEAUMONT ISD | 9950303.79; 00531 | SHELDON ISD | 5443732.14; 00565 | EDCOUCH-ELSA ISD | 3115644.79; 00569 | MERCEDES ISD | 2764431.65; 00916 | LIVINGSTON ISD | 2564634.59"
+    },
+    "2": {
+      "source": "datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['TypeOfAgency'] = df['TypeOfAgency'].astype(str).str.strip()\ndf['TypeOfOrg'] = df['TypeOfOrg'].astype(str).str.strip()\ndf['FsmcManaged'] = df['FsmcManaged'].astype(str).str.strip()\ndf['CEID'] = df['CEID'].astype(str).str.strip()\n\npublic_fsmc = sorted(\n    df[(df['TypeOfAgency'] == 'Educational Institution') & (df['TypeOfOrg'] == 'Public') & (df['FsmcManaged'] == 'Y')]['CEID']\n    .dropna()\n    .unique()\n    .tolist()\n)\n\nanswer = ', '.join(public_fsmc)\n",
+      "subquestion": "Which public educational institutions in the 2021-2022 Texas School Nutrition Program were managed by a food service management company? Return their IDs.",
+      "answer": "00002, 00005, 00006, 00022, 00027, 00029, 00031, 00032, 00078, 00107, 00109, 00129, 00131, 00142, 00143, 00145, 00154, 00163, 00171, 00187, 00200, 00201, 00204, 00214, 00215, 00222, 00231, 00238, 00239, 00240, 00242, 00275, 00277, 00280, 00282, 00285, 00289, 00291, 00297, 00298, 00301, 00304, 00315, 00320, 00332, 00335, 00345, 00381, 00385, 00394, 00395, 00396, 00407, 00410, 00426, 00428, 00452, 00456, 00467, 00521, 00523, 00534, 00536, 00549, 00551, 00552, 00582, 00591, 00592, 00594, 00607, 00612, 00621, 00625, 00637, 00656, 00658, 00660, 00661, 00663, 00668, 00672, 00673, 00676, 00683, 00685, 00688, 00689, 00693, 00712, 00713, 00714, 00724, 00733, 00741, 00751, 00754, 00755, 00756, 00758, 00772, 00782, 00783, 00789, 00793, 00794, 00795, 00800, 00803, 00807, 00808, 00812, 00845, 00860, 00861, 00867, 00873, 00874, 00884, 00894, 00905, 00906, 00907, 00914, 00916, 00918, 00920, 00921, 00925, 00946, 00956, 00967, 00970, 00976, 00980, 00986, 00991, 01020, 01022, 01025, 01027, 01029, 01040, 01041, 01054, 01069, 01072, 01073, 01076, 01096, 01098, 01100, 01112, 01113, 01115, 01127, 01130, 01138, 01144, 01148, 01150, 01151, 01152, 01153, 01154, 01156, 01158, 01183"
+    },
+    "3": {
+      "source": "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nhop_1_answer = '00916'\n\ndf['CEID'] = df['CEID'].astype(str).str.strip()\ndf['SiteID'] = df['SiteID'].astype(str).str.strip()\ndf['SiteName'] = df['SiteName'].astype(str).str.strip()\ndf['SiteStatus'] = df['SiteStatus'].astype(str).str.strip()\ndf['SiteStreetAddressZipCode'] = df['SiteStreetAddressZipCode'].astype(str).str.strip()\ndf['SiteISP'] = pd.to_numeric(df['SiteISP'], errors='coerce')\n\nfiltered = df[(df['CEID'] == hop_1_answer) & (df['SiteStatus'] == 'ACTIVE') & df['SiteISP'].notna()].copy()\nfiltered = filtered.sort_values(['SiteISP', 'SiteID', 'SiteName'], ascending=[False, True, True])\nrow = filtered.iloc[0]\n\nanswer = row['SiteStreetAddressZipCode'].split('-')[0].strip()\n",
+      "subquestion": "For <hop 1 answer>, what is the ZIP code of its active site with the highest identified student percentage?",
+      "answer": "77351"
+    },
+    "4": {
+      "source": "datagov/monthly-child-care-services-data-report-children-served-by-zip-code-2021-q4/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/monthly-child-care-services-data-report-children-served-by-zip-code-2021-q4/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_3_answer = '77351'\n\ndf['ZIPCode'] = df['ZIPCode'].astype(str).str.strip()\ndf['Reporting_Date'] = df['Reporting_Date'].astype(str).str.strip()\ndf['ChildMale'] = pd.to_numeric(df['ChildMale'], errors='coerce').fillna(0)\ndf['ChildFemale'] = pd.to_numeric(df['ChildFemale'], errors='coerce').fillna(0)\n\nfiltered = df[df['ZIPCode'] == node_3_answer].copy()\nfiltered['TotalDemand'] = filtered['ChildMale'] + filtered['ChildFemale']\nmax_total = filtered['TotalDemand'].max()\nwinners = filtered[filtered['TotalDemand'] == max_total].sort_values('Reporting_Date')\n\nanswer = winners.iloc[0]['Reporting_Date']\n",
+      "subquestion": "For ZIP code <hop 2 answer>, which month in 2021 Q4 had the most children served?",
+      "answer": "12/01/2021"
+    },
+    "5": {
+      "source": "wikipedia/Deaths_in_December_2021/content.txt",
+      "fact": "December 2021\n1\nRudolf Bernhardt, 96, German jurist, president of the European Court of Human Rights (1998).Bundestag diskutierte Teil-Impfpficht / BVerfG zu 2G und Kanzlerwahl / Rohingya klagen gegen Facebook? \nBen Boo, 96, American politician, mayor of Duluth (1967–1975), member of the Minnesota House of Representatives (1984–1993).Ben Boo\nBertram Bowyer, 2nd Baron Denham, 94, British politician, member of the House of Lords (1949–2021) and captain of the Honourable Corps of Gentlemen-at-Arms (1979–1991).The 2nd Baron Denham, KBE, PC 1927-2021\nSherwin Carlquist, 91, American botanist and photographer.Sherwin J. Carlquist\nAlbert M. Craig, 92, American academic and historian.Albert Morton Craig, 93\nJohn Cunningham, 83, Scottish Roman Catholic prelate, bishop of Galloway (2004–2014).\nJeanne Daprano, 85, American runner and educator.Jeanne Abidel Daprano\nJean Demannez, 72, Belgian politician, mayor of Saint-Josse-ten-Noode (1999–2012).Décès de Jean Demannez, figure du PS bruxellois \nAbla Farhoud, 76, Canadian writer.La dramaturge et romancière Abla Farhoud n'est plus \nGrand Jojo, 85, Belgian singer.Le Grand Jojo est décédé dans la nuit à l'âge de 85 ans \nJohn Hepworth, 77, Australian bishop, complications from amyotrophic lateral sclerosis.Fr. John Hepworth, 1944-2021: Former TAC Primate, Ordinariate Visionary, Reunited to Catholic Church\nAnna-Liisa Hyvönen, 95, Finnish politician, MP (1972–1980).Entinen kansanedustaja Anna-Liisa Hyvönen on kuollut \nEnrique Jackson, 75, Mexican politician, deputy (2015–2018), member (1997–2006) and three-time president of the senate, heart attack.Fallece el ex legislador priísta, Enrique Jackson \nBernie Jeffrey, 88, Australian footballer.Jeffrey, Bernie\nChristian Kerr, 56, Australian political commentator and journalist (The Australian), co-founder of Crikey.Kerr, Christian Gregory\nSonja Krause, 88, Swiss-American physical chemist.Sonja Krause Goodwin\nAlvin Lucier, 90, American composer (I Am Sitting in a Room, Music on a Long Thin Wire).Alvin Lucier, inquisitive and innovative composer, has died at 90\nAlmerindo Marques, 81, Portuguese businessman, banker and politician, deputy (1983–1985) and president of Rádio e Televisão de Portugal (2002–2008).Morreu Almerindo Marques, antigo presidente da RTP e da Estradas de Portugal \nJas Murphy, 98, Irish Gaelic footballer (Cork, Kerry).James 'Jas' Murphy, Kerry's oldest All-Ireland winning captain, has died aged 98\nKeiko Nobumoto, 57, Japanese screenwriter (Cowboy Bebop, Wolf's Rain, Tokyo Godfathers), esophageal cancer.\nSeánie O'Leary, 69, Irish hurler (Cork, Youghal).Cork hurling great Seanie O'Leary dies aged 69\nOrm Øverland, 86, Norwegian literary historian.Orm Øverland (1935-2021) \nNikolai Paltsev, 72, Russian politician, mayor of Stavropol (2008–2011).Ушёл из жизни бывший мэр Ставрополя Николай Пальцев \nRudolf Pohl, 97, German Roman Catholic prelate.Rudolf Pohl widmete der geistlichen Musik sein Leben \nKonrad Porzner, 86, German politician, MP (1962–1981, 1983–1990).Konrad Porzner  \nRaimundo Revoredo Ruiz, 93, Peruvian Roman Catholic prelate, bishop-prelate of Juli (1988–1999).Falleció Monseñor Raimundo Revoredo Ruiz, C.M.  \nAlan Clive Roberts, 87, British materials scientist and engineer.\nSir John Roch, 87, British judge, Lord Justice of Appeal (1993–2000).\nRazi Shirazi, 94, Iranian jurist and philosopher.آیت الله سید رضی شیرازی درگذشت \nPetr Uhl, 80, Czech journalist, activist and politician, member of the Federal Assembly (1990–1992).Communist-era dissident Petr Uhl dies at 80\nRainbow George Weiss, 81, British serial political candidate.Rainbow George: Hampstead 'dreamer' dies at 81\nSuzette Winter, 90, American filmmaker.Suzette Winter, who documented Hollywood's Golden Age, dies at 90\nMiroslav Zikmund, 102, Czech writer and explorer.Zemřel cestovatel Miroslav Zikmund, bylo mu 102 let ",
+      "subquestion": "How many people who died on <hop 3 answer> were age 100 or older?",
+      "answer": 1
+    }
+  },
+  "datasets_used": [
+    "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/files/rows.txt",
+    "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/signed-metadata.txt",
+    "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/files/9bfr-4jjm.txt",
+    "datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/files/rows.txt",
+    "datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/signed-metadata.txt",
+    "datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/files/hwx2-yfy5.txt",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/signed-metadata.txt",
+    "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/shme-pbr8.txt",
+    "datagov/monthly-child-care-services-data-report-children-served-by-zip-code-2021-q4/files/rows.txt",
+    "datagov/monthly-child-care-services-data-report-children-served-by-zip-code-2021-q4/signed-metadata.txt",
+    "datagov/monthly-child-care-services-data-report-children-served-by-zip-code-2021-q4/files/hxbn-ucb9.txt",
+    "wikipedia/Deaths_in_December_2021/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: The top five public educational institutions by total meal reimbursement in 2021-2022 were 00654 (Beaumont ISD), 00531 (Sheldon ISD), 00565 (Edcouch-Elsa ISD), 00569 (Mercedes ISD), and 00916 (Livingston ISD).",
+        "Node 2: The FSMC-managed public educational institution CEID set contains 168 members, including 00916 but excluding 00654, 00531, 00565, and 00569.",
+        "Intersecting the CEIDs in node 1 with node 2 leaves a single winner: 00916 | LIVINGSTON ISD.",
+        "Hop result: 00916 | LIVINGSTON ISD."
+      ],
+      "answer": "00916 | LIVINGSTON ISD"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: Within 00916 | LIVINGSTON ISD, the active site with the highest SiteISP is LIVINGSTON H S ACADEMY at 77.78, and its ZIP code is 77351.",
+        "Hop result: 77351."
+      ],
+      "answer": "77351"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: In ZIP code 77351, total child-care demand is 177 in 10/01/2021, 178 in 11/01/2021, and 179 in 12/01/2021.",
+        "Hop result: 12/01/2021."
+      ],
+      "answer": "12/01/2021"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: The hop-3 date is December 1, 2021. In the December 1 death entries, only Miroslav Zikmund is age 100 or older, at 102.",
+        "Hop result: 1."
+      ],
+      "answer": 1
+    }
+  ]
+}

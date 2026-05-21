@@ -1,0 +1,95 @@
+{
+  "question": "Among New York counties with violent crime rates over 300 per 100,000 in 2020 and more than 100 youth sent to jail in 2015, how many of those counties are named after Indigenous people? Your response should be in the format [Answer].",
+  "answer": 2,
+  "nodes": {
+    "1": {
+      "source": "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Violent Rate\"] = pd.to_numeric(df[\"Violent Rate\"], errors=\"coerce\")\n\nanswer = (\n    df.loc[(df[\"Year\"] == 2020) & (df[\"Violent Rate\"] > 300), \"County\"]\n    .tolist()\n)",
+      "subquestion": "Which New York counties had a violent crime rate exceeding 300 per 100,000 population in 2020?",
+      "answer": [
+        "Albany",
+        "Bronx",
+        "Broome",
+        "Chautauqua",
+        "Erie",
+        "Greene",
+        "Kings",
+        "Monroe",
+        "New York",
+        "Niagara",
+        "Onondaga",
+        "Queens",
+        "Schenectady"
+      ]
+    },
+    "2": {
+      "source": "datagov/annual-youth-detention-admissions-by-county-beginning-2006/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/annual-youth-detention-admissions-by-county-beginning-2006/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\" Year \"] = pd.to_numeric(df[\" Year \"], errors=\"coerce\")\ndf[\"Secure/Mixed Admissions\"] = pd.to_numeric(df[\"Secure/Mixed Admissions\"], errors=\"coerce\")\n\nanswer = (\n    df.loc[\n        (df[\" Year \"] == 2015)\n        & (df[\"County\"] != \"New York City\")\n        & (df[\"Secure/Mixed Admissions\"] > 100),\n        \"County\"\n    ]\n    .tolist()\n)",
+      "subquestion": "Which New York counties had more than 100 youth sent to jail in 2015?",
+      "answer": [
+        "Erie",
+        "Monroe",
+        "Onondaga",
+        "Westchester"
+      ]
+    },
+    "3": {
+      "source": "wikipedia/Erie_County,_New_York/content.txt",
+      "fact": "Erie County and Lake Erie were named for the Erie tribe of Native Americans.",
+      "subquestion": "What namesake is given for Erie County from <hop 1 answer>?",
+      "answer": "Erie tribe"
+    },
+    "4": {
+      "source": "wikipedia/Monroe_County,_New_York/content.txt",
+      "fact": "Monroe County is named after James Monroe, the fifth president of the United States.",
+      "subquestion": "What namesake is given for Monroe County from <hop 1 answer>?",
+      "answer": "James Monroe"
+    },
+    "5": {
+      "source": "wikipedia/Onondaga_County,_New_York/content.txt",
+      "fact": "Onondaga County is named after the Onondaga people.",
+      "subquestion": "What namesake is given for Onondaga County from <hop 1 answer>?",
+      "answer": "Onondaga people"
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `Year` equals 2020 and `Violent Rate` is greater than 300, then return `County`.",
+        "Node 2: Filter rows where ` Year ` equals 2015, `County` is not `New York City`, and `Secure/Mixed Admissions` is greater than 100, then return `County`.",
+        "Hop result: intersect the two county lists = Erie, Monroe, Onondaga"
+      ],
+      "answer": "Erie, Monroe, Onondaga"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 3: Erie County from <hop 1 answer> is named for the Erie tribe.",
+        "Node 4: Monroe County from <hop 1 answer> is named for James Monroe.",
+        "Node 5: Onondaga County from <hop 1 answer> is named for the Onondaga people.",
+        "Hop result: Erie County and Onondaga County are named after Indigenous peoples, so `2` counties satisfy the condition."
+      ],
+      "answer": 2
+    }
+  ],
+  "datasets_used": [
+    "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+    "datagov/annual-youth-detention-admissions-by-county-beginning-2006/files/rows.txt",
+    "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/signed-metadata.txt",
+    "datagov/annual-youth-detention-admissions-by-county-beginning-2006/signed-metadata.txt",
+    "datagov/annual-youth-detention-admissions-by-county-beginning-2006/files/ybg9-s6bm.publisher-view.json",
+    "wikipedia/Erie_County,_New_York/content.txt",
+    "wikipedia/Monroe_County,_New_York/content.txt",
+    "wikipedia/Onondaga_County,_New_York/content.txt"
+  ]
+}

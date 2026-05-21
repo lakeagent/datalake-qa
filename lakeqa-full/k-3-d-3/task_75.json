@@ -1,0 +1,88 @@
+{
+  "question": "Find the charges that occur exactly 2 times in 2022, exactly 4 times in 2023, and between 180 and 235 times in 2024 in Austin. For the charge that appears in all three years, take the first word as offense, and find the year with the third most defendants in Cook County of Illinois. Which city hosted the Summer Olympics held in that year? Return the city name only in the format [Answer].",
+  "answer": "London",
+  "nodes": {
+    "1": {
+      "source": "datagov/downtown-austin-community-court-dacc-fy-2022-caseload-information/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/downtown-austin-community-court-dacc-fy-2022-caseload-information/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ncharges = df[\"Charges Description\"].fillna(\"\").astype(str).str.strip()\ncounts = charges[charges.ne(\"\")].value_counts()\nselected = counts[counts.eq(2)].sort_index()\nanswer = \", \".join(selected.index.tolist())\n",
+      "subquestion": "Which charges only occur 2 times in 2022?",
+      "answer": "Alcohol - Minor Driving Under Influence, Criminal Mischief-Destruction Of Prop, Glass Container Prohibited in PRA, Minor Consuming Alcohol, Open Glass Container, Theft C - Less Than $100"
+    },
+    "2": {
+      "source": "datagov/downtown-austin-community-court-dacc-fy-2023-caseload-information/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/downtown-austin-community-court-dacc-fy-2023-caseload-information/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ncharges = df[\"Charges Description\"].fillna(\"\").astype(str).str.strip()\ncounts = charges[charges.ne(\"\")].value_counts()\nselected = counts[counts.eq(4)].sort_index()\nanswer = \", \".join(selected.index.tolist())\n",
+      "subquestion": "Which charges only occur 4 times in 2023?",
+      "answer": "Camping - State Law, Fireworks Ordinance, Minor Consuming Alcohol, Misrepresentation Of Age By Minor, Park Curfew Violation, Possession Of Tobacco, Theft C - Less Than $100"
+    },
+    "3": {
+      "source": "datagov/downtown-austin-community-court-dacc-fy-2024-caseload-information/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/downtown-austin-community-court-dacc-fy-2024-caseload-information/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ncharges = df[\"Charges Description\"].fillna(\"\").astype(str).str.strip()\ncounts = charges[charges.ne(\"\")].value_counts()\nselected = counts[(counts >= 180) & (counts <= 235)].sort_index()\nanswer = \", \".join(selected.index.tolist())\n",
+      "subquestion": "Which charges occur between 180 and 235 times in 2024?",
+      "answer": "Possession Of Drug Paraphernalia, Theft C - Less Than $100"
+    },
+    "4": {
+      "source": "datagov/states-attorney-felony-cases-average-case-length-and-sum-of-length-by-offense-type/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/states-attorney-felony-cases-average-case-length-and-sum-of-length-by-offense-type/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_1_answer = \"Alcohol - Minor Driving Under Influence, Criminal Mischief-Destruction Of Prop, Glass Container Prohibited in PRA, Minor Consuming Alcohol, Open Glass Container, Theft C - Less Than $100\"\nnode_2_answer = \"Camping - State Law, Fireworks Ordinance, Minor Consuming Alcohol, Misrepresentation Of Age By Minor, Park Curfew Violation, Possession Of Tobacco, Theft C - Less Than $100\"\nnode_3_answer = \"Possession Of Drug Paraphernalia, Theft C - Less Than $100\"\nsets = []\nfor value in [node_1_answer, node_2_answer, node_3_answer]:\n    items = {part.strip() for part in str(value).split(\",\") if part.strip()}\n    sets.append(items)\nshared_offense = sorted(set.intersection(*sets))[0]\ntarget_offense_type = shared_offense.split()[0].strip()\n\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"DEFENDANT COUNT_num\"] = pd.to_numeric(df[\"DEFENDANT COUNT\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[df[\"OFFENSE TYPE\"].eq(target_offense_type) & df[\"DEFENDANT COUNT_num\"].notna()].copy()\nranked = filtered.sort_values([\"DEFENDANT COUNT_num\", \"YEAR\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = str(ranked.iloc[2][\"YEAR\"])\n",
+      "subquestion": "For the charge that appears in all of <hop 1 answer>, <hop 1 answer>, and <hop 1 answer>, take the first word as offense, find the year with the third most defendants in Cook County of Illinois?",
+      "answer": "2012"
+    },
+    "5": {
+      "source": "wikipedia/2012_Summer_Olympics/content.txt",
+      "fact": "The 2012 Summer Olympics, officially the Games of the XXX Olympiad and also known as London 2012, were an international multi-sport event held from 27 July to 12 August 2012 in London, England.",
+      "subquestion": "Which city hosted the Summer Olympics held in <hop 2 answer>?",
+      "answer": "London"
+    }
+  },
+  "datasets_used": [
+    "datagov/downtown-austin-community-court-dacc-fy-2022-caseload-information/files/rows.txt",
+    "datagov/downtown-austin-community-court-dacc-fy-2022-caseload-information/signed-metadata.txt",
+    "datagov/downtown-austin-community-court-dacc-fy-2023-caseload-information/files/rows.txt",
+    "datagov/downtown-austin-community-court-dacc-fy-2023-caseload-information/signed-metadata.txt",
+    "datagov/downtown-austin-community-court-dacc-fy-2024-caseload-information/files/rows.txt",
+    "datagov/downtown-austin-community-court-dacc-fy-2024-caseload-information/signed-metadata.txt",
+    "datagov/states-attorney-felony-cases-average-case-length-and-sum-of-length-by-offense-type/files/rows.txt",
+    "datagov/states-attorney-felony-cases-average-case-length-and-sum-of-length-by-offense-type/signed-metadata.txt",
+    "datagov/states-attorney-felony-cases-average-case-length-and-sum-of-length-by-offense-type/files/wvbp-urjp.publisher-view.json",
+    "wikipedia/2012_Summer_Olympics/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: In FY 2022 DACC data, the Charges Description values with count exactly 2 are the charges in node 1.",
+        "Node 2: In FY 2023 DACC data, the Charges Description values with count exactly 4 are the charges in node 2.",
+        "Node 3: In FY 2024 DACC data, the Charges Description values with counts between 180 and 235 inclusive are the charges in node 3.",
+        "Hop result: the only charge appearing in all three answers is Theft C - Less Than $100."
+      ],
+      "answer": "Theft C - Less Than $100"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: For the charge from <hop 1 answer>, take the first word as the offense type Theft.",
+        "In the Cook County felony cases dataset, OFFENSE TYPE = Theft has the highest defendant counts in 2014, 2013, and then 2012.",
+        "Hop result: 2012."
+      ],
+      "answer": "2012"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: The Summer Olympics held in <hop 2 answer> were held in London, England.",
+        "Hop result: London."
+      ],
+      "answer": "London"
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+    "question": "Can you find the NYC high school in district 10 that are in top 6 by high school's overall score from school year 2006-07 to school year 2007-08, and has the lowest average additional credits. Then, find the first Turing award receiver in this high school and report which University this person obtained his PhD from. Your response should be in the format [Answer].",
+    "answer": "Princeton University",
+    "nodes": {
+        "1": {
+            "source": "datagov/2006-2007-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2006-2007-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\ndf[\"DISTRICT\"] = pd.to_numeric(df[\"DISTRICT\"], errors=\"coerce\")\ndf[\"OVERALL SCORE\"] = pd.to_numeric(df[\"OVERALL SCORE\"], errors=\"coerce\")\ndf[\"ADDITIONAL CREDIT\"] = pd.to_numeric(df[\"ADDITIONAL CREDIT\"], errors=\"coerce\")\nfiltered = df[\n    df[\"DISTRICT\"].eq(10)\n    & df[\"SCHOOL LEVEL*\"].astype(str).eq(\"High School\")\n].copy()\nfiltered = filtered.sort_values(\"OVERALL SCORE\", ascending=False)\nfiltered = filtered[[\"SCHOOL\", \"ADDITIONAL CREDIT\"]].dropna().head(6)\nanswer = dict(zip(filtered[\"SCHOOL\"].astype(str), filtered[\"ADDITIONAL CREDIT\"].astype(float)))\n",
+            "subquestion": "Which NYC high schools in District 10 were in the top 6 by overall score in 2006-07, and what were their additional-credit values?",
+            "answer": {
+                "MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES": 9.0,
+                "HIGH SCHOOL OF AMERICAN STUDIES AT LEHMAN COLLEGE": 3.0,
+                "RIVERDALE/KINGSBRIDGE ACADEMY (MS/HS 141)": 12.0,
+                "BRONX SCHOOL OF LAW AND FINANCE": 6.0,
+                "UNIVERSITY HEIGHTS SECONDARY SCHOOL AT BRONX COMMU": 12.0,
+                "BRONX HIGH SCHOOL OF SCIENCE": 1.0
+            }
+        },
+        "2": {
+            "source": "datagov/2007-2008-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2007-2008-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\ndf[\"DISTRICT\"] = pd.to_numeric(df[\"DISTRICT\"], errors=\"coerce\")\ndf[\"OVERALL SCORE\"] = pd.to_numeric(df[\"OVERALL SCORE\"], errors=\"coerce\")\ndf[\"ADDITIONAL CREDIT\"] = pd.to_numeric(df[\"ADDITIONAL CREDIT\"], errors=\"coerce\")\nfiltered = df[\n    df[\"DISTRICT\"].eq(10)\n    & df[\"SCHOOL LEVEL*\"].astype(str).eq(\"High School\")\n].copy()\nfiltered = filtered.sort_values(\"OVERALL SCORE\", ascending=False)\nfiltered = filtered[[\"SCHOOL\", \"ADDITIONAL CREDIT\"]].dropna().head(6)\nanswer = dict(zip(filtered[\"SCHOOL\"].astype(str), filtered[\"ADDITIONAL CREDIT\"].astype(float)))\n",
+            "subquestion": "Which NYC high schools in District 10 were in the top 6 by overall score in 2007-08, and what were their additional-credit values?",
+            "answer": {
+                "MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES": 12.0,
+                "MARIE CURIE HIGH SCHOOL FOR NURSING, MEDICINE, AND ALLIED HEALTH PROFE": 10.0,
+                "RIVERDALE / KINGSBRIDGE ACADEMY (MIDDLE SCHOOL / HIGH SCHOOL 141)": 12.0,
+                "BRONX HIGH SCHOOL FOR MEDICAL SCIENCE": 8.0,
+                "BRONX HIGH SCHOOL OF SCIENCE": 2.0,
+                "UNIVERSITY HEIGHTS SECONDARY SCHOOL AT BRONX COMMUNITY COLLEGE": 8.0
+            }
+        },
+        "3": {
+            "source": "wikipedia/List_of_Bronx_High_School_of_Science_alumni/content.txt",
+            "fact": "Marvin Minsky (1945), cognitive scientist, computer scientist and inventor; pioneer in artificial intelligence; co-founder of the MIT Computer Science and Artificial Intelligence Laboratory; wrote Society of Mind and The Emotion Machine; patented the confocal microscope; recipient of the Turing Award.",
+            "subquestion": "Who has won the first Turing Award among alumni in <intersection of node 1, 2>?",
+            "answer": "Marvin Minsky"
+        },
+        "4": {
+            "source": "wikipedia/Marvin_Minsky/content.txt",
+            "fact": "in mathematics from Princeton University in 1954.",
+            "subquestion": "Which University does <node_3 answer> received his Ph.D. from?",
+            "answer": "Princeton University"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/List_of_Bronx_High_School_of_Science_alumni/content.txt",
+        "wikipedia/Marvin_Minsky/content.txt",
+        "datagov/2006-2007-school-progress-report/files/rows.txt",
+        "datagov/2006-2007-school-progress-report/signed-metadata.txt",
+        "datagov/2007-2008-school-progress-report/files/rows.txt",
+        "datagov/2007-2008-school-progress-report/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `DISTRICT` equals 10 and `SCHOOL LEVEL*` equals `High School`, sort by `OVERALL SCORE` in descending order, and return the top 6 schools for 2006-07 as a mapping from `SCHOOL` to `ADDITIONAL CREDIT`.",
+                "Node 2: Filter rows where `DISTRICT` equals 10 and `SCHOOL LEVEL*` equals `High School`, sort by `OVERALL SCORE` in descending order, and return the top 6 schools for 2007-08 as a mapping from `SCHOOL` to `ADDITIONAL CREDIT`.",
+                "Hop result: intersect the node-1 and node-2 school keys after reconciling source-native name variants across years. The overlapping schools are MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES, UNIVERSITY HEIGHTS SECONDARY SCHOOL AT BRONX COMMUNITY COLLEGE, and BRONX HIGH SCHOOL OF SCIENCE. Their average `ADDITIONAL CREDIT` values are 10.5, 10.0, and 1.5 respectively, so the answer is BRONX HIGH SCHOOL OF SCIENCE."
+            ],
+            "answer": "Bronx High School of Science"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Marvin Minsky is the first Turing Award recipient among alumni of <hop 1 answer>.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Marvin Minsky"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Princeton University is where <hop 2 answer> received his Ph.D. in mathematics in 1954.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "Princeton University"
+        }
+    ]
+}

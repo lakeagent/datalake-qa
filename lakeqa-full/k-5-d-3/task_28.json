@@ -1,0 +1,130 @@
+{
+    "question": "Among the Texas counties that ranked in the top five in 2023 for completed Adult Protective Services investigations, children removed from their homes during initial Child Protective Services investigations, and children receiving Family-Based Safety Services, which county had the lowest rate of repeat Adult Protective Services investigations in 2023? In that county, which city had the most active home-based child-care food program sites in 2022-2023, and which ZIP code in that city had the most active sites participating in the school nutrition program in the 2021-2022 school year? How many distinct employer names appeared on filings received in 2023 from employers without workers' compensation coverage in that ZIP code? Return only the number.",
+    "answer": "79",
+    "nodes": {
+        "1": {
+            "source": "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Fiscal Year', 'County', 'Completed Investigations'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Fiscal Year', 'County', 'Completed Investigations'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['Fiscal Year'] = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ndf['Completed Investigations'] = pd.to_numeric(df['Completed Investigations'], errors='coerce')\ndf['County'] = df['County'].astype(str).str.strip()\nranked = (\n    df[df['Fiscal Year'].eq(2023) & df['County'].ne('') & df['Completed Investigations'].notna()]\n    .sort_values(['Completed Investigations', 'County'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[4, 'Completed Investigations'] > ranked.loc[5, 'Completed Investigations']\nanswer = '; '.join(ranked.head(5)['County'].tolist())\n",
+            "subquestion": "Which five Texas counties had the most completed Adult Protective Services investigations in 2023?",
+            "answer": "Harris; Bexar; Dallas; Tarrant; El Paso"
+        },
+        "2": {
+            "source": "datagov/cps-2-1-removals-by-county-fy2013-2022/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/cps-2-1-removals-by-county-fy2013-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Fiscal Year', 'County', 'Removal Stage', 'Removals'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Fiscal Year', 'County', 'Removal Stage', 'Removals'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['Fiscal Year'] = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ndf['Removals'] = pd.to_numeric(df['Removals'], errors='coerce')\ndf['County'] = df['County'].astype(str).str.strip()\ndf['Removal Stage'] = df['Removal Stage'].astype(str).str.strip()\nfiltered = df[\n    df['Fiscal Year'].eq(2023)\n    & df['County'].ne('')\n    & df['Removal Stage'].str.casefold().eq('investigation')\n    & df['Removals'].notna()\n].copy()\nranked = (\n    filtered.groupby('County', as_index=False)['Removals']\n    .sum()\n    .sort_values(['Removals', 'County'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[4, 'Removals'] > ranked.loc[5, 'Removals']\nanswer = '; '.join(ranked.head(5)['County'].tolist())\n",
+            "subquestion": "Which five Texas counties had the most children removed from their homes during the initial Child Protective Services investigation in 2023?",
+            "answer": "Bexar; Harris; Dallas; Bell; Tarrant"
+        },
+        "3": {
+            "source": "datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Fiscal Year', 'County', 'Children served in FBSS Family Preservation Services'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Fiscal Year', 'County', 'Children served in FBSS Family Preservation Services'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['Fiscal Year'] = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ndf['Children served in FBSS Family Preservation Services'] = pd.to_numeric(\n    df['Children served in FBSS Family Preservation Services'],\n    errors='coerce'\n)\ndf['County'] = df['County'].astype(str).str.strip()\nfiltered = df[\n    df['Fiscal Year'].eq(2023)\n    & df['County'].ne('')\n    & df['Children served in FBSS Family Preservation Services'].notna()\n].copy()\nranked = (\n    filtered.groupby('County', as_index=False)['Children served in FBSS Family Preservation Services']\n    .sum()\n    .sort_values(['Children served in FBSS Family Preservation Services', 'County'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[4, 'Children served in FBSS Family Preservation Services'] > ranked.loc[5, 'Children served in FBSS Family Preservation Services']\nanswer = '; '.join(ranked.head(5)['County'].tolist())\n",
+            "subquestion": "Which five Texas counties had the most children receiving Family-Based Safety Services in 2023?",
+            "answer": "Bexar; Harris; Tarrant; Dallas; El Paso"
+        },
+        "4": {
+            "source": "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Fiscal Year', 'County', 'Recidivism'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Fiscal Year', 'County', 'Recidivism'],\n        dtype=str,\n        low_memory=False,\n    )\n\ncandidates = (\n    {item.strip() for item in str(node_1_answer).split(';') if item.strip()}\n    & {item.strip() for item in str(node_2_answer).split(';') if item.strip()}\n    & {item.strip() for item in str(node_3_answer).split(';') if item.strip()}\n)\n\ndf['Fiscal Year'] = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ndf['Recidivism'] = pd.to_numeric(df['Recidivism'], errors='coerce')\ndf['County'] = df['County'].astype(str).str.strip()\nranked = (\n    df[df['Fiscal Year'].eq(2023) & df['County'].isin(candidates) & df['Recidivism'].notna()]\n    .sort_values(['Recidivism', 'County'], ascending=[True, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert len(candidates) == 4\nassert ranked.loc[0, 'Recidivism'] < ranked.loc[1, 'Recidivism']\nanswer = str(ranked.loc[0, 'County'])\n",
+            "subquestion": "Among the Texas counties that appear in the answers to nodes 1, 2, and 3, which had the lowest rate of repeat Adult Protective Services investigations in 2023?",
+            "answer": "Tarrant"
+        },
+        "5": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['CEStatus', 'SiteStatus', 'SiteID', 'SiteCounty', 'SiteStreetAddressCity'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['CEStatus', 'SiteStatus', 'SiteID', 'SiteCounty', 'SiteStreetAddressCity'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndef normalize_city(value):\n    city = ' '.join(str(value).strip().upper().split())\n    return 'FORT WORTH' if city == 'FT WORTH' else city\n\ncounty = str(node_4_answer).strip().upper()\ndf['CEStatus'] = df['CEStatus'].astype(str).str.strip().str.upper()\ndf['SiteStatus'] = df['SiteStatus'].astype(str).str.strip().str.upper()\ndf['SiteCounty'] = df['SiteCounty'].astype(str).str.strip().str.upper()\ndf['SiteID'] = df['SiteID'].astype(str).str.strip()\ndf['city'] = df['SiteStreetAddressCity'].map(normalize_city)\nfiltered = df[\n    df['CEStatus'].eq('ACTIVE')\n    & df['SiteStatus'].eq('ACTIVE')\n    & df['SiteCounty'].eq(county)\n    & df['SiteID'].ne('')\n    & df['city'].ne('')\n].copy()\nranked = (\n    filtered.groupby('city', as_index=False)['SiteID']\n    .nunique()\n    .sort_values(['SiteID', 'city'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'SiteID'] > ranked.loc[1, 'SiteID']\nanswer = str(ranked.loc[0, 'city']).title()\n",
+            "subquestion": "In the county from node 4, which city had the most active home-based child-care food program sites in 2022-2023?",
+            "answer": "Fort Worth"
+        },
+        "6": {
+            "source": "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['CEStatus', 'SiteStatus', 'SiteStreetAddressCity', 'SiteStreetAddressState', 'SiteStreetAddressZipCode', 'SiteName'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['CEStatus', 'SiteStatus', 'SiteStreetAddressCity', 'SiteStreetAddressState', 'SiteStreetAddressZipCode', 'SiteName'],\n        dtype=str,\n        low_memory=False,\n    )\n\ncity = str(node_5_answer).strip().upper()\ndf['CEStatus'] = df['CEStatus'].astype(str).str.strip().str.upper()\ndf['SiteStatus'] = df['SiteStatus'].astype(str).str.strip().str.upper()\ndf['SiteStreetAddressCity'] = df['SiteStreetAddressCity'].astype(str).str.strip().str.upper()\ndf['SiteStreetAddressState'] = df['SiteStreetAddressState'].astype(str).str.strip().str.upper()\ndf['zip5'] = df['SiteStreetAddressZipCode'].astype(str).str.extract(r'(\\d{5})', expand=False)\ndf['SiteName'] = df['SiteName'].astype(str).str.strip()\nfiltered = df[\n    df['CEStatus'].eq('ACTIVE')\n    & df['SiteStatus'].eq('ACTIVE')\n    & df['SiteStreetAddressState'].eq('TX')\n    & df['SiteStreetAddressCity'].eq(city)\n    & df['zip5'].notna()\n    & df['SiteName'].ne('')\n].copy()\nranked = (\n    filtered.groupby('zip5', as_index=False)['SiteName']\n    .count()\n    .sort_values(['SiteName', 'zip5'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'SiteName'] > ranked.loc[1, 'SiteName']\nanswer = str(ranked.loc[0, 'zip5'])\n",
+            "subquestion": "In the city from node 5, which ZIP code had the most active sites participating in the school nutrition program in the 2021-2022 school year?",
+            "answer": "76116"
+        },
+        "7": {
+            "source": "datagov/workers-compensation-non-subscriber-employer-information/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/workers-compensation-non-subscriber-employer-information/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Filing Date Received', 'Company Name', 'Zip Code'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Filing Date Received', 'Company Name', 'Zip Code'],\n        dtype=str,\n        low_memory=False,\n    )\n\nzip_code = str(node_6_answer).strip()\ndf['Filing Date Received'] = pd.to_datetime(df['Filing Date Received'], errors='coerce')\ndf['Company Name'] = df['Company Name'].astype(str).str.strip()\ndf['zip5'] = df['Zip Code'].astype(str).str.extract(r'(\\d{5})', expand=False)\nfiltered = df[\n    df['zip5'].eq(zip_code)\n    & df['Filing Date Received'].dt.year.eq(2023)\n    & df['Company Name'].ne('')\n].copy()\nassert not filtered.empty\nanswer = str(int(filtered['Company Name'].nunique()))\n",
+            "subquestion": "In the ZIP code from node 6, how many distinct employer names appeared on filings received in 2023 from employers without workers' compensation coverage?",
+            "answer": "79"
+        }
+    },
+    "datasets_used": [
+        "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/rows.txt",
+        "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/signed-metadata.txt",
+        "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/3zr8-huug.txt",
+        "datagov/cps-2-1-removals-by-county-fy2013-2022/files/rows.txt",
+        "datagov/cps-2-1-removals-by-county-fy2013-2022/signed-metadata.txt",
+        "datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/files/rows.txt",
+        "datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/signed-metadata.txt",
+        "datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/files/79ya-i5ye.publisher-view.json",
+        "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt",
+        "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/eyah-a2pn.publisher-view.json",
+        "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt",
+        "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/signed-metadata.txt",
+        "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/shme-pbr8.txt",
+        "datagov/workers-compensation-non-subscriber-employer-information/files/rows.txt",
+        "datagov/workers-compensation-non-subscriber-employer-information/signed-metadata.txt",
+        "datagov/workers-compensation-non-subscriber-employer-information/files/azae-8krr.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: In 2023, the five Texas counties with the most completed Adult Protective Services investigations were Harris (11,805), Bexar (6,990), Dallas (6,266), Tarrant (5,150), and El Paso (3,144).",
+                "Node 2: In 2023, the five Texas counties with the most children taken out of their homes during the initial Child Protective Services investigation were Bexar (733), Harris (692), Dallas (665), Bell (428), and Tarrant (420).",
+                "Node 3: In 2023, the five Texas counties with the most children receiving Family-Based Safety Services were Bexar (5,652), Harris (3,992), Tarrant (3,901), Dallas (3,426), and El Paso (2,490).",
+                "Hop result: The Texas counties that appear in all three earlier lists are Bexar, Dallas, Harris, and Tarrant."
+            ],
+            "answer": "Bexar; Dallas; Harris; Tarrant"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Among the four counties carried forward from hop 1, the 2023 rate of repeat Adult Protective Services investigations was lowest in Tarrant (0.132), ahead of Harris (0.135), Bexar (0.145), and Dallas (0.146).",
+                "Hop result: Tarrant"
+            ],
+            "answer": "Tarrant"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Among active home-based child-care food program sites in Tarrant County in 2022-2023, Fort Worth had the most distinct active sites (102), ahead of Arlington (85) and Grand Prairie (15).",
+                "Hop result: Fort Worth"
+            ],
+            "answer": "Fort Worth"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Among active school nutrition sites in Fort Worth in 2021-2022, ZIP code 76116 had the highest site count (17), ahead of 76107 (16) and 76179 (16).",
+                "Hop result: 76116"
+            ],
+            "answer": "76116"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: In ZIP code 76116, 79 distinct employer names appeared on filings from employers without workers' compensation coverage that were received in 2023.",
+                "Hop result: 79"
+            ],
+            "answer": "79"
+        }
+    ]
+}

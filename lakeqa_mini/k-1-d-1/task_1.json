@@ -1,0 +1,30 @@
+{
+    "question": "For each year from 2016 through 2023, compute a growth-amplified overdose burden score as annual drug overdose deaths across all U.S. states multiplied by (1 + year-over-year growth rate). Which year has the highest score? Your response should be in the format [Answer].",
+    "answer": "2021",
+    "nodes": {
+        "1": {
+            "source": "datagov/vsrr-provisional-drug-overdose-death-counts/files/rows.txt",
+            "fact": "import pandas as pd\n\ndf = pd.read_csv(\"datagov/vsrr-provisional-drug-overdose-death-counts/files/rows.txt\", sep=None, engine=\"python\")\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Data Value\"] = pd.to_numeric(df[\"Data Value\"], errors=\"coerce\")\n\nfiltered = df[\n    df[\"Indicator\"].astype(str).str.strip().eq(\"Number of Drug Overdose Deaths\")\n    & df[\"Period\"].astype(str).str.strip().eq(\"12 month-ending\")\n    & df[\"Month\"].astype(str).str.strip().eq(\"December\")\n    & df[\"State\"].astype(str).str.strip().ne(\"US\")\n    & df[\"Year\"].between(2015, 2023)\n]\n\nyearly = filtered.groupby(\"Year\", as_index=False)[\"Data Value\"].sum().sort_values(\"Year\")\nyearly[\"growth_rate\"] = yearly[\"Data Value\"].pct_change()\nscored = yearly[yearly[\"Year\"].between(2016, 2023)].copy()\nscored[\"score\"] = scored[\"Data Value\"] * (1 + scored[\"growth_rate\"])\n\nanswer = str(int(scored.sort_values([\"score\", \"Year\"], ascending=[False, True]).iloc[0][\"Year\"]))\n",
+            "subquestion": "For each year from 2016 through 2023, compute a growth-amplified overdose burden score as annual drug overdose deaths across all U.S. states multiplied by (1 + year-over-year growth rate). Which year has the highest score?",
+            "answer": "2021"
+        }
+    },
+    "datasets_used": [
+        "datagov/vsrr-provisional-drug-overdose-death-counts/files/rows.txt",
+        "datagov/vsrr-provisional-drug-overdose-death-counts/signed-metadata.txt",
+        "datagov/vsrr-provisional-drug-overdose-death-counts/files/FINALVERSION_NVSS_methods_drug_adjustment_June_Release.pdf"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Indicator` is `Number of Drug Overdose Deaths`, `Period` is `12 month-ending`, `Month` is `December`, `State` is not `US`, and `Year` is 2015-2023; sum `Data Value` by `Year`, compute year-over-year growth, calculate `score` = `Data Value` x (1 + growth rate) for 2016-2023, and select the year with the highest `score`, breaking ties by smaller `Year`.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2021"
+        }
+    ]
+}

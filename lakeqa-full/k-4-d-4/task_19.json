@@ -1,0 +1,196 @@
+{
+    "question": "Identify the UT System university located in a county's county seat where the county (1) has between 700 and 4,600 people entering the state prison system in each fiscal year from 2019 to 2022, (2) has population under 900,000 according to the 2020 census, (3) is not in the Houston metropolitan area, and (4) is not in West Texas. Only report the university name. Your response should be in the format [Answer].",
+    "answer": "University of Texas Rio Grande Valley",
+    "nodes": {
+        "1": {
+            "source": "datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df.groupby(\"County\")\n      .size()\n      .loc[lambda s: (s >= 700) & (s <= 4600)]\n      .sort_values(ascending=False)\n      .index\n      .tolist()\n)\nprint(answer)",
+            "subquestion": "Which Texas counties in FY 2019 had between 700 and 4,600 TDCJ criminal intakes?",
+            "answer": [
+                "Bexar",
+                "Hidalgo",
+                "Travis",
+                "El Paso",
+                "Montgomery",
+                "McLennan",
+                "Collin",
+                "Smith",
+                "Galveston",
+                "Jefferson",
+                "Taylor",
+                "Nueces",
+                "Brazoria",
+                "Ector",
+                "Johnson",
+                "Bell",
+                "Lubbock",
+                "Denton"
+            ]
+        },
+        "2": {
+            "source": "datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df.groupby(\"County\")\n      .size()\n      .loc[lambda s: (s >= 700) & (s <= 4600)]\n      .sort_values(ascending=False)\n      .index\n      .tolist()\n)\nprint(answer)",
+            "subquestion": "Which Texas counties in FY 2020 had between 700 and 4,600 TDCJ criminal intakes?",
+            "answer": [
+                "Harris",
+                "Tarrant",
+                "Dallas",
+                "Bexar",
+                "Hidalgo",
+                "Travis",
+                "Montgomery",
+                "McLennan",
+                "El Paso"
+            ]
+        },
+        "3": {
+            "source": "datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df.groupby(\"County\")\n      .size()\n      .loc[lambda s: (s >= 700) & (s <= 4600)]\n      .sort_values(ascending=False)\n      .index\n      .tolist()\n)\nprint(answer)",
+            "subquestion": "Which Texas counties in FY 2021 had between 700 and 4,600 TDCJ criminal intakes?",
+            "answer": [
+                "Dallas",
+                "Tarrant",
+                "Bexar",
+                "Hidalgo",
+                "Collin",
+                "Smith",
+                "Montgomery",
+                "El Paso",
+                "Travis"
+            ]
+        },
+        "4": {
+            "source": "datagov/texas-department-of-criminal-justice-receives-fy-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df.groupby(\"County\")\n      .size()\n      .loc[lambda s: (s >= 700) & (s <= 4600)]\n      .sort_values(ascending=False)\n      .index\n      .tolist()\n)\nprint(answer)",
+            "subquestion": "Which Texas counties in FY 2022 had between 700 and 4,600 TDCJ criminal intakes?",
+            "answer": [
+                "Tarrant",
+                "Dallas",
+                "Bexar",
+                "Hidalgo",
+                "Montgomery",
+                "Smith",
+                "Jefferson",
+                "Collin",
+                "McLennan",
+                "El Paso",
+                "Johnson"
+            ]
+        },
+        "5": {
+            "source": "datagov/2020-census-redistricting-data-all-texas-counties/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2020-census-redistricting-data-all-texas-counties/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncandidate_counties = [\"Bexar\", \"El Paso\", \"Hidalgo\", \"Montgomery\"]\n\nanswer = (\n    df.loc[\n        (df[\"SUMLEV\"] == 50)\n        & (df[\"BASENAME\"].isin(candidate_counties))\n        & (df[\"POP100\"] < 900000),\n        \"BASENAME\",\n    ]\n    .tolist()\n)\nprint(answer)",
+            "subquestion": "Among <hop 1 answer>, which counties have 2020 census population under 900,000?",
+            "answer": [
+                "El Paso",
+                "Hidalgo",
+                "Montgomery"
+            ]
+        },
+        "6": {
+            "source": "wikipedia/Montgomery_County,_Texas/content.txt",
+            "fact": "According to the Wikipedia article for Montgomery County, Texas, \"Montgomery County is part of the Houston–The Woodlands–Sugar Land metropolitan statistical area.\"",
+            "subquestion": "Is Montgomery County in the Houston metropolitan area?",
+            "answer": "Yes, Montgomery County is part of the Houston metropolitan area."
+        },
+        "7": {
+            "source": "wikipedia/West_Texas/content.txt",
+            "fact": "Counties\nThe 70 counties of West Texas are Andrews, Bailey, Borden, Brewster, Brown, Callahan, Cochran, Coke, Coleman, Comanche, Concho, Crane, Crockett, Crosby, Culberson, Dawson, Dickens, Eastland, Ector, El Paso, Fisher, Floyd, Gaines, Garza, Glasscock, Hale, Haskell, Hockley, Howard, Hudspeth, Irion, Jeff Davis, Jones, Kent, Kimble, King, Knox, Lamb, Loving, Lubbock, Lynn, Martin, Mason, McCulloch, Menard, Midland, Mitchell, Nolan, Pecos, Presidio, Reagan, Reeves, Runnels, San Saba, Schleicher, Scurry, Shackelford, Stephens, Sterling, Stonewall, Sutton, Taylor, Terrell, Terry, Throckmorton, Tom Green, Upton, Ward, Winkler, and Yoakum.",
+            "subquestion": "Among <hop 3 answer>, which county is in West Texas?",
+            "answer": "El Paso County is in West Texas"
+        },
+        "8": {
+            "source": "wikipedia/Hidalgo_County,_Texas/content.txt",
+            "fact": "The county seat is Edinburg and the largest city is McAllen. The county is named for Miguel Hidalgo y Costilla, the priest who raised the call for Mexico's independence from Spain.  It is located in the Rio Grande Valley of South Texas and is one of the fastest-growing counties in the United States.",
+            "subquestion": "Among <hop 3 answer>, which county is in South Texas, and what is its county seat?",
+            "answer": "Hidalgo County is in South Texas, county seat is Edinburg"
+        },
+        "9": {
+            "source": "wikipedia/University_of_Texas_Rio_Grande_Valley/content.txt",
+            "fact": "The University of Texas Rio Grande Valley (UTRGV) is a public research university with its main campus in Edinburg, Texas, United States, and multiple other campuses throughout the Rio Grande Valley. It is the southernmost member of the University of Texas System.",
+            "subquestion": "What is the UT System university with its main campus in <hop 4 answer>?",
+            "answer": "University of Texas Rio Grande Valley"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Montgomery_County,_Texas/content.txt",
+        "wikipedia/West_Texas/content.txt",
+        "wikipedia/Hidalgo_County,_Texas/content.txt",
+        "wikipedia/University_of_Texas_Rio_Grande_Valley/content.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2019/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2020/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2021/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2022/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2022/signed-metadata.txt",
+        "datagov/2020-census-redistricting-data-all-texas-counties/files/rows.txt",
+        "datagov/2020-census-redistricting-data-all-texas-counties/signed-metadata.txt",
+        "datagov/2020-census-redistricting-data-all-texas-counties/files/2020Census_PL94_171Redistricting_StatesTechDoc_English.pdf"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Group FY2019 rows by `County`, count criminal intakes, and keep counties with 700 <= count <= 4600.",
+                "Node 2: Group FY2020 rows by `County`, count criminal intakes, and keep counties with 700 <= count <= 4600.",
+                "Node 3: Group FY2021 rows by `County`, count criminal intakes, and keep counties with 700 <= count <= 4600.",
+                "Node 4: Group FY2022 rows by `County`, count criminal intakes, and keep counties with 700 <= count <= 4600.",
+                "Hop result: counties meeting the intake condition in all four fiscal years = Bexar, El Paso, Hidalgo, Montgomery."
+            ],
+            "answer": [
+                "Bexar",
+                "El Paso",
+                "Hidalgo",
+                "Montgomery"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Filter <hop 1 answer> to county-level census rows where `SUMLEV` = 50 and `POP100` < 900000.",
+                "Node 6: Montgomery County is part of the Houston metropolitan area.",
+                "Hop result: counties from <hop 1 answer> that have 2020 population under 900,000 and are not in the Houston metropolitan area = El Paso, Hidalgo."
+            ],
+            "answer": [
+                "El Paso",
+                "Hidalgo"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: El Paso is listed among West Texas counties.",
+                "Node 8: Hidalgo County is in South Texas and its county seat is Edinburg.",
+                "Hop result: county from <hop 2 answer> that is not in West Texas = Hidalgo County; county seat = Edinburg."
+            ],
+            "answer": "Edinburg"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: The University of Texas Rio Grande Valley is a UT System university with its main campus in Edinburg.",
+                "Hop result: University of Texas Rio Grande Valley (UTRGV)."
+            ],
+            "answer": "University of Texas Rio Grande Valley (UTRGV)"
+        }
+    ]
+}

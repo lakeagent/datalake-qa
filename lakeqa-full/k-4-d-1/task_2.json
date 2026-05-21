@@ -1,0 +1,88 @@
+{
+    "question": "In the year where the 34th annual Los Angeles Marathon was held, find the geo area where the Los Angeles Police Department has reported the most Homicide arrests, then identify the most common crime code in that area of the same year, and report the number of incidents of that crime code occurred in the same area in 2021. Your response should be in the format [Answer].",
+    "answer": "1740",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/2019_Los_Angeles_Marathon/content.txt",
+            "fact": "The 2019 Los Angeles Marathon, the 34th annual edition, was held on March 24, 2019.",
+            "subquestion": "What year did the 34th annual Los Angeles Marathon take place?",
+            "answer": "2019"
+        },
+        "2": {
+            "source": "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = \"datagov/arrest-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\n\ncounts = {}\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"Arrest Date\", \"Area Name\", \"Charge Group Description\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    filtered = chunk[\n        chunk[\"Arrest Date\"].astype(str).str.contains(\"2019\", na=False)\n        & chunk[\"Charge Group Description\"].astype(str).str.strip().str.lower().eq(\"homicide\")\n    ]\n    vc = (\n        filtered[\"Area Name\"]\n        .astype(str)\n        .str.strip()\n        .replace({\"\": pd.NA, \"nan\": pd.NA})\n        .dropna()\n        .value_counts()\n    )\n    for area, cnt in vc.items():\n        counts[area] = counts.get(area, 0) + int(cnt)\n\nif not counts:\n    raise ValueError(\"No matching 2019 homicide arrest rows found.\")\n\ntop_area = max(counts, key=counts.get)\nanswer = str(top_area)\n",
+            "subquestion": "In 2019 arrest data, which Area Name has the most arrests where Charge Group Description is \"Homicide\"?",
+            "answer": "77th Street"
+        },
+        "3": {
+            "source": "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = \"datagov/crime-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\n\nnode_1_answer = \"2019\"\nnode_2_answer = \"77th Street\"\n\nyear = str(node_1_answer).strip()\narea_name = str(node_2_answer).strip().lower()\ncounts = {}\n\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"DATE OCC\", \"AREA NAME\", \"Crm Cd Desc\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    filtered = chunk[\n        chunk[\"DATE OCC\"].astype(str).str.contains(year, na=False)\n        & chunk[\"AREA NAME\"].astype(str).str.strip().str.lower().eq(area_name)\n    ]\n    vc = (\n        filtered[\"Crm Cd Desc\"]\n        .astype(str)\n        .str.strip()\n        .replace({\"\": pd.NA, \"nan\": pd.NA})\n        .dropna()\n        .value_counts()\n    )\n    for offense, cnt in vc.items():\n        counts[offense] = counts.get(offense, 0) + int(cnt)\n\nif not counts:\n    raise ValueError(\"No matching 2019 crime rows found for the specified area.\")\n\nanswer = str(max(counts, key=counts.get))\n",
+            "subquestion": "In <node_1 answer> crime data, within area <node_2 answer>, which crime description is most common?",
+            "answer": "VEHICLE - STOLEN"
+        },
+        "4": {
+            "source": "datagov/crime-data-from-2020-to-present/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = \"datagov/crime-data-from-2020-to-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\n\nnode_2_answer = \"77th Street\"\nnode_3_answer = \"VEHICLE - STOLEN\"\n\narea_name = str(node_2_answer).strip().lower()\ntarget_desc = str(node_3_answer).strip()\ncount = 0\n\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"DATE OCC\", \"AREA NAME\", \"Crm Cd Desc\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    date_col = chunk[\"DATE OCC\"].astype(str)\n    area_col = chunk[\"AREA NAME\"].astype(str).str.strip().str.lower()\n    desc_col = chunk[\"Crm Cd Desc\"].astype(str).str.strip()\n    mask = date_col.str.contains(\"2021\", na=False) & area_col.eq(area_name) & desc_col.eq(target_desc)\n    count += int(mask.sum())\n\nanswer = str(count)\n",
+            "subquestion": "In 2021 crime data, how many incidents of <node_3 answer> occurred in area <node_2 answer>?",
+            "answer": "1740"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/2019_Los_Angeles_Marathon/content.txt",
+        "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+        "datagov/arrest-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/arrest-data-from-2010-to-2019/files/yru6-6re4.publisher-view.json",
+        "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+        "datagov/crime-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/crime-data-from-2010-to-2019/files/63jg-8b9z.txt",
+        "datagov/crime-data-from-2020-to-present/files/rows.txt",
+        "datagov/crime-data-from-2020-to-present/signed-metadata.txt",
+        "datagov/crime-data-from-2020-to-present/files/2nrs-mtv8.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: The 2019 Los Angeles Marathon, the 34th annual edition, was held on March 24, 2019.",
+                "Derive hop 1 answer using node 1."
+            ],
+            "answer": "2019"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: In 2019, the area with the most Homicide arrests is 77th Street (22 arrests).",
+                "Derive hop 2 answer using node 2."
+            ],
+            "answer": "77th Street"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: In 2019 crime data for 77th Street, the most common crime description is VEHICLE - STOLEN (1333 incidents).",
+                "Derive hop 3 answer using node 3."
+            ],
+            "answer": "VEHICLE - STOLEN"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In 2021 crime data, 77th Street has 1740 incidents with crime description VEHICLE - STOLEN.",
+                "Derive hop 4 answer using node 4."
+            ],
+            "answer": "1740"
+        }
+    ]
+}

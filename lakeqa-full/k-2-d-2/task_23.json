@@ -1,0 +1,70 @@
+{
+    "question": "Which state appears in both groups: states ranked 6th through 10th by the average number of covered service categories per Medicaid managed care program in 2018, and states ranked 5th through 9th by how much the insurer-reported expected percentage of covered costs varied across 2023 Marketplace insurance plans? Respond with [Answer]. After finding that, what is the highest point in that state? Your response should be in the format [Answer].",
+    "answer": "Woodall Mountain",
+    "nodes": {
+        "1": {
+            "source": "datagov/2018-managed-care-programs-by-state-10247/files/2018-manged-care-programs-by-state_2.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2018-managed-care-programs-by-state-10247/files/2018-manged-care-programs-by-state_2.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\nbenefit_cols = [c for c in df.columns if c.startswith(\"Benefits covered:\")]\nactive_flag_count = (\n    df[benefit_cols]\n    .fillna(\"\")\n    .astype(str)\n    .apply(lambda col: col.str.strip().eq(\"X\"))\n    .sum(axis=1)\n)\n\nstate_metric = (\n    df.assign(\n        normalized_state=df[\"state\"].astype(str).str.strip().map(state_map),\n        active_flag_count=active_flag_count,\n    )\n    .dropna(subset=[\"normalized_state\"])\n    .groupby(\"normalized_state\", as_index=False)[\"active_flag_count\"].mean()\n    .sort_values([\"active_flag_count\", \"normalized_state\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = state_metric.iloc[5:10][\"normalized_state\"].tolist()",
+            "subquestion": "Which states are ranked 6th through 10th by the average number of covered service categories per Medicaid managed care program in 2018?",
+            "answer": [
+                "New Mexico",
+                "Indiana",
+                "Mississippi",
+                "Ohio",
+                "Kansas"
+            ]
+        },
+        "2": {
+            "source": "datagov/plan-attributes-puf-py2023/files/plan_attributes_puf.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/plan-attributes-puf-py2023/files/plan_attributes_puf.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\nstate_metric = (\n    df.assign(\n        normalized_state=df[\"StateCode\"].astype(str).str.strip().map(state_map),\n        IssuerActuarialValue=pd.to_numeric(\n            df[\"IssuerActuarialValue\"].astype(str).str.strip().str.rstrip(\"%\"),\n            errors=\"coerce\",\n        ),\n    )\n    .dropna(subset=[\"normalized_state\", \"IssuerActuarialValue\"])\n    .groupby(\"normalized_state\", as_index=False)[\"IssuerActuarialValue\"].std()\n    .sort_values([\"IssuerActuarialValue\", \"normalized_state\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = state_metric.iloc[4:9][\"normalized_state\"].tolist()",
+            "subquestion": "Which states are ranked 5th through 9th by how much the insurer-reported expected percentage of covered costs varied across 2023 Marketplace insurance plans?",
+            "answer": [
+                "Missouri",
+                "Tennessee",
+                "Mississippi",
+                "Alabama",
+                "South Carolina"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Mississippi/content.txt",
+            "fact": "Mississippi's highest point is Woodall Mountain at 807 feet (246 m) above sea level adjacent to the Cumberland Plateau; the lowest is the Gulf of Mexico.",
+            "subquestion": "What is the highest point in <hop 1 answer>?",
+            "answer": "Woodall Mountain"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Map `state` abbreviations to full state names, count the active `Benefits covered:` flags in each row, group by normalized state to compute the mean active-flag count, sort by that mean descending and state name ascending to break ties alphabetically, and take ranks 6 through 10.",
+                "Node 2: Map `StateCode` abbreviations to full state names, convert `IssuerActuarialValue` to numeric, group by normalized state to compute the sample standard deviation, sort by that standard deviation descending and state name ascending to break ties alphabetically, and take ranks 5 through 9.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Mississippi."
+            ],
+            "answer": "Mississippi"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Woodall Mountain is the highest point in <hop 1 answer>.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Woodall Mountain"
+        }
+    ],
+    "datasets_used": [
+        "datagov/2018-managed-care-programs-by-state-10247/files/2018-manged-care-programs-by-state_2.txt",
+        "datagov/2018-managed-care-programs-by-state-10247/files/2018-medicaid-managed-care-enrollment-report.pdf",
+        "datagov/plan-attributes-puf-py2023/files/plan_attributes_puf.txt",
+        "datagov/plan-attributes-puf-py2023/signed-metadata.txt",
+        "datagov/plan-attributes-puf-py2023/files/plan-attributes-data-dictionary.pdf",
+        "wikipedia/Mississippi/content.txt"
+    ]
+}

@@ -1,0 +1,149 @@
+{
+    "question": "Jon Whitmore was the chief executive officer of an organization. Determine the city where that organization was founded, then the county it is in and the two-digit state FIPS code from school district office listings. In that state, find the counties that rank in the top three for public schools, private schools, and school district offices; among those counties, what is the highest postsecondary institution count? Only report the number. Your response should be in the format [Answer].",
+    "answer": "11",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Jon_Whitmore/content.txt",
+            "fact": "chief executive officer of ACT, Inc. (2010–2015)",
+            "subquestion": "Jon Scott Whitmore was the chief executive officer of what organization?",
+            "answer": "ACT, Inc."
+        },
+        "2": {
+            "source": "wikipedia/ACT_(for-profit_organization)/content.txt",
+            "fact": "Founded in Iowa City, Iowa, in 1959",
+            "subquestion": "In what city was <hop 1 answer> founded?",
+            "answer": "Iowa City"
+        },
+        "3": {
+            "source": "wikipedia/Iowa_City,_Iowa/content.txt",
+            "fact": "Iowa City is the largest city in Johnson County, Iowa, United States, and its county seat.",
+            "subquestion": "In which county is <hop 2 answer> located?",
+            "answer": "Johnson County"
+        },
+        "4": {
+            "source": "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nresult = df[(df[\"CITY\"] == \"Iowa City\") & (df[\"NMCNTY\"] == \"Johnson County\")][[\"CITY\", \"NMCNTY\", \"STFIP\"]].drop_duplicates().reset_index(drop=True)\nanswer = result[\"STFIP\"].iloc[0]",
+            "subquestion": "In the school district office listings, entries with CITY='<hop 2 answer>' and NMCNTY='<hop 3 answer>' share what two-digit state FIPS code (STFIP)?",
+            "answer": "19"
+        },
+        "5": {
+            "source": "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nresult = (\n    df[df[\"STFIP\"].astype(str) == \"19\"]\n    .groupby(\"NMCNTY\", dropna=False)\n    .size()\n    .reset_index(name=\"public_school_count\")\n    .sort_values([\"public_school_count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n    .reset_index(drop=True)\n)\nanswer = \"; \".join(result[\"NMCNTY\"].head(3).tolist())",
+            "subquestion": "For STFIP='<hop 4 answer>', which 3 county names have the most public schools? Return the county names separated by '; '.",
+            "answer": "Polk County; Linn County; Scott County"
+        },
+        "6": {
+            "source": "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nresult = (\n    df[df[\"STFIP\"].astype(str) == \"19\"]\n    .groupby(\"NMCNTY\", dropna=False)\n    .size()\n    .reset_index(name=\"private_school_count\")\n    .sort_values([\"private_school_count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n    .reset_index(drop=True)\n)\nanswer = \"; \".join(result[\"NMCNTY\"].head(3).tolist())",
+            "subquestion": "For STFIP='<hop 4 answer>', which 3 county names have the most private schools? Return the county names separated by '; '.",
+            "answer": "Polk County; Linn County; Sioux County"
+        },
+        "7": {
+            "source": "datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nresult = (\n    df[df[\"STFIP\"].astype(str) == \"19\"]\n    .groupby(\"NMCNTY\", dropna=False)\n    .size()\n    .reset_index(name=\"school_district_office_count\")\n    .sort_values([\"school_district_office_count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n    .reset_index(drop=True)\n)\nanswer = \"; \".join(result[\"NMCNTY\"].head(3).tolist())",
+            "subquestion": "For STFIP='<hop 4 answer>', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+            "answer": "Linn County; Polk County; Pottawattamie County"
+        },
+        "8": {
+            "source": "datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\ncounty_counts = (\n    df[df[\"STFIP\"].astype(str) == \"19\"]\n    .groupby(\"NMCNTY\", dropna=False)\n    .size()\n    .reset_index(name=\"postsecondary_institution_count\")\n)\n\nA = {\"Polk County\", \"Linn County\", \"Scott County\"}\nB = {\"Polk County\", \"Linn County\", \"Sioux County\"}\nC = {\"Linn County\", \"Polk County\", \"Pottawattamie County\"}\ncandidate_counties = C & (A | B)\n\nresult = (\n    county_counts[county_counts[\"NMCNTY\"].isin(candidate_counties)]\n    .sort_values([\"postsecondary_institution_count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n    .reset_index(drop=True)\n)\nanswer = str(int(result[\"postsecondary_institution_count\"].iloc[0]))",
+            "subquestion": "For STFIP='<hop 4 answer>', among the counties in <hop 5 answer>, what is the highest postsecondary institution count? Answer with the number only.",
+            "answer": "11"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Read the Wikipedia article for Jon Whitmore and identify the organization for which he served as chief executive officer.",
+                "Hop result: the organization is ACT, Inc."
+            ],
+            "answer": "ACT, Inc."
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Read the Wikipedia article for <hop 1 answer> and identify the city where the organization was founded.",
+                "Hop result: the founding city is Iowa City."
+            ],
+            "answer": "Iowa City"
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Read the Wikipedia article for <hop 2 answer> and identify the county where the city is located.",
+                "Hop result: the county is Johnson County."
+            ],
+            "answer": "Johnson County"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In the school district office listings, filter rows where `CITY == 'Iowa City'` and `NMCNTY == 'Johnson County'`, then read the shared `STFIP` value.",
+                "Hop result: the shared two-digit state FIPS code is 19."
+            ],
+            "answer": "19"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                5,
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 5: For `STFIP == '19'`, group by `NMCNTY`, count rows, and take the top three counties by public-school count.",
+                "Node 6: For `STFIP == '19'`, group by `NMCNTY`, count rows, and take the top three counties by private-school count.",
+                "Node 7: For `STFIP == '19'`, group by `NMCNTY`, count rows, and take the top three counties by school-district-office count.",
+                "Hop result: take `C ∩ (A ∪ B)`, where `A` is the public-school top-three set, `B` is the private-school top-three set, and `C` is the school-district-office top-three set; the candidate counties are Linn County and Polk County."
+            ],
+            "answer": [
+                "Linn County",
+                "Polk County"
+            ]
+        },
+        {
+            "hop_id": 6,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: For `STFIP == '19'`, count postsecondary institutions by `NMCNTY`, keep the counties from <hop 5 answer>, and take the maximum count.",
+                "Hop result: among Linn County and Polk County, the highest postsecondary institution count is 11."
+            ],
+            "answer": "11"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Jon_Whitmore/content.txt",
+        "wikipedia/ACT_(for-profit_organization)/content.txt",
+        "wikipedia/Iowa_City,_Iowa/content.txt",
+        "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+        "datagov/school-district-office-locations-current-d848f/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-d848f/files/0.arcgis-layer.json",
+        "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+        "datagov/public-school-locations-2018-19-42360/signed-metadata.txt",
+        "datagov/public-school-locations-2018-19-42360/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+        "datagov/private-school-locations-2017-18-f49f6/signed-metadata.txt",
+        "datagov/private-school-locations-2017-18-f49f6/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt",
+        "datagov/school-district-office-locations-2020-21-d8df0/signed-metadata.txt",
+        "datagov/school-district-office-locations-2020-21-d8df0/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt",
+        "datagov/postsecondary-school-locations-2019-20-64b31/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2019-20-64b31/files/0.arcgis-layer.json"
+    ]
+}

@@ -1,0 +1,253 @@
+{
+    "question": "Consider the engineering firm founded after 1914 that has no current NY State construction manager projects, yet consistently ranked in the top 20 Washington State contractors by contract count annually from 2017 to 2020. In what year was the Native American interpreter born who helped negotiate the land cession that led to the founding of the city where that firm is based? Please return the year only. Your response should be in the format [Answer].",
+    "answer": "1825",
+    "nodes": {
+        "1": {
+            "source": "datagov/agency-contracts-fiscal-year-2017/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nALIASES = {'WSP USA Inc.': ['WSP USA, Inc.', 'WSP USA Inc.'], 'HDR Engineering, Inc.': ['HDR Engineering, Inc.', 'HDR Engineering', 'HDR ENGINEERING INC', 'Hdr Engineering Inc', 'HDR, INC'], 'Jacobs Engineering Group, Inc.': ['Jacobs Engineering Group, Inc.', 'Jacobs Engineering Group Inc', 'Jacobs Engineering Group'], 'A-1 Performance Inc': ['A-1 Performance Inc', 'A-1 Performance INC', 'A-1 Performance', 'A-1 Performance Inc.', 'A-1 Performance, Inc.', 'A-1 PERFORMANCE'], 'Imagesource Inc': ['Imagesource Inc', 'ImageSource, Inc.', 'ImageSource, Inc', 'ImageSource Inc.', 'IMAGESOURCE INC', 'ImageSource'], 'CenturyLink': ['CenturyLink', 'Centurylink', 'CENTURYLINK'], 'Shi International Corp': ['Shi International Corp', 'SHI International Corp', 'SHI INTERNATIONAL CORP.', 'SHI International Corp.', 'Shi International Corporation', 'SHI INTERNATIONAL CORP'], 'CodeSmart Inc': ['Codesmart Inc', 'Codesmart INC', 'CodeSmart Inc', 'CodeSmart', 'Codesmart', 'CodeSmart, Inc.', 'CodeSmart, Inc', 'Codesmart, INC.', 'Codesmart, Inc.', 'CODESMART INC'], 'Ricoh USA Inc': ['Ricoh Usa Inc', 'Ricoh USA', 'Ricoh USA, Inc.', 'RICOH USA INC', 'Ricoh USA Inc', 'RICOH USA', 'RICOH'], 'SMS Cleaning Inc': ['SMS Cleaning Inc', 'SMS Cleaning INC', 'SMS Cleaning, Inc.', 'SMS Cleaning', 'SMS Cleaning Inc.', 'SMS Cleaning, INC'], 'Washington State University': ['Washington State University', 'WA State Univ', 'WA State University', 'Washington State University-WSU', 'Washington State University (WSU)', 'Washington State University WSU'], 'Washington State Department of Transportation': ['Department of Transportation', 'WSDOT', 'Washington State Department of Transportation', 'Washington State Department of Transportation (WSDOT)'], 'Washington State Department of Social and Health Services': ['WA State DSHS', 'Washington State DSHS', 'DSHS', 'Washington State Department of Social and Health Services', 'Washington State Department of Social & Health Servcies (DSHS)'], 'Washington State Department of Children, Youth, and Families': ['Department of Children, Youth, and Families', 'Washington State Department of Children, Youth and Families', 'Washington State Department of Children, Youth, and Families', 'Department of Children, Youth and Families', 'DCYF - Department of Children Youth and Families']}\nREVERSE = {variant: canonical for canonical, variants in ALIASES.items() for variant in variants}\n\ndef canon(name):\n    s = ' '.join(str(name).split())\n    return REVERSE.get(s, s)\n\nsource = 'datagov/agency-contracts-fiscal-year-2017/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nmapped = df['Contractor Name'].map(canon)\nanswer = mapped.value_counts().head(20).index.tolist()",
+            "subquestion": "Which contractors ranked in the top 20 by contract count in Washington State agency contracts in fiscal year 2017? Use semantic alias resolution for obvious same-contractor name variants before counting.",
+            "answer": [
+                "ARAMARK UNIFORM SERVICES, INC.",
+                "McGranahan Architects",
+                "Schreiber Starling Whitehead Architects",
+                "McKinstry Essention, LLC",
+                "Liberty Business Forms",
+                "PBS Engineering+Environmental - Seattle",
+                "WSP USA Inc.",
+                "HDR Engineering, Inc.",
+                "Schacht/Aslani Architects",
+                "KMB architects",
+                "Phoenix Protective Corp.",
+                "Jacobs Engineering Group, Inc.",
+                "MSGS Architects",
+                "KolorKraze",
+                "A-1 Performance Inc",
+                "HNTB Corporation",
+                "Imagesource Inc",
+                "S. M. Stemper Architects, PLLC",
+                "Pioneer Human Services",
+                "Osborn Architects, Inc., PS"
+            ]
+        },
+        "2": {
+            "source": "datagov/agency-contracts-fiscal-year-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nALIASES = {'WSP USA Inc.': ['WSP USA, Inc.', 'WSP USA Inc.'], 'HDR Engineering, Inc.': ['HDR Engineering, Inc.', 'HDR Engineering', 'HDR ENGINEERING INC', 'Hdr Engineering Inc', 'HDR, INC'], 'Jacobs Engineering Group, Inc.': ['Jacobs Engineering Group, Inc.', 'Jacobs Engineering Group Inc', 'Jacobs Engineering Group'], 'A-1 Performance Inc': ['A-1 Performance Inc', 'A-1 Performance INC', 'A-1 Performance', 'A-1 Performance Inc.', 'A-1 Performance, Inc.', 'A-1 PERFORMANCE'], 'Imagesource Inc': ['Imagesource Inc', 'ImageSource, Inc.', 'ImageSource, Inc', 'ImageSource Inc.', 'IMAGESOURCE INC', 'ImageSource'], 'CenturyLink': ['CenturyLink', 'Centurylink', 'CENTURYLINK'], 'Shi International Corp': ['Shi International Corp', 'SHI International Corp', 'SHI INTERNATIONAL CORP.', 'SHI International Corp.', 'Shi International Corporation', 'SHI INTERNATIONAL CORP'], 'CodeSmart Inc': ['Codesmart Inc', 'Codesmart INC', 'CodeSmart Inc', 'CodeSmart', 'Codesmart', 'CodeSmart, Inc.', 'CodeSmart, Inc', 'Codesmart, INC.', 'Codesmart, Inc.', 'CODESMART INC'], 'Ricoh USA Inc': ['Ricoh Usa Inc', 'Ricoh USA', 'Ricoh USA, Inc.', 'RICOH USA INC', 'Ricoh USA Inc', 'RICOH USA', 'RICOH'], 'SMS Cleaning Inc': ['SMS Cleaning Inc', 'SMS Cleaning INC', 'SMS Cleaning, Inc.', 'SMS Cleaning', 'SMS Cleaning Inc.', 'SMS Cleaning, INC'], 'Washington State University': ['Washington State University', 'WA State Univ', 'WA State University', 'Washington State University-WSU', 'Washington State University (WSU)', 'Washington State University WSU'], 'Washington State Department of Transportation': ['Department of Transportation', 'WSDOT', 'Washington State Department of Transportation', 'Washington State Department of Transportation (WSDOT)'], 'Washington State Department of Social and Health Services': ['WA State DSHS', 'Washington State DSHS', 'DSHS', 'Washington State Department of Social and Health Services', 'Washington State Department of Social & Health Servcies (DSHS)'], 'Washington State Department of Children, Youth, and Families': ['Department of Children, Youth, and Families', 'Washington State Department of Children, Youth and Families', 'Washington State Department of Children, Youth, and Families', 'Department of Children, Youth and Families', 'DCYF - Department of Children Youth and Families']}\nREVERSE = {variant: canonical for canonical, variants in ALIASES.items() for variant in variants}\n\ndef canon(name):\n    s = ' '.join(str(name).split())\n    return REVERSE.get(s, s)\n\nsource = 'datagov/agency-contracts-fiscal-year-2018/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nmapped = df['Contractor Name'].map(canon)\nanswer = mapped.value_counts().head(20).index.tolist()",
+            "subquestion": "Which contractors ranked in the top 20 by contract count in Washington State agency contracts in fiscal year 2018? Use semantic alias resolution for obvious same-contractor name variants before counting.",
+            "answer": [
+                "A-1 Performance Inc",
+                "Jacobs Engineering Group, Inc.",
+                "Imagesource Inc",
+                "WSP USA Inc.",
+                "HDR Engineering, Inc.",
+                "HNTB Corporation",
+                "GENUINE PARTS CO",
+                "CodeSmart Inc",
+                "Sharp Electronics Corporation",
+                "SMS Cleaning Inc",
+                "Correctional Industries-DOC",
+                "Pioneer Human Services",
+                "Ricoh USA Inc",
+                "Puget Sound Executive Srvces Inc",
+                "DOC Correctional Industries",
+                "Client Network Services Inc",
+                "Shi International Corp",
+                "Parametrix, Inc.",
+                "Phoenix Protective Corp.",
+                "ESD Financial Office"
+            ]
+        },
+        "3": {
+            "source": "datagov/agency-contracts-fiscal-year-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nALIASES = {'WSP USA Inc.': ['WSP USA, Inc.', 'WSP USA Inc.'], 'HDR Engineering, Inc.': ['HDR Engineering, Inc.', 'HDR Engineering', 'HDR ENGINEERING INC', 'Hdr Engineering Inc', 'HDR, INC'], 'Jacobs Engineering Group, Inc.': ['Jacobs Engineering Group, Inc.', 'Jacobs Engineering Group Inc', 'Jacobs Engineering Group'], 'A-1 Performance Inc': ['A-1 Performance Inc', 'A-1 Performance INC', 'A-1 Performance', 'A-1 Performance Inc.', 'A-1 Performance, Inc.', 'A-1 PERFORMANCE'], 'Imagesource Inc': ['Imagesource Inc', 'ImageSource, Inc.', 'ImageSource, Inc', 'ImageSource Inc.', 'IMAGESOURCE INC', 'ImageSource'], 'CenturyLink': ['CenturyLink', 'Centurylink', 'CENTURYLINK'], 'Shi International Corp': ['Shi International Corp', 'SHI International Corp', 'SHI INTERNATIONAL CORP.', 'SHI International Corp.', 'Shi International Corporation', 'SHI INTERNATIONAL CORP'], 'CodeSmart Inc': ['Codesmart Inc', 'Codesmart INC', 'CodeSmart Inc', 'CodeSmart', 'Codesmart', 'CodeSmart, Inc.', 'CodeSmart, Inc', 'Codesmart, INC.', 'Codesmart, Inc.', 'CODESMART INC'], 'Ricoh USA Inc': ['Ricoh Usa Inc', 'Ricoh USA', 'Ricoh USA, Inc.', 'RICOH USA INC', 'Ricoh USA Inc', 'RICOH USA', 'RICOH'], 'SMS Cleaning Inc': ['SMS Cleaning Inc', 'SMS Cleaning INC', 'SMS Cleaning, Inc.', 'SMS Cleaning', 'SMS Cleaning Inc.', 'SMS Cleaning, INC'], 'Washington State University': ['Washington State University', 'WA State Univ', 'WA State University', 'Washington State University-WSU', 'Washington State University (WSU)', 'Washington State University WSU'], 'Washington State Department of Transportation': ['Department of Transportation', 'WSDOT', 'Washington State Department of Transportation', 'Washington State Department of Transportation (WSDOT)'], 'Washington State Department of Social and Health Services': ['WA State DSHS', 'Washington State DSHS', 'DSHS', 'Washington State Department of Social and Health Services', 'Washington State Department of Social & Health Servcies (DSHS)'], 'Washington State Department of Children, Youth, and Families': ['Department of Children, Youth, and Families', 'Washington State Department of Children, Youth and Families', 'Washington State Department of Children, Youth, and Families', 'Department of Children, Youth and Families', 'DCYF - Department of Children Youth and Families']}\nREVERSE = {variant: canonical for canonical, variants in ALIASES.items() for variant in variants}\n\ndef canon(name):\n    s = ' '.join(str(name).split())\n    return REVERSE.get(s, s)\n\nsource = 'datagov/agency-contracts-fiscal-year-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nmapped = df['Contractor Name'].map(canon)\nanswer = mapped.value_counts().head(20).index.tolist()",
+            "subquestion": "Which contractors ranked in the top 20 by contract count in Washington State agency contracts in fiscal year 2019? Use semantic alias resolution for obvious same-contractor name variants before counting.",
+            "answer": [
+                "Sharp Electronics Corporation",
+                "DOC Correctional Industries",
+                "A-1 Performance Inc",
+                "WSP USA Inc.",
+                "Shi International Corp",
+                "Parametrix, Inc.",
+                "Imagesource Inc",
+                "Northwest Envirometrics Inc",
+                "Regence Blueshield",
+                "CodeSmart Inc",
+                "Capital Business Machines Inc",
+                "Phoenix Protective Corp.",
+                "DES",
+                "Jacobs Engineering Group, Inc.",
+                "HDR Engineering, Inc.",
+                "Client Network Services Llc",
+                "Talgo, Inc.",
+                "MISC CUSTOMER",
+                "CenturyLink",
+                "OTB Solutions Group Llc"
+            ]
+        },
+        "4": {
+            "source": "datagov/agency-contracts-fiscal-year-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nALIASES = {'WSP USA Inc.': ['WSP USA, Inc.', 'WSP USA Inc.'], 'HDR Engineering, Inc.': ['HDR Engineering, Inc.', 'HDR Engineering', 'HDR ENGINEERING INC', 'Hdr Engineering Inc', 'HDR, INC'], 'Jacobs Engineering Group, Inc.': ['Jacobs Engineering Group, Inc.', 'Jacobs Engineering Group Inc', 'Jacobs Engineering Group'], 'A-1 Performance Inc': ['A-1 Performance Inc', 'A-1 Performance INC', 'A-1 Performance', 'A-1 Performance Inc.', 'A-1 Performance, Inc.', 'A-1 PERFORMANCE'], 'Imagesource Inc': ['Imagesource Inc', 'ImageSource, Inc.', 'ImageSource, Inc', 'ImageSource Inc.', 'IMAGESOURCE INC', 'ImageSource'], 'CenturyLink': ['CenturyLink', 'Centurylink', 'CENTURYLINK'], 'Shi International Corp': ['Shi International Corp', 'SHI International Corp', 'SHI INTERNATIONAL CORP.', 'SHI International Corp.', 'Shi International Corporation', 'SHI INTERNATIONAL CORP'], 'CodeSmart Inc': ['Codesmart Inc', 'Codesmart INC', 'CodeSmart Inc', 'CodeSmart', 'Codesmart', 'CodeSmart, Inc.', 'CodeSmart, Inc', 'Codesmart, INC.', 'Codesmart, Inc.', 'CODESMART INC'], 'Ricoh USA Inc': ['Ricoh Usa Inc', 'Ricoh USA', 'Ricoh USA, Inc.', 'RICOH USA INC', 'Ricoh USA Inc', 'RICOH USA', 'RICOH'], 'SMS Cleaning Inc': ['SMS Cleaning Inc', 'SMS Cleaning INC', 'SMS Cleaning, Inc.', 'SMS Cleaning', 'SMS Cleaning Inc.', 'SMS Cleaning, INC'], 'Washington State University': ['Washington State University', 'WA State Univ', 'WA State University', 'Washington State University-WSU', 'Washington State University (WSU)', 'Washington State University WSU'], 'Washington State Department of Transportation': ['Department of Transportation', 'WSDOT', 'Washington State Department of Transportation', 'Washington State Department of Transportation (WSDOT)'], 'Washington State Department of Social and Health Services': ['WA State DSHS', 'Washington State DSHS', 'DSHS', 'Washington State Department of Social and Health Services', 'Washington State Department of Social & Health Servcies (DSHS)'], 'Washington State Department of Children, Youth, and Families': ['Department of Children, Youth, and Families', 'Washington State Department of Children, Youth and Families', 'Washington State Department of Children, Youth, and Families', 'Department of Children, Youth and Families', 'DCYF - Department of Children Youth and Families']}\nREVERSE = {variant: canonical for canonical, variants in ALIASES.items() for variant in variants}\n\ndef canon(name):\n    s = ' '.join(str(name).split())\n    return REVERSE.get(s, s)\n\nsource = 'datagov/agency-contracts-fiscal-year-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nmapped = df['Contractor Name'].map(canon)\nanswer = mapped.value_counts().head(20).index.tolist()",
+            "subquestion": "Which contractors ranked in the top 20 by contract count in Washington State agency contracts in fiscal year 2020? Use semantic alias resolution for obvious same-contractor name variants before counting.",
+            "answer": [
+                "JP Morgan Chase Bank NA",
+                "Washington State University",
+                "Washington State Department of Transportation",
+                "WSP USA Inc.",
+                "University of Washington",
+                "Washington State Department of Social and Health Services",
+                "Shi International Corp",
+                "HDR Engineering, Inc.",
+                "Parametrix, Inc.",
+                "HNTB Corporation",
+                "King County",
+                "Regence Blueshield",
+                "Jacobs Engineering Group, Inc.",
+                "South Puget Sound Comm College",
+                "Washington State Department of Children, Youth, and Families",
+                "A-1 Performance Inc",
+                "Lacey City of",
+                "Moda Health Plan Inc",
+                "Department of Health",
+                "Department of Social & Health Sv"
+            ]
+        },
+        "5": {
+            "source": "wikipedia/WSP_USA/content.txt",
+            "fact": "WSP USA, formerly Parsons Brinckerhoff, is an American multinational engineering and design firm. Founded in 1885 in New York City by civil engineer William Barclay Parsons, among Parsons Brinckerhoff's earliest projects was the original IRT line of the New York City Subway.",
+            "subquestion": "For WSP USA (from the intersection of nodes 1-4), in what year was it founded?",
+            "answer": "1885"
+        },
+        "6": {
+            "source": "wikipedia/HDR,_Inc./content.txt",
+            "fact": "HDR, Inc. is an American design and engineering company based in Omaha, Nebraska. In 1917, the Henningson Engineering Company started as a civil engineering firm in Omaha, where HDR's headquarters remain.",
+            "subquestion": "For HDR Engineering (from the intersection of nodes 1-4), where is it based and in what year did the company start?",
+            "answer": "Omaha, Nebraska; 1917"
+        },
+        "7": {
+            "source": "wikipedia/Jacobs_Solutions/content.txt",
+            "fact": "Jacobs Engineering was founded in 1947, by Joseph J. Jacobs.",
+            "subquestion": "For Jacobs Engineering Group (from the intersection of nodes 1-4), in what year was it founded?",
+            "answer": "1947"
+        },
+        "8": {
+            "source": "datagov/active-construction-projects/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/active-construction-projects/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\ncounts = {\n    'WSP USA Inc.': int((df['Construction Manager'] == 'WSP USA Inc.').sum()),\n    'HDR Engineering, Inc.': int((df['Construction Manager'] == 'HDR Engineering, Inc.').sum()),\n    'Jacobs Engineering Group, Inc.': int((df['Construction Manager'] == 'Jacobs Project Management Co.').sum()),\n}\nanswer = [name for name, count in counts.items() if count == 0]",
+            "subquestion": "Among the engineering contractors from <hop 1 answer>, which have zero current NY State construction manager projects?",
+            "answer": [
+                "WSP USA Inc.",
+                "HDR Engineering, Inc."
+            ]
+        },
+        "9": {
+            "source": "wikipedia/Omaha,_Nebraska/content.txt",
+            "fact": "Omaha's pioneer period began in 1854, when the city was founded along the Missouri River. Logan Fontenelle, an interpreter for the Omaha Tribe, was important during the United States negotiations with Omaha leaders in 1853-1854 about ceding land to the United States prior to settlement.",
+            "subquestion": "In the city where <hop 4 answer> is based, which Native American interpreter helped negotiate the 1853-1854 land cession that led to the city's founding?",
+            "answer": "Logan Fontenelle"
+        },
+        "10": {
+            "source": "wikipedia/Logan_Fontenelle/content.txt",
+            "fact": "Logan Fontenelle (May 6, 1825 – July 16, 1855), also known as Shon-ga-ska (White Horse), was a trader of Omaha and French ancestry, who served for years as an interpreter to the US Indian agent at the Bellevue Agency in Nebraska. He was especially important during the United States negotiations with Omaha leaders in 1853–1854 about ceding land to the United States prior to settlement.",
+            "subquestion": "In what year was <hop 5 answer> born?",
+            "answer": "1825"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/WSP_USA/content.txt",
+        "wikipedia/HDR,_Inc./content.txt",
+        "wikipedia/Jacobs_Solutions/content.txt",
+        "wikipedia/Omaha,_Nebraska/content.txt",
+        "wikipedia/Logan_Fontenelle/content.txt",
+        "datagov/agency-contracts-fiscal-year-2017/files/rows.txt",
+        "datagov/agency-contracts-fiscal-year-2017/signed-metadata.txt",
+        "datagov/agency-contracts-fiscal-year-2018/files/rows.txt",
+        "datagov/agency-contracts-fiscal-year-2018/signed-metadata.txt",
+        "datagov/agency-contracts-fiscal-year-2019/files/rows.txt",
+        "datagov/agency-contracts-fiscal-year-2019/signed-metadata.txt",
+        "datagov/agency-contracts-fiscal-year-2020/files/rows.txt",
+        "datagov/agency-contracts-fiscal-year-2020/signed-metadata.txt",
+        "datagov/active-construction-projects/files/rows.txt",
+        "datagov/active-construction-projects/signed-metadata.txt",
+        "datagov/active-construction-projects/files/ekci-x6aq.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Resolve obvious same-contractor aliases in `Contractor Name`, count rows by canonical contractor name in the 2017 Washington State agency-contracts table, sort by contract count descending, and keep the top 20 contractors.",
+                "Node 2: Resolve obvious same-contractor aliases in `Contractor Name`, count rows by canonical contractor name in the 2018 Washington State agency-contracts table, sort by contract count descending, and keep the top 20 contractors.",
+                "Node 3: Resolve obvious same-contractor aliases in `Contractor Name`, count rows by canonical contractor name in the 2019 Washington State agency-contracts table, sort by contract count descending, and keep the top 20 contractors.",
+                "Node 4: Resolve obvious same-contractor aliases in `Contractor Name`, count rows by canonical contractor name in the 2020 Washington State agency-contracts table, sort by contract count descending, and keep the top 20 contractors.",
+                "Hop result: semantically intersect the four yearly top-20 contractor sets and keep the engineering firms that appear in all four years."
+            ],
+            "answer": [
+                "WSP USA Inc.",
+                "HDR Engineering, Inc.",
+                "Jacobs Engineering Group, Inc."
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5,
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 5: WSP USA was founded in 1885.",
+                "Node 6: HDR Engineering is based in Omaha, Nebraska and started in 1917.",
+                "Node 7: Jacobs Engineering Group was founded in 1947.",
+                "Hop result: among <hop 1 answer>, keep the firms founded after 1914."
+            ],
+            "answer": [
+                "HDR Engineering, Inc.",
+                "Jacobs Engineering Group, Inc."
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Count exact matches in `Construction Manager` for the candidate engineering-firm labels and keep those with zero current NY State active construction projects."
+            ],
+            "answer": [
+                "WSP USA Inc.",
+                "HDR Engineering, Inc."
+            ]
+        },
+        {
+            "hop": 4,
+            "node_ids": [],
+            "reasoning": [
+                "Hop result: semantically intersect <hop 2 answer> with <hop 3 answer>."
+            ],
+            "answer": "HDR Engineering, Inc."
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: In Omaha, the Native American interpreter who helped negotiate the 1853-1854 land cession tied to the city's founding is Logan Fontenelle."
+            ],
+            "answer": "Logan Fontenelle"
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: Logan Fontenelle was born in 1825."
+            ],
+            "answer": "1825"
+        }
+    ]
+}

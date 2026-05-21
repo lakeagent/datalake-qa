@@ -1,0 +1,49 @@
+{
+  "question": "In 2023, which U.S. state had the 5th highest diesel fuel tax rate? How many counties does that state have? Please return only the number in the format [Answer].",
+  "answer": 8,
+  "nodes": {
+    "1": {
+      "source": "datagov/tax-rates-by-motor-fuel-and-state/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/tax-rates-by-motor-fuel-and-state/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"rate_num\"] = pd.to_numeric(df[\"rate\"], errors=\"coerce\")\nfiltered = df[\n    df[\"MMFR_year\"].eq(\"2023\")\n    & df[\"fuel_type\"].eq(\"Diesel\")\n    & df[\"rate_num\"].notna()\n].copy()\nranked = filtered.sort_values([\"rate_num\", \"state\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = str(ranked.iloc[4][\"state\"])\n",
+      "subquestion": "In 2023, for diesel fuel, which U.S. state had the 5th highest tax rate?",
+      "answer": "Connecticut"
+    },
+    "2": {
+      "source": "wikipedia/List_of_counties_in_Connecticut/content.txt",
+      "fact": "There are eight counties in the U.S. state of Connecticut.",
+      "subquestion": "How many counties does <hop 1 answer> have?",
+      "answer": 8
+    }
+  },
+  "datasets_used": [
+    "datagov/tax-rates-by-motor-fuel-and-state/files/rows.txt",
+    "datagov/tax-rates-by-motor-fuel-and-state/signed-metadata.txt",
+    "datagov/tax-rates-by-motor-fuel-and-state/files/e5cn-ri8q.txt",
+    "wikipedia/List_of_counties_in_Connecticut/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the motor fuel tax dataset, filter to 2023 diesel fuel records and rank states by tax rate descending, breaking ties alphabetically.",
+        "The state with the 5th-highest diesel tax rate is Connecticut.",
+        "Hop result: Connecticut."
+      ],
+      "answer": "Connecticut"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: <hop 1 answer> has eight counties.",
+        "Hop result: 8."
+      ],
+      "answer": 8
+    }
+  ]
+}

@@ -1,0 +1,205 @@
+{
+  "question": "Consider the Eastern Washington counties that border Idaho and had a 2020 population under 300,000. Among these, identify the one where school districts consistently achieved at least 68% English language arts performance for all students and all grades from 2014-15 through 2017-18. What is the most populous city in that county at the 2020 census? As of 2025, what was the total enrollment of the public research university in that city? Return the number only. Your response should be in the format [Answer].",
+  "answer": 28581,
+  "nodes": {
+    "1": {
+      "source": "datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"OrganizationLevel\"] == \"District\")\n    & (df[\"TestSubject\"] == \"ELA\")\n    & (df[\"StudentGroup\"] == \"All Students\")\n    & (df[\"GradeLevel\"] == \"All Grades\")\n].copy()\n\nfiltered[\"PercentMetStandard_num\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"),\n    errors=\"coerce\",\n)\n\nanswer = (\n    filtered[filtered[\"PercentMetStandard_num\"] >= 68]\n    [[\"DistrictName\", \"County\"]]\n    .drop_duplicates()\n    .assign(answer=lambda x: x[\"DistrictName\"] + \" (\" + x[\"County\"] + \")\")\n    [\"answer\"]\n    .sort_values()\n    .tolist()\n)\nprint(answer)",
+      "subquestion": "Which Washington school districts had at least 68% English language arts performance for all students and all grades in 2014-15?",
+      "answer": [
+        "Blaine School District (Whatcom)",
+        "Camas School District (Clark)",
+        "Carbonado School District (Pierce)",
+        "Chehalis School District (Lewis)",
+        "Colfax School District (Whitman)",
+        "Damman School District (Kittitas)",
+        "Deer Park School District (Spokane)",
+        "Dieringer School District (Pierce)",
+        "Freeman School District (Spokane)",
+        "Griffin School District (Thurston)"
+      ],
+      "limit": 10
+    },
+    "2": {
+      "source": "datagov/report-card-assessment-data-2015-16-school-year/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-assessment-data-2015-16-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"OrganizationLevel\"] == \"District\")\n    & (df[\"TestSubject\"] == \"ELA\")\n    & (df[\"StudentGroup\"] == \"All Students\")\n    & (df[\"GradeLevel\"] == \"All Grades\")\n].copy()\n\nfiltered[\"PercentMetStandard_num\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"),\n    errors=\"coerce\",\n)\n\nanswer = (\n    filtered[filtered[\"PercentMetStandard_num\"] >= 68]\n    [[\"DistrictName\", \"County\"]]\n    .drop_duplicates()\n    .assign(answer=lambda x: x[\"DistrictName\"] + \" (\" + x[\"County\"] + \")\")\n    [\"answer\"]\n    .sort_values()\n    .tolist()\n)\nprint(answer)",
+      "subquestion": "Which Washington school districts had at least 68% English language arts performance for all students and all grades in 2015-16?",
+      "answer": [
+        "Almira School District (Lincoln)",
+        "Anacortes School District (Skagit)",
+        "Bainbridge Island School District (Kitsap)",
+        "Bellevue School District (King)",
+        "Bellingham School District (Whatcom)",
+        "Blaine School District (Whatcom)",
+        "Camas School District (Clark)",
+        "Carbonado School District (Pierce)",
+        "Central Kitsap School District (Kitsap)",
+        "Chehalis School District (Lewis)"
+      ],
+      "limit": 10
+    },
+    "3": {
+      "source": "datagov/report-card-assessment-data-2016-17-school-year/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-assessment-data-2016-17-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"OrganizationLevel\"] == \"District\")\n    & (df[\"TestSubject\"] == \"ELA\")\n    & (df[\"StudentGroup\"] == \"All Students\")\n    & (df[\"GradeLevel\"] == \"All Grades\")\n].copy()\n\nfiltered[\"PercentMetStandard_num\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"),\n    errors=\"coerce\",\n)\n\nanswer = (\n    filtered[filtered[\"PercentMetStandard_num\"] >= 68]\n    [[\"DistrictName\", \"County\"]]\n    .drop_duplicates()\n    .assign(answer=lambda x: x[\"DistrictName\"] + \" (\" + x[\"County\"] + \")\")\n    [\"answer\"]\n    .sort_values()\n    .tolist()\n)\nprint(answer)",
+      "subquestion": "Which Washington school districts had at least 68% English language arts performance for all students and all grades in 2016-17?",
+      "answer": [
+        "Adna School District (Lewis)",
+        "Almira School District (Lincoln)",
+        "Anacortes School District (Skagit)",
+        "Bainbridge Island School District (Kitsap)",
+        "Bellevue School District (King)",
+        "Bickleton School District (Klickitat)",
+        "Camas School District (Clark)",
+        "Carbonado School District (Pierce)",
+        "Central Kitsap School District (Kitsap)",
+        "Centralia School District (Lewis)"
+      ],
+      "limit": 10
+    },
+    "4": {
+      "source": "datagov/report-card-assessment-data-2017-18-school-year/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-assessment-data-2017-18-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"OrganizationLevel\"] == \"District\")\n    & (df[\"TestSubject\"] == \"ELA\")\n    & (df[\"StudentGroup\"] == \"All Students\")\n    & (df[\"GradeLevel\"] == \"All Grades\")\n].copy()\n\nfiltered[\"PercentMetStandard_num\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"),\n    errors=\"coerce\",\n)\n\nanswer = (\n    filtered[filtered[\"PercentMetStandard_num\"] >= 68]\n    [[\"DistrictName\", \"County\"]]\n    .drop_duplicates()\n    .assign(answer=lambda x: x[\"DistrictName\"] + \" (\" + x[\"County\"] + \")\")\n    [\"answer\"]\n    .sort_values()\n    .tolist()\n)\nprint(answer)",
+      "subquestion": "Which Washington school districts had at least 68% English language arts performance for all students and all grades in 2017-18?",
+      "answer": [
+        "Almira School District (Lincoln)",
+        "Anacortes School District (Skagit)",
+        "Bainbridge Island School District (Kitsap)",
+        "Bellevue School District (King)",
+        "Blaine School District (Whatcom)",
+        "Camas School District (Clark)",
+        "Carbonado School District (Pierce)",
+        "Central Kitsap School District (Kitsap)",
+        "Centralia School District (Lewis)",
+        "Colfax School District (Whitman)"
+      ],
+      "limit": 10
+    },
+    "5": {
+      "source": "wikipedia/Eastern_Washington/content.txt",
+      "fact": "Counties\nEastern Washington is composed of:\n\n Adams\n Asotin\n Benton\n Chelan\n Columbia\n Douglas\n Ferry\n Franklin\n Garfield\n Grant\n Kittitas\n Klickitat\n Lincoln\n Okanogan\n Pend Oreille\n Spokane\n Stevens\n Walla Walla\n Whitman\n Yakima",
+      "subquestion": "Among <hop 1 answer>, which counties are in Eastern Washington?",
+      "answer": [
+        "Whitman",
+        "Spokane"
+      ]
+    },
+    "6": {
+      "source": "wikipedia/Whitman_County,_Washington/content.txt",
+      "fact": "Adjacent counties\n\nSpokane County - north\nBenewah County, Idaho - northeast\nLatah County, Idaho - east\nNez Perce County, Idaho - southeast\nAsotin County -  south/southeast\nGarfield County - south\nColumbia County - south\nFranklin County - southwest\nAdams County - west\nLincoln County - northwest\n\nMajor highways\n\n25px U.S. Route 195\n25px State Route 23\n25px State Route 26\n25px State Route 27\n25px State Route 127\n25px State Route 270\n25px State Route 271\n25px State Route 272\n\nAirports\nPullman–Moscow Regional Airport: Airport with GA operations and a few airline flights with Alaska Airlines\nPort of Whitman Business Air Center Airport: Small GA Airport in Colfax\n\nDemographics\n\n2020 census\n\nAs of the 2020 census, the county had a population of 47,973.",
+      "subquestion": "Among <hop 2 answer>, does Whitman County border Idaho, and was its 2020 census population under 300,000?",
+      "answer": "Whitman County borders Idaho and had a 2020 population of 47,973, so it meets both criteria."
+    },
+    "7": {
+      "source": "wikipedia/Spokane_County,_Washington/content.txt",
+      "fact": "Adjacent counties\n\nStevens County - north\nBonner County, Idaho - northeast\nKootenai County, Idaho - east\nBenewah County, Idaho - southeast\nLatah County, Idaho - south\nWhitman County - southwest\nLincoln County - west\nPend Oreille County - northwest\n\nDemographics\n\n2020 census\n\nAs of the census of 2020, there were 539,339 people, 209,233 households, and 128,483 families residing in the county.",
+      "subquestion": "Among <hop 2 answer>, does Spokane County border Idaho, and was its 2020 census population under 300,000?",
+      "answer": "Spokane County borders Idaho, but its 2020 population was 539,339, so it does not meet both criteria."
+    },
+    "8": {
+      "source": "wikipedia/Pullman,_Washington/content.txt",
+      "fact": "Pullman is a city in Whitman County, Washington, United States. The population was 32,256 at the 2020 census, making it the most populous city in Whitman County. Located in southeastern Washington, Pullman lies within the Palouse region of the Pacific Northwest",
+      "subquestion": "What is the most populous city in <hop 3 answer> at the 2020 census?",
+      "answer": "Pullman"
+    },
+    "9": {
+      "source": "wikipedia/Washington_State_University/content.txt",
+      "fact": "Washington State University (WSU, or colloquially Wazzu) is a public land-grant research university in Pullman, Washington, United States. Founded in 1890, WSU is also one of the oldest land-grant universities in the American West. With an undergraduate enrollment of 24,278 and a total enrollment of 28,581, it is the second largest institution of higher education in Washington state behind the University of Washington. It is classified among \"R1: Doctoral Universities – Very high research activity\".",
+      "subquestion": "As of 2025, what was the total enrollment of the public research university in <hop 4 answer>?",
+      "answer": 28581
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Eastern_Washington/content.txt",
+    "wikipedia/Whitman_County,_Washington/content.txt",
+    "wikipedia/Spokane_County,_Washington/content.txt",
+    "wikipedia/Pullman,_Washington/content.txt",
+    "datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt",
+    "datagov/report-card-assessment-data-2014-15-school-year/signed-metadata.txt",
+    "datagov/report-card-assessment-data-2014-15-school-year/files/jjrr-uy75.txt",
+    "datagov/report-card-assessment-data-2015-16-school-year/files/rows.txt",
+    "datagov/report-card-assessment-data-2015-16-school-year/signed-metadata.txt",
+    "datagov/report-card-assessment-data-2015-16-school-year/files/6hhp-ynqb.txt",
+    "datagov/report-card-assessment-data-2016-17-school-year/files/rows.txt",
+    "datagov/report-card-assessment-data-2016-17-school-year/signed-metadata.txt",
+    "datagov/report-card-assessment-data-2016-17-school-year/files/5tvk-w2c5.txt",
+    "datagov/report-card-assessment-data-2017-18-school-year/files/rows.txt",
+    "datagov/report-card-assessment-data-2017-18-school-year/signed-metadata.txt",
+    "datagov/report-card-assessment-data-2017-18-school-year/files/spyf-ga46.txt",
+    "wikipedia/Washington_State_University/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `OrganizationLevel` = `District`, `TestSubject` = `ELA`, `StudentGroup` = `All Students`, `GradeLevel` = `All Grades`, convert `PercentMetStandard` to numeric, keep districts with `PercentMetStandard >= 68`, and return distinct `DistrictName` + `County` pairs for 2014-15.",
+        "Node 2: Apply the same district-level ELA filter for 2015-16 and return distinct `DistrictName` + `County` pairs.",
+        "Node 3: Apply the same district-level ELA filter for 2016-17 and return distinct `DistrictName` + `County` pairs.",
+        "Node 4: Apply the same district-level ELA filter for 2017-18 and return distinct `DistrictName` + `County` pairs.",
+        "Hop result: counties represented by qualifying districts in all four years = King, Clark, Pierce, Whitman, Thurston, Spokane."
+      ],
+      "answer": [
+        "King",
+        "Clark",
+        "Pierce",
+        "Whitman",
+        "Thurston",
+        "Spokane"
+      ]
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        "5"
+      ],
+      "reasoning": [
+        "Node 5: <hop 1 answer> in Eastern Washington = Whitman, Spokane.",
+        "Hop result: Whitman, Spokane."
+      ],
+      "answer": [
+        "Whitman",
+        "Spokane"
+      ]
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        "6",
+        "7"
+      ],
+      "reasoning": [
+        "Node 6: Whitman County borders Idaho and had a 2020 population of 47,973.",
+        "Node 7: Spokane County borders Idaho and had a 2020 population of 539,339.",
+        "Hop result: county in <hop 2 answer> that borders Idaho and had 2020 population under 300,000 = Whitman County."
+      ],
+      "answer": "Whitman County"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        "8"
+      ],
+      "reasoning": [
+        "Node 8: Pullman is the most populous city in Whitman County at the 2020 census.",
+        "Hop result: Pullman."
+      ],
+      "answer": "Pullman"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        "9"
+      ],
+      "reasoning": [
+        "Node 9: <hop 4 answer> is Pullman; Washington State University is a public land-grant research university in Pullman with a total enrollment of 28,581.",
+        "Hop result: the requested enrollment is 28,581."
+      ],
+      "answer": 28581
+    }
+  ]
+}

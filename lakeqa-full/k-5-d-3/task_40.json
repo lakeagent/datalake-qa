@@ -1,0 +1,134 @@
+{
+    "question": "We define a dangerous incident as an arrest where drugs or alcohol are present, and weapons are existed. In the city where Kenan Stadium is located, which zip code has the 2nd highest number of dangerous incidents? In the area of that zip code, which offense is 71st most common? Then, how many records with that offense happened in Chicago in 2021, 2023, and 2024? Using the smallest value in those records as year, what is the average acreage newly preserved across all agriculture-preservation programs in that year? Return the result in the format [Answer].",
+    "answer": "1226",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Kenan_Stadium/content.txt",
+            "fact": "Kenan Stadium is located in Chapel Hill, North Carolina.",
+            "subquestion": "Which city is Kenan Stadium located in?",
+            "answer": "Chapel Hill"
+        },
+        "2": {
+            "source": "datagov/police-arrests-made/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/police-arrests-made/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nnode_1_answer = \"Chapel Hill\"\ncity = str(node_1_answer).strip().upper()\ndf[\"City\"] = df[\"City\"].fillna(\"\").astype(str).str.strip().str.upper()\ndf[\"Zipcode\"] = df[\"Zipcode\"].fillna(\"\").astype(str).str.strip().str.replace(r\"\\\\.0$\", \"\", regex=True)\ndf[\"Drugs_or_Alcohol_Present\"] = df[\"Drugs_or_Alcohol_Present\"].fillna(\"\").astype(str).str.strip().str.upper()\ndf[\"Weapon_Present\"] = df[\"Weapon_Present\"].fillna(\"\").astype(str).str.strip().str.upper()\nfiltered = df[\n    df[\"City\"].eq(city)\n    & df[\"Drugs_or_Alcohol_Present\"].eq(\"Y\")\n    & df[\"Weapon_Present\"].ne(\"\")\n    & df[\"Weapon_Present\"].ne(\"UNARMED\")\n    & df[\"Weapon_Present\"].ne(\"<NULL>\")\n].copy()\nranked = (\n    filtered.groupby(\"Zipcode\", as_index=False)\n    .size()\n    .rename(columns={\"size\": \"dangerous_incidents\"})\n    .sort_values([\"dangerous_incidents\", \"Zipcode\"], ascending=[False, True], kind=\"mergesort\")\n    .reset_index(drop=True)\n)\nanswer = str(ranked.iloc[1][\"Zipcode\"])\n",
+            "subquestion": "Define a dangerous incident as an arrest where drugs or alcohol are present, and weapons are existed. In the area of <node_1 answer>, which zip code has the 2nd highest number of dangerous incidents?",
+            "answer": "27516"
+        },
+        "3": {
+            "source": "datagov/police-incident-reports-written/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/police-incident-reports-written/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nnode_2_answer = \"27516\"\ndf[\"Zipcode\"] = df[\"Zipcode\"].fillna(\"\").astype(str).str.strip().str.replace(r\"\\\\.0$\", \"\", regex=True)\ndf[\"Offense\"] = df[\"Offense\"].fillna(\"\").astype(str).str.strip()\nfiltered = df[\n    df[\"Zipcode\"].eq(str(node_2_answer).strip())\n    & df[\"Offense\"].ne(\"\")\n    & df[\"Offense\"].ne(\"<Null>\")\n].copy()\nranked = (\n    filtered.groupby(\"Offense\", as_index=False)\n    .size()\n    .rename(columns={\"size\": \"count\"})\n    .sort_values([\"count\", \"Offense\"], ascending=[False, True], kind=\"mergesort\")\n    .reset_index(drop=True)\n)\nanswer = str(ranked.iloc[70][\"Offense\"])\n",
+            "subquestion": "In areas of zip code <node_2 answer>, which offense is 71st most common?",
+            "answer": "ROBBERY"
+        },
+        "4": {
+            "source": "datagov/crime-incidents-in-2021/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/crime-incidents-in-2021/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nnode_3_answer = \"ROBBERY\"\ndf[\"OFFENSE\"] = df[\"OFFENSE\"].fillna(\"\").astype(str).str.strip()\nanswer = str(int(df[\"OFFENSE\"].eq(str(node_3_answer).strip()).sum()))\n",
+            "subquestion": "How many records with offense <node_3 answer> happened in Chicago in 2021?",
+            "answer": "2043"
+        },
+        "5": {
+            "source": "datagov/crime-incidents-in-2023/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/crime-incidents-in-2023/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nnode_3_answer = \"ROBBERY\"\ndf[\"OFFENSE\"] = df[\"OFFENSE\"].fillna(\"\").astype(str).str.strip()\nanswer = str(int(df[\"OFFENSE\"].eq(str(node_3_answer).strip()).sum()))\n",
+            "subquestion": "How many records with offense <node_3 answer> happened in Chicago in 2023?",
+            "answer": "3463"
+        },
+        "6": {
+            "source": "datagov/crime-incidents-in-2024/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/crime-incidents-in-2024/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nnode_3_answer = \"ROBBERY\"\ndf[\"OFFENSE\"] = df[\"OFFENSE\"].fillna(\"\").astype(str).str.strip()\nanswer = str(int(df[\"OFFENSE\"].eq(str(node_3_answer).strip()).sum()))\n",
+            "subquestion": "How many records with offense <node_3 answer> happened in Chicago in 2024?",
+            "answer": "1986"
+        },
+        "7": {
+            "source": "datagov/agriculture-preservation-acreage-programs/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/agriculture-preservation-acreage-programs/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_4_answer = \"2043\"\nnode_5_answer = \"3463\"\nnode_6_answer = \"1986\"\nyear = str(min(int(str(value).strip()) for value in [node_4_answer, node_5_answer, node_6_answer]))\nprogram_col = \"Programs          For Fiscal Year\"\ndf[program_col] = df[program_col].fillna(\"\").astype(str).str.strip()\ndf[year] = pd.to_numeric(df[year].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nexclude = {\n    \"Cummulative Acres\",\n    \"Purchase of Development Right easements\",\n    \"Transferrable Development Rights\",\n}\nfiltered = df[~df[program_col].isin(exclude) & df[year].notna()].copy()\nanswer = str(int(filtered[year].mean()))\n",
+            "subquestion": "Using the smallest value in <node_4 answer>, <node_5 answer>, and <node_6 answer> as year, what is the average acreage newly saved across all programs in that year?",
+            "answer": "1226"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Kenan_Stadium/content.txt",
+        "datagov/police-arrests-made/files/data.txt",
+        "datagov/police-arrests-made/files/0.txt",
+        "datagov/police-arrests-made/files/0.arcgis-layer.json",
+        "datagov/police-incident-reports-written/files/data.txt",
+        "datagov/police-incident-reports-written/files/0.txt",
+        "datagov/police-incident-reports-written/files/0.arcgis-layer.json",
+        "datagov/crime-incidents-in-2021/files/data.txt",
+        "datagov/crime-incidents-in-2021/signed-metadata.txt",
+        "datagov/crime-incidents-in-2021/files/3.arcgis-layer.json",
+        "datagov/crime-incidents-in-2023/files/data.txt",
+        "datagov/crime-incidents-in-2023/signed-metadata.txt",
+        "datagov/crime-incidents-in-2023/files/5.arcgis-layer.json",
+        "datagov/crime-incidents-in-2024/files/data.txt",
+        "datagov/crime-incidents-in-2024/signed-metadata.txt",
+        "datagov/crime-incidents-in-2024/files/6.arcgis-layer.json",
+        "datagov/agriculture-preservation-acreage-programs/files/rows.txt",
+        "datagov/agriculture-preservation-acreage-programs/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Kenan Stadium is located in Chapel Hill, North Carolina.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Chapel Hill"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Restrict police arrests to Chapel Hill and define dangerous incidents as arrests where drugs or alcohol are present, and weapons are existed.",
+                "Rank zip codes by dangerous incident count descending.",
+                "The 2nd highest zip code is 27516.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "27516"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: In zip code 27516, count offenses and rank them by frequency descending.",
+                "The 71st offense is ROBBERY.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "ROBBERY"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: In the 2021 Chicago crime incidents dataset, count records where OFFENSE = ROBBERY. The count is 2043.",
+                "Node 5: In the 2023 Chicago crime incidents dataset, count records where OFFENSE = ROBBERY. The count is 3463.",
+                "Node 6: In the 2024 Chicago crime incidents dataset, count records where OFFENSE = ROBBERY. The count is 1986.",
+                "Hop result: 2043, 3463, 1986"
+            ],
+            "answer": "2043, 3463, 1986"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Take the smallest value among the node 4, node 5, and node 6 answers, which is 1986, and use it as the fiscal year.",
+                "In the Agriculture Preservation Acreage Programs dataset, average the 1986 newly saved acreage values across the program rows with reported numeric values, excluding the cumulative row and duplicated aggregate rows.",
+                "The remaining 1986 values are 351, 0, 0, and 4553, whose average is 1226.",
+                "Hop result: 1226"
+            ],
+            "answer": "1226"
+        }
+    ]
+}

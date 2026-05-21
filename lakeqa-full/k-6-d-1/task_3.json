@@ -1,0 +1,126 @@
+{
+  "question": "Starting with the Bryan Park shelter that had the most rentals between 2001 and 2018, follow the avenue in its name to the direction with the most recorded sidewalk length. Find the volunteer partner address on that segment, then use Bloomington's address records and the municipal boundary to identify the city containing that address. What is the Köppen climate classification of that city? Return the classification code only. Your response should be in the format [Answer].",
+  "answer": "Dfa",
+  "nodes": {
+    "1": {
+      "source": "datagov/2001-2018-shelter-rentals/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2001-2018-shelter-rentals/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nbryan_cols = [\n    'Henderson  Bryan Park',\n    'North               Bryan Park',\n    'Woodlawn  Bryan Park',\n]\nfor col in bryan_cols:\n    df[col] = pd.to_numeric(df[col], errors='coerce')\n\ntotals = df[bryan_cols].sum().sort_values(ascending=False)\nassert totals.iloc[0] > totals.iloc[1]\nanswer = str(totals.index[0]).replace('  ', ' ').replace('               ', ' ').strip()\n",
+      "subquestion": "Between 2001 and 2018, which Bryan Park shelter had the most rentals?",
+      "answer": "Woodlawn Bryan Park"
+    },
+    "2": {
+      "source": "datagov/bloomington-sidewalk-inventory-e34a7/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/bloomington-sidewalk-inventory-e34a7/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nstreet_options = ['N Woodlawn AVE', 'S Woodlawn AVE']\ndf['Street Name'] = df['Street Name'].astype(str).str.strip()\ndf['Length (ft)'] = pd.to_numeric(df['Length (ft)'], errors='coerce')\nranked = (\n    df[df['Street Name'].isin(street_options)]\n    .groupby('Street Name', as_index=False)['Length (ft)']\n    .sum()\n    .sort_values(['Length (ft)', 'Street Name'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'Length (ft)'] > ranked.loc[1, 'Length (ft)']\nanswer = str(ranked.loc[0, 'Street Name']).strip()\n",
+      "subquestion": "On the avenue in <hop 1 answer>, which direction has the greatest total recorded sidewalk length in Bloomington?",
+      "answer": "N Woodlawn AVE"
+    },
+    "3": {
+      "source": "datagov/bloomington-volunteer-network-partner-organizations/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/bloomington-volunteer-network-partner-organizations/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ntarget = str(node_2_answer).strip().upper().replace('.', '')\ndf['address_norm'] = (\n    df['address']\n    .astype(str)\n    .str.upper()\n    .str.replace('.', '', regex=False)\n    .str.replace('AVENUE', 'AVE', regex=False)\n    .str.replace(',', '', regex=False)\n    .str.strip()\n)\nmatched = sorted(\n    {\n        addr\n        for addr in df.loc[df['address_norm'].str.contains(target, na=False), 'address_norm'].tolist()\n        if addr and addr.lower() != 'nan'\n    }\n)\nassert matched == ['700 N WOODLAWN AVE']\nanswer = '700 N Woodlawn AVE'\n",
+      "subquestion": "What street address is Bloomington's volunteer partner on <hop 2 answer> located at?",
+      "answer": "700 N Woodlawn AVE"
+    },
+    "4": {
+      "source": "datagov/address-points-bloomington-f180c/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/address-points-bloomington-f180c/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, usecols=['Full Street Address', 'Latitude', 'Longitude', 'Location Use Type'], dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), usecols=['Full Street Address', 'Latitude', 'Longitude', 'Location Use Type'], dtype=str, low_memory=False)\n\ndf['Full Street Address'] = df['Full Street Address'].astype(str).str.strip().str.upper()\nmatched = df[df['Full Street Address'].eq(str(node_3_answer).strip().upper())].reset_index(drop=True)\nassert len(matched) == 1\nassert matched.loc[0, 'Location Use Type'] == 'Educational'\nlat = matched.loc[0, 'Latitude'].strip()\nlon = matched.loc[0, 'Longitude'].strip()\nanswer = f'{lat}, {lon}'\n",
+      "subquestion": "In Bloomington's address records, what coordinates are listed for <hop 3 answer>?",
+      "answer": "39.17274244, -86.52314395"
+    },
+    "5": {
+      "source": "datagov/bloomington-municipal-boundary-e8f0c/files/rows.txt",
+      "fact": "import io\nimport os\nimport re\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/bloomington-municipal-boundary-e8f0c/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, usecols=['Municipality Name', 'Geometry'], dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), usecols=['Municipality Name', 'Geometry'], dtype=str, low_memory=False)\n\nlat_str, lon_str = [part.strip() for part in str(node_4_answer).split(',')]\nlat = float(lat_str)\nlon = float(lon_str)\n\ndef point_in_ring(x, y, ring):\n    inside = False\n    for i, (x1, y1) in enumerate(ring):\n        x2, y2 = ring[(i + 1) % len(ring)]\n        if (y1 > y) != (y2 > y):\n            xin = (x2 - x1) * (y - y1) / (y2 - y1) + x1\n            if x < xin:\n                inside = not inside\n    return inside\n\ndef point_in_geometry(x, y, wkt):\n    cleaned = str(wkt).replace('MULTIPOLYGON', '').replace('POLYGON', '').strip(' ()')\n    for part in re.split(r'\\)\\s*,\\s*\\(', cleaned):\n        nums = [float(v) for v in re.findall(r'-?\\d+\\.\\d+(?:e[+-]?\\d+)?|-?\\d+', part)]\n        ring = list(zip(nums[::2], nums[1::2]))\n        if ring and point_in_ring(x, y, ring):\n            return True\n    return False\n\nmatched = df[df['Geometry'].fillna('').apply(lambda g: point_in_geometry(lon, lat, g))].reset_index(drop=True)\nassert len(matched) == 1\nanswer = str(matched.loc[0, 'Municipality Name']).strip()\n",
+      "subquestion": "Which city or town contains the coordinates in <hop 4 answer>?",
+      "answer": "Bloomington"
+    },
+    "6": {
+      "source": "wikipedia/Bloomington,_Indiana/content.txt",
+      "fact": "Bloomington has a hot-summer humid continental climate (Köppen Dfa).",
+      "subquestion": "What is the Köppen climate classification of <hop 5 answer>?",
+      "answer": "Dfa"
+    }
+  },
+  "datasets_used": [
+    "datagov/2001-2018-shelter-rentals/files/rows.txt",
+    "datagov/2001-2018-shelter-rentals/signed-metadata.txt",
+    "datagov/bloomington-sidewalk-inventory-e34a7/files/rows.txt",
+    "datagov/bloomington-sidewalk-inventory-e34a7/signed-metadata.txt",
+    "datagov/bloomington-sidewalk-inventory-e34a7/files/59er-4n3f.txt",
+    "datagov/bloomington-volunteer-network-partner-organizations/files/rows.txt",
+    "datagov/bloomington-volunteer-network-partner-organizations/signed-metadata.txt",
+    "datagov/address-points-bloomington-f180c/files/rows.txt",
+    "datagov/address-points-bloomington-f180c/signed-metadata.txt",
+    "datagov/address-points-bloomington-f180c/files/b8yb-iwu6.txt",
+    "datagov/bloomington-municipal-boundary-e8f0c/files/rows.txt",
+    "datagov/bloomington-municipal-boundary-e8f0c/signed-metadata.txt",
+    "datagov/bloomington-municipal-boundary-e8f0c/files/apcz-492v.txt",
+    "wikipedia/Bloomington,_Indiana/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Across the full 2001-2018 Bloomington shelter-rentals file, Woodlawn Bryan Park recorded 1,473 rentals, ahead of Henderson Bryan Park with 1,384 and North Bryan Park with 1,165.",
+        "Hop result: `Woodlawn Bryan Park`."
+      ],
+      "answer": "Woodlawn Bryan Park"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: In the Bloomington sidewalk inventory, N Woodlawn AVE has 6,868.8 feet of recorded sidewalk, ahead of S Woodlawn AVE with 5,165.8 feet.",
+        "Hop result: `N Woodlawn AVE`."
+      ],
+      "answer": "N Woodlawn AVE"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: On N Woodlawn AVE, Bloomington's volunteer partner file has one matching street address: 700 N Woodlawn Ave.",
+        "Hop result: `700 N Woodlawn AVE`."
+      ],
+      "answer": "700 N Woodlawn AVE"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: In Bloomington address records, 700 N Woodlawn AVE has latitude 39.17274244 and longitude -86.52314395.",
+        "Hop result: `39.17274244, -86.52314395`."
+      ],
+      "answer": "39.17274244, -86.52314395"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: In the municipal-boundary layer, the coordinates from <hop 4 answer> fall in Bloomington.",
+        "Hop result: the city is `Bloomington`."
+      ],
+      "answer": "Bloomington"
+    },
+    {
+      "hop": 6,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: The city from <hop 5 answer> has a hot-summer humid continental climate with Köppen classification Dfa.",
+        "Hop result: `Dfa`."
+      ],
+      "answer": "Dfa"
+    }
+  ]
+}

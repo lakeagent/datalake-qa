@@ -1,0 +1,76 @@
+{
+    "question": "Can you find the most common sector in 2023 for incidents recorded in the dispatch system reported by Austin Police for the council district whose number is associated with Mike Siegel. For that sector, find which council district has the most searches according to released data about the type of searches conducted by Austin Police in 2023, and only report the number of use-of-force incidents in that district where taser is used of the same year. Your response should be in the format [Answer].",
+    "answer": "12",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Austin_City_Council/content.txt",
+            "subquestion": "In the Austin City Council Wikipedia article, which district number is associated with council member Mike Siegel?",
+            "fact": "The Austin City Council article mentions Mike Siegel as the District 7 council member.",
+            "answer": "7"
+        },
+        "2": {
+            "source": "datagov/apd-computer-aided-dispatch-incidents/files/rows.txt",
+            "subquestion": "In 2023, within council district <node_1 answer>, which sector is most common?",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\n    load_dotenv(\"../.env\")\nexcept Exception:\n    pass\n\nsource = \"datagov/apd-computer-aided-dispatch-incidents/files/rows.txt\"\nbucket = os.environ.get(\"LAKEQA_BUCKET\", \"lakeqa-yc4103-datalake\")\nlocal_path = source if os.path.exists(source) else f\"/tmp/k123_data_cache/{source}\"\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\n\nnode_1_answer = \"7\"\ndistrict_value = pd.to_numeric(pd.Series([node_1_answer]), errors=\"coerce\").iloc[0]\n\nif pd.isna(district_value):\n    raise ValueError(\"node_1_answer is not a numeric council district.\")\n\ncounts = {}\n\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"Response Year\", \"Council District\", \"Sector\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    years = pd.to_numeric(chunk[\"Response Year\"], errors=\"coerce\")\n    districts = pd.to_numeric(chunk[\"Council District\"], errors=\"coerce\")\n\n    filtered = chunk[\n        years.eq(2023)\n        & districts.eq(district_value)\n    ]\n\n    sector_counts = (\n        filtered[\"Sector\"]\n        .astype(str)\n        .str.strip()\n        .replace({\"\": pd.NA, \"nan\": pd.NA, \"None\": pd.NA, \"NULL\": pd.NA})\n        .dropna()\n        .value_counts()\n    )\n\n    for sector, cnt in sector_counts.items():\n        counts[sector] = counts.get(sector, 0) + int(cnt)\n\nif not counts:\n    raise ValueError(\"No matching 2023 dispatch incidents found for the specified council district.\")\n\nmax_count = max(counts.values())\ntop_sectors = [sector for sector, cnt in counts.items() if cnt == max_count]\n\nif len(top_sectors) != 1:\n    raise ValueError(f\"Tie for most common sector: {top_sectors}\")\n\nanswer = str(top_sectors[0])",
+            "answer": "Adam"
+        },
+        "3": {
+            "source": "datagov/apd-searches-by-type/files/rows.txt",
+            "subquestion": "In 2023, within sector <node_2 answer>, which council district has the most searches?",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\n    load_dotenv(\"../.env\")\nexcept Exception:\n    pass\n\nsource = \"datagov/apd-searches-by-type/files/rows.txt\"\nbucket = os.environ.get(\"LAKEQA_BUCKET\", \"lakeqa-yc4103-datalake\")\nlocal_path = source if os.path.exists(source) else f\"/tmp/k123_data_cache/{source}\"\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\n\nnode_2_answer = \"Adam\"\ncounts = {}\n\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"Occurred Year\", \"Sector\", \"Council District\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    years = pd.to_numeric(chunk[\"Occurred Year\"], errors=\"coerce\")\n    sectors = chunk[\"Sector\"].astype(str).str.strip()\n\n    filtered = chunk[\n        years.eq(2023)\n        & sectors.str.lower().eq(node_2_answer.lower())\n    ]\n\n    district_counts = (\n        pd.to_numeric(filtered[\"Council District\"], errors=\"coerce\")\n        .dropna()\n        .astype(int)\n        .value_counts()\n    )\n\n    for district, cnt in district_counts.items():\n        counts[int(district)] = counts.get(int(district), 0) + int(cnt)\n\nif not counts:\n    raise ValueError(\"No matching 2023 search rows found for the specified sector.\")\n\nmax_count = max(counts.values())\ntop_districts = [district for district, cnt in counts.items() if cnt == max_count]\n\nif len(top_districts) != 1:\n    raise ValueError(f\"Tie for council district with most searches: {top_districts}\")\n\nanswer = str(int(top_districts[0]))",
+            "answer": "6"
+        },
+        "4": {
+            "source": "datagov/apd-use-of-force/files/rows.txt",
+            "subquestion": "In 2023 APD use-of-force data, how many incidents with Used Taser(s) > 0 occurred in council district <node_3 answer>?",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\n    load_dotenv(\"../.env\")\nexcept Exception:\n    pass\n\nsource = \"datagov/apd-use-of-force/files/rows.txt\"\nbucket = os.environ.get(\"LAKEQA_BUCKET\", \"lakeqa-yc4103-datalake\")\nlocal_path = source if os.path.exists(source) else f\"/tmp/k123_data_cache/{source}\"\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\n\nnode_3_answer = \"6\"\ndistrict_value = pd.to_numeric(pd.Series([node_3_answer]), errors=\"coerce\").iloc[0]\n\nif pd.isna(district_value):\n    raise ValueError(\"node_3_answer is not a numeric council district.\")\n\ncount = 0\n\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"Occurred Date\", \"Council District\", \"Used Taser(s)\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    years = pd.to_datetime(chunk[\"Occurred Date\"], errors=\"coerce\").dt.year\n    districts = pd.to_numeric(chunk[\"Council District\"], errors=\"coerce\")\n    tasers = pd.to_numeric(chunk[\"Used Taser(s)\"], errors=\"coerce\").fillna(0)\n\n    count += int(\n        (\n            years.eq(2023)\n            & districts.eq(district_value)\n            & tasers.gt(0)\n        ).sum()\n    )\n\nanswer = str(count)",
+            "answer": "12"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Austin_City_Council/content.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/files/rows.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/signed-metadata.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/files/22de-7rzg.publisher-view.json",
+        "datagov/apd-searches-by-type/files/rows.txt",
+        "datagov/apd-searches-by-type/signed-metadata.txt",
+        "datagov/apd-searches-by-type/files/j8ta-6rms.publisher-view.json",
+        "datagov/apd-use-of-force/files/rows.txt",
+        "datagov/apd-use-of-force/signed-metadata.txt",
+        "datagov/apd-use-of-force/files/8dc8-gj97.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": "Node 1: Mike Siegel is associated with District 7 in the Austin City Council article.",
+            "answer": "7"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": "Node 2 depends on node 1: In 2023 CAD incidents, within council district 7, the most common sector is Adam.",
+            "answer": "Adam"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": "Node 3 depends on node 2: In 2023 searches-by-type data, within sector Adam, council district 6 has the most searches.",
+            "answer": "6"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": "Node 4 depends on node 3: In 2023 use-of-force data, council district 6 has 12 incidents with Used Taser(s) > 0.",
+            "answer": "12"
+        }
+    ]
+}

@@ -1,0 +1,139 @@
+{
+  "question": "Among Montgomery County farms listed for public tours in 2023, find the city with the most entries that are open both days and include animals. For that city, find the shared ZIP code in agricultural-producer farm entries, then use that ZIP code to find the acquisition year of the largest farmland or conservation easement by recorded acreage. In that year, identify the individual farmland-preservation program with the most acres. For that fiscal year, calculate how many certified cover-crop acres there were per acre in the leading individual farmland-preservation program, then scale that by the average transfer-development-right price per dollar of agricultural transfer tax collected. Round your answer to 2 decimal places, and return as [ANSWER].",
+  "answer": "0.61",
+  "nodes": {
+    "1": {
+      "source": "datagov/2023-farm-tour/files/rows.txt",
+      "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2023-farm-tour/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, usecols=['Farm', 'Saturday and Sunday', 'Animals', 'Location'], low_memory=False)\n\ndef clean_city(city):\n    city = re.sub(r'\\bMD\\b', ' ', str(city), flags=re.I)\n    city = re.sub(r'\\b\\d{5}(?:-\\d{4})?\\b', ' ', city)\n    city = re.sub(r\"[^A-Za-z .'-]\", ' ', city)\n    return ' '.join(city.split()).upper()\n\ndef parse_city(location):\n    text = str(location).replace('\\r', '\\n')\n    lines = [line.strip() for line in text.split('\\n') if line.strip()]\n    tail = lines[-1] if lines else text.strip()\n    candidates = [tail]\n    parts = re.split(r'\\s{2,}', tail)\n    if len(parts) > 1:\n        candidates.append(parts[-1])\n    for candidate in candidates:\n        match = re.match(r\"^([A-Za-z .'-]+),?\\s+(?:MD\\s+)?\\d{5}(?:-\\d{4})?$\", candidate, flags=re.I)\n        if match:\n            return clean_city(match.group(1))\n    match = re.search(r\",\\s*([A-Za-z .'-]+)\\s*,?\\s+MD\\s+\\d{5}(?:-\\d{4})?\", text, flags=re.I)\n    if match:\n        return clean_city(match.group(1))\n    match = re.search(r\",\\s*([A-Za-z .'-]+)\\s+\\d{5}(?:-\\d{4})?\", text, flags=re.I)\n    if match:\n        return clean_city(match.group(1))\n    match = re.search(r\".*\\b(?:Rd|Road|St|Street|Ave|Avenue|Dr|Drive|Ln|Lane|Cir|Circle)\\.?\\s+([A-Za-z .'-]+),\\s*\\d{5}\", text, flags=re.I | re.S)\n    if match:\n        return clean_city(match.group(1))\n    return clean_city(tail)\n\nfiltered = df[\n    df['Saturday and Sunday'].astype(str).str.strip().str.casefold().eq('true')\n    & df['Animals'].astype(str).str.strip().str.casefold().eq('true')\n].copy()\nfiltered['city'] = filtered['Location'].map(parse_city)\ncounts = filtered['city'].dropna().value_counts()\nanswer = str(counts.idxmax()).title()\n",
+      "subquestion": "Among Montgomery County farms listed for public tours in 2023, which city has the most entries that are open both Saturday and Sunday and include animals as part of the tour?",
+      "answer": "Poolesville"
+    },
+    "2": {
+      "source": "datagov/agricultural-producer-certificates/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/agricultural-producer-certificates/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, usecols=['Farm name', 'City', 'ZIP code', 'PRODUCT_SOLD'], low_memory=False)\n\nnode_1_answer = 'Poolesville'\nfiltered = df[df['City'].astype(str).str.strip().str.upper().eq(node_1_answer.upper())].copy()\nzips = filtered['ZIP code'].astype(str).str.extract(r'(\\d{5})')[0].dropna()\ncounts = zips.value_counts()\nanswer = str(counts.idxmax())\n",
+      "subquestion": "Among agricultural-producer farm entries in <node_1 answer>, what five-digit ZIP code do the listed farms share?",
+      "answer": "20837"
+    },
+    "3": {
+      "source": "datagov/agricultural-and-conservation-easement-inventory/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/agricultural-and-conservation-easement-inventory/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, usecols=['Program', 'Date Aquired', 'Property Owner', 'Easement Acres', 'City', 'Zipcode'], low_memory=False)\n\nnode_2_answer = '20837'\nzip_code = str(node_2_answer).strip()\nfiltered = df[df['Zipcode'].astype(str).str.extract(r'(\\d{5})')[0].eq(zip_code)].copy()\nfiltered['Easement Acres'] = pd.to_numeric(filtered['Easement Acres'], errors='coerce')\nranked = filtered.dropna(subset=['Easement Acres']).sort_values(['Easement Acres', 'Property Owner', 'Date Aquired'], ascending=[False, True, True]).reset_index(drop=True)\nrow = ranked.iloc[0]\nanswer = str(row['Date Aquired']).strip()\n",
+      "subquestion": "For ZIP code <node_2 answer>, what acquisition date is listed for the largest farmland or conservation easement by recorded acreage?",
+      "answer": "Jul-00"
+    },
+    "4": {
+      "source": "datagov/agriculture-preservation-acreage-programs/files/rows.txt",
+      "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/agriculture-preservation-acreage-programs/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n\nnode_3_answer = 'Jul-00'\ndate_text = str(node_3_answer).split('|')[-1].strip()\nyear_token = re.search(r'(\\d{2,4})$', date_text).group(1)\nif len(year_token) == 2:\n    year = str(2000 + int(year_token) if int(year_token) < 50 else 1900 + int(year_token))\nelse:\n    year = year_token\n\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, usecols=['Programs          For Fiscal Year', year], low_memory=False)\ndf[year] = pd.to_numeric(df[year].astype(str).str.replace(',', '', regex=False), errors='coerce')\nfiltered = df[\n    ~df['Programs          For Fiscal Year'].astype(str).str.contains('Cummulative', case=False, na=False)\n].dropna(subset=[year]).copy()\nranked = filtered.sort_values([year, 'Programs          For Fiscal Year'], ascending=[False, True]).reset_index(drop=True)\nrow = ranked.iloc[0]\nanswer = f\"{year} | {str(row['Programs          For Fiscal Year']).strip()} | {int(row[year])} acres\"\n",
+      "subquestion": "Using the year from <node_3 answer>, which individual farmland-preservation program recorded the most acres? Return the year, program name, and acres.",
+      "answer": "2000 | Purchase of Development Right easements | 641 acres"
+    },
+    "5": {
+      "source": "datagov/agricultural-transfer-tax/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/agricultural-transfer-tax/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, usecols=['Fiscal Year', 'Tax collected'], low_memory=False)\n\nnode_4_answer = '2000 | Purchase of Development Right easements | 641 acres'\nyear = str(node_4_answer).split('|')[0].strip()\nfiscal_year = 'FY' + year[-2:]\nrow = df[df['Fiscal Year'].astype(str).str.strip().eq(fiscal_year)].iloc[0]\ntax = float(str(row['Tax collected']).replace(',', ''))\nanswer = f\"${tax:,.2f}\"\n",
+      "subquestion": "How much agricultural transfer tax was collected in Maryland for the <node_4 answer> fiscal year?",
+      "answer": "$2,846,000.00"
+    },
+    "6": {
+      "source": "datagov/agriculture-transfer-development-rights/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/agriculture-transfer-development-rights/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, usecols=['Fiscal Year', 'Average Prices/TDR'], low_memory=False)\n\nnode_4_answer = '2000 | Purchase of Development Right easements | 641 acres'\nyear = str(node_4_answer).split('|')[0].strip()\nrow = df[df['Fiscal Year'].astype(str).str.strip().str.zfill(2).eq(year[-2:])].iloc[0]\nprice = float(str(row['Average Prices/TDR']).replace(',', ''))\nanswer = f\"${price:,.2f}\"\n",
+      "subquestion": "What was the average price per transfer-development right in Maryland for the <node_4 answer> fiscal year?",
+      "answer": "$7,000.00"
+    },
+    "7": {
+      "source": "datagov/chesapeake-bay-pollution-reduction-activities-fy-2000-fy-2014/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/chesapeake-bay-pollution-reduction-activities-fy-2000-fy-2014/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, usecols=['Fiscal Year', 'Certified Cover Crops Acres Planted in Chesapeake Bay Watershed (Annually)'], low_memory=False)\n\nnode_4_answer = '2000 | Purchase of Development Right easements | 641 acres'\nyear = str(node_4_answer).split('|')[0].strip()\nrow = df[df['Fiscal Year'].astype(str).str.strip().eq('FY' + year)].iloc[0]\nacres = int(float(str(row['Certified Cover Crops Acres Planted in Chesapeake Bay Watershed (Annually)']).replace(',', '')))\nanswer = f\"{acres:,} acres\"\n",
+      "subquestion": "How many certified cover-crop acres were planted in the Chesapeake Bay watershed for the <node_4 answer> fiscal year?",
+      "answer": "159,773 acres"
+    }
+  },
+  "datasets_used": [
+    "datagov/2023-farm-tour/files/rows.txt",
+    "datagov/2023-farm-tour/signed-metadata.txt",
+    "datagov/2023-farm-tour/files/columns.txt",
+    "datagov/2023-farm-tour/files/w94a-e3vu.txt",
+    "datagov/agricultural-producer-certificates/files/rows.txt",
+    "datagov/agricultural-producer-certificates/signed-metadata.txt",
+    "datagov/agricultural-producer-certificates/files/columns.txt",
+    "datagov/agricultural-producer-certificates/files/q9df-sa9r.txt",
+    "datagov/agricultural-and-conservation-easement-inventory/files/rows.txt",
+    "datagov/agricultural-and-conservation-easement-inventory/signed-metadata.txt",
+    "datagov/agricultural-and-conservation-easement-inventory/files/columns.txt",
+    "datagov/agricultural-and-conservation-easement-inventory/files/jh6m-rvdj.txt",
+    "datagov/agriculture-preservation-acreage-programs/files/rows.txt",
+    "datagov/agriculture-preservation-acreage-programs/signed-metadata.txt",
+    "datagov/agriculture-preservation-acreage-programs/files/columns.txt",
+    "datagov/agriculture-preservation-acreage-programs/files/wdhv-wrgc.txt",
+    "datagov/agricultural-transfer-tax/files/rows.txt",
+    "datagov/agricultural-transfer-tax/signed-metadata.txt",
+    "datagov/agricultural-transfer-tax/files/columns.txt",
+    "datagov/agricultural-transfer-tax/files/wxa7-rrb8.txt",
+    "datagov/agriculture-transfer-development-rights/files/rows.txt",
+    "datagov/agriculture-transfer-development-rights/signed-metadata.txt",
+    "datagov/chesapeake-bay-pollution-reduction-activities-fy-2000-fy-2014/files/rows.txt",
+    "datagov/chesapeake-bay-pollution-reduction-activities-fy-2000-fy-2014/signed-metadata.txt",
+    "datagov/chesapeake-bay-pollution-reduction-activities-fy-2000-fy-2014/files/columns.txt",
+    "datagov/chesapeake-bay-pollution-reduction-activities-fy-2000-fy-2014/files/2rth-fybg.txt",
+    "datagov/agriculture-transfer-development-rights/files/ue5w-cbi4.publisher-view.json"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the 2023 farm-tour data, count farms by parsed city after filtering to farms open both Saturday and Sunday that list animals; Poolesville has the highest count.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "Poolesville"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: In agricultural producer certificates for Poolesville, the listed farms share ZIP code 20837.",
+        "Hop result: <node_2 answer>"
+      ],
+      "answer": "20837"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: In easement records for ZIP code 20837, the largest farmland or conservation easement by recorded acreage was acquired Jul-00.",
+        "Hop result: <node_3 answer>"
+      ],
+      "answer": "Jul-00"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: The acquisition date Jul-00 gives year 2000. Among individual farmland-preservation programs, Purchase of Development Right easements has the most acres in 2000, with 641 acres.",
+        "Hop result: <node_4 answer>"
+      ],
+      "answer": "2000 | Purchase of Development Right easements | 641 acres"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        5,
+        6,
+        7
+      ],
+      "reasoning": [
+        "Node 5: In FY2000, agricultural transfer tax collected was $2,846,000.00.",
+        "Node 6: In FY2000, the average transfer-development-right price was $7,000.00.",
+        "Node 7: In FY2000, certified cover-crop acres planted in the Chesapeake Bay watershed totaled 159,773.",
+        "Use the 641 acres from hop 4 and compute (159,773 / 641) * (7,000 / 2,846,000).",
+        "Hop result: 0.61"
+      ],
+      "answer": "0.61"
+    }
+  ]
+}

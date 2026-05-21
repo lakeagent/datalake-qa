@@ -1,0 +1,87 @@
+{
+    "question": "I'm analyzing 2022 police activity in Silver Spring, Maryland. First, which Police District recorded the highest number of incidents there? Within that specific district's division, which bureau made the most arrests that year? Finally, for that bureau, which district saw the most incidents where officers apply forces, and how many total incidents occurred in Silver Spring within that district in 2022? Only report the total incidents in your response. Your response should be in the format [Answer].",
+    "answer": "34945",
+    "nodes": {
+        "1": {
+            "source": "datagov/police-dispatched-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/police-dispatched-incidents/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Start Time\"] = pd.to_datetime(df[\"Start Time\"], format=\"%m/%d/%Y %I:%M:%S %p\", errors=\"coerce\")\nresult = (\n    df[\n        df[\"Start Time\"].dt.year.eq(2022)\n        & df[\"City\"].eq(\"SILVER SPRING\")\n    ]\n    .groupby(\"Police District Number\")\n    .size()\n    .reset_index(name=\"incident_count\")\n    .sort_values([\"incident_count\", \"Police District Number\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = result.iloc[0][\"Police District Number\"]\n",
+            "subquestion": "In 2022 police dispatch incidents for Silver Spring, which police district recorded the most incidents?",
+            "answer": "3D"
+        },
+        "2": {
+            "source": "datagov/police-arrests/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/police-arrests/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Event Date/Time\"] = pd.to_datetime(df[\"Event Date/Time\"], format=\"%m/%d/%Y %I:%M:%S %p\", errors=\"coerce\")\nresult = (\n    df[\n        df[\"Event Date/Time\"].dt.year.eq(2022)\n        & df[\"Assigned Division\"].eq(\"3D\")\n    ]\n    .groupby(\"Assigned Bureau\", dropna=False)\n    .size()\n    .reset_index(name=\"arrest_count\")\n    .sort_values([\"arrest_count\", \"Assigned Bureau\"], ascending=[False, True], na_position=\"last\")\n    .reset_index(drop=True)\n)\nanswer = result.iloc[0][\"Assigned Bureau\"]\n",
+            "subquestion": "Within police district <hop 1 answer> in 2022, which bureau made the most arrests?",
+            "answer": "PSB"
+        },
+        "3": {
+            "source": "datagov/pol-use-of-force/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/pol-use-of-force/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Incident Date\"] = pd.to_datetime(df[\"Incident Date\"], format=\"%m/%d/%Y %I:%M:%S %p\", errors=\"coerce\")\nresult = (\n    df[\n        df[\"Incident Date\"].dt.year.eq(2022)\n        & df[\"Bureau of officer's assignment\"].eq(\"PSB\")\n    ]\n    .groupby(\"District of occurrence\", dropna=False)\n    .size()\n    .reset_index(name=\"incident_count\")\n    .sort_values([\"incident_count\", \"District of occurrence\"], ascending=[False, True], na_position=\"last\")\n    .reset_index(drop=True)\n)\nanswer = result.iloc[0][\"District of occurrence\"]\n",
+            "subquestion": "In 2022, for bureau <hop 2 answer>, which district saw the most incidents involving officers using force?",
+            "answer": "3D"
+        },
+        "4": {
+            "source": "datagov/police-dispatched-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/police-dispatched-incidents/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Start Time\"] = pd.to_datetime(df[\"Start Time\"], format=\"%m/%d/%Y %I:%M:%S %p\", errors=\"coerce\")\nfiltered = df[\n    df[\"Start Time\"].dt.year.eq(2022)\n    & df[\"City\"].eq(\"SILVER SPRING\")\n    & df[\"Police District Number\"].eq(\"3D\")\n]\nanswer = int(filtered.shape[0])",
+            "subquestion": "How many total police dispatch incidents occurred in Silver Spring within district <hop 3 answer> in 2022?",
+            "answer": 34945
+        }
+    },
+    "datasets_used": [
+        "datagov/police-dispatched-incidents/files/rows.txt",
+        "datagov/police-dispatched-incidents/signed-metadata.txt",
+        "datagov/police-dispatched-incidents/files/98cc-bc7d.publisher-view.json",
+        "datagov/police-arrests/files/rows.txt",
+        "datagov/police-arrests/signed-metadata.txt",
+        "datagov/police-arrests/files/bep7-ghja.publisher-view.json",
+        "datagov/pol-use-of-force/files/rows.txt",
+        "datagov/pol-use-of-force/signed-metadata.txt",
+        "datagov/pol-use-of-force/files/9e9i-8tfp.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where the year of `Start Time` equals `2022` and `City` equals `SILVER SPRING`, count rows by `Police District Number`, sort descending by the count, and keep the top district.",
+                "Hop result: The police district with the most dispatched incidents in 2022 is `3D`."
+            ],
+            "answer": "3D"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where the year of `Event Date/Time` equals `2022` and `Assigned Division` equals <hop 1 answer>, count rows by `Assigned Bureau`, sort descending by the count, and keep the top bureau.",
+                "Hop result: Within assigned division <hop 1 answer>, the bureau with the most arrests is `PSB`."
+            ],
+            "answer": "PSB"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where the year of `Incident Date` equals `2022` and `Bureau of officer's assignment` equals <hop 2 answer>, count rows by `District of occurrence`, sort descending by the count, and keep the top district.",
+                "Hop result: For bureau <hop 2 answer>, the district with the most use-of-force incidents is `3D`."
+            ],
+            "answer": "3D"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Filter rows where the year of `Start Time` equals `2022`, `City` equals `SILVER SPRING`, and `Police District Number` equals <hop 3 answer>, then count incidents.",
+                "Hop result: The total number of incidents in Silver Spring within district <hop 3 answer> in 2022 is `34945`."
+            ],
+            "answer": 34945
+        }
+    ]
+}

@@ -1,0 +1,47 @@
+{
+  "question": "From 2010 through 2012, first find the Missouri county with the highest average monthly number of first reports of injury after excluding Saint Louis. What was the population of that county at the 2020 census? Please return only the number in the format [Answer].",
+  "answer": 717204,
+  "nodes": {
+    "1": {
+      "source": "datagov/missouri-first-reports-of-injury-by-county/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/missouri-first-reports-of-injury-by-county/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\ndef normalize_county(value):\n    value = str(value).strip().upper()\n    value = value.replace('SAINT', 'ST').replace('ST.', 'ST')\n    value = value.replace(' COUNTY', '').replace(' CO.', ' CO')\n    value = ' '.join(value.split())\n    return value\n\nfiltered = df[\n    df['county'].astype(str).str.strip().ne('MISSING')\n    & pd.to_numeric(df['year'], errors='coerce').between(2010, 2012)\n].copy()\nfiltered['county_norm'] = filtered['county'].map(normalize_county)\nfiltered = filtered[~filtered['county_norm'].str.startswith('ST LOUIS')].copy()\nfiltered['count'] = pd.to_numeric(filtered['count'], errors='coerce')\navg_counts = filtered.groupby('county_norm')['count'].mean().sort_values(ascending=False)\nanswer = str(avg_counts.idxmax()).title()\n",
+      "subquestion": "From 2010 through 2012, which Missouri county had the highest average monthly number of first reports of injury after excluding Saint Louis?",
+      "answer": "Jackson"
+    },
+    "2": {
+      "source": "wikipedia/Jackson_County,_Missouri/content.txt",
+      "fact": "Jackson County is located in the western portion of the U.S. state of Missouri, on the border with Kansas. As of the 2020 census, the population was 717,204. making it the second-most populous county in the state (after St. Louis County in the east). The county seats are Independence and Kansas City, making Jackson County one of 33 U.S. counties with more than one county seat. The county was organized December 15, 1826, and named for former Tennessee senator Andrew Jackson, who would become President of the United States three years later in 1829.",
+      "subquestion": "What was the population of <hop 1 answer> County, Missouri, at the 2020 census?",
+      "answer": 717204
+    }
+  },
+  "datasets_used": [
+    "datagov/missouri-first-reports-of-injury-by-county/files/rows.txt",
+    "datagov/missouri-first-reports-of-injury-by-county/signed-metadata.txt",
+    "wikipedia/Jackson_County,_Missouri/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Across 2010 through 2012, after excluding the St. Louis naming cluster, Jackson has the highest average monthly first-reported injury count at 1,163.972.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "Jackson"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Jackson County, Missouri had a population of 717,204 at the 2020 census.",
+        "Hop result: 717,204."
+      ],
+      "answer": 717204
+    }
+  ]
+}

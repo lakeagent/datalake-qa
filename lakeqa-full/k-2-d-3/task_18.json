@@ -1,0 +1,66 @@
+{
+  "question": "In the Texas city that appeared most often in the mailing addresses for investor-owned water and sewer utilities, for the MLB, NBA, and MLS teams named after that city, how many league championships have those three teams won in total? Please return only the number in the format [Answer].",
+  "answer": 6,
+  "nodes": {
+    "1": {
+      "source": "datagov/public-utility-commission-of-texas-water-and-sewer-investor-owned-utilities-ious/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/public-utility-commission-of-texas-water-and-sewer-investor-owned-utilities-ious/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['City', 'State', 'Certificate of Convenience and Necessity (CCN) Number'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['City', 'State', 'Certificate of Convenience and Necessity (CCN) Number'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['City'] = df['City'].astype(str).str.strip().str.upper()\ndf['State'] = df['State'].astype(str).str.strip().str.upper()\ndf['Certificate of Convenience and Necessity (CCN) Number'] = df['Certificate of Convenience and Necessity (CCN) Number'].astype(str).str.strip()\nranked = (\n    df[\n        df['State'].eq('TX')\n        & df['City'].ne('')\n        & df['Certificate of Convenience and Necessity (CCN) Number'].ne('')\n    ]\n    .groupby('City', as_index=False)['Certificate of Convenience and Necessity (CCN) Number']\n    .count()\n    .sort_values(['Certificate of Convenience and Necessity (CCN) Number', 'City'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'Certificate of Convenience and Necessity (CCN) Number'] > ranked.loc[1, 'Certificate of Convenience and Necessity (CCN) Number']\nanswer = str(ranked.loc[0, 'City']).title()\n",
+      "subquestion": "Which Texas city appeared most often in the mailing addresses for investor-owned water and sewer utilities?",
+      "answer": "Houston"
+    },
+    "2": {
+      "source": "wikipedia/Houston_Astros/content.txt",
+      "fact": "Their fifth pennant in 2022 made them the second team created in the expansion era to win five league pennants (after the Mets) and the fifth expansion team to have won two World Series championships. ",
+      "subquestion": "For the MLB team named for <hop 1 answer>, how many World Series championships has it won?",
+      "answer": 2
+    },
+    "3": {
+      "source": "wikipedia/Houston_Rockets/content.txt",
+      "fact": "The Houston Rockets are an American professional basketball team based in Houston. The Rockets compete in the National Basketball Association (NBA) as a member of the Southwest Division of the Western Conference. The team plays its home games at Toyota Center, located in Downtown Houston. Throughout its history, Houston has won two NBA championships and four Western Conference titles. It was established in 1967 as the San Diego Rockets, an expansion team originally based in San Diego. In 1971, the Rockets relocated to Houston.",
+      "subquestion": "For the NBA team named for <hop 1 answer>, how many NBA championships has it won?",
+      "answer": 2
+    },
+    "4": {
+      "source": "wikipedia/Houston_Dynamo_FC/content.txt",
+      "fact": "The Houston Dynamo have won the MLS Cup twice, doing so during their first two seasons in 2006 and 2007. The club has also won the U.S. Open Cup twice, in 2018 and 2023. They have been MLS Cup runners-up twice, in 2011 and 2012, and Supporters' Shield runners-up once in 2008. The Dynamo have also reached the final of the now defunct North American SuperLiga, finishing as runners-up following a defeat against the New England Revolution.",
+      "subquestion": "For the MLS team named for <hop 1 answer>, how many MLS Cups has it won?",
+      "answer": 2
+    }
+  },
+  "datasets_used": [
+    "datagov/public-utility-commission-of-texas-water-and-sewer-investor-owned-utilities-ious/files/rows.txt",
+    "datagov/public-utility-commission-of-texas-water-and-sewer-investor-owned-utilities-ious/signed-metadata.txt",
+    "datagov/public-utility-commission-of-texas-water-and-sewer-investor-owned-utilities-ious/files/auk8-env9.publisher-view.json",
+    "wikipedia/Houston_Astros/content.txt",
+    "wikipedia/Houston_Rockets/content.txt",
+    "wikipedia/Houston_Dynamo_FC/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the Texas investor-owned water and sewer utility directory, Houston appeared most often in mailing addresses (54 listings), ahead of Austin (32) and Cypress (20).",
+        "Hop result: Houston"
+      ],
+      "answer": "Houston"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 2: The Houston Astros have won two World Series championships.",
+        "Node 3: The Houston Rockets have won two NBA championships.",
+        "Node 4: The Houston Dynamo have won the MLS Cup twice.",
+        "Hop result: 2 + 2 + 2 = 6 league championships across those three teams."
+      ],
+      "answer": 6
+    }
+  ]
+}

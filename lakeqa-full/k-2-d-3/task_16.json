@@ -1,0 +1,81 @@
+{
+  "question": "Among Washington cities that ranked in the top three for crude diabetes prevalence in each city-level GIS release from 2017 through 2019, which of those repeat cities has more sister cities? Return only the city name in the format [Answer].",
+  "answer": "Tacoma",
+  "nodes": {
+    "1": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nwa = df[df['StateAbbr'].astype(str).str.strip().eq('WA')].copy()\nwa['PlaceName'] = wa['PlaceName'].astype(str).str.strip()\nwa['DIABETES_CrudePrev'] = pd.to_numeric(wa['DIABETES_CrudePrev'], errors='coerce')\nranked = (\n    wa[['PlaceName', 'DIABETES_CrudePrev']]\n    .dropna()\n    .sort_values(['DIABETES_CrudePrev', 'PlaceName'], ascending=[False, True])\n    .head(3)\n)\nanswer = '; '.join(ranked['PlaceName'].tolist())\n",
+      "subquestion": "Among Washington cities in the 2017 city-level GIS release, which three had the highest crude diabetes prevalence? Return them as a semicolon-separated list in rank order.",
+      "answer": "Yakima; Tacoma; Kennewick"
+    },
+    "2": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nwa = df[df['StateAbbr'].astype(str).str.strip().eq('WA')].copy()\nwa['PlaceName'] = wa['PlaceName'].astype(str).str.strip()\nwa['DIABETES_CrudePrev'] = pd.to_numeric(wa['DIABETES_CrudePrev'], errors='coerce')\nranked = (\n    wa[['PlaceName', 'DIABETES_CrudePrev']]\n    .dropna()\n    .sort_values(['DIABETES_CrudePrev', 'PlaceName'], ascending=[False, True])\n    .head(3)\n)\nanswer = '; '.join(ranked['PlaceName'].tolist())\n",
+      "subquestion": "Among Washington cities in the 2018 city-level GIS release, which three had the highest crude diabetes prevalence? Return them as a semicolon-separated list in rank order.",
+      "answer": "Yakima; Kennewick; Tacoma"
+    },
+    "3": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nwa = df[df['StateAbbr'].astype(str).str.strip().eq('WA')].copy()\nwa['PlaceName'] = wa['PlaceName'].astype(str).str.strip()\nwa['DIABETES_CrudePrev'] = pd.to_numeric(wa['DIABETES_CrudePrev'], errors='coerce')\nranked = (\n    wa[['PlaceName', 'DIABETES_CrudePrev']]\n    .dropna()\n    .sort_values(['DIABETES_CrudePrev', 'PlaceName'], ascending=[False, True])\n    .head(3)\n)\nanswer = '; '.join(ranked['PlaceName'].tolist())\n",
+      "subquestion": "Among Washington cities in the 2019 city-level GIS release, which three had the highest crude diabetes prevalence? Return them as a semicolon-separated list in rank order.",
+      "answer": "Yakima; Tacoma; Vancouver"
+    },
+    "4": {
+      "source": "wikipedia/Tacoma,_Washington/content.txt",
+      "fact": "Sister cities\nTacoma's sister cities are:\n\n Kitakyushu, Japan (1959)\n Gunsan, South Korea (1978)\n Ålesund, Norway (1986)\n Vladivostok, Russia (1992)\n Fuzhou, China (1994)\n Davao City, Philippines (1994)\n George, South Africa (1997)\n Cienfuegos, Cuba (2000)\n Taichung, Taiwan (2000)\n El Jadida, Morocco (2007)\n Biot, France (2012)\n Boca del Río, Mexico (2016)\n Brovary, Ukraine (2017)",
+      "subquestion": "How many sister cities does the first city from <hop 1 answer> have?",
+      "answer": 13
+    },
+    "5": {
+      "source": "wikipedia/Yakima,_Washington/content.txt",
+      "fact": "Sister cities\n  Morelia, Michoacán, Mexico\n  Itayanagi, Aomori, Japan",
+      "subquestion": "How many sister cities does the second city from <hop 1 answer> have?",
+      "answer": 2
+    }
+  },
+  "datasets_used": [
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/djk3-k3zs.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/pf7q-w24q.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/dxpw-cm5u.publisher-view.json",
+    "wikipedia/Tacoma,_Washington/content.txt",
+    "wikipedia/Yakima,_Washington/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: In the 2017 CDC 500 Cities city-level GIS release, the top three Washington cities by crude diabetes prevalence are Yakima (10.9), Tacoma (9.2), and Kennewick (9.0).",
+        "Node 2: In the 2018 release, the top three Washington cities by crude diabetes prevalence are Yakima (11.0), Kennewick (10.1), and Tacoma (9.7).",
+        "Node 3: In the 2019 release, the top three Washington cities by crude diabetes prevalence are Yakima (11.8), Tacoma (10.3), and Vancouver (9.6).",
+        "Intersecting the three top-three lists leaves Tacoma and Yakima as the repeat high-diabetes cities.",
+        "Hop result: Tacoma; Yakima."
+      ],
+      "answer": "Tacoma; Yakima"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 4: The first city from hop 1, Tacoma, has 13 sister cities.",
+        "Node 5: The second city from hop 1, Yakima, has 2 sister cities.",
+        "Comparing the counts, Tacoma has more sister cities.",
+        "Hop result: Tacoma."
+      ],
+      "answer": "Tacoma"
+    }
+  ]
+}

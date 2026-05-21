@@ -1,0 +1,174 @@
+{
+  "question": "Identify the NYC elementary school in District 3 that ranked in the top 3 by performance category score in each school year from 2006-07 through 2009-10, then find its neighborhood and the notable museums in that neighborhood. Among those museums, which museum has the smallest collection count? Return the museum name only. Your response should be in the format [Answer].",
+  "answer": "Nicholas Roerich Museum",
+  "nodes": {
+    "1": {
+      "source": "datagov/2006-2007-school-progress-report/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2006-2007-school-progress-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nlevel_col = [col for col in df.columns if 'SCHOOL LEVEL' in col.upper()][0]\nperf_col = [col for col in df.columns if 'PERFORMANCE CATEGORY SCORE' in col.upper()][0]\ndf['DISTRICT'] = pd.to_numeric(df['DISTRICT'], errors='coerce')\ndf[perf_col] = pd.to_numeric(df[perf_col], errors='coerce')\nfiltered = df[df['DISTRICT'].eq(3) & df[level_col].astype(str).str.contains('Elementary', case=False, na=False)].copy()\nranked = filtered.sort_values(perf_col, ascending=False, kind='mergesort')\nname_map = {'PS 009 SARAH ANDERSON': 'PS 009 Sarah Anderson', 'PS 199 JESSIE ISADOR STRAUS': 'PS 199 Jessie Isador Straus', 'PS 180 HUGO NEWMAN': 'PS 180 Hugo Newman'}\nanswer = ranked['SCHOOL'].astype(str).str.strip().head(3).map(name_map).tolist()",
+      "subquestion": "Which NYC elementary schools in District 3 ranked in the top 3 by performance category score in 2006-07?",
+      "answer": [
+        "PS 009 Sarah Anderson",
+        "PS 199 Jessie Isador Straus",
+        "PS 180 Hugo Newman"
+      ]
+    },
+    "2": {
+      "source": "datagov/2007-2008-school-progress-report/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2007-2008-school-progress-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nlevel_col = [col for col in df.columns if 'SCHOOL LEVEL' in col.upper()][0]\nperf_col = [col for col in df.columns if 'PERFORMANCE CATEGORY SCORE' in col.upper()][0]\ndf['DISTRICT'] = pd.to_numeric(df['DISTRICT'], errors='coerce')\ndf[perf_col] = pd.to_numeric(df[perf_col], errors='coerce')\nfiltered = df[df['DISTRICT'].eq(3) & df[level_col].astype(str).str.contains('Elementary', case=False, na=False)].copy()\nranked = filtered.sort_values(perf_col, ascending=False, kind='mergesort')\nname_map = {'P.S. 009 SARAH ANDERSON': 'PS 009 Sarah Anderson', 'P.S. 166 THE RICHARD RODGERS SCHOOL OF THE ARTS AND TECHNOLOGY': 'PS 166 Richard Rodgers School', 'P.S. 087 WILLIAM SHERMAN': 'PS 087 William Sherman'}\nanswer = ranked['SCHOOL'].astype(str).str.strip().head(3).map(name_map).tolist()",
+      "subquestion": "Which NYC elementary schools in District 3 ranked in the top 3 by performance category score in 2007-08?",
+      "answer": [
+        "PS 009 Sarah Anderson",
+        "PS 166 Richard Rodgers School",
+        "PS 087 William Sherman"
+      ]
+    },
+    "3": {
+      "source": "datagov/2008-2009-school-progress-report/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2008-2009-school-progress-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nlevel_col = [col for col in df.columns if 'SCHOOL LEVEL' in col.upper()][0]\nperf_col = [col for col in df.columns if 'PERFORMANCE CATEGORY SCORE' in col.upper()][0]\ndf['DISTRICT'] = pd.to_numeric(df['DISTRICT'], errors='coerce')\ndf[perf_col] = pd.to_numeric(df[perf_col], errors='coerce')\nfiltered = df[df['DISTRICT'].eq(3) & df[level_col].astype(str).str.contains('Elementary', case=False, na=False)].copy()\nranked = filtered.sort_values(perf_col, ascending=False, kind='mergesort')\nname_map = {'P.S. 009 SARAH ANDERSON': 'PS 009 Sarah Anderson', 'P.S. 163 ALFRED E. SMITH': 'PS 163 Alfred E. Smith', 'P.S. 087 WILLIAM SHERMAN': 'PS 087 William Sherman'}\nanswer = ranked['SCHOOL'].astype(str).str.strip().head(3).map(name_map).tolist()",
+      "subquestion": "Which NYC elementary schools in District 3 ranked in the top 3 by performance category score in 2008-09?",
+      "answer": [
+        "PS 009 Sarah Anderson",
+        "PS 163 Alfred E. Smith",
+        "PS 087 William Sherman"
+      ]
+    },
+    "4": {
+      "source": "datagov/2009-2010-school-progress-report/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2009-2010-school-progress-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nlevel_col = [col for col in df.columns if 'SCHOOL LEVEL' in col.upper()][0]\nperf_col = [col for col in df.columns if 'PERFORMANCE CATEGORY SCORE' in col.upper()][0]\ndf['DISTRICT'] = pd.to_numeric(df['DISTRICT'], errors='coerce')\ndf[perf_col] = pd.to_numeric(df[perf_col], errors='coerce')\nfiltered = df[df['DISTRICT'].eq(3) & df[level_col].astype(str).str.contains('Elementary', case=False, na=False)].copy()\nranked = filtered.sort_values(perf_col, ascending=False, kind='mergesort')\nname_map = {'P.S. 009 Sarah Anderson': 'PS 009 Sarah Anderson', 'P.S. 199 Jessie Isador Straus': 'PS 199 Jessie Isador Straus', 'P.S. 163 Alfred E. Smith': 'PS 163 Alfred E. Smith'}\nanswer = ranked['SCHOOL'].astype(str).str.strip().head(3).map(name_map).tolist()",
+      "subquestion": "Which NYC elementary schools in District 3 ranked in the top 3 by performance category score in 2009-10?",
+      "answer": [
+        "PS 009 Sarah Anderson",
+        "PS 199 Jessie Isador Straus",
+        "PS 163 Alfred E. Smith"
+      ]
+    },
+    "5": {
+      "source": "datagov/2013-2014-school-locations/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2013-2014-school-locations/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nmatch = df[df['LOCATION_NAME'].astype(str).str.contains('Sarah Anderson', case=False, na=False, regex=False)].iloc[0]\nanswer = str(match['NTA_NAME']).strip()",
+      "subquestion": "In which neighborhood is <hop 1 answer> located?",
+      "answer": "Upper West Side"
+    },
+    "6": {
+      "source": "wikipedia/Upper_West_Side/content.txt",
+      "fact": "Cultural institutions in the Upper West Side include the American Folk Art Museum, the American Museum of Natural History, the Children's Museum of Manhattan, the New-York Historical Society, and the Nicholas Roerich Museum.",
+      "subquestion": "Which notable museums are in <hop 2 answer>?",
+      "answer": [
+        "American Folk Art Museum",
+        "American Museum of Natural History",
+        "Children's Museum of Manhattan",
+        "New-York Historical Society",
+        "Nicholas Roerich Museum"
+      ]
+    },
+    "7": {
+      "source": "wikipedia/American_Museum_of_Natural_History/content.txt",
+      "fact": "The American Museum of Natural History (AMNH) is a natural history museum on the Upper West Side of Manhattan in New York City. The museum collections contain about 32 million specimens of plants, animals, fungi, fossils, minerals, rocks, meteorites, human remains, and human cultural artifacts, as well as specialized collections for frozen tissue and genomic and astrophysical data, of which only a small fraction can be displayed at any given time.",
+      "subquestion": "What is the collection count for the natural-history museum in <hop 3 answer>?",
+      "answer": "about 32 million specimens"
+    },
+    "8": {
+      "source": "wikipedia/American_Folk_Art_Museum/content.txt",
+      "fact": "Its collection holds approximately 7,500 objects from the 18th century to the present. These works span both traditional folk art and the work of modern and contemporary self-taught artists and Art Brut.",
+      "subquestion": "What is the collection count for the folk-art museum in <hop 3 answer>?",
+      "answer": "approximately 7,500 objects"
+    },
+    "9": {
+      "source": "wikipedia/New_York_Historical/content.txt",
+      "fact": "The New York Historical's museum is the oldest in New York City and predates the founding of the Metropolitan Museum of Art by nearly 70 years. Its art holdings comprise more than 1.6 million works.",
+      "subquestion": "What is the collection count for the historical museum in <hop 3 answer>?",
+      "answer": "more than 1.6 million works"
+    },
+    "10": {
+      "source": "wikipedia/Nicholas_Roerich_Museum/content.txt",
+      "fact": "The Nicholas Roerich Museum is a museum on the Upper West Side of Manhattan in New York City, dedicated to the works of Nicholas Roerich (1874–1947), a Russian-born cosmopolitan artist. The museum includes approximately 150 of Roerich's works as well as a collection of archival materials.",
+      "subquestion": "What is the collection count for the single-artist museum in <hop 3 answer>?",
+      "answer": "approximately 150 works"
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: In 2006-07, the top 3 District 3 elementary schools by performance category score were: PS 009 Sarah Anderson (0.786), PS 199 Jessie Isador Straus (0.706), and PS 180 Hugo Newman (0.657).",
+        "Node 2: In 2007-08, the top 3 District 3 elementary schools by performance category score were: PS 009 Sarah Anderson (20.2), PS 166 Richard Rodgers School (16.6), and PS 087 William Sherman (16.0).",
+        "Node 3: In 2008-09, the top 3 District 3 elementary schools by performance category score were: PS 009 Sarah Anderson (23.5), PS 163 Alfred E. Smith (19.9), and PS 087 William Sherman (17.8).",
+        "Node 4: In 2009-10, the top 3 District 3 elementary schools by performance category score were: PS 009 Sarah Anderson (15.4), PS 199 Jessie Isador Straus (10.7), and PS 163 Alfred E. Smith (9.0).",
+        "Derive hop 1 answer using nodes 1, 2, 3, and 4: intersect the four annual top-3 District 3 school sets to identify the only school present in all years. Hop answer: PS 009 Sarah Anderson."
+      ],
+      "answer": "PS 009 Sarah Anderson"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: PS 009 Sarah Anderson is located at 100 West 84th Street in the Upper West Side NTA (MN12) of Manhattan.",
+        "Derive hop 2 answer using node 5: map the identified school to its neighborhood. Hop answer: Upper West Side."
+      ],
+      "answer": "Upper West Side"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: Cultural institutions in <hop 2 answer> include the American Folk Art Museum, the American Museum of Natural History, the Children's Museum of Manhattan, the New-York Historical Society, and the Nicholas Roerich Museum.",
+        "Derive hop 3 answer from node 6: collect the notable museum set in <hop 2 answer>. Hop answer: American Folk Art Museum, American Museum of Natural History, Children's Museum of Manhattan, New-York Historical Society, and Nicholas Roerich Museum."
+      ],
+      "answer": [
+        "American Folk Art Museum",
+        "American Museum of Natural History",
+        "Children's Museum of Manhattan",
+        "New-York Historical Society",
+        "Nicholas Roerich Museum"
+      ]
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        7,
+        8,
+        9,
+        10
+      ],
+      "reasoning": [
+        "Node 7: The collection count for the natural-history museum in <hop 3 answer> is `about 32 million specimens`.",
+        "Node 8: The collection count for the folk-art museum in <hop 3 answer> is `approximately 7,500 objects`.",
+        "Node 9: The collection count for the historical museum in <hop 3 answer> is `more than 1.6 million works`.",
+        "Node 10: The collection count for the single-artist museum in <hop 3 answer> is `approximately 150 works`.",
+        "Derive hop 4 answer using nodes 7, 8, 9, and 10: compare the collection counts. `approximately 150 works` is smaller than `approximately 7,500 objects`, `more than 1.6 million works`, and `about 32 million specimens`, so the museum with the smallest collection count is the Nicholas Roerich Museum."
+      ],
+      "answer": "Nicholas Roerich Museum"
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/Upper_West_Side/content.txt",
+    "wikipedia/American_Museum_of_Natural_History/content.txt",
+    "wikipedia/American_Folk_Art_Museum/content.txt",
+    "wikipedia/New_York_Historical/content.txt",
+    "wikipedia/Nicholas_Roerich_Museum/content.txt",
+    "datagov/2006-2007-school-progress-report/files/rows.txt",
+    "datagov/2006-2007-school-progress-report/signed-metadata.txt",
+    "datagov/2006-2007-school-progress-report/files/2006-07_School_Progress_Report.xlsx",
+    "datagov/2007-2008-school-progress-report/files/rows.txt",
+    "datagov/2007-2008-school-progress-report/signed-metadata.txt",
+    "datagov/2007-2008-school-progress-report/files/School_Progress_Reports_-_All_Schools.xlsx",
+    "datagov/2008-2009-school-progress-report/files/rows.txt",
+    "datagov/2008-2009-school-progress-report/signed-metadata.txt",
+    "datagov/2008-2009-school-progress-report/files/School_Progress_Reports_-_All_Schools.xlsx",
+    "datagov/2009-2010-school-progress-report/files/rows.txt",
+    "datagov/2009-2010-school-progress-report/signed-metadata.txt",
+    "datagov/2009-2010-school-progress-report/files/School_Progress_Reports_-_All_Schools_2009-10.xlsx",
+    "datagov/2013-2014-school-locations/files/rows.txt",
+    "datagov/2013-2014-school-locations/files/columns.txt",
+    "datagov/2013-2014-school-locations/files/ac4n-c5re.txt"
+  ]
+}

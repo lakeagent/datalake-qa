@@ -1,0 +1,206 @@
+{
+    "question": "Can you tell me which senior high school had a consistently top 3 number of violent/disruptive incident reported between 2010 and 2014? The borough containing that school also has a suspension bridge that connects to NYC, what is the name of that suspension bridge?. Your response should be in the format [Answer].",
+    "answer": "Verrazzano-Narrows Bridge",
+    "nodes": {
+        "1": {
+            "source": "datagov/2010-2011-vadir-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2010-2011-vadir-incidents/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ndimension_cols = {'School year', 'School Year', 'County', 'District', 'School Name', 'BEDS Code', 'Grade Organization', 'Need/Resource Category', 'School Type', 'Enrollment'}\nincident_cols = [col for col in df.columns if col not in dimension_cols]\nnyc_counties = {'bronx', 'bronx county', 'kings', 'kings county', 'brooklyn', 'new york', 'new york county', 'manhattan', 'queens', 'queens county', 'richmond', 'richmond county', 'staten island'}\nfiltered = df[df['County'].astype(str).str.strip().str.lower().isin(nyc_counties)].copy()\nfiltered = filtered[filtered['Grade Organization'].astype(str).str.strip().eq('Senior High')].copy()\nfiltered[incident_cols] = filtered[incident_cols].apply(pd.to_numeric, errors='coerce')\nfiltered['_total_incidents'] = filtered[incident_cols].fillna(0).sum(axis=1)\nranked = filtered.groupby('School Name')['_total_incidents'].sum().reset_index().sort_values(['_total_incidents', 'School Name'], ascending=[False, True])\nanswer = ranked['School Name'].head(3).map(lambda s: str(s).strip().title().replace('Susan E Wagner', 'Susan E. Wagner')).tolist()",
+            "subquestion": "Which NYC senior high schools were in the top 3 by total VADIR incidents in 2010-11?",
+            "answer": [
+                "Herbert H Lehman High School",
+                "Susan E. Wagner High School",
+                "Automotive High School"
+            ]
+        },
+        "2": {
+            "source": "datagov/2011-2012-vadir-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2011-2012-vadir-incidents/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ndimension_cols = {'School year', 'School Year', 'County', 'District', 'School Name', 'BEDS Code', 'Grade Organization', 'Need/Resource Category', 'School Type', 'Enrollment'}\nincident_cols = [col for col in df.columns if col not in dimension_cols]\nnyc_counties = {'bronx', 'bronx county', 'kings', 'kings county', 'brooklyn', 'new york', 'new york county', 'manhattan', 'queens', 'queens county', 'richmond', 'richmond county', 'staten island'}\nfiltered = df[df['County'].astype(str).str.strip().str.lower().isin(nyc_counties)].copy()\nfiltered = filtered[filtered['Grade Organization'].astype(str).str.strip().eq('Senior High')].copy()\nfiltered[incident_cols] = filtered[incident_cols].apply(pd.to_numeric, errors='coerce')\nfiltered['_total_incidents'] = filtered[incident_cols].fillna(0).sum(axis=1)\nranked = filtered.groupby('School Name')['_total_incidents'].sum().reset_index().sort_values(['_total_incidents', 'School Name'], ascending=[False, True])\nanswer = ranked['School Name'].head(3).map(lambda s: str(s).strip().title().replace('Susan E Wagner', 'Susan E. Wagner')).tolist()",
+            "subquestion": "Which NYC senior high schools were in the top 3 by total VADIR incidents in 2011-12?",
+            "answer": [
+                "Herbert H Lehman High School",
+                "Susan E. Wagner High School",
+                "John Adams High School"
+            ]
+        },
+        "3": {
+            "source": "datagov/2012-2013-vadir-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2012-2013-vadir-incidents/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ndimension_cols = {'School year', 'School Year', 'County', 'District', 'School Name', 'BEDS Code', 'Grade Organization', 'Need/Resource Category', 'School Type', 'Enrollment'}\nincident_cols = [col for col in df.columns if col not in dimension_cols]\nnyc_counties = {'bronx', 'bronx county', 'kings', 'kings county', 'brooklyn', 'new york', 'new york county', 'manhattan', 'queens', 'queens county', 'richmond', 'richmond county', 'staten island'}\nfiltered = df[df['County'].astype(str).str.strip().str.lower().isin(nyc_counties)].copy()\nfiltered = filtered[filtered['Grade Organization'].astype(str).str.strip().eq('Senior High')].copy()\nfiltered[incident_cols] = filtered[incident_cols].apply(pd.to_numeric, errors='coerce')\nfiltered['_total_incidents'] = filtered[incident_cols].fillna(0).sum(axis=1)\nranked = filtered.groupby('School Name')['_total_incidents'].sum().reset_index().sort_values(['_total_incidents', 'School Name'], ascending=[False, True])\nanswer = ranked['School Name'].head(3).map(lambda s: str(s).strip().title().replace('Susan E Wagner', 'Susan E. Wagner')).tolist()",
+            "subquestion": "Which NYC senior high schools were in the top 3 by total VADIR incidents in 2012-13?",
+            "answer": [
+                "Susan E. Wagner High School",
+                "Herbert H Lehman High School",
+                "Sheepshead Bay High School"
+            ]
+        },
+        "4": {
+            "source": "datagov/2013-2014-vadir-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2013-2014-vadir-incidents/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ndimension_cols = {'School year', 'School Year', 'County', 'District', 'School Name', 'BEDS Code', 'Grade Organization', 'Need/Resource Category', 'School Type', 'Enrollment'}\nincident_cols = [col for col in df.columns if col not in dimension_cols]\nnyc_counties = {'bronx', 'bronx county', 'kings', 'kings county', 'brooklyn', 'new york', 'new york county', 'manhattan', 'queens', 'queens county', 'richmond', 'richmond county', 'staten island'}\nfiltered = df[df['County'].astype(str).str.strip().str.lower().isin(nyc_counties)].copy()\nfiltered = filtered[filtered['Grade Organization'].astype(str).str.strip().eq('Senior High')].copy()\nfiltered[incident_cols] = filtered[incident_cols].apply(pd.to_numeric, errors='coerce')\nfiltered['_total_incidents'] = filtered[incident_cols].fillna(0).sum(axis=1)\nranked = filtered.groupby('School Name')['_total_incidents'].sum().reset_index().sort_values(['_total_incidents', 'School Name'], ascending=[False, True])\nanswer = ranked['School Name'].head(3).map(lambda s: str(s).strip().title().replace('Susan E Wagner', 'Susan E. Wagner')).tolist()",
+            "subquestion": "Which NYC senior high schools were in the top 3 by total VADIR incidents in 2013-14?",
+            "answer": [
+                "Susan E. Wagner High School",
+                "Richmond Hill High School",
+                "Clara Barton High School"
+            ]
+        },
+        "5": {
+            "source": "wikipedia/Susan_E._Wagner_High_School/content.txt",
+            "fact": "Susan E. Wagner High School is a New York City public school located at 1200 Manor Road in Staten Island, New York.",
+            "subquestion": "In which NYC borough is <intersection of node_1, node_2, node_3, node_4> located?",
+            "answer": "Staten Island"
+        },
+        "6": {
+            "source": "wikipedia/Brooklyn_Bridge/content.txt",
+            "fact": "The Brooklyn Bridge is a cable-stayed suspension bridge in New York City, spanning the East River between the boroughs of Manhattan and Brooklyn.",
+            "subquestion": "Which NYC bridge is described as a cable-stayed suspension bridge spanning the East River between Manhattan and Brooklyn?",
+            "answer": "Brooklyn Bridge"
+        },
+        "7": {
+            "source": "wikipedia/Manhattan_Bridge/content.txt",
+            "fact": "The Manhattan Bridge is a suspension bridge that crosses the East River in New York City, connecting Lower Manhattan at Canal Street with Downtown Brooklyn at the Flatbush Avenue Extension.",
+            "subquestion": "Which NYC bridge is described as a suspension bridge crossing the East River between Lower Manhattan and Downtown Brooklyn?",
+            "answer": "Manhattan Bridge"
+        },
+        "8": {
+            "source": "wikipedia/Williamsburg_Bridge/content.txt",
+            "fact": "The Williamsburg Bridge is a suspension bridge across the East River in New York City, connecting the Lower East Side of Manhattan with the Williamsburg neighborhood of Brooklyn.",
+            "subquestion": "Which NYC bridge is described as a suspension bridge across the East River connecting the Lower East Side of Manhattan with Williamsburg in Brooklyn?",
+            "answer": "Williamsburg Bridge"
+        },
+        "9": {
+            "source": "wikipedia/George_Washington_Bridge/content.txt",
+            "fact": "The George Washington Bridge is a double-decked suspension bridge spanning the Hudson River, connecting Fort Lee in Bergen County, New Jersey, with the Washington Heights neighborhood of Manhattan, New York City.",
+            "subquestion": "Which NYC bridge is described as a double-decked suspension bridge spanning the Hudson River between Fort Lee and Manhattan?",
+            "answer": "George Washington Bridge"
+        },
+        "10": {
+            "source": "wikipedia/Bronx–Whitestone_Bridge/content.txt",
+            "fact": "The Bronx–Whitestone Bridge (colloquially referred to as the Whitestone Bridge or simply the Whitestone) is a suspension bridge in New York City, carrying six lanes of Interstate 678 over the East River.",
+            "subquestion": "Which NYC bridge is described as a suspension bridge carrying Interstate 678 over the East River?",
+            "answer": "Bronx-Whitestone Bridge"
+        },
+        "11": {
+            "source": "wikipedia/Throgs_Neck_Bridge/content.txt",
+            "fact": "The Throgs Neck Bridge is a suspension bridge in New York City, carrying six lanes of Interstate 295 (I-295) over the East River where it meets the Long Island Sound.",
+            "subquestion": "Which NYC bridge is described as a suspension bridge carrying Interstate 295 over the East River where it meets the Long Island Sound?",
+            "answer": "Throgs Neck Bridge"
+        },
+        "12": {
+            "source": "wikipedia/Verrazzano–Narrows_Bridge/content.txt",
+            "fact": "Verrazzano–Narrows Bridge ( ; also referred to as the Narrows Bridge, the Verrazzano Bridge, and simply the Verrazzano) is a suspension bridge connecting the boroughs of Staten Island and Brooklyn in New York City, United States.",
+            "subquestion": "Which NYC bridge is described as a suspension bridge connecting Staten Island and Brooklyn?",
+            "answer": "Verrazzano-Narrows Bridge"
+        },
+        "13": {
+            "source": "wikipedia/Robert_F._Kennedy_Bridge/content.txt",
+            "fact": "The East River span, a suspension bridge across the Hell Gate of the East River, connects Queens with Wards Island.",
+            "subquestion": "Which NYC bridge complex includes the East River span, a suspension bridge across Hell Gate connecting Queens with Wards Island?",
+            "answer": "Robert F. Kennedy Bridge"
+        },
+        "14": {
+            "source": "wikipedia/Staten_Island/content.txt",
+            "fact": "Motor traffic can reach Staten Island from Brooklyn by the Verrazzano-Narrows Bridge and from New Jersey by the Outerbridge Crossing, Goethals Bridge and Bayonne Bridge.",
+            "subquestion": "Which bridges connect to <node_5 answer>?",
+            "answer": [
+                "Verrazzano-Narrows Bridge",
+                "Outerbridge Crossing",
+                "Goethals Bridge",
+                "Bayonne Bridge"
+            ]
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: In 2010-11, the top 3 NYC senior high schools by total Violent and Disruptive Incident Reporting incidents were: Herbert H Lehman HS (878), Susan E Wagner HS (302), Automotive HS (290).",
+                "Node 2: In 2011-12, the top 3 NYC senior high schools by total Violent and Disruptive Incident Reporting incidents were: Herbert H Lehman HS (432), Susan E Wagner HS (403), John Adams HS (291).",
+                "Node 3: In 2012-13, the top 3 NYC senior high schools by total Violent and Disruptive Incident Reporting incidents were: Susan E Wagner HS (275), Herbert H Lehman HS (257), Sheepshead Bay HS (224).",
+                "Node 4: In 2013-14, the top 3 NYC senior high schools by total Violent and Disruptive Incident Reporting incidents were: Susan E Wagner HS (320), Richmond Hill HS (290), Clara Barton HS (221).",
+                "Derive hop 1 answer using nodes 1, 2, 3, and 4: intersect the four yearly top-3 senior-high-school sets to get the single consistently top school. Hop answer: Susan E. Wagner High School."
+            ],
+            "answer": "Susan E. Wagner High School"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Susan E. Wagner High School is a New York City public school located at 1200 Manor Road in Staten Island, New York.",
+                "Derive hop 2 answer from node 5: map the selected school to its borough. Hop answer: Staten Island."
+            ],
+            "answer": "Staten Island"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13
+            ],
+            "reasoning": [
+                "Node 6: The Brooklyn Bridge is a cable-stayed suspension bridge in New York City, spanning the East River between the boroughs of Manhattan and Brooklyn.",
+                "Node 7: The Manhattan Bridge is a suspension bridge that crosses the East River in New York City, connecting Lower Manhattan at Canal Street with Downtown Brooklyn at the Flatbush Avenue Extension.",
+                "Node 8: The Williamsburg Bridge is a suspension bridge across the East River in New York City, connecting the Lower East Side of Manhattan with the Williamsburg neighborhood of Brooklyn.",
+                "Node 9: The George Washington Bridge is a double-decked suspension bridge spanning the Hudson River, connecting Fort Lee in Bergen County, New Jersey, with the Washington Heights neighborhood of Manhattan, New York City.",
+                "Node 10: The Bronx–Whitestone Bridge (colloquially referred to as the Whitestone Bridge or simply the Whitestone) is a suspension bridge in New York City, carrying six lanes of Interstate 678 over the East River.",
+                "Node 11: The Throgs Neck Bridge is a suspension bridge in New York City, carrying six lanes of Interstate 295 (I-295) over the East River where it meets the Long Island Sound.",
+                "Node 12: Verrazzano–Narrows Bridge ( ; also referred to as the Narrows Bridge, the Verrazzano Bridge, and simply the Verrazzano) is a suspension bridge connecting the boroughs of Staten Island and Brooklyn in New York City, United States.",
+                "Node 13: The East River span, a suspension bridge across the Hell Gate of the East River, connects Queens with Wards Island.",
+                "Derive hop 3 answer using nodes 6 through 13: take the union of the eight page-backed NYC suspension bridges. Hop answer: Brooklyn Bridge, Manhattan Bridge, Williamsburg Bridge, George Washington Bridge, Bronx-Whitestone Bridge, Throgs Neck Bridge, Verrazzano-Narrows Bridge, and Robert F. Kennedy Bridge."
+            ],
+            "answer": [
+                "Brooklyn Bridge",
+                "Manhattan Bridge",
+                "Williamsburg Bridge",
+                "George Washington Bridge",
+                "Bronx-Whitestone Bridge",
+                "Throgs Neck Bridge",
+                "Verrazzano-Narrows Bridge",
+                "Robert F. Kennedy Bridge"
+            ]
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                14
+            ],
+            "reasoning": [
+                "Node 14: Motor traffic can reach Staten Island from Brooklyn by the Verrazzano-Narrows Bridge and from New Jersey by the Outerbridge Crossing, Goethals Bridge and Bayonne Bridge.",
+                "Derive hop 4 answer from node 14: take the bridges that connect Staten Island from hop 2 and intersect them with hop 3's suspension-bridge set to get the final bridge. Hop answer: Verrazzano-Narrows Bridge."
+            ],
+            "answer": "Verrazzano-Narrows Bridge"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Susan_E._Wagner_High_School/content.txt",
+        "wikipedia/Brooklyn_Bridge/content.txt",
+        "wikipedia/Manhattan_Bridge/content.txt",
+        "wikipedia/Williamsburg_Bridge/content.txt",
+        "wikipedia/George_Washington_Bridge/content.txt",
+        "wikipedia/Bronx–Whitestone_Bridge/content.txt",
+        "wikipedia/Throgs_Neck_Bridge/content.txt",
+        "wikipedia/Verrazzano–Narrows_Bridge/content.txt",
+        "wikipedia/Robert_F._Kennedy_Bridge/content.txt",
+        "wikipedia/Staten_Island/content.txt",
+        "datagov/2010-2011-vadir-incidents/files/rows.txt",
+        "datagov/2010-2011-vadir-incidents/files/vadir-glossary.html",
+        "datagov/2011-2012-vadir-incidents/files/rows.txt",
+        "datagov/2011-2012-vadir-incidents/files/columns.txt",
+        "datagov/2012-2013-vadir-incidents/files/rows.txt",
+        "datagov/2012-2013-vadir-incidents/files/columns.txt",
+        "datagov/2013-2014-vadir-incidents/files/rows.txt",
+        "datagov/2013-2014-vadir-incidents/files/columns.txt"
+    ]
+}

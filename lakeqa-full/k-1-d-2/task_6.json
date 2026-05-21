@@ -1,0 +1,78 @@
+{
+    "question": "I'm researching a state where the 2019 child protective services response rate was at least 70 per 1,000 children and grew by at least 20% from 2015 to 2019, and also where the average bundled-service residential electricity rate was at least $0.20 per kWh with an average residential-to-commercial rate gap of at least $0.03 per kWh in 2018. Which state is it? Respond with [Answer].",
+    "answer": "Alaska",
+    "nodes": {
+        "1": {
+            "source": "datagov/children-who-received-an-investigation-or-alternative-response/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/children-who-received-an-investigation-or-alternative-response/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_metric = df[[\"State\", \"2019 Rate per 1,000 Children\", \"Percent Change from 2015 to 2019\"]].copy()\nstate_metric[\"2019 Rate per 1,000 Children\"] = pd.to_numeric(state_metric[\"2019 Rate per 1,000 Children\"], errors=\"coerce\")\nstate_metric[\"Percent Change from 2015 to 2019\"] = pd.to_numeric(state_metric[\"Percent Change from 2015 to 2019\"], errors=\"coerce\")\n\nresult = state_metric[\n    (state_metric[\"2019 Rate per 1,000 Children\"] >= 70)\n    & (state_metric[\"Percent Change from 2015 to 2019\"] >= 20)\n].sort_values([\"State\"], ascending=[True]).reset_index(drop=True)\n\nanswer = [\n    [\n        row[\"State\"],\n        {\n            \"rate_2019\": float(row[\"2019 Rate per 1,000 Children\"]),\n            \"pct_change_2015_2019\": float(row[\"Percent Change from 2015 to 2019\"]),\n        },\n    ]\n    for _, row in result.iterrows()\n]",
+            "subquestion": "Which states had a 2019 child protective services response rate of at least 70 per 1,000 children and grew by at least 20% from 2015 to 2019?",
+            "answer": [
+                [
+                    "Alaska",
+                    {
+                        "rate_2019": 80.2,
+                        "pct_change_2015_2019": 33.7
+                    }
+                ],
+                [
+                    "South Carolina",
+                    {
+                        "rate_2019": 76.4,
+                        "pct_change_2015_2019": 68.3
+                    }
+                ]
+            ]
+        },
+        "2": {
+            "source": "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2018-5a6f1/files/iouzipcodes2018.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2018-5a6f1/files/iouzipcodes2018.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[df[\"service_type\"] == \"Bundled\"].copy()\nfiltered[\"res_rate\"] = pd.to_numeric(filtered[\"res_rate\"], errors=\"coerce\")\nfiltered[\"comm_rate\"] = pd.to_numeric(filtered[\"comm_rate\"], errors=\"coerce\")\n\nstate_map = {\n    \"AK\": \"Alaska\", \"AL\": \"Alabama\", \"AR\": \"Arkansas\", \"AZ\": \"Arizona\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DC\": \"District of Columbia\", \"DE\": \"Delaware\",\n    \"FL\": \"Florida\", \"GA\": \"Georgia\", \"HI\": \"Hawaii\", \"IA\": \"Iowa\", \"ID\": \"Idaho\",\n    \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\",\n    \"MA\": \"Massachusetts\", \"MD\": \"Maryland\", \"ME\": \"Maine\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\",\n    \"MO\": \"Missouri\", \"MS\": \"Mississippi\", \"MT\": \"Montana\", \"NC\": \"North Carolina\",\n    \"ND\": \"North Dakota\", \"NE\": \"Nebraska\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NV\": \"Nevada\", \"NY\": \"New York\", \"OH\": \"Ohio\", \"OK\": \"Oklahoma\",\n    \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VA\": \"Virginia\",\n    \"VT\": \"Vermont\", \"WA\": \"Washington\", \"WI\": \"Wisconsin\", \"WV\": \"West Virginia\", \"WY\": \"Wyoming\"\n}\nfiltered[\"normalized_state\"] = filtered[\"state\"].map(state_map)\nfiltered[\"res_minus_comm\"] = filtered[\"res_rate\"] - filtered[\"comm_rate\"]\n\nstate_metric = filtered.groupby(\"normalized_state\", as_index=False).agg(\n    avg_res_rate=(\"res_rate\", \"mean\"),\n    avg_res_minus_comm=(\"res_minus_comm\", \"mean\"),\n)\n\nresult = state_metric[\n    (state_metric[\"avg_res_rate\"] >= 0.20)\n    & (state_metric[\"avg_res_minus_comm\"] >= 0.03)\n].sort_values([\"normalized_state\"], ascending=[True]).reset_index(drop=True)\n\nanswer = [\n    [\n        row[\"normalized_state\"],\n        {\n            \"avg_res_rate\": float(row[\"avg_res_rate\"]),\n            \"avg_res_minus_comm\": float(row[\"avg_res_minus_comm\"]),\n        },\n    ]\n    for _, row in result.iterrows()\n]",
+            "subquestion": "Which states had an average bundled-service residential electricity rate of at least $0.20 per kWh with an average residential-to-commercial rate gap of at least $0.03 per kWh in 2018?",
+            "answer": [
+                [
+                    "Alaska",
+                    {
+                        "avg_res_rate": 0.26436876024127914,
+                        "avg_res_minus_comm": 0.038149846750715234
+                    }
+                ],
+                [
+                    "Connecticut",
+                    {
+                        "avg_res_rate": 0.21175205744965256,
+                        "avg_res_minus_comm": 0.03408113836523826
+                    }
+                ],
+                [
+                    "Massachusetts",
+                    {
+                        "avg_res_rate": 0.23119183548353406,
+                        "avg_res_minus_comm": 0.04955097343185812
+                    }
+                ]
+            ]
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Select `State`, `2019 Rate per 1,000 Children`, and `Percent Change from 2015 to 2019`, convert the two metric columns to numeric, filter states where `2019 Rate per 1,000 Children` >= 70 and `Percent Change from 2015 to 2019` >= 20, and sort the matching states alphabetically.",
+                "Node 2: Filter rows where `service_type` = `Bundled`, convert `res_rate` and `comm_rate` to numeric, normalize `state` to full state names, compute the mean `res_rate` and mean `res_rate - comm_rate` by state, then keep states where average residential rate is at least 0.20 and the average residential-to-commercial gap is at least 0.03.",
+                "Hop result: semantic intersection of the state names in <node 1 answer> and <node 2 answer> = Alaska."
+            ],
+            "answer": "Alaska"
+        }
+    ],
+    "datasets_used": [
+        "datagov/children-who-received-an-investigation-or-alternative-response/files/rows.txt",
+        "datagov/children-who-received-an-investigation-or-alternative-response/signed-metadata.txt",
+        "datagov/children-who-received-an-investigation-or-alternative-response/files/7viv-bzwe.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2018-5a6f1/files/iouzipcodes2018.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2018-5a6f1/signed-metadata.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2018-5a6f1/files/noniouzipcodes2018.txt"
+    ]
+}

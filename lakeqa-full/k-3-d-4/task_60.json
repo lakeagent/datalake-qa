@@ -1,0 +1,188 @@
+{
+  "question": "Among Texas counties that were in the top five for average capital outlay spending from 2018 to 2021, identify the two highest by average prison releases in 2019-20. As of 2025, how many more residents did the county with the larger 2024 estimated population have than the other? Return only the number in the format [Answer].",
+  "answer": 2353274,
+  "nodes": {
+    "1": {
+      "source": "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-state-expenditures-by-county-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nmask = ((df[\"Fiscal Year\"] == 2018) & df[\"County\"].notna() & (df[\"County\"].astype(str).str.strip() != \"\") & df[\"Major Spending Category\"].astype(str).str.contains(\"CAPITAL OUTLAY\", na=False))\nanswer = (df.loc[mask].groupby(\"County\")[\"Amount\"].sum().sort_values(ascending=False).round(2).to_dict())",
+      "subquestion": "What were the FY2018 capital outlay expenditure totals by Texas county?",
+      "answer": {
+        "HARRIS": 1303630847.3,
+        "DALLAS": 838316444.65,
+        "TRAVIS": 427160745.36,
+        "MONTGOMERY": 424383088.05,
+        "BEXAR": 269462082.97,
+        "TARRANT": 195326742.86,
+        "DENTON": 186170844.17,
+        "HAYS": 180311763.03,
+        "NUECES": 180007685.62,
+        "EL PASO": 123694754.23
+      },
+      "limit": 10
+    },
+    "2": {
+      "source": "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-state-expenditures-by-county-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nmask = ((df[\"Fiscal Year\"] == 2019) & df[\"County\"].notna() & (df[\"County\"].astype(str).str.strip() != \"\") & df[\"Major Spending Category\"].astype(str).str.contains(\"CAPITAL OUTLAY\", na=False))\nanswer = (df.loc[mask].groupby(\"County\")[\"Amount\"].sum().sort_values(ascending=False).round(2).to_dict())",
+      "subquestion": "What were the FY2019 capital outlay expenditure totals by Texas county?",
+      "answer": {
+        "HARRIS": 1391779835.06,
+        "DALLAS": 827510409.8,
+        "TRAVIS": 614936080.37,
+        "MONTGOMERY": 416744287.28,
+        "BEXAR": 302940592.72,
+        "DENTON": 260841655.76,
+        "NUECES": 243549894.71,
+        "TARRANT": 180443982.39,
+        "WILLIAMSON": 162099329.96,
+        "HAYS": 154023926.62
+      },
+      "limit": 10
+    },
+    "3": {
+      "source": "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-state-expenditures-by-county-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nmask = ((df[\"Fiscal Year\"] == 2020) & df[\"County\"].notna() & (df[\"County\"].astype(str).str.strip() != \"\") & df[\"Major Spending Category\"].astype(str).str.contains(\"CAPITAL OUTLAY\", na=False))\nanswer = (df.loc[mask].groupby(\"County\")[\"Amount\"].sum().sort_values(ascending=False).round(2).to_dict())",
+      "subquestion": "What were the FY2020 capital outlay expenditure totals by Texas county?",
+      "answer": {
+        "HARRIS": 1663151150.96,
+        "DALLAS": 1324261419.12,
+        "TRAVIS": 821945717.49,
+        "MONTGOMERY": 612813968.49,
+        "BEXAR": 494340352.72,
+        "DENTON": 355805325.9,
+        "NUECES": 350680573.97,
+        "HAYS": 251859833.02,
+        "TARRANT": 189569631.26,
+        "MCLENNAN": 171511743.04
+      },
+      "limit": 10
+    },
+    "4": {
+      "source": "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-state-expenditures-by-county-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nmask = ((df[\"Fiscal Year\"] == 2021) & df[\"County\"].notna() & (df[\"County\"].astype(str).str.strip() != \"\") & df[\"Major Spending Category\"].astype(str).str.contains(\"CAPITAL OUTLAY\", na=False))\nanswer = (df.loc[mask].groupby(\"County\")[\"Amount\"].sum().sort_values(ascending=False).round(2).to_dict())",
+      "subquestion": "What were the FY2021 capital outlay expenditure totals by Texas county?",
+      "answer": {
+        "HARRIS": 1741663003.68,
+        "DALLAS": 1171406639.17,
+        "TRAVIS": 774601022.23,
+        "MONTGOMERY": 705433711.03,
+        "BEXAR": 596386366.99,
+        "DENTON": 412077419.13,
+        "HAYS": 242238383.67,
+        "TARRANT": 228788736.63,
+        "NUECES": 165289397.9,
+        "EL PASO": 144869614.83
+      },
+      "limit": 10
+    },
+    "5": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ncapital_outlay_top_counties = [\"HARRIS\", \"DALLAS\", \"BEXAR\", \"TRAVIS\", \"MONTGOMERY\"]\ncounty_upper = df[\"County\"].astype(str).str.upper()\nanswer = (df.loc[county_upper.isin(capital_outlay_top_counties)].assign(County=county_upper[county_upper.isin(capital_outlay_top_counties)]).groupby(\"County\").size().sort_values(ascending=False).to_dict())",
+      "subquestion": "For the counties from <hop 1 answer>, how many TDCJ release records were associated with each county in FY2019?",
+      "answer": {
+        "HARRIS": 9029,
+        "DALLAS": 5355,
+        "BEXAR": 4545,
+        "TRAVIS": 1857,
+        "MONTGOMERY": 1315
+      }
+    },
+    "6": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ncapital_outlay_top_counties = [\"HARRIS\", \"DALLAS\", \"BEXAR\", \"TRAVIS\", \"MONTGOMERY\"]\ncounty_upper = df[\"County\"].astype(str).str.upper()\nmask = county_upper.isin(capital_outlay_top_counties)\nanswer = (df.loc[mask].assign(County=county_upper[mask]).groupby(\"County\").size().sort_values(ascending=False).to_dict())",
+      "subquestion": "For the counties from <hop 1 answer>, how many TDCJ release records were associated with each county in FY2020?",
+      "answer": {
+        "HARRIS": 7059,
+        "DALLAS": 4540,
+        "BEXAR": 3917,
+        "TRAVIS": 1596,
+        "MONTGOMERY": 1250
+      }
+    },
+    "7": {
+      "source": "wikipedia/Harris_County,_Texas/content.txt",
+      "fact": "Harris County is a county located in the U.S. state of Texas. As of the 2020 census, the population was 4,731,145, and was estimated to be 5,009,302 in 2024, making it the most populous county in Texas and the third-most populous county in the United States.",
+      "subquestion": "As of 2025, what was the 2024 estimated population of the county ranked first in <hop 2 answer>?",
+      "answer": 5009302
+    },
+    "8": {
+      "source": "wikipedia/Dallas_County,_Texas/content.txt",
+      "fact": "Dallas County is a county located in the U.S. state of Texas. As of the 2020 census, the population was 2,613,539, and was estimated to be 2,656,028 in 2024, making it the second-most populous county in Texas and the eighth-most populous county in the United States.",
+      "subquestion": "As of 2025, what was the 2024 estimated population of the county ranked second in <hop 2 answer>?",
+      "answer": 2656028
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Harris_County,_Texas/content.txt",
+    "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2018/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2018/files/f2iw-dtqt.txt",
+    "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2019/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2019/files/2x5x-m677.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2020/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/aact-g69n.publisher-view.json",
+    "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2021/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2021/files/tup7-smjg.publisher-view.json",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
+    "wikipedia/Dallas_County,_Texas/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: For FY2018, group rows by `County`, sum `Amount`, and keep the full `County` -> capital outlay total mapping.",
+        "Node 2: For FY2019, group rows by `County`, sum `Amount`, and keep the full `County` -> capital outlay total mapping.",
+        "Node 3: For FY2020, group rows by `County`, sum `Amount`, and keep the full `County` -> capital outlay total mapping.",
+        "Node 4: For FY2021, group rows by `County`, sum `Amount`, and keep the full `County` -> capital outlay total mapping.",
+        "Hop result: compare the cross-year average capital outlay total for each county using the full per-year county mappings from nodes 1-4; in descending order, the top five counties are `HARRIS`, `DALLAS`, `TRAVIS`, `MONTGOMERY`, and `BEXAR`."
+      ],
+      "answer": [
+        "HARRIS",
+        "DALLAS",
+        "TRAVIS",
+        "MONTGOMERY",
+        "BEXAR"
+      ]
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5: For the counties from <hop 1 answer>, count FY2019 TDCJ release records by `County`.",
+        "Node 6: For the counties from <hop 1 answer>, count FY2020 TDCJ release records by `County`.",
+        "Hop result: compare the 2019-2020 average release counts for the counties from <hop 1 answer>; in descending order, the top two are `HARRIS` and `DALLAS`."
+      ],
+      "answer": [
+        "HARRIS",
+        "DALLAS"
+      ]
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        7,
+        8
+      ],
+      "reasoning": [
+        "Node 7 gives the 2024 estimated population for the first county in <hop 2 answer>.",
+        "Node 8 gives the 2024 estimated population for the second county in <hop 2 answer>.",
+        "The larger estimate is 5,009,302, and 5,009,302 - 2,656,028 = 2,353,274."
+      ],
+      "answer": 2353274
+    }
+  ]
+}

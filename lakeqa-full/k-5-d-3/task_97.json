@@ -1,0 +1,128 @@
+{
+  "question": "Among all government departments in the city that Bruno Mars was born and raised in, if higher efficiency means fewer average workdays to complete non-complex public-records requests, determine the department with the second highest efficiency. For that department in the same city, find its final budgets in 2016, 2017, and 2018. From these three budget values, find the year with the second highest budget and use the last three digits of the highest budget as a rank. In that second-highest-budget year, among U.S. cities whose tenants' average overall satisfaction is neither perfect nor zero, identify the city at that rank. How many major public airports does that city have? Return only the number. Your response should be in the format [Answer].",
+  "answer": 3,
+  "nodes": {
+    "1": {
+      "source": "wikipedia/Bruno_Mars/content.txt",
+      "fact": "Peter Gene Hernandez was born on October 8, 1985, in Honolulu, Hawaii, to Peter Hernandez and Bernadette San Pedro Bayot. He was raised in the Waikiki neighborhood of Honolulu.",
+      "subquestion": "Which city was Bruno Mars born and raised in?",
+      "answer": "Honolulu"
+    },
+    "2": {
+      "source": "datagov/oip-master-uipa-record-request-semiannual-log-for-fy-2016/files/oip-master-uipa-record-request-semiannual-log-for-fy-2016-csv.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/oip-master-uipa-record-request-semiannual-log-for-fy-2016/files/oip-master-uipa-record-request-semiannual-log-for-fy-2016-csv.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_1_answer = \"Honolulu\"\ncity = str(node_1_answer).strip().upper()\ndf = df[df[\"Department\"].astype(str).str.startswith(f\"CC_{city}\")].copy()\ndf[\"Complex Request?\"] = pd.to_numeric(df[\"Complex Request?\"], errors=\"coerce\").fillna(0)\ndf[\"# of Workdays to Complete\"] = pd.to_numeric(df[\"# of Workdays to Complete\"], errors=\"coerce\").fillna(0)\ndf = df[df[\"Complex Request?\"].eq(0)].copy()\nname_map = {\n    'CC_HONOLULU_TRANSPORTATION_SERVICES': 'Transportation Services',\n    'CC_HONOLULU_PARKS_AND_RECREATION': 'Parks and Recreation',\n    'CC_HONOLULU_HUMAN_RESOURCES': 'Human Resources',\n    'CC_HONOLULU_MEDICAL_EXAMINER': 'Medical Examiner',\n    'CC_HONOLULU_HONOLULU_BOARD_OF_WATER_SUPPLY': 'Honolulu Board of Water Supply',\n    'CC_HONOLULU_CORPORATION_COUNSEL': 'Corporation Counsel',\n    'CC_HONOLULU_CUSTOMER_SERVICES': 'Customer Services',\n    'CC_HONOLULU_DESIGN_AND_CONSTRUCTION': 'Design and Construction',\n    'CC_HONOLULU_PLANNING_AND_PERMITTING': 'Planning and Permitting',\n    'CC_HONOLULU_ENVIRONMENTAL_SERVICES': 'Environmental Services',\n    'CC_HONOLULU_HOUSING': 'Housing',\n    'CC_HONOLULU_MAYOR': 'Mayor',\n    'CC_HONOLULU_HONOLULU_FIRE_DEPARTMENT': 'Honolulu Fire Department'\n}\ndf[\"Department Name\"] = df[\"Department\"].map(name_map).fillna(df[\"Department\"])\nranked = (\n    df.groupby(\"Department Name\", as_index=False)[\"# of Workdays to Complete\"]\n    .mean()\n    .sort_values([\"# of Workdays to Complete\", \"Department Name\"], ascending=[True, True])\n    .reset_index(drop=True)\n)\nanswer = str(ranked.iloc[1][\"Department Name\"])\n",
+      "subquestion": "Among all government departments in <hop 1 answer>, if higher efficiency means fewer workdays to complete requests that are not complex, which department has the 2nd highest efficiency?",
+      "answer": "Transportation Services"
+    },
+    "3": {
+      "source": "datagov/adopted-fy16-budget/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/adopted-fy16-budget/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_2_answer = \"Transportation Services\"\ncol = \"FY 2016 Final Budget\"\nfiltered = df[df[\"Department Name\"].astype(str).str.strip().eq(str(node_2_answer).strip())].copy()\nfiltered[col] = pd.to_numeric(filtered[col].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\").fillna(0)\nanswer = str(int(filtered[col].sum()))\n",
+      "subquestion": "What is the 2016 final budget for <hop 2 answer> in <hop 1 answer>?",
+      "answer": "285196912"
+    },
+    "4": {
+      "source": "datagov/adopted-fy17-budget/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/adopted-fy17-budget/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_2_answer = \"Transportation Services\"\ncol = \"FY 2017 Final Budget\"\nfiltered = df[df[\"Department Name\"].astype(str).str.strip().eq(str(node_2_answer).strip())].copy()\nfiltered[col] = pd.to_numeric(filtered[col].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\").fillna(0)\nanswer = str(int(filtered[col].sum()))\n",
+      "subquestion": "What is the 2017 final budget for <hop 2 answer> in <hop 1 answer>?",
+      "answer": "269066066"
+    },
+    "5": {
+      "source": "datagov/adopted-fy18-budget/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/adopted-fy18-budget/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_2_answer = \"Transportation Services\"\ncol = \"FY 2018 Final Budget\"\nfiltered = df[df[\"Department Name\"].astype(str).str.strip().eq(str(node_2_answer).strip())].copy()\nfiltered[col] = pd.to_numeric(filtered[col].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\").fillna(0)\nanswer = str(int(filtered[col].sum()))\n",
+      "subquestion": "What is the 2018 final budget for <hop 2 answer> in <hop 1 answer>?",
+      "answer": "271760078"
+    },
+    "6": {
+      "source": "datagov/fy18-tenant-satisfaction-survey-tss-summarized-results/files/fy18_tss_summarized_results.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/fy18-tenant-satisfaction-survey-tss-summarized-results/files/fy18_tss_summarized_results.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_3_answer = \"285196912\"\nnode_4_answer = \"269066066\"\nnode_5_answer = \"271760078\"\nbudgets = {\n    2016: int(str(node_3_answer).strip()),\n    2017: int(str(node_4_answer).strip()),\n    2018: int(str(node_5_answer).strip()),\n}\nhighest_budget = max(budgets.values())\nrank = int(str(highest_budget)[-3:])\nsecond_highest_year = sorted(budgets.items(), key=lambda item: (-item[1], item[0]))[1][0]\n\nfiltered = df[df[\"Question_Code\"].astype(str).str.strip().eq(\"OVERALL_SAT\")].copy()\nfiltered[\"Overall Satisfaction\"] = pd.to_numeric(filtered[\"Overall Satisfaction\"], errors=\"coerce\")\nfiltered[\"City\"] = filtered[\"City\"].astype(str).str.strip()\nfiltered[\"STATE\"] = filtered[\"STATE\"].astype(str).str.strip()\nfiltered[\"Country\"] = filtered[\"Country\"].astype(str).str.strip()\nfiltered = filtered[\n    filtered[\"City\"].ne(\"\")\n    & ~filtered[\"City\"].isin([\"Unknown\", \"Unassociated Survey\"])\n    & filtered[\"Country\"].isin([\"\", \"United States\"])\n    & filtered[\"Overall Satisfaction\"].notna()\n    & filtered[\"Overall Satisfaction\"].ne(1)\n    & filtered[\"Overall Satisfaction\"].ne(0)\n].copy()\ncity_scores = (\n    filtered.groupby([\"City\", \"STATE\"], as_index=False)[\"Overall Satisfaction\"]\n    .mean()\n    .sort_values([\"Overall Satisfaction\", \"City\", \"STATE\"], ascending=[False, True, True])\n    .reset_index(drop=True)\n)\nanswer = str(city_scores.iloc[rank - 1][\"City\"])\n",
+      "subquestion": "In the year with the second highest budget from <hop 3 answer>, for all U.S. cities whose average overall satisfaction is neither perfect nor zero, if the rank is the last three digits of the highest final budget from <hop 3 answer>, which city has the rank-th highest average overall satisfaction?",
+      "answer": "Houston"
+    },
+    "7": {
+      "source": "wikipedia/Houston/content.txt",
+      "fact": "The Houston Airport System, a branch of the municipal government, oversees the operation of three major public airports in the city.",
+      "subquestion": "How many major public airports does <hop 4 answer> have?",
+      "answer": 3
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Bruno_Mars/content.txt",
+    "datagov/oip-master-uipa-record-request-semiannual-log-for-fy-2016/files/oip-master-uipa-record-request-semiannual-log-for-fy-2016-csv.txt",
+    "datagov/oip-master-uipa-record-request-semiannual-log-for-fy-2016/signed-metadata.txt",
+    "datagov/adopted-fy16-budget/files/rows.txt",
+    "datagov/adopted-fy16-budget/files/columns.txt",
+    "datagov/adopted-fy17-budget/files/rows.txt",
+    "datagov/adopted-fy17-budget/files/fpu3-7m4z.txt",
+    "datagov/adopted-fy18-budget/files/rows.txt",
+    "datagov/adopted-fy18-budget/signed-metadata.txt",
+    "datagov/fy18-tenant-satisfaction-survey-tss-summarized-results/files/fy18_tss_summarized_results.txt",
+    "datagov/fy18-tenant-satisfaction-survey-tss-summarized-results/signed-metadata.txt",
+    "wikipedia/Houston/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Bruno Mars was born in Honolulu and raised in the Waikiki neighborhood of Honolulu.",
+        "Hop result: `Honolulu`."
+      ],
+      "answer": "Honolulu"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Among Honolulu departments with non-complex public-records requests, Transportation Services has the second highest efficiency when fewer average workdays means higher efficiency.",
+        "Hop result: `Transportation Services`."
+      ],
+      "answer": "Transportation Services"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 3: The 2016 final budget for Transportation Services is 285196912.",
+        "Node 4: The 2017 final budget for Transportation Services is 269066066.",
+        "Node 5: The 2018 final budget for Transportation Services is 271760078.",
+        "The second highest budget year is 2018, and the highest budget is 285196912, whose last three digits define rank 912.",
+        "Hop result: the second-highest budget year is `2018`, the rank is `912`, and the second-highest budget value is `271760078`."
+      ],
+      "answer": {
+        "second_highest_budget_year": "2018",
+        "rank": 912,
+        "second_highest_budget": 271760078
+      }
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: In the year and rank from <hop 3 answer>, the tenant satisfaction survey ranks Houston at that position among cities with average overall satisfaction strictly between 0 and 1.",
+        "Hop result: `Houston`."
+      ],
+      "answer": "Houston"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: The airport system of <hop 4 answer> oversees three major public airports in the city.",
+        "Hop result: `3`."
+      ],
+      "answer": 3
+    }
+  ]
+}

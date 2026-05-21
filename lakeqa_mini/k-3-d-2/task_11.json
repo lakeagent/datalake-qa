@@ -1,0 +1,83 @@
+{
+    "question": "I'm interested in extreme weather records across Wyoming. What is the record high temperature ever recorded in the county seat of the Wyoming county that had between 150-180 veteran disability recipients in 2019 and 260-280 recipients in 2023? Answer the integer in Fahrenheit. Your response should be in the format [Answer].",
+    "answer": "115",
+    "nodes": {
+        "1": {
+            "source": "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Wyoming'.lower())].copy()\nfiltered['# Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['# Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['# Total: Disability Compensation Recipients'] >= 150) & (filtered['# Total: Disability Compensation Recipients'] < 180)]\ncounty_names = filtered['County name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Wyoming counties had 150-180 VA disability compensation recipients in FY 2019?",
+            "answer": [
+                "Big Horn County",
+                "Crook County",
+                "Teton County",
+                "Sublette County"
+            ]
+        },
+        "2": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Wyoming'.lower())].copy()\nfiltered['Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['Total: Disability Compensation Recipients'] >= 260) & (filtered['Total: Disability Compensation Recipients'] < 280)]\ncounty_names = filtered['County Name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Wyoming counties had 260-280 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Big Horn County",
+                "Weston County"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Big_Horn_County,_Wyoming/content.txt",
+            "fact": "Big Horn County's county seat is Basin.",
+            "subquestion": "What is the county seat of <intersection of node_1, node_2>?",
+            "answer": "Basin"
+        },
+        "4": {
+            "source": "wikipedia/Basin,_Wyoming/content.txt",
+            "fact": "Basin had the highest temperature ever recorded in Wyoming, 115°F (46.1°C), on August 8, 1983.",
+            "subquestion": "What is the record high temperature ever recorded in <node_3 answer>?",
+            "answer": "115°F"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Big_Horn_County,_Wyoming/content.txt",
+        "wikipedia/Basin,_Wyoming/content.txt",
+        "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+        "datagov/fy-2019-disability-pension-recipient-by-county/signed-metadata.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `State` is Wyoming and `# Total: Disability Compensation Recipients` is at least 150 and less than 180, then return the unique values from `County name`.",
+                "Node 2: Filter rows where `State` is Wyoming and `Total: Disability Compensation Recipients` is at least 260 and less than 280, then return the unique values from `County Name`.",
+                "Hop result: intersection of <node_1 answer> and <node_2 answer> = ['Big Horn County']."
+            ],
+            "answer": "Big Horn County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Basin is the county seat of <hop 1 answer>.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Basin"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: 115°F is the temperature <hop 2 answer> reached on August 8, 1983, the highest temperature ever recorded in Wyoming.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "115"
+        }
+    ]
+}

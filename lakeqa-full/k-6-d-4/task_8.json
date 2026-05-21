@@ -1,0 +1,209 @@
+{
+  "question": "Consider the Washington counties where school districts consistently achieved at least 68% English language arts performance for all students and all grades from 2014-15 through 2017-18. Among those counties, identify the one in Eastern Washington that borders Idaho and had a 2020 population under 300,000. Then identify its largest city and the public land-grant research university in that city. In 2012, how many more print volumes did that university's libraries hold than licensed online collection downloads by faculty and students? Return the number only. Your response should be in the format [Answer].",
+  "answer": 244013,
+  "nodes": {
+    "1": {
+      "source": "datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlimit = 7\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    df[\"OrganizationLevel\"].astype(str).eq(\"District\")\n    & df[\"TestSubject\"].astype(str).eq(\"ELA\")\n    & df[\"StudentGroup\"].astype(str).eq(\"All Students\")\n    & df[\"GradeLevel\"].astype(str).eq(\"All Grades\")\n].copy()\nfiltered[\"PercentMetStandard\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"),\n    errors=\"coerce\",\n)\nfiltered = filtered[filtered[\"PercentMetStandard\"].ge(68)].copy()\nfiltered[\"_item\"] = (\n    filtered[\"DistrictName\"].astype(str).str.strip()\n    + \" (\"\n    + filtered[\"County\"].astype(str).str.strip()\n    + \")\"\n)\nranked = filtered.sort_values(\n    [\"PercentMetStandard\", \"DistrictName\", \"County\"],\n    ascending=[False, True, True],\n)\nanswer = ranked[\"_item\"].drop_duplicates().head(limit).tolist()",
+      "subquestion": "In 2014-15, which Washington school districts had at least 68% English language arts performance for all students and all grades?",
+      "answer": [
+        "Riverside School District (Spokane)",
+        "Index Elementary School District 63 (Snohomish)",
+        "Port Townsend School District (Jefferson)",
+        "Woodland School District (Cowlitz)",
+        "Deer Park School District (Spokane)",
+        "Damman School District (Kittitas)",
+        "Camas School District (Clark)"
+      ],
+      "limit": 7
+    },
+    "2": {
+      "source": "datagov/report-card-assessment-data-2015-16-school-year/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/report-card-assessment-data-2015-16-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlimit = 7\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    df[\"OrganizationLevel\"].astype(str).eq(\"District\")\n    & df[\"TestSubject\"].astype(str).eq(\"ELA\")\n    & df[\"StudentGroup\"].astype(str).eq(\"All Students\")\n    & df[\"GradeLevel\"].astype(str).eq(\"All Grades\")\n].copy()\nfiltered[\"PercentMetStandard\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"),\n    errors=\"coerce\",\n)\nfiltered = filtered[filtered[\"PercentMetStandard\"].ge(68)].copy()\nfiltered[\"_item\"] = (\n    filtered[\"DistrictName\"].astype(str).str.strip()\n    + \" (\"\n    + filtered[\"County\"].astype(str).str.strip()\n    + \")\"\n)\nranked = filtered.sort_values(\n    [\"PercentMetStandard\", \"DistrictName\", \"County\"],\n    ascending=[False, True, True],\n)\nanswer = ranked[\"_item\"].drop_duplicates().head(limit).tolist()",
+      "subquestion": "In 2015-16, which Washington school districts had at least 68% English language arts performance for all students and all grades?",
+      "answer": [
+        "Edmonds School District (Snohomish)",
+        "Fife School District (Pierce)",
+        "West Valley School District (Spokane) (Spokane)",
+        "Bainbridge Island School District (Kitsap)",
+        "Sedro-Woolley School District (Skagit)",
+        "Walla Walla Public Schools (Walla Walla)",
+        "Enumclaw School District (King)"
+      ],
+      "limit": 7
+    },
+    "3": {
+      "source": "datagov/report-card-assessment-data-2016-17-school-year/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/report-card-assessment-data-2016-17-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlimit = 7\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    df[\"OrganizationLevel\"].astype(str).eq(\"District\")\n    & df[\"TestSubject\"].astype(str).eq(\"ELA\")\n    & df[\"StudentGroup\"].astype(str).eq(\"All Students\")\n    & df[\"GradeLevel\"].astype(str).eq(\"All Grades\")\n].copy()\nfiltered[\"PercentMetStandard\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"),\n    errors=\"coerce\",\n)\nfiltered = filtered[filtered[\"PercentMetStandard\"].ge(68)].copy()\nfiltered[\"_item\"] = (\n    filtered[\"DistrictName\"].astype(str).str.strip()\n    + \" (\"\n    + filtered[\"County\"].astype(str).str.strip()\n    + \")\"\n)\nranked = filtered.sort_values(\n    [\"PercentMetStandard\", \"DistrictName\", \"County\"],\n    ascending=[False, True, True],\n)\nanswer = ranked[\"_item\"].drop_duplicates().head(limit).tolist()",
+      "subquestion": "In 2016-17, which Washington school districts had at least 68% English language arts performance for all students and all grades?",
+      "answer": [
+        "Enumclaw School District (King)",
+        "Snohomish School District (Snohomish)",
+        "Centralia School District (Lewis)",
+        "Mercer Island School District (King)",
+        "Prosser School District (Benton)",
+        "East Valley School District (Spokane) (Spokane)",
+        "Clover Park School District (Pierce)"
+      ],
+      "limit": 7
+    },
+    "4": {
+      "source": "datagov/report-card-assessment-data-2017-18-school-year/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/report-card-assessment-data-2017-18-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlimit = 7\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    df[\"OrganizationLevel\"].astype(str).eq(\"District\")\n    & df[\"TestSubject\"].astype(str).eq(\"ELA\")\n    & df[\"StudentGroup\"].astype(str).eq(\"All Students\")\n    & df[\"GradeLevel\"].astype(str).eq(\"All Grades\")\n].copy()\nfiltered[\"PercentMetStandard\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"),\n    errors=\"coerce\",\n)\nfiltered = filtered[filtered[\"PercentMetStandard\"].ge(68)].copy()\nfiltered[\"_item\"] = (\n    filtered[\"DistrictName\"].astype(str).str.strip()\n    + \" (\"\n    + filtered[\"County\"].astype(str).str.strip()\n    + \")\"\n)\nranked = filtered.sort_values(\n    [\"PercentMetStandard\", \"DistrictName\", \"County\"],\n    ascending=[False, True, True],\n)\nanswer = ranked[\"_item\"].drop_duplicates().head(limit).tolist()",
+      "subquestion": "In 2017-18, which Washington school districts had at least 68% English language arts performance for all students and all grades?",
+      "answer": [
+        "University Place School District (Pierce)",
+        "Enumclaw School District (King)",
+        "Mercer Island School District (King)",
+        "Bainbridge Island School District (Kitsap)",
+        "Lake Washington School District (King)",
+        "Camas School District (Clark)",
+        "Sunnyside School District (Yakima)"
+      ],
+      "limit": 7
+    },
+    "5": {
+      "source": "wikipedia/Eastern_Washington/content.txt",
+      "fact": "The Eastern Washington article lists Whitman and Spokane among the counties in Eastern Washington.",
+      "subquestion": "Among <hop 1 answer>, which counties are in Eastern Washington?",
+      "answer": "Whitman and Spokane"
+    },
+    "6": {
+      "source": "wikipedia/Whitman_County,_Washington/content.txt",
+      "fact": "Adjacent counties\n\nSpokane County - north\nBenewah County, Idaho - northeast\nLatah County, Idaho - east\nNez Perce County, Idaho - southeast\nAsotin County - south/southeast\nGarfield County - south\nColumbia County - south\nFranklin County - southwest\nAdams County - west\nLincoln County - northwest\n\nAs of the 2020 census, the county had a population of 47,973.",
+      "subquestion": "Does this candidate from <hop 2 answer> border Idaho, and was its 2020 census population under 300,000?",
+      "answer": {
+        "county": "Whitman County",
+        "borders_idaho": true,
+        "population_2020": 47973,
+        "meets_criteria": true
+      }
+    },
+    "7": {
+      "source": "wikipedia/Spokane_County,_Washington/content.txt",
+      "fact": "Spokane County is a county located in the U.S. state of Washington. As of the 2020 census, its population was 539,339, and was estimated to be 555,947 in 2024, making it the fourth-most populous county in Washington. The county seat and largest city is Spokane, the second largest city in the state after Seattle.\n\nAdjacent counties\n\n Stevens County - north\nBonner County, Idaho - northeast\nKootenai County, Idaho - east\nBenewah County, Idaho - southeast\nWhitman County - south\nLincoln County - west",
+      "subquestion": "Does this candidate from <hop 2 answer> border Idaho, and was its 2020 census population under 300,000?",
+      "answer": {
+        "county": "Spokane County",
+        "borders_idaho": true,
+        "population_2020": 539339,
+        "meets_criteria": false
+      }
+    },
+    "8": {
+      "source": "wikipedia/Whitman_County,_Washington/content.txt",
+      "fact": "Whitman County is a county located in the U.S. state of Washington. As of the 2020 census, the population was 47,973. The county seat is Colfax, and its largest city is Pullman.",
+      "subquestion": "What is the largest city of <hop 3 answer>?",
+      "answer": "Pullman"
+    },
+    "9": {
+      "source": "wikipedia/Washington_State_University/content.txt",
+      "fact": "Washington State University (WSU, or colloquially Wazzu) is a public land-grant research university in Pullman, Washington, United States. Founded in 1890, WSU is also one of the oldest land-grant universities in the American West.",
+      "subquestion": "What public land-grant research university is in <hop 4 answer>?",
+      "answer": "Washington State University"
+    },
+    "10": {
+      "source": "wikipedia/Washington_State_University/content.txt",
+      "fact": "The WSU Libraries holds 2,266,616 print volumes and WSU faculty and students downloaded 2,022,603 from its licensed online collections in 2012.",
+      "subquestion": "For <hop 5 answer>, how many print volumes did its libraries hold in 2012, and how many licensed online collection downloads did faculty and students make that year?",
+      "answer": {
+        "print_volumes": 2266616,
+        "licensed_online_collection_downloads": 2022603
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: In the Washington Report Card Assessment Data 2014-15 release, 21 school districts had ELA PercentMetStandard >= 68% for All Students, All Grades, including districts in King, Clark, Pierce, Whitman, Thurston, and Spokane counties. Due to limit=7, the stored answer is only a compact preview.",
+        "Node 2: In the Washington Report Card Assessment Data 2015-16 release, 77 school districts had ELA PercentMetStandard >= 68% for All Students, All Grades, including districts in all 6 counties from the 2014-15 results. Due to limit=7, the stored answer is only a compact preview.",
+        "Node 3: In the Washington Report Card Assessment Data 2016-17 release, 67 school districts had ELA PercentMetStandard >= 68% for All Students, All Grades. Due to limit=7, the stored answer is only a compact preview.",
+        "Node 4: In the Washington Report Card Assessment Data 2017-18 release, 56 school districts had ELA PercentMetStandard >= 68% for All Students, All Grades. Due to limit=7, the stored answer is only a compact preview.",
+        "Derive hop 1 answer using nodes 1, 2, 3, 4: use the full yearly district results behind nodes 1-4, not just the stored previews; intersecting the yearly district results yields the qualifying county set. Hop answer: King, Clark, Pierce, Whitman, Thurston, Spokane."
+      ],
+      "answer": "King, Clark, Pierce, Whitman, Thurston, Spokane"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: Filtering <hop 1 answer> to counties listed in Eastern Washington leaves `Whitman` and `Spokane`.",
+        "Hop result: `Whitman and Spokane`."
+      ],
+      "answer": "Whitman and Spokane"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        6,
+        7
+      ],
+      "reasoning": [
+        "Node 6: One candidate from <hop 2 answer>, Whitman County, borders Idaho and had a 2020 census population of `47,973`, which is under `300,000`.",
+        "Node 7: The other candidate from <hop 2 answer>, Spokane County, borders Idaho but had a 2020 census population of `539,339`, which is not under `300,000`.",
+        "Hop result: only `Whitman County` satisfies both the Idaho-border and population-under-300,000 conditions."
+      ],
+      "answer": "Whitman County"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        8
+      ],
+      "reasoning": [
+        "Node 8: The largest city of <hop 3 answer> is `Pullman`.",
+        "Hop result: `Pullman`."
+      ],
+      "answer": "Pullman"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        9
+      ],
+      "reasoning": [
+        "Node 9: The public land-grant research university in <hop 4 answer> is `Washington State University`.",
+        "Hop result: `Washington State University`."
+      ],
+      "answer": "Washington State University"
+    },
+    {
+      "hop": 6,
+      "node_ids": [
+        10
+      ],
+      "reasoning": [
+        "Node 10: In 2012, <hop 5 answer> Libraries held `2,266,616` print volumes, and faculty and students made `2,022,603` licensed online collection downloads.",
+        "Hop result: `2,266,616 - 2,022,603 = 244,013`."
+      ],
+      "answer": 244013
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/Eastern_Washington/content.txt",
+    "wikipedia/Whitman_County,_Washington/content.txt",
+    "wikipedia/Spokane_County,_Washington/content.txt",
+    "datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt",
+    "datagov/report-card-assessment-data-2014-15-school-year/signed-metadata.txt",
+    "datagov/report-card-assessment-data-2014-15-school-year/files/jjrr-uy75.txt",
+    "datagov/report-card-assessment-data-2015-16-school-year/files/rows.txt",
+    "datagov/report-card-assessment-data-2015-16-school-year/signed-metadata.txt",
+    "datagov/report-card-assessment-data-2015-16-school-year/files/6hhp-ynqb.txt",
+    "datagov/report-card-assessment-data-2016-17-school-year/files/rows.txt",
+    "datagov/report-card-assessment-data-2016-17-school-year/signed-metadata.txt",
+    "datagov/report-card-assessment-data-2016-17-school-year/files/5tvk-w2c5.txt",
+    "datagov/report-card-assessment-data-2017-18-school-year/files/rows.txt",
+    "datagov/report-card-assessment-data-2017-18-school-year/signed-metadata.txt",
+    "datagov/report-card-assessment-data-2017-18-school-year/files/spyf-ga46.txt",
+    "wikipedia/Washington_State_University/content.txt"
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "question": "Which applicant company appears most often among cancelled or withdrawn construction permits in DC in 2024? In 2024, among building permits in DC where that company appears as the permit owner, which ward appears most often? In 2022, among building permits in that ward, which permit subtype appears most often? Looking at the same ward and subtype in DC building permits from 2020, 2021, and 2023, which ANCs appear in the top three in each of those three years? Among those ANCs, which one covers the largest number of neighborhoods? Return only the ANC in the format [Answer].",
+  "answer": "ANC 7B",
+  "nodes": {
+    "1": {
+      "source": "datagov/construction-permits-in-2024/files/data.txt",
+      "fact": "import json\nimport os\nfrom collections import Counter\n\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/construction-permits-in-2024/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:\n        text = f.read()\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    text = obj['Body'].read().decode('utf-8', errors='ignore')\nrows = json.loads(text)['features']\n\ncounter = Counter()\nfor feature in rows:\n    row = feature.get('properties', {})\n    if str(row.get('STATUS', '')).strip() != 'Cancel/Withdrawn':\n        continue\n    applicant = str(row.get('APPLICANTCOMPANYNAME', '')).strip()\n    if applicant and applicant.upper() not in {'N/A', 'NA', 'NONE', 'NULL'}:\n        counter[applicant] += 1\n\nanswer = sorted(counter.items(), key=lambda item: (-item[1], item[0]))[0][0]\n",
+      "subquestion": "Which applicant company appears most often among cancelled or withdrawn construction permits in DC in 2024?",
+      "answer": "Potomac Electric Power Company"
+    },
+    "2": {
+      "source": "datagov/building-permits-in-2024/files/data.txt",
+      "fact": "import os\nimport re\nfrom collections import Counter\nfrom html import unescape\n\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/building-permits-in-2024/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:\n        text = f.read()\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    text = obj['Body'].read().decode('utf-8', errors='ignore')\n\nnode_1_answer = 'Potomac Electric Power Company'\ntarget_owner = node_1_answer.upper()\ncounter = Counter()\nfor block in text.split('<Placemark>')[1:]:\n    row = {}\n    for match in re.finditer(r'<SimpleData name=\"([^\"]+)\">(.*?)</SimpleData>', block, re.S):\n        row[match.group(1)] = unescape(match.group(2)).strip()\n    owner = row.get('OWNER_NAME', '').strip().upper()\n    if owner != target_owner:\n        continue\n    ward = row.get('WARD', '').strip()\n    if ward:\n        counter[ward] += 1\n\nanswer = sorted(counter.items(), key=lambda item: (-item[1], item[0]))[0][0]\n",
+      "subquestion": "In 2024, among building permits in DC where <hop 1 answer> appears as the permit owner, which ward appears most often?",
+      "answer": "7"
+    },
+    "3": {
+      "source": "datagov/building-permits-in-2022/files/data.txt",
+      "fact": "import os\nimport re\nfrom collections import Counter\nfrom html import unescape\n\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/building-permits-in-2022/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:\n        text = f.read()\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    text = obj['Body'].read().decode('utf-8', errors='ignore')\n\nnode_2_answer = '7'\ncounter = Counter()\nfor block in text.split('<Placemark>')[1:]:\n    row = {}\n    for match in re.finditer(r'<SimpleData name=\"([^\"]+)\">(.*?)</SimpleData>', block, re.S):\n        row[match.group(1)] = unescape(match.group(2)).strip()\n    if row.get('WARD', '').strip() != node_2_answer:\n        continue\n    subtype = row.get('PERMIT_SUBTYPE_NAME', '').strip()\n    if subtype:\n        counter[subtype] += 1\n\nanswer = sorted(counter.items(), key=lambda item: (-item[1], item[0]))[0][0]\n",
+      "subquestion": "In 2022, among building permits in DC in Ward <hop 2 answer>, which permit subtype appears most often?",
+      "answer": "ELECTRICAL"
+    },
+    "4": {
+      "source": "datagov/building-permits-in-2020/files/data.txt",
+      "fact": "import os\nimport re\nfrom collections import Counter\nfrom html import unescape\n\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/building-permits-in-2020/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:\n        text = f.read()\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    text = obj['Body'].read().decode('utf-8', errors='ignore')\n\nnode_2_answer = '7'\nnode_3_answer = 'ELECTRICAL'\ncounter = Counter()\nfor block in text.split('<Placemark>')[1:]:\n    row = {}\n    for match in re.finditer(r'<SimpleData name=\"([^\"]+)\">(.*?)</SimpleData>', block, re.S):\n        row[match.group(1)] = unescape(match.group(2)).strip()\n    if row.get('WARD', '').strip() != node_2_answer:\n        continue\n    if row.get('PERMIT_SUBTYPE_NAME', '').strip() != node_3_answer:\n        continue\n    anc = row.get('ANC', '').strip()\n    if anc:\n        counter[anc] += 1\n\ntop_ancs = [item[0] for item in sorted(counter.items(), key=lambda item: (-item[1], item[0]))[:3]]\nanswer = '; '.join(sorted(top_ancs))\n",
+      "subquestion": "In 2020, among building permits in DC in Ward <hop 2 answer> whose permit subtype is <hop 3 answer>, which three ANCs appear most often? Return them as a semicolon-separated list sorted alphabetically.",
+      "answer": "ANC 7B; ANC 7C; ANC 7D"
+    },
+    "5": {
+      "source": "datagov/building-permits-in-2021/files/data.txt",
+      "fact": "import json\nimport os\nfrom collections import Counter\n\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/building-permits-in-2021/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:\n        text = f.read()\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    text = obj['Body'].read().decode('utf-8', errors='ignore')\nrows = json.loads(text)['features']\n\nnode_2_answer = '7'\nnode_3_answer = 'ELECTRICAL'\ncounter = Counter()\nfor feature in rows:\n    row = feature.get('properties', {})\n    if str(row.get('WARD', '')).strip() != node_2_answer:\n        continue\n    if str(row.get('PERMIT_SUBTYPE_NAME', '')).strip() != node_3_answer:\n        continue\n    anc = str(row.get('ANC', '')).strip()\n    if anc:\n        counter[anc] += 1\n\ntop_ancs = [item[0] for item in sorted(counter.items(), key=lambda item: (-item[1], item[0]))[:3]]\nanswer = '; '.join(sorted(top_ancs))\n",
+      "subquestion": "In 2021, among building permits in DC in Ward <hop 2 answer> whose permit subtype is <hop 3 answer>, which three ANCs appear most often? Return them as a semicolon-separated list sorted alphabetically.",
+      "answer": "ANC 7B; ANC 7C; ANC 7D"
+    },
+    "6": {
+      "source": "datagov/building-permits-in-2023/files/data.txt",
+      "fact": "import json\nimport os\nfrom collections import Counter\n\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/building-permits-in-2023/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:\n        text = f.read()\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    text = obj['Body'].read().decode('utf-8', errors='ignore')\nrows = json.loads(text)['features']\n\nnode_2_answer = '7'\nnode_3_answer = 'ELECTRICAL'\ncounter = Counter()\nfor feature in rows:\n    row = feature.get('properties', {})\n    if str(row.get('WARD', '')).strip() != node_2_answer:\n        continue\n    if str(row.get('PERMIT_SUBTYPE_NAME', '')).strip() != node_3_answer:\n        continue\n    anc = str(row.get('ANC', '')).strip()\n    if anc:\n        counter[anc] += 1\n\ntop_ancs = [item[0] for item in sorted(counter.items(), key=lambda item: (-item[1], item[0]))[:3]]\nanswer = '; '.join(sorted(top_ancs))\n",
+      "subquestion": "In 2023, among building permits in DC in Ward <hop 2 answer> whose permit subtype is <hop 3 answer>, which three ANCs appear most often? Return them as a semicolon-separated list sorted alphabetically.",
+      "answer": "ANC 7B; ANC 7C; ANC 7D"
+    },
+    "7": {
+      "source": "wikipedia/Advisory_Neighborhood_Commission/content.txt",
+      "fact": "Ward 7 \n\n 7B - Dupont Park, Fairfax Village, Greenway (part), Hillcrest, Naylor Gardens, Penn Branch, Randle Highlands, Twining\n 7C - Benning Heights, Burrville, Deanwood, Grant Park, Lincoln Heights\n 7D - Eastland Gardens, Kenilworth, Kingman Park, Mayfair, River Terrace",
+      "subquestion": "Among the ANCs from <hop 4 answer>, which one covers the largest number of neighborhoods?",
+      "answer": "ANC 7B"
+    }
+  },
+  "datasets_used": [
+    "datagov/construction-permits-in-2024/files/data.txt",
+    "datagov/construction-permits-in-2024/signed-metadata.txt",
+    "datagov/construction-permits-in-2024/files/44.arcgis-layer.json",
+    "datagov/building-permits-in-2024/files/data.txt",
+    "datagov/building-permits-in-2024/signed-metadata.txt",
+    "datagov/building-permits-in-2024/files/16.arcgis-layer.json",
+    "datagov/building-permits-in-2022/files/data.txt",
+    "datagov/building-permits-in-2022/signed-metadata.txt",
+    "datagov/building-permits-in-2022/files/14.arcgis-layer.json",
+    "datagov/building-permits-in-2020/files/data.txt",
+    "datagov/building-permits-in-2020/signed-metadata.txt",
+    "datagov/building-permits-in-2020/files/2.arcgis-layer.json",
+    "datagov/building-permits-in-2021/files/data.txt",
+    "datagov/building-permits-in-2021/signed-metadata.txt",
+    "datagov/building-permits-in-2021/files/3.arcgis-layer.json",
+    "datagov/building-permits-in-2023/files/data.txt",
+    "datagov/building-permits-in-2023/signed-metadata.txt",
+    "datagov/building-permits-in-2023/files/15.arcgis-layer.json",
+    "wikipedia/Advisory_Neighborhood_Commission/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the 2024 DC construction permits data, Potomac Electric Power Company is the most frequent applicant company among records with status Cancel/Withdrawn, with 88 permits.",
+        "Hop result: Potomac Electric Power Company."
+      ],
+      "answer": "Potomac Electric Power Company"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: In the 2024 DC building permits data, among permits whose OWNER_NAME is Potomac Electric Power Company, Ward 7 appears most often, with 7 permits.",
+        "Hop result: 7."
+      ],
+      "answer": "7"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: In the 2022 DC building permits data, Ward 7's most common permit subtype is ELECTRICAL, with 1,174 permits.",
+        "Hop result: ELECTRICAL."
+      ],
+      "answer": "ELECTRICAL"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        4,
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 4: In 2020, the three most common ANCs for Ward 7 ELECTRICAL building permits are ANC 7B, ANC 7C, and ANC 7D.",
+        "Node 5: In 2021, the three most common ANCs for Ward 7 ELECTRICAL building permits are ANC 7B, ANC 7C, and ANC 7D.",
+        "Node 6: In 2023, the three most common ANCs for Ward 7 ELECTRICAL building permits are ANC 7B, ANC 7C, and ANC 7D.",
+        "Intersecting the three year-specific top-three lists leaves ANC 7B, ANC 7C, and ANC 7D.",
+        "Hop result: ANC 7B; ANC 7C; ANC 7D."
+      ],
+      "answer": "ANC 7B; ANC 7C; ANC 7D"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: ANC 7B covers 8 neighborhoods, ANC 7C covers 5, and ANC 7D covers 5.",
+        "Hop result: ANC 7B."
+      ],
+      "answer": "ANC 7B"
+    }
+  ]
+}

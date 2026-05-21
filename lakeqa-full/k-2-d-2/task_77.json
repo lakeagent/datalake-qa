@@ -1,0 +1,59 @@
+{
+    "question": "We define 'high-level activity' as achieving at least 300 minutes of moderate or 150 minutes of vigorous aerobic activity per week. In 2015, which state has the 5th highest percentage of adults reaching this high-level activity? As of 2022 in that state, how many more municipalities than counties are there? Please return only the number in the format [Answer].",
+    "answer": 242,
+    "nodes": {
+        "1": {
+            "source": "datagov/nutrition-physical-activity-and-obesity-behavioral-risk-factor-surveillance-system/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nutrition-physical-activity-and-obesity-behavioral-risk-factor-surveillance-system/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nstates = {'AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'}\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['val_num'] = pd.to_numeric(df['Data_Value'], errors='coerce')\nfiltered = df[\n    df['YearStart'].eq('2015')\n    & df['LocationAbbr'].isin(states)\n    & df['Total'].eq('Total')\n    & df['Question'].eq('Percent of adults who achieve at least 300 minutes a week of moderate-intensity aerobic physical activity or 150 minutes a week of vigorous-intensity aerobic activity (or an equivalent combination)')\n    & df['val_num'].notna()\n].copy()\nranked = filtered.sort_values(['val_num', 'LocationDesc'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = str(ranked.iloc[4]['LocationDesc'])\n",
+            "subquestion": "We define 'high-level activity' as achieving at least 300 minutes of moderate or 150 minutes of vigorous aerobic activity per week. In 2015, which state has the 5th highest percentage of adults reaching this high-level activity?",
+            "answer": "Washington"
+        },
+        "2": {
+            "source": "wikipedia/List_of_counties_in_Washington/content.txt",
+            "fact": "The U.S. state of Washington has 39 counties.",
+            "subquestion": "How many counties are in <hop 1 answer>?",
+            "answer": 39
+        },
+        "3": {
+            "source": "wikipedia/List_of_municipalities_in_Washington/content.txt",
+            "fact": "The state has five categories for its 281 municipalities that vary based on population at the time of incorporation or reorganization. As of 2022, 197 are code cities, 10 are first-class cities, 5 are second-class cities, and 69 are towns.",
+            "subquestion": "As of 2022, how many municipalities are in <hop 1 answer>?",
+            "answer": 281
+        }
+    },
+    "datasets_used": [
+        "datagov/nutrition-physical-activity-and-obesity-behavioral-risk-factor-surveillance-system/files/rows.txt",
+        "datagov/nutrition-physical-activity-and-obesity-behavioral-risk-factor-surveillance-system/signed-metadata.txt",
+        "datagov/nutrition-physical-activity-and-obesity-behavioral-risk-factor-surveillance-system/files/hn4x-zwk7.txt",
+        "wikipedia/List_of_counties_in_Washington/content.txt",
+        "wikipedia/List_of_municipalities_in_Washington/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: In the nutrition and physical activity surveillance data, keep total statewide rows for the 50 states only.",
+                "For 2015 and the question about achieving at least 300 minutes of moderate-intensity activity or 150 minutes of vigorous-intensity activity, rank states from highest to lowest by Data_Value.",
+                "The 5th-highest state is Washington."
+            ],
+            "answer": "Washington"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 2: <hop 1 answer> has 39 counties.",
+                "Node 3: As of 2022, <hop 1 answer> has 281 municipalities.",
+                "Hop result: 281 - 39 = 242.",
+                "Therefore, the final answer is 242."
+            ],
+            "answer": 242
+        }
+    ]
+}

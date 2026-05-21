@@ -1,0 +1,104 @@
+{
+  "question": "Among Connecticut towns that ranked in the top 10 in late 2019 for preschool spaces being used, Care 4 Kids enrollment, and licensed child day-care capacity, how many unique counties contain those towns? Return only the number in the format [Answer].",
+  "answer": 3,
+  "nodes": {
+    "1": {
+      "source": "datagov/school-readiness-2018-19-by-town-june/files/rows.txt",
+      "fact": "import io\nimport re\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-readiness-2018-19-by-town-june/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj['Body'].read()),\n    usecols=['Town', 'Total School Readiness Preschool Spaces Utilized (a) 2018-2019'],\n    dtype=str,\n    low_memory=False,\n)\n\ndef normalize_town(value):\n    town = str(value).strip()\n    town = re.sub(r'^x_+', '', town, flags=re.I)\n    town = re.sub(r'\\s*\\([^)]*\\)', '', town).strip()\n    town = re.sub(r'\\s+', ' ', town)\n    return town\n\ndf['Town'] = df['Town'].map(normalize_town)\ndf['utilized_spaces'] = pd.to_numeric(df['Total School Readiness Preschool Spaces Utilized (a) 2018-2019'], errors='coerce')\nfiltered = df[\n    df['Town'].ne('')\n    & df['Town'].ne('Grand Total')\n    & df['utilized_spaces'].notna()\n].copy()\nranked = (\n    filtered.groupby('Town', dropna=True)['utilized_spaces']\n    .max()\n    .reset_index()\n    .sort_values(['utilized_spaces', 'Town'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[9, 'utilized_spaces'] > ranked.loc[10, 'utilized_spaces']\nanswer = '; '.join(ranked.head(10)['Town'].tolist())\n",
+      "subquestion": "In June 2019, which Connecticut towns were in the top 10 for the number of school-readiness preschool spaces being used in the 2018-19 school year?",
+      "answer": "Bridgeport; Waterbury; Hartford; New Haven; New Britain; Norwalk; Stamford; Meriden; Danbury; Bristol"
+    },
+    "2": {
+      "source": "datagov/care-4-kids-c4k-number-of-children-by-town-october-2019/files/rows.txt",
+      "fact": "import io\nimport re\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/care-4-kids-c4k-number-of-children-by-town-october-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj['Body'].read()),\n    usecols=['Town or City', 'Total Number of Children (All Age Groups). Distinct Count, not the sum of columns.'],\n    dtype=str,\n    low_memory=False,\n)\n\ncomparison_towns = [town.strip() for town in str(node_1_answer).split(';') if town.strip()]\nassert len(comparison_towns) == 10\n\ndef normalize_town(value):\n    town = str(value).strip()\n    town = re.sub(r'^x_+', '', town, flags=re.I)\n    town = re.sub(r'\\s*\\([^)]*\\)', '', town).strip()\n    town = re.sub(r'\\s+', ' ', town)\n    return town\n\ndf['Town'] = df['Town or City'].map(normalize_town)\ndf['enrollment'] = pd.to_numeric(\n    df['Total Number of Children (All Age Groups). Distinct Count, not the sum of columns.'],\n    errors='coerce'\n)\nfiltered = df[df['Town'].ne('') & df['enrollment'].notna()].copy()\nranked = (\n    filtered.groupby('Town', dropna=True)['enrollment']\n    .max()\n    .reset_index()\n    .sort_values(['enrollment', 'Town'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[9, 'enrollment'] > ranked.loc[10, 'enrollment']\nanswer = '; '.join(ranked.head(10)['Town'].tolist())\n",
+      "subquestion": "In October 2019, which Connecticut towns were in the top 10 for Care 4 Kids enrollment?",
+      "answer": "New Haven; Bridgeport; Waterbury; Hartford; New Britain; Meriden; West Haven; Manchester; Danbury; East Hartford"
+    },
+    "3": {
+      "source": "datagov/child-day-care-cdc-2019-20-by-town-dec/files/rows.txt",
+      "fact": "import io\nimport re\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/child-day-care-cdc-2019-20-by-town-dec/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj['Body'].read()),\n    usecols=['Town', 'TOTAL CDC SPACES (Capacity)'],\n    dtype=str,\n    low_memory=False,\n)\n\ncomparison_towns_1 = [town.strip() for town in str(node_1_answer).split(';') if town.strip()]\ncomparison_towns_2 = [town.strip() for town in str(node_2_answer).split(';') if town.strip()]\nassert len(comparison_towns_1) == 10\nassert len(comparison_towns_2) == 10\n\ndef normalize_town(value):\n    town = str(value).strip()\n    town = re.sub(r'^x_+', '', town, flags=re.I)\n    town = re.sub(r'\\s*\\([^)]*\\)', '', town).strip()\n    town = re.sub(r'\\s+', ' ', town)\n    return town\n\ndf['Town'] = df['Town'].map(normalize_town)\ndf['capacity'] = pd.to_numeric(df['TOTAL CDC SPACES (Capacity)'], errors='coerce')\nfiltered = df[df['Town'].ne('') & df['capacity'].notna()].copy()\nranked = (\n    filtered.groupby('Town', dropna=True)['capacity']\n    .max()\n    .reset_index()\n    .sort_values(['capacity', 'Town'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[9, 'capacity'] > ranked.loc[10, 'capacity']\nanswer = '; '.join(ranked.head(10)['Town'].tolist())\n",
+      "subquestion": "In December 2019, which Connecticut towns were in the top 10 for licensed child day-care capacity?",
+      "answer": "Bridgeport; Hartford; Stamford; Waterbury; New Haven; Norwalk; Danbury; Enfield; Manchester; New London"
+    },
+    "4": {
+      "source": "wikipedia/Bridgeport,_Connecticut/content.txt",
+      "fact": "Located in eastern Fairfield County at the mouth of the Pequonnock River on Long Island Sound, it is a port city  from Manhattan and  from The Bronx.",
+      "subquestion": "Which county contains the first town from <hop 1 answer>?",
+      "answer": "Fairfield County"
+    },
+    "5": {
+      "source": "wikipedia/Waterbury,_Connecticut/content.txt",
+      "fact": "Waterbury is the largest city in the Naugatuck Valley Planning Region and second-largest city in New Haven County.",
+      "subquestion": "Which county contains the second town from <hop 1 answer>?",
+      "answer": "New Haven County"
+    },
+    "6": {
+      "source": "wikipedia/Hartford,_Connecticut/content.txt",
+      "fact": "The city, located in Hartford County",
+      "subquestion": "Which county contains the third town from <hop 1 answer>?",
+      "answer": "Hartford County"
+    },
+    "7": {
+      "source": "wikipedia/New_Haven_County,_Connecticut/content.txt",
+      "fact": "Two of the state's five largest cities, New Haven (3rd) and Waterbury (5th), are part of New Haven County.",
+      "subquestion": "Which county contains the fourth town from <hop 1 answer>?",
+      "answer": "New Haven County"
+    },
+    "8": {
+      "source": "wikipedia/Danbury,_Connecticut/content.txt",
+      "fact": "Danbury ( ) is a city in Fairfield County, Connecticut, United States, located approximately  northeast of New York City.",
+      "subquestion": "Which county contains the fifth town from <hop 1 answer>?",
+      "answer": "Fairfield County"
+    }
+  },
+  "datasets_used": [
+    "datagov/school-readiness-2018-19-by-town-june/files/rows.txt",
+    "datagov/school-readiness-2018-19-by-town-june/signed-metadata.txt",
+    "datagov/care-4-kids-c4k-number-of-children-by-town-october-2019/files/rows.txt",
+    "datagov/care-4-kids-c4k-number-of-children-by-town-october-2019/signed-metadata.txt",
+    "datagov/care-4-kids-c4k-number-of-children-by-town-october-2019/files/q3dy-i22e.publisher-view.json",
+    "datagov/child-day-care-cdc-2019-20-by-town-dec/files/rows.txt",
+    "datagov/child-day-care-cdc-2019-20-by-town-dec/signed-metadata.txt",
+    "wikipedia/Bridgeport,_Connecticut/content.txt",
+    "wikipedia/Waterbury,_Connecticut/content.txt",
+    "wikipedia/Hartford,_Connecticut/content.txt",
+    "wikipedia/New_Haven_County,_Connecticut/content.txt",
+    "wikipedia/Danbury,_Connecticut/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: In June 2019, the Connecticut towns with the most 2018-19 school-readiness preschool spaces in use were Bridgeport (1,648), Waterbury (1,328), Hartford (1,282), New Haven (1,001), New Britain (735), Norwalk (636), Stamford (548), Meriden (516), Danbury (416), and Bristol (390).",
+        "Node 2: In October 2019, the Connecticut towns with the highest Care 4 Kids enrollment were New Haven (1,690), Bridgeport (1,560), Waterbury (1,406), Hartford (1,303), New Britain (770), Meriden (614), West Haven (514), Manchester (504), Danbury (447), and East Hartford (424).",
+        "Node 3: In December 2019, the Connecticut towns with the largest licensed child day-care capacity were Bridgeport (593), Hartford (556), Stamford (227), Waterbury (213), New Haven (188), Norwalk (172), Danbury (171), Enfield (126), Manchester (102), and New London (100).",
+        "Hop result: The towns that appear in all three late-2019 top-10 lists are Bridgeport, Waterbury, Hartford, New Haven, and Danbury."
+      ],
+      "answer": "Bridgeport; Waterbury; Hartford; New Haven; Danbury"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "reasoning": [
+        "Node 4: The first town from <hop 1 answer>, Bridgeport, is in Fairfield County.",
+        "Node 5: The second town from <hop 1 answer>, Waterbury, is in New Haven County.",
+        "Node 6: The third town from <hop 1 answer>, Hartford, is in Hartford County.",
+        "Node 7: The fourth town from <hop 1 answer>, New Haven, is in New Haven County.",
+        "Node 8: The fifth town from <hop 1 answer>, Danbury, is in Fairfield County.",
+        "Hop result: the unique counties containing the towns from <hop 1 answer> are Fairfield County, New Haven County, and Hartford County, so the count is 3."
+      ],
+      "answer": 3
+    }
+  ]
+}

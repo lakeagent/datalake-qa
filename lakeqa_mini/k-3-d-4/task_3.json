@@ -1,0 +1,154 @@
+{
+    "question": "Which Washington county had the lowest 2020 census population among those counties that (1) had Low-Income student enrollment percentage between 32-40% in every school year from 2018-19 through 2021-22, (2) had district-average Math proficiency above 40% in the 2021-22 school year, and (3) were not the most populous county in Washington? Only report the county name in the format of `X County`. Your response should be in the format [Answer].",
+    "answer": "Whitman County",
+    "nodes": {
+        "1": {
+            "source": "datagov/report-card-enrollment-2018-19-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/report-card-enrollment-2018-19-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    df[\"OrganizationLevel\"].astype(str).str.strip().str.lower().eq(\"district\")\n    & df[\"GradeLevel\"].astype(str).str.strip().str.lower().eq(\"all grades\")\n].copy()\nfiltered[\"County\"] = filtered[\"County\"].astype(str).str.strip().str.replace(r\"\\s+\", \" \", regex=True)\nfiltered = filtered[filtered[\"County\"].ne(\"\") & filtered[\"County\"].str.lower().ne(\"nan\")].copy()\nfiltered[\"All Students\"] = pd.to_numeric(filtered[\"All Students\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered[\"Low-Income\"] = pd.to_numeric(filtered[\"Low-Income\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = filtered.dropna(subset=[\"All Students\", \"Low-Income\"])\n\ncounty_totals = filtered.groupby(\"County\", dropna=True)[[\"All Students\", \"Low-Income\"]].sum().reset_index()\ncounty_totals = county_totals[county_totals[\"All Students\"].gt(0)].copy()\ncounty_totals[\"LowIncomePct\"] = county_totals[\"Low-Income\"] / county_totals[\"All Students\"] * 100\nanswer = county_totals.loc[county_totals[\"LowIncomePct\"].between(32, 40), \"County\"].sort_values().tolist()",
+            "subquestion": "Which Washington counties had Low-Income student enrollment percentage between 32-40% in the 2018-19 school year?",
+            "answer": [
+                "Island",
+                "King",
+                "Kitsap",
+                "San Juan",
+                "Snohomish",
+                "Whitman"
+            ]
+        },
+        "2": {
+            "source": "datagov/report-card-enrollment-2019-20-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/report-card-enrollment-2019-20-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    df[\"OrganizationLevel\"].astype(str).str.strip().str.lower().eq(\"district\")\n    & df[\"GradeLevel\"].astype(str).str.strip().str.lower().eq(\"all grades\")\n].copy()\nfiltered[\"County\"] = filtered[\"County\"].astype(str).str.strip().str.replace(r\"\\s+\", \" \", regex=True)\nfiltered = filtered[filtered[\"County\"].ne(\"\") & filtered[\"County\"].str.lower().ne(\"nan\")].copy()\nfiltered[\"All Students\"] = pd.to_numeric(filtered[\"All Students\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered[\"Low-Income\"] = pd.to_numeric(filtered[\"Low-Income\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = filtered.dropna(subset=[\"All Students\", \"Low-Income\"])\n\ncounty_totals = filtered.groupby(\"County\", dropna=True)[[\"All Students\", \"Low-Income\"]].sum().reset_index()\ncounty_totals = county_totals[county_totals[\"All Students\"].gt(0)].copy()\ncounty_totals[\"LowIncomePct\"] = county_totals[\"Low-Income\"] / county_totals[\"All Students\"] * 100\nanswer = county_totals.loc[county_totals[\"LowIncomePct\"].between(32, 40), \"County\"].sort_values().tolist()",
+            "subquestion": "Which Washington counties had Low-Income student enrollment percentage between 32-40% in the 2019-20 school year?",
+            "answer": [
+                "Island",
+                "King",
+                "Kitsap",
+                "San Juan",
+                "Snohomish",
+                "Whitman"
+            ]
+        },
+        "3": {
+            "source": "datagov/report-card-enrollment-2020-21-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/report-card-enrollment-2020-21-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    df[\"OrganizationLevel\"].astype(str).str.strip().str.lower().eq(\"district\")\n    & df[\"GradeLevel\"].astype(str).str.strip().str.lower().eq(\"all grades\")\n].copy()\nfiltered[\"County\"] = filtered[\"County\"].astype(str).str.strip().str.replace(r\"\\s+\", \" \", regex=True)\nfiltered = filtered[filtered[\"County\"].ne(\"\") & filtered[\"County\"].str.lower().ne(\"nan\")].copy()\nfiltered[\"All Students\"] = pd.to_numeric(filtered[\"All Students\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered[\"Low-Income\"] = pd.to_numeric(filtered[\"Low-Income\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = filtered.dropna(subset=[\"All Students\", \"Low-Income\"])\n\ncounty_totals = filtered.groupby(\"County\", dropna=True)[[\"All Students\", \"Low-Income\"]].sum().reset_index()\ncounty_totals = county_totals[county_totals[\"All Students\"].gt(0)].copy()\ncounty_totals[\"LowIncomePct\"] = county_totals[\"Low-Income\"] / county_totals[\"All Students\"] * 100\nanswer = county_totals.loc[county_totals[\"LowIncomePct\"].between(32, 40), \"County\"].sort_values().tolist()",
+            "subquestion": "Which Washington counties had Low-Income student enrollment percentage between 32-40% in the 2020-21 school year?",
+            "answer": [
+                "Island",
+                "King",
+                "Kitsap",
+                "San Juan",
+                "Snohomish",
+                "Thurston",
+                "Whitman"
+            ]
+        },
+        "4": {
+            "source": "datagov/report-card-enrollment-2021-22-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/report-card-enrollment-2021-22-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    df[\"OrganizationLevel\"].astype(str).str.strip().str.lower().eq(\"district\")\n    & df[\"GradeLevel\"].astype(str).str.strip().str.lower().eq(\"all grades\")\n].copy()\nfiltered[\"County\"] = filtered[\"County\"].astype(str).str.strip().str.replace(r\"\\s+\", \" \", regex=True)\nfiltered = filtered[filtered[\"County\"].ne(\"\") & filtered[\"County\"].str.lower().ne(\"nan\")].copy()\nfiltered[\"All Students\"] = pd.to_numeric(filtered[\"All Students\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered[\"Low-Income\"] = pd.to_numeric(filtered[\"Low-Income\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = filtered.dropna(subset=[\"All Students\", \"Low-Income\"])\n\ncounty_totals = filtered.groupby(\"County\", dropna=True)[[\"All Students\", \"Low-Income\"]].sum().reset_index()\ncounty_totals = county_totals[county_totals[\"All Students\"].gt(0)].copy()\ncounty_totals[\"LowIncomePct\"] = county_totals[\"Low-Income\"] / county_totals[\"All Students\"] * 100\nanswer = county_totals.loc[county_totals[\"LowIncomePct\"].between(32, 40), \"County\"].sort_values().tolist()",
+            "subquestion": "Which Washington counties had Low-Income student enrollment percentage between 32-40% in the 2021-22 school year?",
+            "answer": [
+                "King",
+                "Kitsap",
+                "San Juan",
+                "Whitman"
+            ]
+        },
+        "5": {
+            "source": "datagov/report-card-assessment-data-2021-22-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/report-card-assessment-data-2021-22-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ncandidate_counties = [\"King\", \"Kitsap\", \"San Juan\", \"Whitman\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    df[\"OrganizationLevel\"].astype(str).str.strip().str.lower().eq(\"district\")\n    & df[\"StudentGroup\"].astype(str).str.strip().str.lower().eq(\"all students\")\n    & df[\"GradeLevel\"].astype(str).str.strip().str.lower().eq(\"all grades\")\n    & df[\"TestSubject\"].astype(str).str.strip().str.lower().eq(\"math\")\n].copy()\nfiltered[\"County\"] = filtered[\"County\"].astype(str).str.strip().str.replace(r\"\\s+\", \" \", regex=True)\nfiltered = filtered[filtered[\"County\"].isin(candidate_counties)].copy()\nfiltered[\"PercentMetStandard\"] = pd.to_numeric(filtered[\"PercentMetStandard\"].astype(str).str.replace(\"%\", \"\", regex=False).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = filtered.dropna(subset=[\"PercentMetStandard\"])\n\ncounty_means = filtered.groupby(\"County\", dropna=True)[\"PercentMetStandard\"].mean()\nanswer = county_means[county_means.gt(40)].sort_index().index.tolist()",
+            "subquestion": "Among {King, Kitsap, San Juan, Whitman} (from hop 1), which counties had district-average Math proficiency above 40% in 2021-22?",
+            "answer": [
+                "King",
+                "Kitsap",
+                "Whitman"
+            ]
+        },
+        "6": {
+            "source": "wikipedia/King_County,_Washington/content.txt",
+            "fact": "According to the Wikipedia article for King County, Washington, 'The population was 2,269,675 in the 2020 census, making it the most populous county in Washington.'",
+            "subquestion": "Among {King, Kitsap, San Juan, Whitman} (from hop 1), which counties are NOT the most populous in Washington?",
+            "answer": [
+                "Kitsap",
+                "San Juan",
+                "Whitman"
+            ]
+        },
+        "7": {
+            "source": "wikipedia/Kitsap_County,_Washington/content.txt",
+            "fact": "According to the Wikipedia article for Kitsap County, Washington, 'As of the 2020 census, its population was 275,611.'",
+            "subquestion": "What was Kitsap County's 2020 census population?",
+            "answer": "Kitsap had population 275,611"
+        },
+        "8": {
+            "source": "wikipedia/Whitman_County,_Washington/content.txt",
+            "fact": "According to the Wikipedia article for Whitman County, Washington, 'As of the 2020 census, the population was 47,973.'",
+            "subquestion": "What was Whitman County's 2020 census population?",
+            "answer": "Whitman had population 47,973"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: According to the Washington Report Card Enrollment data for 2018-19, aggregating district-level 'All Grades' data by county and calculating Low-Income percentage (Low-Income / All Students * 100), the following counties had Low-Income percentage between 32-40%: Island (39.4%), King (34.7%), Kitsap (39.2%), San Juan (37.8%), Snohomish (39.6%), and Whitman (37.6%).",
+                "Node 2: According to the Washington Report Card Enrollment data for 2019-20, aggregating district-level 'All Grades' data by county, the following counties had Low-Income percentage between 32-40%: Island (38.7%), King (34.2%), Kitsap (38.3%), San Juan (37.6%), Snohomish (39.3%), and Whitman (37.7%).",
+                "Node 3: According to the Washington Report Card Enrollment data for 2020-21, aggregating district-level 'All Grades' data by county, the following counties had Low-Income percentage between 32-40%: Island (36.4%), King (34.1%), Kitsap (35.1%), San Juan (34.6%), Snohomish (38.3%), Thurston (39.4%), and Whitman (34.7%).",
+                "Node 4: According to the Washington Report Card Enrollment data for 2021-22, aggregating district-level 'All Grades' data by county, the following counties had Low-Income percentage between 32-40%: King (35.9%), Kitsap (38.0%), San Juan (38.2%), and Whitman (39.3%). Note: Island had 40.3% and Snohomish had 41.8%, both exceeding the 40% threshold.",
+                "Derive hop 1 answer using nodes 1, 2, 3, 4: Nodes 1-4 ask for counties with low-income enrollment percentage between 32% and 40% in each school year from 2018-19 to 2021-22; intersecting these yearly sets yields King, Kitsap, San Juan, and Whitman. Hop answer: King, Kitsap, San Juan, Whitman."
+            ],
+            "answer": "King, Kitsap, San Juan, Whitman"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: According to the Washington Report Card Assessment data for 2021-22, averaging district-level PercentMetStandard for Math (All Students, All Grades) by county: King had 43.5%, Kitsap had 44.4%, San Juan had 35.2%, and Whitman had 41.4%. Counties with district-average Math proficiency above 40% among hop 1 result: King, Kitsap, Whitman.",
+                "Node 6: According to the Wikipedia article for King County, Washington, 'The population was 2,269,675 in the 2020 census, making it the most populous county in Washington.'",
+                "Derive hop 2 answer using nodes 5, 6: Node 5 keeps counties from hop 1 with 2021-22 district-average Math proficiency above 40%, and node 6 removes Washington's most populous county, resulting in the candidate comparison set. Hop answer: Kitsap and Whitman."
+            ],
+            "answer": "Kitsap and Whitman"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: According to the Wikipedia article for Kitsap County, Washington, 'As of the 2020 census, its population was 275,611.'",
+                "Node 8: According to the Wikipedia article for Whitman County, Washington, 'As of the 2020 census, the population was 47,973.' Also, 'The county seat is Colfax.'",
+                "Derive hop 3 answer using nodes 7, 8: Nodes 7-8 provide 2020 populations for Kitsap and Whitman; comparing these values and taking the lower population yields the final county answer. Hop answer: Whitman County."
+            ],
+            "answer": "Whitman County"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/King_County,_Washington/content.txt",
+        "wikipedia/Kitsap_County,_Washington/content.txt",
+        "wikipedia/Whitman_County,_Washington/content.txt",
+        "datagov/report-card-enrollment-2018-19-school-year/files/rows.txt",
+        "datagov/report-card-enrollment-2018-19-school-year/signed-metadata.txt",
+        "datagov/report-card-enrollment-2018-19-school-year/files/u4gd-6wxx.txt",
+        "datagov/report-card-enrollment-2019-20-school-year/files/rows.txt",
+        "datagov/report-card-enrollment-2019-20-school-year/signed-metadata.txt",
+        "datagov/report-card-enrollment-2019-20-school-year/files/gtd3-scga.txt",
+        "datagov/report-card-enrollment-2020-21-school-year/files/rows.txt",
+        "datagov/report-card-enrollment-2020-21-school-year/signed-metadata.txt",
+        "datagov/report-card-enrollment-2020-21-school-year/files/nvpc-yr7b.publisher-view.json",
+        "datagov/report-card-enrollment-2021-22-school-year/files/rows.txt",
+        "datagov/report-card-enrollment-2021-22-school-year/signed-metadata.txt",
+        "datagov/report-card-enrollment-2021-22-school-year/files/ymi4-syjv.txt",
+        "datagov/report-card-assessment-data-2021-22-school-year/files/rows.txt",
+        "datagov/report-card-assessment-data-2021-22-school-year/signed-metadata.txt",
+        "datagov/report-card-assessment-data-2021-22-school-year/files/v928-8kke.publisher-view.json"
+    ]
+}

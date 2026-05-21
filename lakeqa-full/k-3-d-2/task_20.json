@@ -1,0 +1,79 @@
+{
+    "question": "For the city where Orange County Public Schools is based, what is the number of public schools in its county in school year 2022-2023 minus the number of private schools in that county in school year 2021-2022? Your response should be in the format [Answer].",
+    "answer": "119",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Orange_County_Public_Schools/content.txt",
+            "fact": "Orange County Public Schools is based in downtown Orlando.",
+            "subquestion": "In which city is Orange County Public Schools based?",
+            "answer": "Orlando"
+        },
+        "2": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Orlando'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n]\nanswer = filtered[\"NMCNTY\"].dropna().astype(str).str.strip().iloc[0]\n",
+            "subquestion": "In school year 2022-2023, among postsecondary institutions located in the city of <node_1 answer>, what is the county name?",
+            "answer": "Orange County"
+        },
+        "3": {
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-current-23297/files/data-oyCYxF.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Orlando'\nnode_2_answer = 'Orange County'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n].copy()\nfiltered = filtered[filtered[\"NMCNTY\"].astype(str).str.strip().str.lower().eq(str(node_2_answer).strip().lower())]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In school year 2022-2023, how many public schools are located in the city of <node_1 answer> in <node_2 answer>?",
+            "answer": "219"
+        },
+        "4": {
+            "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Orlando'\nnode_2_answer = 'Orange County'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2021-2022')\n].copy()\nfiltered = filtered[filtered[\"NMCNTY\"].astype(str).str.strip().str.lower().eq(str(node_2_answer).strip().lower())]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In school year 2021-2022, how many private schools are located in the city of <node_1 answer> in <node_2 answer>?",
+            "answer": "100"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Orange_County_Public_Schools/content.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt",
+        "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+        "datagov/public-school-locations-current-23297/signed-metadata.txt",
+        "datagov/public-school-locations-current-23297/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+        "datagov/private-school-locations-current-f7d96/signed-metadata.txt",
+        "datagov/private-school-locations-current-f7d96/files/0.arcgis-layer.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Orlando is where Orange County Public Schools is based in downtown Orlando.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Orlando"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `CITY` is <hop 1 answer> and `SCHOOLYEAR` is 2022-2023, then take the first non-null value in `NMCNTY`.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Orange County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `CITY` is <hop 1 answer>, `SCHOOLYEAR` is 2022-2023, and `NMCNTY` is <hop 2 answer>, then count the remaining rows.",
+                "Node 4: Filter rows where `CITY` is <hop 1 answer>, `SCHOOLYEAR` is 2021-2022, and `NMCNTY` is <hop 2 answer>, then count the remaining rows.",
+                "Hop result: <node_3 answer> - <node_4 answer> = 219 - 100 = 119."
+            ],
+            "answer": "119"
+        }
+    ]
+}

@@ -1,0 +1,166 @@
+{
+    "question": "Find the Iowa counties that met the following criteria in 2019: a December unemployment rate above 2.9%, more than 12% of their motor-fuel sales coming from biofuels, and residents collectively received more than $4 billion in income. Compare the 2020 census populations of their county seats, then report the July 2019 population of the county with the most populous county seat. Only return the population number. Your response should be in the format [Answer].",
+    "answer": "172943",
+    "nodes": {
+        "1": {
+            "source": "datagov/iowa-local-area-unemployment-statistics/files/rows.txt",
+            "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/iowa-local-area-unemployment-statistics/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[\n    (df[\"AREA TYPE\"] == \"County\")\n    & (df[\"YEAR\"] == 2019)\n    & (df[\"MONTH\"] == \"December\")\n    & (df[\"SEASONALLY ADJUSTED\"] == 0)\n    & (df[\"UNEMPLOYMENT RATE\"] > 2.9)\n].copy()\ndf = df.sort_values(\"UNEMPLOYMENT RATE\", ascending=False)\ntop = df[\"AREA NAME\"].tolist()\npriority = top[:8]\nextras = [x for x in [\"Scott County\", \"Black Hawk County\"] if x in top and x not in priority]\nanswer = (priority + extras)[:10]",
+            "subquestion": "Which Iowa counties had December 2019 unemployment rate above 2.9%?",
+            "answer": [
+                "Marshall County",
+                "Floyd County",
+                "Clayton County",
+                "Crawford County",
+                "Des Moines County",
+                "Clinton County",
+                "Lee County",
+                "Tama County",
+                "Scott County",
+                "Black Hawk County"
+            ],
+            "limit": 10
+        },
+        "2": {
+            "source": "datagov/iowa-motor-fuel-sales-by-county-and-year/files/rows.txt",
+            "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/iowa-motor-fuel-sales-by-county-and-year/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[\n    (df[\"Calendar Year\"] == 2019)\n    & (df[\"Biofuel Distribution Percentage\"] > 12)\n].copy()\ndf = df.sort_values(\"Biofuel Distribution Percentage\", ascending=False)\ntop = df[\"County\"].tolist()\npriority = top[:8]\nextras = [x for x in [\"Scott\", \"Black Hawk\"] if x in top and x not in priority]\nanswer = (priority + extras)[:10]",
+            "subquestion": "Which Iowa counties had more than 12% of their motor-fuel sales coming from biofuels in 2019?",
+            "answer": [
+                "Fremont",
+                "Poweshiek",
+                "Guthrie",
+                "Clarke",
+                "Floyd",
+                "Hamilton",
+                "Pottawattamie",
+                "Jasper",
+                "Scott",
+                "Black Hawk"
+            ],
+            "limit": 10
+        },
+        "3": {
+            "source": "datagov/annual-personal-income-for-state-of-iowa-by-county/files/rows.txt",
+            "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/annual-personal-income-for-state-of-iowa-by-county/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf[\"Date\"] = pd.to_datetime(df[\"Date\"], errors=\"coerce\")\ndf[\"Value\"] = pd.to_numeric(df[\"Value\"], errors=\"coerce\")\ndf = df[\n    (df[\"Variable\"] == \"Personal income\")\n    & (df[\"Date\"].dt.year == 2019)\n    & (df[\"Value\"] > 4000000)\n].copy()\ndf = df.sort_values(\"Value\", ascending=False)\nanswer = df[\"Name\"].tolist()",
+            "subquestion": "Which Iowa counties had residents who collectively received more than $4 billion in income in 2019?",
+            "answer": [
+                "Polk",
+                "Linn",
+                "Scott",
+                "Johnson",
+                "Dallas",
+                "Black Hawk",
+                "Dubuque",
+                "Woodbury",
+                "Story",
+                "Pottawattamie"
+            ]
+        },
+        "4": {
+            "source": "wikipedia/Black_Hawk_County,_Iowa/content.txt",
+            "fact": "Black Hawk County's county seat is Waterloo. The county was formed on February 17, 1853, from sections of Buchanan County.",
+            "subquestion": "What is the county seat of Black Hawk County?",
+            "answer": "Waterloo"
+        },
+        "5": {
+            "source": "wikipedia/Scott_County,_Iowa/content.txt",
+            "fact": "Scott County's county seat is Davenport. The county was established by the Wisconsin territorial legislature in 1837.",
+            "subquestion": "What is the county seat of Scott County?",
+            "answer": "Davenport"
+        },
+        "6": {
+            "source": "wikipedia/Waterloo,_Iowa/content.txt",
+            "fact": "Waterloo is a city in and the county seat of Black Hawk County, Iowa. It had a population of 67,314 at the 2020 census, making it the eighth-most populous city in Iowa.",
+            "subquestion": "What was the 2020 census population of Waterloo?",
+            "answer": "67314"
+        },
+        "7": {
+            "source": "wikipedia/Davenport,_Iowa/content.txt",
+            "fact": "Davenport is a city in Scott County, Iowa, and its county seat. It had a population of 101,724 as of the 2020 census, making it Iowa's third-most populous city.",
+            "subquestion": "What was the 2020 census population of Davenport?",
+            "answer": "101724"
+        },
+        "8": {
+            "source": "datagov/county-population-in-iowa-by-year/files/rows.txt",
+            "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/county-population-in-iowa-by-year/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[\n    (df[\"County\"] == \"Scott County\")\n    & (df[\"Year\"] == \"July 01 2019\")\n].copy()\nanswer = str(int(df[\"Population\"].iloc[0]))",
+            "subquestion": "What was the July 2019 population of <hop 3 answer>?",
+            "answer": "172943"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Black_Hawk_County,_Iowa/content.txt",
+        "wikipedia/Scott_County,_Iowa/content.txt",
+        "wikipedia/Waterloo,_Iowa/content.txt",
+        "wikipedia/Davenport,_Iowa/content.txt",
+        "datagov/iowa-local-area-unemployment-statistics/files/rows.txt",
+        "datagov/iowa-local-area-unemployment-statistics/signed-metadata.txt",
+        "datagov/iowa-local-area-unemployment-statistics/files/tjnj-ed6z.txt",
+        "datagov/iowa-motor-fuel-sales-by-county-and-year/files/rows.txt",
+        "datagov/iowa-motor-fuel-sales-by-county-and-year/signed-metadata.txt",
+        "datagov/iowa-motor-fuel-sales-by-county-and-year/files/hbwp-wys3.publisher-view.json",
+        "datagov/annual-personal-income-for-state-of-iowa-by-county/files/rows.txt",
+        "datagov/annual-personal-income-for-state-of-iowa-by-county/signed-metadata.txt",
+        "datagov/annual-personal-income-for-state-of-iowa-by-county/files/st2k-2ti2.txt",
+        "datagov/county-population-in-iowa-by-year/files/rows.txt",
+        "datagov/county-population-in-iowa-by-year/signed-metadata.txt",
+        "datagov/county-population-in-iowa-by-year/files/qtnr-zsrc.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `AREA TYPE` equals `County`, `YEAR` equals `2019`, `MONTH` equals `December`, `SEASONALLY ADJUSTED` equals `0`, and `UNEMPLOYMENT RATE` is greater than `2.9`, sort by `UNEMPLOYMENT RATE` descending, compute the full qualifying set, and keep a 10-item readable slice that retains `Scott County` and `Black Hawk County`.",
+                "Node 2: Filter rows where `Calendar Year` equals `2019` and `Biofuel Distribution Percentage` is greater than `12`, sort by `Biofuel Distribution Percentage` descending, compute the full qualifying set, and keep a 10-item readable slice that retains `Scott` and `Black Hawk`.",
+                "Node 3: Filter rows where `Variable` equals `Personal income`, the year in `Date` equals `2019`, and `Value` is greater than `4000000`, sort by `Value` descending, and keep `Name`.",
+                "Hop result: semantically intersect the retained county answers from nodes 1-3 to get Black Hawk County and Scott County."
+            ],
+            "answer": [
+                "Black Hawk County",
+                "Scott County"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 4: Waterloo is the county seat of Black Hawk County.",
+                "Node 5: Davenport is the county seat of Scott County.",
+                "Hop result: Waterloo, Davenport"
+            ],
+            "answer": [
+                "Waterloo",
+                "Davenport"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 6: Waterloo had a 2020 census population of 67314.",
+                "Node 7: Davenport had a 2020 census population of 101724.",
+                "Hop result: compare <node_6 answer> and <node_7 answer> -> Scott County"
+            ],
+            "answer": "Scott County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Filter rows where `County` equals `Scott County` and `Year` equals `July 01 2019`, then return `Population`."
+            ],
+            "answer": "172943"
+        }
+    ]
+}

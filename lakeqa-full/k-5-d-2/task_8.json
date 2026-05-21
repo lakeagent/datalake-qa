@@ -1,0 +1,152 @@
+{
+    "question": "Among Harris, Hidalgo, Dallas, and Cameron counties in Texas, which two saw the largest percentage decrease in day care home meal reimbursements from 2018-19 to 2020-21? Of those two, which had the higher average child center enrollment across 2018-19 and 2019-20? For that county, what is the county seat? In the county seat's mosquito-distribution, which species has the higher total count across all observations: `Aedes aegypti` or `Aedes albopictus`? According to the Wikipedia article for that species, what year is cited for the first description or publication of that species' scientific name? Return the year only. Your response should be in the format [Answer].",
+    "answer": "1762",
+    "nodes": {
+        "1": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.loc[\n        (df[\"ProgramYear\"] == \"2018-2019\")\n        & (df[\"SiteCounty\"].isin([\"HARRIS\", \"HIDALGO\", \"DALLAS\", \"CAMERON\"])),\n        [\"SiteCounty\", \"TotalMealReimbursement\"],\n    ]\n    .groupby(\"SiteCounty\", as_index=False)[\"TotalMealReimbursement\"]\n    .sum()\n    .sort_values(\"TotalMealReimbursement\", ascending=False)\n)\n\nanswer = dict(zip(result[\"SiteCounty\"], result[\"TotalMealReimbursement\"]))",
+            "subquestion": "What were the total day care home meal reimbursements in 2018-2019 for Harris, Hidalgo, Dallas, and Cameron counties?",
+            "answer": {
+                "HARRIS": 8757796.13,
+                "DALLAS": 2835278.75,
+                "HIDALGO": 1202699.73,
+                "CAMERON": 392489.51
+            }
+        },
+        "2": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.loc[\n        (df[\"ProgramYear\"] == \"2020-2021\")\n        & (df[\"SiteCounty\"].isin([\"HARRIS\", \"HIDALGO\", \"DALLAS\", \"CAMERON\"])),\n        [\"SiteCounty\", \"TotalMealReimbursement\"],\n    ]\n    .groupby(\"SiteCounty\", as_index=False)[\"TotalMealReimbursement\"]\n    .sum()\n    .sort_values(\"TotalMealReimbursement\", ascending=False)\n)\n\nanswer = dict(zip(result[\"SiteCounty\"], result[\"TotalMealReimbursement\"]))",
+            "subquestion": "What were the total day care home meal reimbursements in 2020-2021 for Harris, Hidalgo, Dallas, and Cameron counties?",
+            "answer": {
+                "HARRIS": 7558597.77,
+                "DALLAS": 2393411.26,
+                "HIDALGO": 971063.56,
+                "CAMERON": 330003.06
+            }
+        },
+        "3": {
+            "source": "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.loc[\n        (df[\"ProgramYear\"] == \"2018-2019\")\n        & (df[\"SiteCounty\"].isin([\"HIDALGO\", \"CAMERON\"])),\n        [\"SiteCounty\", \"EnrollmentQty\"],\n    ]\n    .groupby(\"SiteCounty\", as_index=False)[\"EnrollmentQty\"]\n    .sum()\n    .sort_values(\"EnrollmentQty\", ascending=False)\n)\n\nanswer = dict(zip(result[\"SiteCounty\"], result[\"EnrollmentQty\"]))",
+            "subquestion": "What were the total child center enrollments in 2018-2019 for Hidalgo and Cameron counties?",
+            "answer": {
+                "CAMERON": 7620183,
+                "HIDALGO": 1661128
+            }
+        },
+        "4": {
+            "source": "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.loc[\n        (df[\"ProgramYear\"] == \"2019-2020\")\n        & (df[\"SiteCounty\"].isin([\"HIDALGO\", \"CAMERON\"])),\n        [\"SiteCounty\", \"EnrollmentQty\"],\n    ]\n    .groupby(\"SiteCounty\", as_index=False)[\"EnrollmentQty\"]\n    .sum()\n    .sort_values(\"EnrollmentQty\", ascending=False)\n)\n\nanswer = dict(zip(result[\"SiteCounty\"], result[\"EnrollmentQty\"]))",
+            "subquestion": "What were the total child center enrollments in 2019-2020 for Hidalgo and Cameron counties?",
+            "answer": {
+                "HIDALGO": 1477805,
+                "CAMERON": 1076746
+            }
+        },
+        "5": {
+            "source": "wikipedia/Cameron_County,_Texas/content.txt",
+            "fact": "Its county seat is Brownsville.",
+            "subquestion": "What is the county seat of <hop 2 answer>?",
+            "answer": "Brownsville"
+        },
+        "6": {
+            "source": "datagov/mapping-aedes-aegypti-and-ae-albopictus-vector-mosquito-distribution-in-brownsville-texas/files/BrownsvilleData_SciHub.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/mapping-aedes-aegypti-and-ae-albopictus-vector-mosquito-distribution-in-brownsville-texas/files/BrownsvilleData_SciHub.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nfor column in [\"y_aeg\", \"y_albo\"]:\n    df[column] = pd.to_numeric(df[column], errors=\"coerce\").fillna(0)\n\naeg_total = df[\"y_aeg\"].sum()\nalbo_total = df[\"y_albo\"].sum()\nanswer = \"Aedes aegypti\" if aeg_total > albo_total else \"Aedes albopictus\"",
+            "subquestion": "Across all mosquito observations in <hop 3 answer>, which species had the higher total count: Aedes aegypti or Aedes albopictus?",
+            "answer": "Aedes aegypti"
+        },
+        "7": {
+            "source": "wikipedia/Aedes_aegypti/content.txt | wikipedia/Aedes_albopictus/content.txt",
+            "fact": "The Aedes aegypti article notes that the Linnaean names and descriptions were later translated and published in `1762`. The Aedes albopictus article states that Frederick A. Askew Skuse first scientifically described the Asian tiger mosquito in `1894`.",
+            "subquestion": "What year is the first description of <hop 4 answer>'s scientific name?",
+            "answer": "1762"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Cameron_County,_Texas/content.txt",
+        "wikipedia/Aedes_aegypti/content.txt | wikipedia/Aedes_albopictus/content.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/m3iw-uy6q.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/ymex-tquc.publisher-view.json",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/2a57-dx4w.publisher-view.json",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/wjcz-ucbn.txt",
+        "datagov/mapping-aedes-aegypti-and-ae-albopictus-vector-mosquito-distribution-in-brownsville-texas/files/BrownsvilleData_SciHub.txt",
+        "datagov/mapping-aedes-aegypti-and-ae-albopictus-vector-mosquito-distribution-in-brownsville-texas/signed-metadata.txt",
+        "datagov/mapping-aedes-aegypti-and-ae-albopictus-vector-mosquito-distribution-in-brownsville-texas/files/GridOverlay_Compiled_WithDaymet.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "title": "Compare Reimbursement Decreases",
+            "reasoning": [
+                "Node 1 retrieves total `TotalMealReimbursement` in `ProgramYear == \"2018-2019\"` for `HARRIS`, `HIDALGO`, `DALLAS`, and `CAMERON`.",
+                "Node 2 retrieves total `TotalMealReimbursement` in `ProgramYear == \"2020-2021\"` for the same four counties.",
+                "Hop result: comparing percentage decreases from node 1 to node 2 yields `HIDALGO` and `CAMERON` as the two largest decreases."
+            ],
+            "answer": [
+                "HIDALGO",
+                "CAMERON"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "title": "Compare Average Enrollment",
+            "reasoning": [
+                "Node 3 retrieves total `EnrollmentQty` in `ProgramYear == \"2018-2019\"` for the counties from `<hop 1 answer>`.",
+                "Node 4 retrieves total `EnrollmentQty` in `ProgramYear == \"2019-2020\"` for the counties from `<hop 1 answer>`.",
+                "Hop result: averaging the two yearly totals shows `CAMERON` has the higher average child center enrollment."
+            ],
+            "answer": "CAMERON"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "title": "Find The County Seat",
+            "reasoning": [
+                "Node 5 retrieves the county seat of `<hop 2 answer>`.",
+                "Hop result: `Brownsville`."
+            ],
+            "answer": "Brownsville"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "title": "Identify The Dominant Mosquito Species",
+            "reasoning": [
+                "Node 6 sums `y_aeg` and `y_albo` across the full Brownsville mosquito-distribution dataset and returns the species with the larger total.",
+                "Hop result: `Aedes aegypti` has the higher total count (`35380` vs `2167`)."
+            ],
+            "answer": "Aedes aegypti"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "title": "Read The Description Year",
+            "reasoning": [
+                "Node 7 reads the Wikipedia article for the species from `<hop 4 answer>`.",
+                "Hop result: for `Aedes aegypti`, the article cites `1762` as the year tied to the early publication/description of the scientific name. If hop 4 had instead yielded `Aedes albopictus`, this node would have returned `1894`."
+            ],
+            "answer": "1762"
+        }
+    ]
+}

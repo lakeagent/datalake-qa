@@ -1,0 +1,53 @@
+{
+    "question": "Which state is in both of these groups: states ranked 6th through 10th by the median reported rate across 2014 Medicaid/CHIP health-care quality measures, and states ranked 7th through 11th by the sample standard deviation of reported rates across 2019 Medicaid/CHIP health-care quality measures? Break ties alphabetically by state name. Respond with [Answer].",
+    "answer": "Michigan",
+    "nodes": {
+        "1": {
+            "source": "datagov/2014-child-and-adult-health-care-quality-measures-05de6/files/2014-child-and-adult-health-care-quality-measures.7ycc-v6ew.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2014-child-and-adult-health-care-quality-measures-05de6/files/2014-child-and-adult-health-care-quality-measures.7ycc-v6ew.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"State Rate\"] = pd.to_numeric(df[\"State Rate\"], errors=\"coerce\")\nstate_metric = (\n    df.groupby(\"State\", dropna=True)[\"State Rate\"]\n    .median()\n    .reset_index(name=\"metric\")\n)\nresult = (\n    state_metric.sort_values([\"metric\", \"State\"], ascending=[False, True], kind=\"mergesort\")\n    .iloc[5:10][\"State\"]\n    .tolist()\n)\nanswer = result",
+            "subquestion": "Which states are ranked 6th through 10th by the median reported rate across 2014 Medicaid/CHIP health-care quality measures, breaking ties alphabetically by state name?",
+            "answer": [
+                "Maine",
+                "Michigan",
+                "California",
+                "Pennsylvania",
+                "Ohio"
+            ]
+        },
+        "2": {
+            "source": "datagov/2019-child-and-adult-health-care-quality-measures-quality-7fff5/files/2019-child-and-adult-health-care-quality-measures-quality.afrw-yks2.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2019-child-and-adult-health-care-quality-measures-quality-7fff5/files/2019-child-and-adult-health-care-quality-measures-quality.afrw-yks2.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"State Rate\"] = pd.to_numeric(df[\"State Rate\"], errors=\"coerce\")\nstate_metric = (\n    df.groupby(\"State\", dropna=True)[\"State Rate\"]\n    .std()\n    .reset_index(name=\"metric\")\n)\nresult = (\n    state_metric.sort_values([\"metric\", \"State\"], ascending=[False, True], kind=\"mergesort\")\n    .iloc[6:11][\"State\"]\n    .tolist()\n)\nanswer = result",
+            "subquestion": "Which states are ranked 7th through 11th by the sample standard deviation of reported rates across 2019 Medicaid/CHIP health-care quality measures, breaking ties alphabetically by state name?",
+            "answer": [
+                "Tennessee",
+                "Idaho",
+                "Montana",
+                "New York",
+                "Michigan"
+            ]
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Convert `State Rate` to numeric, group by `State` to compute the median `State Rate`, sort by that median descending and `State` ascending to break ties alphabetically, and take ranks 6 through 10.",
+                "Node 2: Convert `State Rate` to numeric, group by `State` to compute the sample standard deviation, sort by that standard deviation descending and `State` ascending to break ties alphabetically, and take ranks 7 through 11.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Michigan."
+            ],
+            "answer": "Michigan"
+        }
+    ],
+    "datasets_used": [
+        "datagov/2014-child-and-adult-health-care-quality-measures-05de6/files/2014-child-and-adult-health-care-quality-measures.7ycc-v6ew.txt",
+        "datagov/2014-child-and-adult-health-care-quality-measures-05de6/signed-metadata.txt",
+        "datagov/2014-child-and-adult-health-care-quality-measures-05de6/files/quality-measures-2014-2015-data-dictionary.json",
+        "datagov/2019-child-and-adult-health-care-quality-measures-quality-7fff5/files/2019-child-and-adult-health-care-quality-measures-quality.afrw-yks2.txt",
+        "datagov/2019-child-and-adult-health-care-quality-measures-quality-7fff5/signed-metadata.txt",
+        "datagov/2019-child-and-adult-health-care-quality-measures-quality-7fff5/files/quality-measures-2019-2022-data-dictionary.json"
+    ]
+}

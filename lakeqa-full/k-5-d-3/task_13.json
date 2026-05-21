@@ -1,0 +1,220 @@
+{
+    "question": "Identify the Chicago city department that consistently ranked in the top five by total funding in the officially approved city budget from 2019 to 2021, had a nonzero salary budget in that officially approved city budget in each of those years, and then had the highest average salary budget recommendations from 2019 to 2021. Who was the first head of that department upon establishment, and at which university did he obtain his bachelor's degree? Return the university name only. Your response should be in the format [Answer].",
+    "answer": "University of California, Berkeley",
+    "nodes": {
+        "1": {
+            "source": "datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.groupby(\"DEPARTMENT NUMBER\", as_index=False)[\"2019 ORDINANCE (AMOUNT $)\"]\n    .sum()\n)\nresult = result[result[\"2019 ORDINANCE (AMOUNT $)\"] > 0]\nresult = result.sort_values(\"2019 ORDINANCE (AMOUNT $)\", ascending=False).reset_index(drop=True)\nanswer = result[\"DEPARTMENT NUMBER\"].tolist()",
+            "subquestion": "Which department numbers were in the top 5 by total funding in the officially approved city budget in 2019?",
+            "answer": [
+                99,
+                57,
+                85,
+                59,
+                50
+            ],
+            "limit": 5
+        },
+        "2": {
+            "source": "datagov/budget-2020-budget-ordinance-appropriations/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/budget-2020-budget-ordinance-appropriations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.groupby(\"DEPARTMENT NUMBER\", as_index=False)[\"2020 ORDINANCE (AMOUNT $)\"]\n    .sum()\n)\nresult = result[result[\"2020 ORDINANCE (AMOUNT $)\"] > 0]\nresult = result.sort_values(\"2020 ORDINANCE (AMOUNT $)\", ascending=False).reset_index(drop=True)\nanswer = result[\"DEPARTMENT NUMBER\"].tolist()",
+            "subquestion": "Which department numbers were in the top 5 by total funding in the officially approved city budget in 2020?",
+            "answer": [
+                99,
+                57,
+                85,
+                50,
+                59
+            ],
+            "limit": 5
+        },
+        "3": {
+            "source": "datagov/budget-2021-budget-ordinance-appropriations/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/budget-2021-budget-ordinance-appropriations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.groupby(\"DEPARTMENT NUMBER\", as_index=False)[\"2021 ORDINANCE (AMOUNT $)\"]\n    .sum()\n)\nresult = result[result[\"2021 ORDINANCE (AMOUNT $)\"] > 0]\nresult = result.sort_values(\"2021 ORDINANCE (AMOUNT $)\", ascending=False).reset_index(drop=True)\nanswer = result[\"DEPARTMENT NUMBER\"].tolist()",
+            "subquestion": "Which department numbers were in the top 5 by total funding in the officially approved city budget in 2021?",
+            "answer": [
+                99,
+                57,
+                85,
+                50,
+                84
+            ],
+            "limit": 5
+        },
+        "4": {
+            "source": "datagov/budget-2019-budget-ordinance-positions-and-salaries/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/budget-2019-budget-ordinance-positions-and-salaries/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndepartment_codes = [99, 57, 85, 50]\nresult = (\n    df[df[\"DEPARTMENT CODE\"].isin(department_codes)]\n    .groupby(\"DEPARTMENT CODE\")[\"TOTAL BUDGETED AMOUNT\"]\n    .sum()\n    .reindex(department_codes, fill_value=0.0)\n)\nanswer = {str(k): float(v) for k, v in result.to_dict().items()}",
+            "subquestion": "For 2019, what were the total salary budgets in the officially approved city budget for each department code in <hop 1 answer>?",
+            "answer": {
+                "99": 0.0,
+                "57": 1293487079.0,
+                "85": 144020555.0,
+                "50": 42342535.0
+            }
+        },
+        "5": {
+            "source": "datagov/budget-2020-budget-ordinance-positions-and-salaries/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/budget-2020-budget-ordinance-positions-and-salaries/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndepartment_codes = [99, 57, 85, 50]\nresult = (\n    df[df[\"DEPARTMENT CODE\"].isin(department_codes)]\n    .groupby(\"DEPARTMENT CODE\")[\"TOTAL BUDGETED AMOUNT\"]\n    .sum()\n    .reindex(department_codes, fill_value=0.0)\n)\nanswer = {str(k): float(v) for k, v in result.to_dict().items()}",
+            "subquestion": "For 2020, what were the total salary budgets in the officially approved city budget for each department code in <hop 1 answer>?",
+            "answer": {
+                "99": 0.0,
+                "57": 1308621421.0,
+                "85": 159362510.0,
+                "50": 42996687.0
+            }
+        },
+        "6": {
+            "source": "datagov/budget-2021-budget-ordinance-positions-and-salaries/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/budget-2021-budget-ordinance-positions-and-salaries/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndepartment_codes = [99, 57, 85, 50]\nresult = (\n    df[df[\"DEPARTMENT CODE\"].isin(department_codes)]\n    .groupby(\"DEPARTMENT CODE\")[\"TOTAL BUDGETED AMOUNT\"]\n    .sum()\n    .reindex(department_codes, fill_value=0.0)\n)\nanswer = {str(k): float(v) for k, v in result.to_dict().items()}",
+            "subquestion": "For 2021, what were the total salary budgets in the officially approved city budget for each department code in <hop 1 answer>?",
+            "answer": {
+                "99": 0.0,
+                "57": 1277019448.0,
+                "85": 158941618.0,
+                "50": 43046519.0
+            }
+        },
+        "7": {
+            "source": "datagov/budget-2019-budget-recommendations-positions-and-salaries/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/budget-2019-budget-recommendations-positions-and-salaries/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndepartment_codes = [57, 85, 50]\nresult = (\n    df[df[\"DEPARTMENT CODE\"].isin(department_codes)]\n    .groupby(\"DEPARTMENT CODE\")[\"TOTAL BUDGETED AMOUNT\"]\n    .sum()\n    .reindex(department_codes, fill_value=0.0)\n)\nanswer = {str(k): float(v) for k, v in result.to_dict().items()}",
+            "subquestion": "For 2019, what were the total salary budget recommendations for each department code in <hop 2 answer>?",
+            "answer": {
+                "57": 1293460481.0,
+                "85": 144015863.0,
+                "50": 42342535.0
+            }
+        },
+        "8": {
+            "source": "datagov/budget-2020-budget-recommendations-positions-and-salaries/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/budget-2020-budget-recommendations-positions-and-salaries/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndepartment_codes = [57, 85, 50]\nresult = (\n    df[df[\"DEPARTMENT CODE\"].isin(department_codes)]\n    .groupby(\"DEPARTMENT CODE\")[\"TOTAL BUDGETED AMOUNT\"]\n    .sum()\n    .reindex(department_codes, fill_value=0.0)\n)\nanswer = {str(k): float(v) for k, v in result.to_dict().items()}",
+            "subquestion": "For 2020, what were the total salary budget recommendations for each department code in <hop 2 answer>?",
+            "answer": {
+                "57": 1308615601.0,
+                "85": 159389114.0,
+                "50": 42996687.0
+            }
+        },
+        "9": {
+            "source": "datagov/budget-2021-budget-recommendations-positions-and-salaries/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/budget-2021-budget-recommendations-positions-and-salaries/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndepartment_codes = [57, 85, 50]\nresult = (\n    df[df[\"DEPARTMENT CODE\"].isin(department_codes)]\n    .groupby(\"DEPARTMENT CODE\")[\"TOTAL BUDGETED AMOUNT\"]\n    .sum()\n    .reindex(department_codes, fill_value=0.0)\n)\nanswer = {str(k): float(v) for k, v in result.to_dict().items()}",
+            "subquestion": "For 2021, what were the total salary budget recommendations for each department code in <hop 2 answer>?",
+            "answer": {
+                "57": 1277090115.0,
+                "85": 158946654.0,
+                "50": 43048415.0
+            }
+        },
+        "10": {
+            "source": "wikipedia/Chicago_Police_Department/content.txt",
+            "fact": "Criminologist O. W. Wilson was brought on as Superintendent of Police, and served until 1967 when he retired. This position, in its current iteration, has existed as the head of the Chicago Police Department since 1960.",
+            "subquestion": "Who was brought on as Superintendent of Police when the current-iteration head position of the Chicago Police Department was established in 1960?",
+            "answer": "O. W. Wilson"
+        },
+        "11": {
+            "source": "wikipedia/O._W._Wilson/content.txt",
+            "fact": "In 1921, Wilson enrolled in the University of California, Berkeley, majoring in criminology and studying under August Vollmer. Wilson graduated in 1924, with a Bachelor of Arts degree.",
+            "subquestion": "At which university did <hop 4 answer> obtain his bachelor's degree?",
+            "answer": "University of California, Berkeley"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Chicago_Police_Department/content.txt",
+        "wikipedia/O._W._Wilson/content.txt",
+        "datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt",
+        "datagov/budget-2019-budget-ordinance-appropriations/signed-metadata.txt",
+        "datagov/budget-2020-budget-ordinance-appropriations/files/rows.txt",
+        "datagov/budget-2020-budget-ordinance-appropriations/signed-metadata.txt",
+        "datagov/budget-2021-budget-ordinance-appropriations/files/rows.txt",
+        "datagov/budget-2021-budget-ordinance-appropriations/signed-metadata.txt",
+        "datagov/budget-2019-budget-ordinance-positions-and-salaries/files/rows.txt",
+        "datagov/budget-2019-budget-ordinance-positions-and-salaries/signed-metadata.txt",
+        "datagov/budget-2020-budget-ordinance-positions-and-salaries/files/rows.txt",
+        "datagov/budget-2020-budget-ordinance-positions-and-salaries/signed-metadata.txt",
+        "datagov/budget-2021-budget-ordinance-positions-and-salaries/files/rows.txt",
+        "datagov/budget-2021-budget-ordinance-positions-and-salaries/signed-metadata.txt",
+        "datagov/budget-2019-budget-recommendations-positions-and-salaries/files/rows.txt",
+        "datagov/budget-2019-budget-recommendations-positions-and-salaries/signed-metadata.txt",
+        "datagov/budget-2020-budget-recommendations-positions-and-salaries/files/rows.txt",
+        "datagov/budget-2020-budget-recommendations-positions-and-salaries/signed-metadata.txt",
+        "datagov/budget-2021-budget-recommendations-positions-and-salaries/files/rows.txt",
+        "datagov/budget-2021-budget-recommendations-positions-and-salaries/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Group 2019 rows by `dept`, sum `total`, keep department codes with non-zero totals, sort descending, and keep the top five departments.",
+                "Node 2: Group 2020 rows by `dept`, sum `total`, keep department codes with non-zero totals, sort descending, and keep the top five departments.",
+                "Node 3: Group 2021 rows by `dept`, sum `total`, keep department codes with non-zero totals, sort descending, and keep the top five departments.",
+                "Hop result: intersect the three yearly top-five department lists to keep the departments that consistently ranked in the top five."
+            ],
+            "answer": [
+                99,
+                57,
+                85,
+                50
+            ]
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: Filter 2019 Budget Ordinance Positions and Salaries rows where `Department` is one of <hop 1 answer>, sum the budgeted amount by `Department`, and return 0.0 for any department code with no rows.",
+                "Node 5: Filter 2020 Budget Ordinance Positions and Salaries rows where `Department` is one of <hop 1 answer>, sum the budgeted amount by `Department`, and return 0.0 for any department code with no rows.",
+                "Node 6: Filter 2021 Budget Ordinance Positions and Salaries rows where `Department` is one of <hop 1 answer>, sum the budgeted amount by `Department`, and return 0.0 for any department code with no rows.",
+                "Hop result: keep only department codes whose ordinance salary-budget totals are non-zero across all three years."
+            ],
+            "answer": [
+                "57",
+                "85",
+                "50"
+            ]
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                7,
+                8,
+                9
+            ],
+            "reasoning": [
+                "Node 7: Filter 2019 Budget Recommendations Positions and Salaries rows where `Department` is one of <hop 2 answer>, sum the budgeted amount by `Department`, and return the yearly mapping.",
+                "Node 8: Filter 2020 Budget Recommendations Positions and Salaries rows where `Department` is one of <hop 2 answer>, sum the budgeted amount by `Department`, and return the yearly mapping.",
+                "Node 9: Filter 2021 Budget Recommendations Positions and Salaries rows where `Department` is one of <hop 2 answer>, sum the budgeted amount by `Department`, and return the yearly mapping.",
+                "Hop result: average the three yearly recommendation salary-budget totals by department code and select department 57, the Chicago Police Department, because it has the highest overall average."
+            ],
+            "answer": "Chicago Police Department"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: Retrieve who was brought on as Superintendent of Police when the current-iteration head position of the Chicago Police Department was established in 1960.",
+                "Hop result: the first head was O. W. Wilson."
+            ],
+            "answer": "O. W. Wilson"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                11
+            ],
+            "reasoning": [
+                "Node 11: Retrieve the university where <hop 4 answer> obtained his bachelor's degree.",
+                "Hop result: the university is University of California, Berkeley."
+            ],
+            "answer": "University of California, Berkeley"
+        }
+    ]
+}

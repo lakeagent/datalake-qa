@@ -1,0 +1,53 @@
+{
+    "question": "Which state is in both of these groups: contractor states ranked 8th through 12th by the median estimated value of Oregon public contracts when they were first awarded in 2020, and states ranked 5th through 9th by the sample standard deviation of average 2022 commercial electricity prices charged by investor-owned utilities? Respond with [Answer].",
+    "answer": "Pennsylvania",
+    "nodes": {
+        "1": {
+            "source": "datagov/orpin-contracts-report-fy-2019-2012-composite/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/orpin-contracts-report-fy-2019-2012-composite/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\",\n    \"AK\": \"Alaska\",\n    \"AZ\": \"Arizona\",\n    \"AR\": \"Arkansas\",\n    \"CA\": \"California\",\n    \"CO\": \"Colorado\",\n    \"CT\": \"Connecticut\",\n    \"DE\": \"Delaware\",\n    \"FL\": \"Florida\",\n    \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\",\n    \"ID\": \"Idaho\",\n    \"IL\": \"Illinois\",\n    \"IN\": \"Indiana\",\n    \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\",\n    \"KY\": \"Kentucky\",\n    \"LA\": \"Louisiana\",\n    \"ME\": \"Maine\",\n    \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\",\n    \"MI\": \"Michigan\",\n    \"MN\": \"Minnesota\",\n    \"MS\": \"Mississippi\",\n    \"MO\": \"Missouri\",\n    \"MT\": \"Montana\",\n    \"NE\": \"Nebraska\",\n    \"NV\": \"Nevada\",\n    \"NH\": \"New Hampshire\",\n    \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\",\n    \"NY\": \"New York\",\n    \"NC\": \"North Carolina\",\n    \"ND\": \"North Dakota\",\n    \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\",\n    \"OR\": \"Oregon\",\n    \"PA\": \"Pennsylvania\",\n    \"RI\": \"Rhode Island\",\n    \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\",\n    \"TN\": \"Tennessee\",\n    \"TX\": \"Texas\",\n    \"UT\": \"Utah\",\n    \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\",\n    \"WA\": \"Washington\",\n    \"WV\": \"West Virginia\",\n    \"WI\": \"Wisconsin\",\n    \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\",\n}\nvalid_states = set(state_map) | set(state_map.values())\n\ndf[\"State\"] = df[\"State\"].astype(str).str.strip()\ndf = df[df[\"State\"].isin(valid_states)].copy()\ndf[\"normalized_state\"] = df[\"State\"].map(state_map).fillna(df[\"State\"])\ndf[\"Original Award Value\"] = pd.to_numeric(df[\"Original Award Value\"], errors=\"coerce\")\ndf[\"Amendment Date\"] = pd.to_datetime(df[\"Amendment Date\"], errors=\"coerce\")\ndf = df[df[\"Amendment Date\"].dt.year == 2020].copy()\n\nresult = (\n    df.groupby(\"normalized_state\", as_index=False)[\"Original Award Value\"]\n    .median()\n    .rename(columns={\"Original Award Value\": \"median_original_award_value\"})\n    .sort_values([\"median_original_award_value\", \"normalized_state\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = result.iloc[7:12][\"normalized_state\"].tolist()",
+            "subquestion": "Which contractor states are ranked 8th through 12th by the median estimated value of Oregon public contracts when they were first awarded in 2020?",
+            "answer": [
+                "Delaware",
+                "Iowa",
+                "Montana",
+                "Pennsylvania",
+                "Rhode Island"
+            ]
+        },
+        "2": {
+            "source": "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2022/files/iou_zipcodes_2022.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2022/files/iou_zipcodes_2022.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\",\n    \"AK\": \"Alaska\",\n    \"AZ\": \"Arizona\",\n    \"AR\": \"Arkansas\",\n    \"CA\": \"California\",\n    \"CO\": \"Colorado\",\n    \"CT\": \"Connecticut\",\n    \"DE\": \"Delaware\",\n    \"FL\": \"Florida\",\n    \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\",\n    \"ID\": \"Idaho\",\n    \"IL\": \"Illinois\",\n    \"IN\": \"Indiana\",\n    \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\",\n    \"KY\": \"Kentucky\",\n    \"LA\": \"Louisiana\",\n    \"ME\": \"Maine\",\n    \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\",\n    \"MI\": \"Michigan\",\n    \"MN\": \"Minnesota\",\n    \"MS\": \"Mississippi\",\n    \"MO\": \"Missouri\",\n    \"MT\": \"Montana\",\n    \"NE\": \"Nebraska\",\n    \"NV\": \"Nevada\",\n    \"NH\": \"New Hampshire\",\n    \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\",\n    \"NY\": \"New York\",\n    \"NC\": \"North Carolina\",\n    \"ND\": \"North Dakota\",\n    \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\",\n    \"OR\": \"Oregon\",\n    \"PA\": \"Pennsylvania\",\n    \"RI\": \"Rhode Island\",\n    \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\",\n    \"TN\": \"Tennessee\",\n    \"TX\": \"Texas\",\n    \"UT\": \"Utah\",\n    \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\",\n    \"WA\": \"Washington\",\n    \"WV\": \"West Virginia\",\n    \"WI\": \"Wisconsin\",\n    \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\",\n}\n\ndf[\"state\"] = df[\"state\"].astype(str).str.strip()\ndf = df[df[\"state\"].isin(state_map)].copy()\ndf[\"normalized_state\"] = df[\"state\"].map(state_map)\ndf[\"comm_rate\"] = pd.to_numeric(df[\"comm_rate\"], errors=\"coerce\")\n\nresult = (\n    df.groupby(\"normalized_state\", as_index=False)[\"comm_rate\"]\n    .std(ddof=1)\n    .rename(columns={\"comm_rate\": \"sample_stddev_comm_rate\"})\n    .sort_values([\"sample_stddev_comm_rate\", \"normalized_state\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = result.iloc[4:9][\"normalized_state\"].tolist()",
+            "subquestion": "Which states are ranked 5th through 9th by the sample standard deviation of average 2022 commercial electricity prices charged by investor-owned utilities?",
+            "answer": [
+                "Massachusetts",
+                "Maryland",
+                "Maine",
+                "Connecticut",
+                "Pennsylvania"
+            ]
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Normalize `State` values to valid U.S. state names, convert `Original Award Value` to numeric, keep records with `Amendment Date` in 2020, group by normalized state to compute the median original award value, sort by median descending and state ascending to break ties alphabetically, and take ranks 8 through 12.",
+                "Node 2: Keep rows whose `state` abbreviation is a valid U.S. state, map abbreviations to full state names, convert `comm_rate` to numeric, group by normalized state to compute the sample standard deviation of commercial electricity rate, sort by standard deviation descending and state ascending to break ties alphabetically, and take ranks 5 through 9.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Pennsylvania."
+            ],
+            "answer": "Pennsylvania"
+        }
+    ],
+    "datasets_used": [
+        "datagov/orpin-contracts-report-fy-2019-2012-composite/files/rows.txt",
+        "datagov/orpin-contracts-report-fy-2019-2012-composite/signed-metadata.txt",
+        "datagov/orpin-contracts-report-fy-2019-2012-composite/files/6e9e-sfc4.publisher-view.json",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2022/files/iou_zipcodes_2022.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2022/signed-metadata.txt",
+        "datagov/u-s-electric-utility-companies-and-rates-look-up-by-zipcode-2022/files/non_iou_zipcodes_2022.txt"
+    ]
+}

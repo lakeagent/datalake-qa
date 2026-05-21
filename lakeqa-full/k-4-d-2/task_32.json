@@ -1,0 +1,99 @@
+{
+    "question": "In arrests reported by the Los Angeles Police Department that occurred in 2019, identify the area with the most arrests for moving traffic violations. Find the Area ID for that area in the LAPD stop-incident records. Compare the most common crime description in that Area ID in 2019 and 2020, and take the larger incident count. Using the department's number of police stations known officially as areas, what is that larger incident count per area? Round your answer to one decimal. Your response should be in the format [Answer].",
+    "answer": "43.6",
+    "nodes": {
+        "1": {
+            "source": "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/arrest-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ncsv_path = io.BytesIO(obj[\"Body\"].read())\n\ncounts = {}\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"Arrest Date\", \"Area Name\", \"Charge Group Description\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    filtered = chunk[\n        chunk[\"Arrest Date\"].astype(str).str.contains(\"2019\", na=False)\n        & chunk[\"Charge Group Description\"].astype(str).str.strip().str.lower().eq(\"moving traffic violations\")\n    ]\n    vc = filtered[\"Area Name\"].astype(str).str.strip().value_counts()\n    for area, cnt in vc.items():\n        counts[area] = counts.get(area, 0) + int(cnt)\nanswer = str(max(counts, key=counts.get))\n",
+            "subquestion": "In 2019 arrest data, which area has the most arrests in the charge group \"Moving Traffic Violations\"?",
+            "answer": "Van Nuys"
+        },
+        "2": {
+            "source": "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = 'Van Nuys'\n\n\nfiltered = df[df[\"Area Name\"].astype(str).str.strip().str.lower().eq(str(node_1_answer).strip().lower())]\narea_ids = pd.to_numeric(filtered[\"Area ID\"], errors=\"coerce\").dropna().astype(int)\nanswer = int(area_ids.mode().iloc[0])\n",
+            "subquestion": "In the LAPD RIPA stop-incident records, what Area ID corresponds to area name <node_1 answer> (answer as an integer)?",
+            "answer": "9"
+        },
+        "3": {
+            "source": "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ncsv_path = io.BytesIO(obj[\"Body\"].read())\nnode_2_answer = '9'\n\n\narea_id = pd.to_numeric(str(node_2_answer).strip(), errors=\"coerce\")\ncounts = {}\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"DATE OCC\", \"AREA \", \"Crm Cd Desc\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    filtered = chunk[chunk[\"DATE OCC\"].astype(str).str.contains(\"2019\", na=False)]\n    area_col = pd.to_numeric(filtered[\"AREA \"], errors=\"coerce\")\n    filtered = filtered[area_col.eq(area_id)]\n    vc = filtered[\"Crm Cd Desc\"].astype(str).str.strip().value_counts()\n    for offense, cnt in vc.items():\n        counts[offense] = counts.get(offense, 0) + int(cnt)\ntop_offense = max(counts, key=counts.get)\nanswer = f\"{top_offense} ({counts[top_offense]})\"\n",
+            "subquestion": "In 2019 crime data, within Area ID <node_2 answer>, which crime description is most common (and what is its incident count)?",
+            "answer": "THEFT OF IDENTITY (807)"
+        },
+        "4": {
+            "source": "datagov/crime-data-from-2020-to-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-data-from-2020-to-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ncsv_path = io.BytesIO(obj[\"Body\"].read())\nnode_2_answer = '9'\n\n\narea_id = pd.to_numeric(str(node_2_answer).strip(), errors=\"coerce\")\ncounts = {}\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"DATE OCC\", \"AREA\", \"Crm Cd Desc\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    filtered = chunk[chunk[\"DATE OCC\"].astype(str).str.contains(\"2020\", na=False)]\n    area_col = pd.to_numeric(filtered[\"AREA\"], errors=\"coerce\")\n    filtered = filtered[area_col.eq(area_id)]\n    vc = filtered[\"Crm Cd Desc\"].astype(str).str.strip().value_counts()\n    for offense, cnt in vc.items():\n        counts[offense] = counts.get(offense, 0) + int(cnt)\ntop_offense = max(counts, key=counts.get)\nanswer = f\"{top_offense} ({counts[top_offense]})\"\n",
+            "subquestion": "In 2020 crime data, within Area ID <node_2 answer>, which crime description is most common (and what is its incident count)?",
+            "answer": "VEHICLE - STOLEN (915)"
+        },
+        "5": {
+            "source": "wikipedia/Los_Angeles_Police_Department/content.txt",
+            "fact": "The Office of Operations comprises four bureaus and 21 police stations, known officially as \"areas\" but also commonly referred to as \"divisions\". Computation: 915 / 21 = 43.5714, which rounds to 43.6.",
+            "subquestion": "Using the Los Angeles Police Department's number of police stations known officially as areas, what is <hop 3 answer> per area? Round your answer to one decimal.",
+            "answer": "43.6"
+        }
+    },
+    "datasets_used": [
+        "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+        "datagov/arrest-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/arrest-data-from-2010-to-2019/files/yru6-6re4.publisher-view.json",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/signed-metadata.txt",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/5gp9-8nrb.txt",
+        "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+        "datagov/crime-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/crime-data-from-2010-to-2019/files/63jg-8b9z.txt",
+        "datagov/crime-data-from-2020-to-present/files/rows.txt",
+        "datagov/crime-data-from-2020-to-present/signed-metadata.txt",
+        "datagov/crime-data-from-2020-to-present/files/2nrs-mtv8.txt",
+        "wikipedia/Los_Angeles_Police_Department/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter records where `Arrest Date` contains 2019 and `Charge Group Description` equals Moving Traffic Violations, count rows by `Area Name`, and select the area with the highest count.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Van Nuys"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `Area Name` equals <hop 1 answer>, take the mode of `Area ID`, and use that integer as the area ID.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "9"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter records where `DATE OCC` contains 2019 and `AREA ` equals <hop 2 answer>, count rows by `Crm Cd Desc`, and select the most common description with its incident count.",
+                "Node 4: Filter records where `DATE OCC` contains 2020 and `AREA` equals <hop 2 answer>, count rows by `Crm Cd Desc`, and select the most common description with its incident count.",
+                "Hop result: max(<node_3 answer>, <node_4 answer>) = max(807, 915) = 915."
+            ],
+            "answer": "915"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Divide <hop 3 answer> by the number of Los Angeles Police Department police stations known officially as areas, then round to one decimal.",
+                "Hop result: <node_5 answer>"
+            ],
+            "answer": "43.6"
+        }
+    ]
+}

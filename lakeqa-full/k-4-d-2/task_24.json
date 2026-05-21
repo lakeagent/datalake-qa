@@ -1,0 +1,105 @@
+{
+    "question": "Identify the first civilian superintendent of the Chicago Police Department. In the city where that person previously served as police chief and founded a criminal justice program at a local university, find the county the city is located in and report the absolute change in the number of veterans receiving disability benefits between 2020 and 2023. Only report the numeric change as a whole number. Your response should be in the format [Answer].",
+    "answer": "830",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Chicago_Police_Department/content.txt",
+            "fact": "In 1960, the municipal government created a five-member police board charged with nominating a superintendent to be the chief authority over police officers, drafting and adopting rules and regulations governing the police system, submitting budget requests to the city council, and hearing and deciding disciplinary cases involving police officers. Criminologist O. W. Wilson was brought on as Superintendent of Police, and served until 1967 when he retired.",
+            "subquestion": "Who was the first civilian head of the Chicago Police Department?",
+            "answer": "O. W. Wilson"
+        },
+        "2": {
+            "source": "wikipedia/O._W._Wilson/content.txt",
+            "fact": "In 1925, Wilson became chief of police of the Fullerton Police Department for two years.  He then spent two years as an investigator with the Pacific Finance Corporation.  In 1928, at age 28, he became chief of police of the Wichita Police Department, where he served until 1939.",
+            "subquestion": "In which cities did <hop 1 answer> serve as police chief before coming to Chicago?",
+            "answer": [
+                "Fullerton",
+                "Wichita"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Wichita_Police_Department/content.txt",
+            "fact": "The Wichita Police Department was created on April 13, 1871.  A notable figure in the Department’s history was O.W. Wilson, who was considered an innovative police reformer.  Wilson was credited with starting the Criminal Justice Program at Wichita State University, previously called the Municipal University of Wichita in 1937.",
+            "subquestion": "In which city from <node 2 answer> did <hop 1 answer> start a criminal justice program at a local university?",
+            "answer": "Wichita"
+        },
+        "4": {
+            "source": "wikipedia/Wichita,_Kansas/content.txt",
+            "fact": "is the most populous city in the U.S. state of Kansas and the county seat of Sedgwick County.",
+            "subquestion": "What county is <hop 2 answer> located in?",
+            "answer": "Sedgwick County"
+        },
+        "5": {
+            "source": "datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = int(df.loc[(df[\"State\"] == \"Kansas\") & (df[\"County Name\"] == \"Sedgwick\"), \"Total: Disability Compensation Recipients\"].iloc[0])",
+            "subquestion": "How many veterans received disability benefits in <hop 3 answer> in 2020?",
+            "answer": 7871
+        },
+        "6": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = int(df.loc[(df[\"State\"] == \"Kansas\") & (df[\"County Name\"] == \"Sedgwick\"), \"Total: Disability Compensation Recipients\"].iloc[0])",
+            "subquestion": "How many veterans received disability benefits in <hop 3 answer> in 2023?",
+            "answer": 8701
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: O. W. Wilson was brought on as Superintendent of Police when the superintendent role was created in 1960.",
+                "Hop result: O. W. Wilson"
+            ],
+            "answer": "O. W. Wilson"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 2: Fullerton and Wichita are the cities where O. W. Wilson served as police chief before Chicago.",
+                "Node 3: Wichita is the city where O. W. Wilson started a criminal justice program at a local university.",
+                "Hop result: Wichita"
+            ],
+            "answer": "Wichita"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Wichita is the county seat of Sedgwick County.",
+                "Hop result: Sedgwick County"
+            ],
+            "answer": "Sedgwick County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Filter rows where `State` equals `Kansas` and `County Name` equals `Sedgwick`, then return `Total: Disability Compensation Recipients` for 2020.",
+                "Node 6: Filter rows where `State` equals `Kansas` and `County Name` equals `Sedgwick`, then return `Total: Disability Compensation Recipients` for 2023.",
+                "Hop result: abs(8701 - 7871) = 830"
+            ],
+            "answer": "830"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Chicago_Police_Department/content.txt",
+        "wikipedia/O._W._Wilson/content.txt",
+        "wikipedia/Wichita_Police_Department/content.txt",
+        "wikipedia/Wichita,_Kansas/content.txt",
+        "datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2020-disability-compensation-recipients-by-county/signed-metadata.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt"
+    ]
+}

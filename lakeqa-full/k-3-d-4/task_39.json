@@ -1,0 +1,122 @@
+{
+  "question": "Find the Missouri state agency with the third-highest average total expenditure from FY 2007 through FY 2010, then identify the city where its Southwest district is based. How many more people were in that city's metropolitan area in 2022 than in the city at the 2020 census? Return the number only. Your response should be in the format [Answer].",
+  "answer": 317885,
+  "nodes": {
+    "1": {
+      "source": "datagov/2007-state-expenditures/files/rows.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2007-state-expenditures/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.loads(obj['Body'].read())\nname_to_index = {column['name']: index for index, column in enumerate(payload['meta']['view']['columns'])}\ndf = pd.DataFrame([\n    {\n        'Fiscal Year': row[name_to_index['Fiscal Year']],\n        'Agency Name': row[name_to_index['Agency Name']],\n        'Payments Total': row[name_to_index['Payments Total']],\n    }\n    for row in payload['data']\n])\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\nagency = df['Agency Name'].astype(str).str.strip().str.upper()\npayments = pd.to_numeric(df['Payments Total'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'Agency Name': agency, 'Payments Total': payments})[fiscal_year.eq(2007) & agency.ne('') & agency.ne('NAN')].copy()\nanswer = filtered.groupby('Agency Name')['Payments Total'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+      "subquestion": "What were the top five Missouri state agencies by total expenditure in FY 2007?",
+      "answer": {
+        "SOCIAL SERVICES": 5528171459.84,
+        "ELEMENTARY AND SECONDARY EDUCATION": 4893252163.41,
+        "TRANSPORTATION": 1922237354.88,
+        "HIGHER EDUCATION AND WORKFORCE DEV": 1062578010.95,
+        "MENTAL HEALTH": 759892459.14
+      }
+    },
+    "2": {
+      "source": "datagov/2008-state-expenditures/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2008-state-expenditures/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\nagency = df['Agency Name'].astype(str).str.strip().str.upper()\npayments = pd.to_numeric(df['Payments Total'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'Agency Name': agency, 'Payments Total': payments})[fiscal_year.eq(2008) & agency.ne('') & agency.ne('NAN')].copy()\nanswer = filtered.groupby('Agency Name')['Payments Total'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+      "subquestion": "What were the top five Missouri state agencies by total expenditure in FY 2008?",
+      "answer": {
+        "SOCIAL SERVICES": 5988522037.62,
+        "ELEMENTARY AND SECONDARY EDUCATION": 5048553721.08,
+        "TRANSPORTATION": 1786534604.37,
+        "HIGHER EDUCATION AND WORKFORCE DEV": 1220312581.65,
+        "MENTAL HEALTH": 813799778.73
+      }
+    },
+    "3": {
+      "source": "datagov/2009-state-expenditures/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2009-state-expenditures/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\nagency = df['Agency Name'].astype(str).str.strip().str.upper()\npayments = pd.to_numeric(df['Payments Total'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'Agency Name': agency, 'Payments Total': payments})[fiscal_year.eq(2009) & agency.ne('') & agency.ne('NAN')].copy()\nanswer = filtered.groupby('Agency Name')['Payments Total'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+      "subquestion": "What were the top five Missouri state agencies by total expenditure in FY 2009?",
+      "answer": {
+        "SOCIAL SERVICES": 6707806742.86,
+        "ELEMENTARY AND SECONDARY EDUCATION": 5170194688.51,
+        "TRANSPORTATION": 2000940522.19,
+        "HIGHER EDUCATION AND WORKFORCE DEV": 1291298943.33,
+        "MENTAL HEALTH": 877438429.19
+      }
+    },
+    "4": {
+      "source": "datagov/2010-state-expenditures/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2010-state-expenditures/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\nagency = df['Agency Name'].astype(str).str.strip().str.upper()\npayments = pd.to_numeric(df['Payments Total'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'Agency Name': agency, 'Payments Total': payments})[fiscal_year.eq(2010) & agency.ne('') & agency.ne('NAN')].copy()\nanswer = filtered.groupby('Agency Name')['Payments Total'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+      "subquestion": "What were the top five Missouri state agencies by total expenditure in FY 2010?",
+      "answer": {
+        "SOCIAL SERVICES": 7141666880.32,
+        "ELEMENTARY AND SECONDARY EDUCATION": 5351561573.54,
+        "TRANSPORTATION": 2144139919.08,
+        "HIGHER EDUCATION AND WORKFORCE DEV": 1320888790.61,
+        "MENTAL HEALTH": 921056914.52
+      }
+    },
+    "5": {
+      "source": "wikipedia/Missouri_Department_of_Transportation/content.txt",
+      "fact": "MoDOT operates seven districts throughout the state: Northwest, based in St. Joseph; Northeast, based in Hannibal; Kansas City, based in Lee's Summit; Central, based in Jefferson City; St. Louis, based in Chesterfield; Southwest, based in Springfield; and Southeast, based in Sikeston.",
+      "subquestion": "Which city is the Southwest district of <hop 1 answer> based in?",
+      "answer": "Springfield"
+    },
+    "6": {
+      "source": "wikipedia/Springfield,_Missouri/content.txt",
+      "fact": "Springfield is the third most populous city in the U.S. state of Missouri and the county seat of Greene County. The city's population was 169,176 at the 2020 census. It is the principal city of the Springfield metropolitan area, which had an estimated population of 487,061 in 2022 and includes the counties of Christian, Dallas, Greene, Polk, and Webster.",
+      "subquestion": "What were the city population at the 2020 census and the estimated metropolitan-area population in 2022 for <hop 2 answer>?",
+      "answer": {
+        "city_2020_population": 169176,
+        "metro_2022_population": 487061
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: In FY 2007, the top five Missouri agencies by total expenditure included `TRANSPORTATION` with `$1,922,237,354.88`.",
+        "Node 2: In FY 2008, the top five Missouri agencies by total expenditure included `TRANSPORTATION` with `$1,786,534,604.37`.",
+        "Node 3: In FY 2009, the top five Missouri agencies by total expenditure included `TRANSPORTATION` with `$2,000,940,522.19`.",
+        "Node 4: In FY 2010, the top five Missouri agencies by total expenditure included `TRANSPORTATION` with `$2,144,139,919.08`.",
+        "Derive hop 1 answer using nodes 1, 2, 3, and 4: averaging the agency totals across FY 2007-FY 2010 makes Transportation the third-highest Missouri state agency by average total expenditure. Hop answer: Missouri Department of Transportation."
+      ],
+      "answer": "Missouri Department of Transportation"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: The Southwest district of <hop 1 answer> is based in Springfield.",
+        "Derive hop 2 answer from node 5: node 5 asks for the Southwest district base city of <hop 1 answer>. Hop answer: Springfield."
+      ],
+      "answer": "Springfield"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: <hop 2 answer> had a city population of `169,176` at the 2020 census and an estimated metropolitan-area population of `487,061` in 2022.",
+        "Derive hop 3 answer from node 6: subtract the city population from the metropolitan-area population, `487,061 - 169,176 = 317,885`. Hop answer: 317885."
+      ],
+      "answer": 317885
+    }
+  ],
+  "datasets_used": [
+    "datagov/2007-state-expenditures/files/rows.txt",
+    "datagov/2007-state-expenditures/signed-metadata.txt",
+    "datagov/2008-state-expenditures/files/rows.txt",
+    "datagov/2008-state-expenditures/signed-metadata.txt",
+    "datagov/2009-state-expenditures/files/rows.txt",
+    "datagov/2009-state-expenditures/signed-metadata.txt",
+    "datagov/2010-state-expenditures/files/rows.txt",
+    "datagov/2010-state-expenditures/signed-metadata.txt",
+    "wikipedia/Missouri_Department_of_Transportation/content.txt",
+    "wikipedia/Springfield,_Missouri/content.txt"
+  ]
+}

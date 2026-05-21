@@ -1,0 +1,92 @@
+{
+  "question": "Find the Texas counties that appear in both of these groups: (1) counties with at least 10% of residents ages 18 to 64 living with disabilities and at least 23% of residents age 65 or older in 2023, and (2) counties in the Abilene adult-protection region with 150 or more completed adult-protection investigations in 2023. Among those counties, which county has more ghost towns? Return the county name only. Your response should be in the format [Answer].",
+  "answer": "Montague County",
+  "nodes": {
+    "1": {
+      "source": "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Fiscal Year\"] = pd.to_numeric(df[\"Fiscal Year\"], errors=\"coerce\")\ndf[\"Adult Disabled 18-64: % of Population\"] = pd.to_numeric(df[\"Adult Disabled 18-64: % of Population\"], errors=\"coerce\")\ndf[\"65 and older: % of Population\"] = pd.to_numeric(df[\"65 and older: % of Population\"], errors=\"coerce\")\n\nresult = df[\n    (df[\"Fiscal Year\"] == 2023)\n    & (df[\"Adult Disabled 18-64: % of Population\"] >= 10)\n    & (df[\"65 and older: % of Population\"] >= 23)\n][[\"County\", \"Adult Disabled 18-64: % of Population\", \"65 and older: % of Population\"]].sort_values([\"County\"]).reset_index(drop=True)\n\nanswer = result[\"County\"].tolist()",
+      "subquestion": "Which Texas counties had at least 10% adult disabled population and at least 23% elderly population in 2023?",
+      "answer": [
+        "Culberson",
+        "Eastland",
+        "Edwards",
+        "Hudspeth",
+        "Kent",
+        "King",
+        "Kinney",
+        "Lampasas",
+        "Montague",
+        "Sabine",
+        "San Augustine",
+        "San Jacinto",
+        "Trinity",
+        "Tyler"
+      ]
+    },
+    "2": {
+      "source": "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Fiscal Year\"] = pd.to_numeric(df[\"Fiscal Year\"], errors=\"coerce\")\ndf[\"Completed Investigations\"] = pd.to_numeric(df[\"Completed Investigations\"], errors=\"coerce\")\n\nresult = df[\n    (df[\"Fiscal Year\"] == 2023)\n    & (df[\"Region\"] == \"2-Abilene\")\n    & (df[\"Completed Investigations\"] >= 150)\n][[\"County\", \"Completed Investigations\"]].sort_values([\"County\"]).reset_index(drop=True)\n\nanswer = result[\"County\"].tolist()",
+      "subquestion": "Which Texas counties in the Abilene region had 150 or more completed adult-protection investigations in 2023?",
+      "answer": [
+        "Brown",
+        "Eastland",
+        "Montague",
+        "Taylor",
+        "Wichita"
+      ]
+    },
+    "3": {
+      "source": "wikipedia/Eastland_County,_Texas/content.txt",
+      "fact": "### Ghost towns\n\n* Mangum",
+      "subquestion": "How many ghost towns are in the first county from <hop 1 answer>?",
+      "answer": 1
+    },
+    "4": {
+      "source": "wikipedia/Montague_County,_Texas/content.txt",
+      "fact": "### Ghost towns\n\n* Capps Corner\n* Corinth\n* Gladys\n* Hynds City\n* Red River Station\n* Rowland\n* Salona",
+      "subquestion": "How many ghost towns are in the second county from <hop 1 answer>?",
+      "answer": 7
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `Fiscal Year` = 2023, `Adult Disabled 18-64: % of Population` >= 10, and `65 and older: % of Population` >= 23, then keep `County`.",
+        "Node 2: Filter rows where `Fiscal Year` = 2023, `Region` = `2-Abilene`, and `Completed Investigations` >= 150, then keep `County`.",
+        "Hop result: intersect the node outputs to keep counties that meet both APS conditions."
+      ],
+      "answer": [
+        "Eastland",
+        "Montague"
+      ]
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 3: The first county from <hop 1 answer> has 1 ghost town.",
+        "Node 4: The second county from <hop 1 answer> has 7 ghost towns.",
+        "Hop result: 7 is greater than 1, so the county with more ghost towns is `Montague County`."
+      ],
+      "answer": "Montague County"
+    }
+  ],
+  "datasets_used": [
+    "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/rows.txt",
+    "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/signed-metadata.txt",
+    "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/qjby-4sji.publisher-view.json",
+    "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/rows.txt",
+    "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/signed-metadata.txt",
+    "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/3zr8-huug.txt",
+    "wikipedia/Eastland_County,_Texas/content.txt",
+    "wikipedia/Montague_County,_Texas/content.txt"
+  ]
+}

@@ -1,0 +1,82 @@
+{
+    "question": "I'm exploring quirky roadside attractions in Montana. What iconic statue is located in the county seat of a Montana county that had 210-225 veteran disability recipients in 2019 and 220-235 recipients after 4 years? Please answer the name of the statue. Your response should be in the format [Answer].",
+    "answer": "the Cut Bank Penguin",
+    "nodes": {
+        "1": {
+            "source": "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Montana'.lower())].copy()\nfiltered['# Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['# Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['# Total: Disability Compensation Recipients'] >= 210) & (filtered['# Total: Disability Compensation Recipients'] < 225)]\ncounty_names = filtered['County name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Montana counties had 210-225 VA disability compensation recipients in FY 2019?",
+            "answer": [
+                "Glacier County",
+                "Custer County",
+                "Carbon County"
+            ]
+        },
+        "2": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Montana'.lower())].copy()\nfiltered['Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['Total: Disability Compensation Recipients'] >= 220) & (filtered['Total: Disability Compensation Recipients'] < 235)]\ncounty_names = filtered['County Name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Montana counties had 220-235 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Glacier County",
+                "Madison County"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Glacier_County,_Montana/content.txt",
+            "fact": "Glacier County's county seat is Cut Bank, located in eastern Glacier County on the edge of the Great Plains.",
+            "subquestion": "What is the county seat of <intersection of node_1, node_2>?",
+            "answer": "Cut Bank"
+        },
+        "4": {
+            "source": "wikipedia/Cut_Bank,_Montana/content.txt",
+            "fact": "Cut Bank is home to the world's largest statue of a penguin.",
+            "subquestion": "What iconic statue is located in <node_3 answer>?",
+            "answer": "The world's largest statue of a penguin (the Cut Bank Penguin)"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Glacier_County,_Montana/content.txt",
+        "wikipedia/Cut_Bank,_Montana/content.txt",
+        "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+        "datagov/fy-2019-disability-pension-recipient-by-county/signed-metadata.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `State` is Montana, keep counties with `# Total: Disability Compensation Recipients` from 210 to less than 225, and return the distinct `County name` values.",
+                "Node 2: Filter rows where `State` is Montana, keep counties with `Total: Disability Compensation Recipients` from 220 to less than 235, and return the distinct `County Name` values.",
+                "Hop result: intersection of <node_1 answer> and <node_2 answer> = ['Glacier County']."
+            ],
+            "answer": "Glacier County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Cut Bank is the county seat of <hop 1 answer>.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Cut Bank"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: The world's largest statue of a penguin is located in <hop 2 answer>.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "the Cut Bank Penguin"
+        }
+    ]
+}

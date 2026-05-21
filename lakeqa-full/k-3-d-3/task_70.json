@@ -1,0 +1,88 @@
+{
+  "question": "Among the Texas counties that ranked in the top five in 2023 for completed Adult Protective Services investigations, children removed from their homes during initial Child Protective Services investigations, and children receiving Family-Based Safety Services, which county had the lowest rate of repeat Adult Protective Services investigations in 2023? How many counties were created out of the same colony as that county? Return only the number in the format [Answer].",
+  "answer": 26,
+  "nodes": {
+    "1": {
+      "source": "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Fiscal Year', 'County', 'Completed Investigations'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Fiscal Year', 'County', 'Completed Investigations'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['Fiscal Year'] = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ndf['Completed Investigations'] = pd.to_numeric(df['Completed Investigations'], errors='coerce')\ndf['County'] = df['County'].astype(str).str.strip()\nranked = (\n    df[df['Fiscal Year'].eq(2023) & df['County'].ne('') & df['Completed Investigations'].notna()]\n    .sort_values(['Completed Investigations', 'County'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[4, 'Completed Investigations'] > ranked.loc[5, 'Completed Investigations']\nanswer = '; '.join(ranked.head(5)['County'].tolist())\n",
+      "subquestion": "Which five Texas counties had the most completed Adult Protective Services investigations in 2023?",
+      "answer": "Harris; Bexar; Dallas; Tarrant; El Paso"
+    },
+    "2": {
+      "source": "datagov/cps-2-1-removals-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/cps-2-1-removals-by-county-fy2013-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Fiscal Year', 'County', 'Removal Stage', 'Removals'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Fiscal Year', 'County', 'Removal Stage', 'Removals'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['Fiscal Year'] = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ndf['Removals'] = pd.to_numeric(df['Removals'], errors='coerce')\ndf['County'] = df['County'].astype(str).str.strip()\ndf['Removal Stage'] = df['Removal Stage'].astype(str).str.strip()\nfiltered = df[\n    df['Fiscal Year'].eq(2023)\n    & df['County'].ne('')\n    & df['Removal Stage'].str.casefold().eq('investigation')\n    & df['Removals'].notna()\n].copy()\nranked = (\n    filtered.groupby('County', as_index=False)['Removals']\n    .sum()\n    .sort_values(['Removals', 'County'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[4, 'Removals'] > ranked.loc[5, 'Removals']\nanswer = '; '.join(ranked.head(5)['County'].tolist())\n",
+      "subquestion": "Which five Texas counties had the most children removed from their homes during the initial Child Protective Services investigation in 2023?",
+      "answer": "Bexar; Harris; Dallas; Bell; Tarrant"
+    },
+    "3": {
+      "source": "datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Fiscal Year', 'County', 'Children served in FBSS Family Preservation Services'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Fiscal Year', 'County', 'Children served in FBSS Family Preservation Services'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['Fiscal Year'] = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ndf['Children served in FBSS Family Preservation Services'] = pd.to_numeric(\n    df['Children served in FBSS Family Preservation Services'],\n    errors='coerce'\n)\ndf['County'] = df['County'].astype(str).str.strip()\nfiltered = df[\n    df['Fiscal Year'].eq(2023)\n    & df['County'].ne('')\n    & df['Children served in FBSS Family Preservation Services'].notna()\n].copy()\nranked = (\n    filtered.groupby('County', as_index=False)['Children served in FBSS Family Preservation Services']\n    .sum()\n    .sort_values(['Children served in FBSS Family Preservation Services', 'County'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[4, 'Children served in FBSS Family Preservation Services'] > ranked.loc[5, 'Children served in FBSS Family Preservation Services']\nanswer = '; '.join(ranked.head(5)['County'].tolist())\n",
+      "subquestion": "Which five Texas counties had the most children receiving Family-Based Safety Services in 2023?",
+      "answer": "Bexar; Harris; Tarrant; Dallas; El Paso"
+    },
+    "4": {
+      "source": "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Fiscal Year', 'County', 'Recidivism'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Fiscal Year', 'County', 'Recidivism'],\n        dtype=str,\n        low_memory=False,\n    )\n\ncandidates = (\n    {item.strip() for item in str(node_1_answer).split(';') if item.strip()}\n    & {item.strip() for item in str(node_2_answer).split(';') if item.strip()}\n    & {item.strip() for item in str(node_3_answer).split(';') if item.strip()}\n)\n\ndf['Fiscal Year'] = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ndf['Recidivism'] = pd.to_numeric(df['Recidivism'], errors='coerce')\ndf['County'] = df['County'].astype(str).str.strip()\nranked = (\n    df[df['Fiscal Year'].eq(2023) & df['County'].isin(candidates) & df['Recidivism'].notna()]\n    .sort_values(['Recidivism', 'County'], ascending=[True, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert len(candidates) == 4\nassert ranked.loc[0, 'Recidivism'] < ranked.loc[1, 'Recidivism']\nanswer = str(ranked.loc[0, 'County'])\n",
+      "subquestion": "Among the Texas counties that appear in the answers to nodes 1, 2, and 3, which had the lowest rate of repeat Adult Protective Services investigations in 2023?",
+      "answer": "Tarrant"
+    },
+    "5": {
+      "source": "wikipedia/Tarrant_County,_Texas/content.txt",
+      "fact": "Tarrant County, one of 26 counties created out of the Peters Colony, was established in 1849 and organized the next year.",
+      "subquestion": "How many counties were created out of the same colony as <hop 2 answer>?",
+      "answer": 26
+    }
+  },
+  "datasets_used": [
+    "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/rows.txt",
+    "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/signed-metadata.txt",
+    "datagov/aps-3-1-investigations-activity-by-county-fy2013-fy2022/files/3zr8-huug.txt",
+    "datagov/cps-2-1-removals-by-county-fy2013-2022/files/rows.txt",
+    "datagov/cps-2-1-removals-by-county-fy2013-2022/signed-metadata.txt",
+    "datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/files/rows.txt",
+    "datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/signed-metadata.txt",
+    "datagov/cps-1-1-family-preservation-children-served-by-county-fy2013-2022/files/79ya-i5ye.publisher-view.json",
+    "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt",
+    "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/signed-metadata.txt",
+    "wikipedia/Tarrant_County,_Texas/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: In 2023, the five Texas counties with the most completed Adult Protective Services investigations were Harris (11,805), Bexar (6,990), Dallas (6,266), Tarrant (5,150), and El Paso (3,144).",
+        "Node 2: In 2023, the five Texas counties with the most children taken out of their homes during the initial Child Protective Services investigation were Bexar (733), Harris (692), Dallas (665), Bell (428), and Tarrant (420).",
+        "Node 3: In 2023, the five Texas counties with the most children receiving Family-Based Safety Services were Bexar (5,652), Harris (3,992), Tarrant (3,901), Dallas (3,426), and El Paso (2,490).",
+        "Hop result: The Texas counties that appear in all three earlier lists are Bexar, Dallas, Harris, and Tarrant."
+      ],
+      "answer": "Bexar; Dallas; Harris; Tarrant"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: Among the four counties carried forward from hop 1, the 2023 rate of repeat Adult Protective Services investigations was lowest in Tarrant (0.132), ahead of Harris (0.135), Bexar (0.145), and Dallas (0.146).",
+        "Hop result: Tarrant"
+      ],
+      "answer": "Tarrant"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: <hop 2 answer> was one of 26 counties created out of the Peters Colony.",
+        "Hop result: 26."
+      ],
+      "answer": 26
+    }
+  ]
+}

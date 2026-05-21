@@ -1,0 +1,111 @@
+{
+  "question": "Among Washington cities that ranked in the top three for crude diabetes prevalence in each city-level GIS release from 2017 through 2019, which had the largest 2024 population? Which county contains that city? How many national protected areas are in that county? Return only the number in the format [Answer].",
+  "answer": 3,
+  "nodes": {
+    "1": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nwa = df[df['StateAbbr'].astype(str).str.strip().eq('WA')].copy()\nwa['PlaceName'] = wa['PlaceName'].astype(str).str.strip()\nwa['DIABETES_CrudePrev'] = pd.to_numeric(wa['DIABETES_CrudePrev'], errors='coerce')\nranked = (\n    wa[['PlaceName', 'DIABETES_CrudePrev']]\n    .dropna()\n    .sort_values(['DIABETES_CrudePrev', 'PlaceName'], ascending=[False, True])\n    .head(3)\n)\nanswer = '; '.join(ranked['PlaceName'].tolist())\n",
+      "subquestion": "Among Washington cities in the 2017 city-level GIS release, which three had the highest crude diabetes prevalence? Return them as a semicolon-separated list in rank order.",
+      "answer": "Yakima; Tacoma; Kennewick"
+    },
+    "2": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nwa = df[df['StateAbbr'].astype(str).str.strip().eq('WA')].copy()\nwa['PlaceName'] = wa['PlaceName'].astype(str).str.strip()\nwa['DIABETES_CrudePrev'] = pd.to_numeric(wa['DIABETES_CrudePrev'], errors='coerce')\nranked = (\n    wa[['PlaceName', 'DIABETES_CrudePrev']]\n    .dropna()\n    .sort_values(['DIABETES_CrudePrev', 'PlaceName'], ascending=[False, True])\n    .head(3)\n)\nanswer = '; '.join(ranked['PlaceName'].tolist())\n",
+      "subquestion": "Among Washington cities in the 2018 city-level GIS release, which three had the highest crude diabetes prevalence? Return them as a semicolon-separated list in rank order.",
+      "answer": "Yakima; Kennewick; Tacoma"
+    },
+    "3": {
+      "source": "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nwa = df[df['StateAbbr'].astype(str).str.strip().eq('WA')].copy()\nwa['PlaceName'] = wa['PlaceName'].astype(str).str.strip()\nwa['DIABETES_CrudePrev'] = pd.to_numeric(wa['DIABETES_CrudePrev'], errors='coerce')\nranked = (\n    wa[['PlaceName', 'DIABETES_CrudePrev']]\n    .dropna()\n    .sort_values(['DIABETES_CrudePrev', 'PlaceName'], ascending=[False, True])\n    .head(3)\n)\nanswer = '; '.join(ranked['PlaceName'].tolist())\n",
+      "subquestion": "Among Washington cities in the 2019 city-level GIS release, which three had the highest crude diabetes prevalence? Return them as a semicolon-separated list in rank order.",
+      "answer": "Yakima; Tacoma; Vancouver"
+    },
+    "4": {
+      "source": "datagov/waofm-april-1-population-change-and-rank-by-city-2020-to-present/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/waofm-april-1-population-change-and-rank-by-city-2020-to-present/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_1_answer = 'Yakima; Tacoma; Kennewick'\nnode_2_answer = 'Yakima; Kennewick; Tacoma'\nnode_3_answer = 'Yakima; Tacoma; Vancouver'\ncandidates = sorted(\n    set(x.strip() for x in node_1_answer.split(';') if x.strip())\n    & set(x.strip() for x in node_2_answer.split(';') if x.strip())\n    & set(x.strip() for x in node_3_answer.split(';') if x.strip())\n)\n\ndf['CITY_NAME'] = df['CITY_NAME'].astype(str).str.strip()\ndf = df[df['CITY_NAME'].isin(candidates)].copy()\ndf['POP_2024'] = pd.to_numeric(df['POP_2024'], errors='coerce')\nrow = df.sort_values(['POP_2024', 'CITY_NAME'], ascending=[False, True]).iloc[0]\nanswer = f\"{row['CITY_NAME']}, {int(row['POP_2024'])}\"\n",
+      "subquestion": "Among the Washington cities from <hop 1 answer>, which had the largest 2024 population? Return the city and population.",
+      "answer": "Tacoma, 225100"
+    },
+    "5": {
+      "source": "datagov/washington-state-cities-and-counties/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/washington-state-cities-and-counties/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_4_answer = 'Tacoma, 225100'\ncity = node_4_answer.split(',')[0].strip()\ndf['CITY NAME'] = df['CITY NAME'].astype(str).str.strip()\nfiltered = df[df['CITY NAME'].eq(city)].copy()\ncounty = str(filtered.iloc[0]['COUNTY NAME']).strip()\nanswer = county if county.lower().endswith('county') else f'{county} County'\n",
+      "subquestion": "In the Washington cities-and-counties crosswalk, which county contains the city from <hop 2 answer>?",
+      "answer": "Pierce County"
+    },
+    "6": {
+      "source": "wikipedia/Pierce_County,_Washington/content.txt",
+      "fact": "National protected areas\n Mount Baker-Snoqualmie National Forest (part)\n Mount Rainier National Park (part)\n Nisqually National Wildlife Refuge (part)",
+      "subquestion": "How many national protected areas are in <hop 3 answer>?",
+      "answer": 3
+    }
+  },
+  "datasets_used": [
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2017-release/files/djk3-k3zs.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2018-release/files/pf7q-w24q.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/rows.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/signed-metadata.txt",
+    "datagov/500-cities-city-level-data-gis-friendly-format-2019-release/files/dxpw-cm5u.publisher-view.json",
+    "datagov/waofm-april-1-population-change-and-rank-by-city-2020-to-present/files/rows.txt",
+    "datagov/waofm-april-1-population-change-and-rank-by-city-2020-to-present/signed-metadata.txt",
+    "datagov/waofm-april-1-population-change-and-rank-by-city-2020-to-present/files/jxb9-mpuu.publisher-view.json",
+    "datagov/washington-state-cities-and-counties/files/rows.txt",
+    "datagov/washington-state-cities-and-counties/signed-metadata.txt",
+    "datagov/washington-state-cities-and-counties/files/g2kf-7usg.publisher-view.json",
+    "wikipedia/Pierce_County,_Washington/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: In the 2017 CDC 500 Cities city-level GIS release, the top three Washington cities by crude diabetes prevalence are Yakima (10.9), Tacoma (9.2), and Kennewick (9.0).",
+        "Node 2: In the 2018 release, the top three Washington cities by crude diabetes prevalence are Yakima (11.0), Kennewick (10.1), and Tacoma (9.7).",
+        "Node 3: In the 2019 release, the top three Washington cities by crude diabetes prevalence are Yakima (11.8), Tacoma (10.3), and Vancouver (9.6).",
+        "Intersecting the three top-three lists leaves Tacoma and Yakima as the repeat high-diabetes cities.",
+        "Hop result: Tacoma; Yakima."
+      ],
+      "answer": "Tacoma; Yakima"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: Among the repeat high-diabetes cities from hop 1, Tacoma has the larger 2024 population at 225,100, compared with Yakima at 99,370.",
+        "Hop result: Tacoma, 225100."
+      ],
+      "answer": "Tacoma, 225100"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: In Washington's city-county crosswalk, Tacoma maps to Pierce County and is not flagged as multi-county.",
+        "Hop result: Pierce County."
+      ],
+      "answer": "Pierce County"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: The source names three national protected areas in Pierce County.",
+        "Hop result: 3."
+      ],
+      "answer": 3
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+    "question": "Find the New York counties, excluding NYC boroughs, with average total Medicaid-paid amounts for adult mental health claims between $75 million and $95 million across 2017 and 2018. According to the NY Utility Energy Registry, which of these counties had the lower average total natural gas consumption across 2017 and 2018? That county was named after an English county. Tell me the medieval name of the county town of that English county. Your response should be in the format [Answer].",
+    "answer": "Gippeswic",
+    "nodes": {
+        "1": {
+            "source": "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nnyc_boroughs = [\"Bronx\", \"Kings\", \"New York\", \"Queens\", \"Richmond\"]\nresult = (\n    df[\n        (df[\"Service Year\"] == 2017)\n        & (df[\"Age Group\"] == \"Adult\")\n        & (~df[\"County Label\"].isin(nyc_boroughs))\n    ]\n    .groupby(\"County Label\", as_index=False)[\"Paid Claim Total\"]\n    .sum()\n    .sort_values(\"Paid Claim Total\", ascending=False)\n    .reset_index(drop=True)\n)\n\nanswer = {\n    row[\"County Label\"]: f\"${int(row['Paid Claim Total']):,}\"\n    for _, row in result.head(10).iterrows()\n}",
+            "subquestion": "What were the 2017 total Medicaid-paid amounts for adult mental health claims in each New York county, excluding NYC boroughs?",
+            "answer": {
+                "Suffolk": "$92,420,995",
+                "Erie": "$70,519,223",
+                "Westchester": "$66,346,132",
+                "Nassau": "$62,927,542",
+                "Monroe": "$48,278,139",
+                "Onondaga": "$29,668,203",
+                "Dutchess": "$25,427,485",
+                "Albany": "$19,408,513",
+                "Rockland": "$19,216,083",
+                "Orange": "$19,039,890"
+            },
+            "limit": 10
+        },
+        "2": {
+            "source": "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nnyc_boroughs = [\"Bronx\", \"Kings\", \"New York\", \"Queens\", \"Richmond\"]\nresult = (\n    df[\n        (df[\"Service Year\"] == 2018)\n        & (df[\"Age Group\"] == \"Adult\")\n        & (~df[\"County Label\"].isin(nyc_boroughs))\n    ]\n    .groupby(\"County Label\", as_index=False)[\"Paid Claim Total\"]\n    .sum()\n    .sort_values(\"Paid Claim Total\", ascending=False)\n    .reset_index(drop=True)\n)\n\nanswer = {\n    row[\"County Label\"]: f\"${int(row['Paid Claim Total']):,}\"\n    for _, row in result.head(10).iterrows()\n}",
+            "subquestion": "What were the 2018 total Medicaid-paid amounts for adult mental health claims in each New York county, excluding NYC boroughs?",
+            "answer": {
+                "Suffolk": "$87,249,830",
+                "Erie": "$81,139,374",
+                "Westchester": "$67,149,496",
+                "Nassau": "$63,138,172",
+                "Monroe": "$51,731,436",
+                "Onondaga": "$33,679,773",
+                "Dutchess": "$23,872,388",
+                "Rockland": "$21,794,986",
+                "Albany": "$19,977,245",
+                "Orange": "$17,551,508"
+            },
+            "limit": 10
+        },
+        "3": {
+            "source": "datagov/utility-energy-registry-monthly-county-energy-use-beginning-2016/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/utility-energy-registry-monthly-county-energy-use-beginning-2016/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty_map = {\n    36029: \"Erie\",\n    36103: \"Suffolk\",\n}\n\nresult = (\n    df[\n        (df[\"year\"] == 2017)\n        & (df[\"state_2\"] == \"NY\")\n        & (df[\"data_class\"] == \"natural_gas\")\n        & (df[\"data_field_display_name\"] == \"Total Consumption (T)\")\n        & (df[\"full_fips\"].isin(county_map))\n    ]\n    .groupby(\"full_fips\", as_index=False)[\"value\"]\n    .sum()\n)\nresult[\"County\"] = result[\"full_fips\"].map(county_map)\nresult = result.sort_values(\"value\", ascending=False).reset_index(drop=True)\n\nanswer = {\n    row[\"County\"]: f\"{row['value']:,.2f}\".rstrip(\"0\").rstrip(\".\")\n    for _, row in result.iterrows()\n}",
+            "subquestion": "What was the total natural gas consumption for the counties in <hop 1 answer> in 2017?",
+            "answer": {
+                "Erie": "621,451,910.24",
+                "Suffolk": "537,382,172"
+            }
+        },
+        "4": {
+            "source": "datagov/utility-energy-registry-monthly-county-energy-use-beginning-2016/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/utility-energy-registry-monthly-county-energy-use-beginning-2016/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty_map = {\n    36029: \"Erie\",\n    36103: \"Suffolk\",\n}\n\nresult = (\n    df[\n        (df[\"year\"] == 2018)\n        & (df[\"state_2\"] == \"NY\")\n        & (df[\"data_class\"] == \"natural_gas\")\n        & (df[\"data_field_display_name\"] == \"Total Consumption (T)\")\n        & (df[\"full_fips\"].isin(county_map))\n    ]\n    .groupby(\"full_fips\", as_index=False)[\"value\"]\n    .sum()\n)\nresult[\"County\"] = result[\"full_fips\"].map(county_map)\nresult = result.sort_values(\"value\", ascending=False).reset_index(drop=True)\n\nanswer = {\n    row[\"County\"]: f\"{row['value']:,.2f}\".rstrip(\"0\").rstrip(\".\")\n    for _, row in result.iterrows()\n}",
+            "subquestion": "What was the total natural gas consumption for the counties in <hop 1 answer> in 2018?",
+            "answer": {
+                "Erie": "712,460,330.24",
+                "Suffolk": "556,444,750"
+            }
+        },
+        "5": {
+            "source": "wikipedia/Suffolk_County,_New_York/content.txt",
+            "fact": "The county was named after the county of Suffolk in England, the origin of its earliest European settlers.",
+            "subquestion": "After which English county is the lower-average-natural-gas-consumption county from <hop 2 answer> named?",
+            "answer": "Suffolk, England"
+        },
+        "6": {
+            "source": "wikipedia/Ipswich/content.txt",
+            "fact": "Ipswich () is a port town and borough in Suffolk, England. It is the county town, and largest in Suffolk, followed by Lowestoft and Bury St Edmunds",
+            "subquestion": "What is the county town of <hop 3 answer>?",
+            "answer": "Ipswich"
+        },
+        "7": {
+            "source": "wikipedia/Ipswich/content.txt",
+            "fact": "Ipswich was first recorded during the medieval period as Gippeswic, the town has also been recorded as Gyppewicus and Yppswyche.",
+            "subquestion": "What was the medieval name of <hop 4 answer>?",
+            "answer": "Gippeswic"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Suffolk_County,_New_York/content.txt",
+        "wikipedia/Ipswich/content.txt",
+        "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt",
+        "datagov/county-mental-health-profiles-phase-2-beginning-2014/signed-metadata.txt",
+        "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/4uks-kzmv.txt",
+        "datagov/utility-energy-registry-monthly-county-energy-use-beginning-2016/files/rows.txt",
+        "datagov/utility-energy-registry-monthly-county-energy-use-beginning-2016/signed-metadata.txt",
+        "datagov/utility-energy-registry-monthly-county-energy-use-beginning-2016/files/47km-hhvs.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Service Year` = 2017 and `Age Group` = `Adult`, exclude NYC boroughs from `County Label`, group by `County Label`, sum `Paid Claim Total`, and return the top displayed county totals.",
+                "Node 2: Filter rows where `Service Year` = 2018 and `Age Group` = `Adult`, exclude NYC boroughs from `County Label`, group by `County Label`, sum `Paid Claim Total`, and return the top displayed county totals.",
+                "Hop result: average the 2017 and 2018 adult mental health Medicaid paid claims by county, then keep counties with averages between $75 million and $95 million. The qualifying counties are Erie and Suffolk."
+            ],
+            "answer": [
+                "Erie",
+                "Suffolk"
+            ]
+        },
+        {
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter 2017 rows where `year` = 2017, `state_2` = `NY`, `data_class` = `natural_gas`, `data_field_display_name` = `Total Consumption (T)`, keep the counties from <hop 1 answer>, and return `County -> value`.",
+                "Node 4: Filter 2018 rows where `year` = 2018, `state_2` = `NY`, `data_class` = `natural_gas`, `data_field_display_name` = `Total Consumption (T)`, keep the counties from <hop 1 answer>, and return `County -> value`.",
+                "Hop result: average the 2017 and 2018 total natural gas consumption by county. Suffolk has the lower average total natural gas consumption."
+            ],
+            "answer": "Suffolk"
+        },
+        {
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Identify the English county after which the lower-average-natural-gas-consumption county from <hop 2 answer> was named.",
+                "Hop result: Suffolk, England."
+            ],
+            "answer": "Suffolk, England"
+        },
+        {
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Identify the county town of <hop 3 answer>.",
+                "Hop result: Ipswich."
+            ],
+            "answer": "Ipswich"
+        },
+        {
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Identify the medieval name of <hop 4 answer>.",
+                "Hop result: Gippeswic."
+            ],
+            "answer": "Gippeswic"
+        }
+    ]
+}

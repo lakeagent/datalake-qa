@@ -1,0 +1,66 @@
+{
+  "question": "In Pittsburgh, identify the airport that most directly serves it for commercial passenger travel; in its March 2019 scheduled traffic report, find the destination with the most seats and map it to its airport. How many parallel runways does that airport have? Please return the number only. Your response should be in the format [Answer].",
+  "answer": 5,
+  "nodes": {
+    "1": {
+      "source": "wikipedia/Pittsburgh/content.txt",
+      "fact": "Pittsburgh International Airport provides commercial passenger service from over 15 airlines to the Pittsburgh metropolitan area. Arnold Palmer Regional Airport also provides limited commercial passenger service and is east of Pittsburgh.",
+      "subquestion": "Which airport most directly serves Pittsburgh for commercial passenger travel?",
+      "answer": "Pittsburgh International Airport"
+    },
+    "2": {
+      "source": "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt",
+      "fact": "In the March 2019 Pittsburgh International scheduled traffic report, Atlanta (ATL) has 44,912 total seats, the highest of any destination (next highest is Chicago O'Hare with 35,699).",
+      "subquestion": "For <hop 1 answer>, which destination had the most scheduled seats in March 2019?",
+      "answer": "Atlanta (ATL)"
+    },
+    "3": {
+      "source": "wikipedia/Hartsfield–Jackson_Atlanta_International_Airport/content.txt",
+      "fact": "Hartsfield-Jackson covers land and has five parallel runways aligned in an east-west direction. The longest runway at ATL can handle the Airbus A380.",
+      "subquestion": "How many parallel runways does <hop 2 answer>'s airport have?",
+      "answer": 5
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Pittsburgh International Airport provides commercial passenger service to Pittsburgh's metropolitan area, while Arnold Palmer Regional Airport is only described as providing limited commercial passenger service.",
+        "Hop result: Pittsburgh International Airport"
+      ],
+      "answer": "Pittsburgh International Airport"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Atlanta (ATL) has the most seats (44,912).",
+        "Hop result: Atlanta (ATL)"
+      ],
+      "answer": "Atlanta (ATL)"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: <hop 2 answer>'s airport has `5` parallel runways.",
+        "Hop result: 5"
+      ],
+      "answer": 5
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/Pittsburgh/content.txt",
+    "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt",
+    "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/signed-metadata.txt",
+    "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pit-scheduled-traffic-report-data-dictionary.txt",
+    "wikipedia/Hartsfield–Jackson_Atlanta_International_Airport/content.txt"
+  ]
+}

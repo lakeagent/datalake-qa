@@ -1,0 +1,100 @@
+{
+    "question": "I'm analyzing crime patterns in the largest-area borough in NYC. First, identify the precinct that received the most complaints in 2022. Within that precinct, was it more common for shootings to happen inside or outside? Then, find which precinct in that borough had the highest number of complaints in 2022 where the incident happened in that same setting, and tell me how many incidents involving officers using force occurred in that latter precinct in 2024. Only report the number of incidents. Your response should be in the format [Answer].",
+    "answer": "258",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Queens/content.txt",
+            "fact": "Queens is the largest by area of the five boroughs of New York City, coextensive with Queens County, in the U.S. state of New York.",
+            "subquestion": "Which borough of New York City is the largest by area?",
+            "answer": "Queens"
+        },
+        "2": {
+            "source": "datagov/nypd-complaint-data-historic/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nypd-complaint-data-historic/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"CMPLNT_FR_DT\"] = pd.to_datetime(df[\"CMPLNT_FR_DT\"], errors=\"coerce\")\nqueens_2022 = df[(df[\"CMPLNT_FR_DT\"].dt.year == 2022) & (df[\"BORO_NM\"] == \"QUEENS\")].copy()\n\nresult = (\n    queens_2022.groupby(\"ADDR_PCT_CD\", dropna=False)\n    .size()\n    .reset_index(name=\"complaint_count\")\n    .sort_values([\"complaint_count\", \"ADDR_PCT_CD\"], ascending=[False, True], na_position=\"last\")\n    .reset_index(drop=True)\n)\n\nanswer = result.iloc[0][\"ADDR_PCT_CD\"]",
+            "subquestion": "In 2022 complaint records for <hop 1 answer>, which precinct received the most complaints?",
+            "answer": "114"
+        },
+        "3": {
+            "source": "datagov/nypd-shooting-incident-data-historic/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nypd-shooting-incident-data-historic/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"OCCUR_DATE\"] = pd.to_datetime(df[\"OCCUR_DATE\"], errors=\"coerce\")\nprecinct_2022 = df[(df[\"OCCUR_DATE\"].dt.year == 2022) & (df[\"PRECINCT\"] == 114)].copy()\n\nresult = (\n    precinct_2022.groupby(\"LOC_OF_OCCUR_DESC\", dropna=False)\n    .size()\n    .reset_index(name=\"shooting_count\")\n    .sort_values([\"shooting_count\", \"LOC_OF_OCCUR_DESC\"], ascending=[False, True], na_position=\"last\")\n    .reset_index(drop=True)\n)\n\nanswer = result.iloc[0][\"LOC_OF_OCCUR_DESC\"]",
+            "subquestion": "In 2022 shooting incidents within precinct <hop 2 answer>, was it more common for the shooting to happen inside or outside?",
+            "answer": "OUTSIDE"
+        },
+        "4": {
+            "source": "datagov/nypd-complaint-data-historic/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nypd-complaint-data-historic/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"CMPLNT_FR_DT\"] = pd.to_datetime(df[\"CMPLNT_FR_DT\"], errors=\"coerce\")\nqueens_2022_outside = df[\n    (df[\"CMPLNT_FR_DT\"].dt.year == 2022)\n    & (df[\"BORO_NM\"] == \"QUEENS\")\n    & (df[\"LOC_OF_OCCUR_DESC\"] == \"OUTSIDE\")\n].copy()\n\nresult = (\n    queens_2022_outside.groupby(\"ADDR_PCT_CD\", dropna=False)\n    .size()\n    .reset_index(name=\"complaint_count\")\n    .sort_values([\"complaint_count\", \"ADDR_PCT_CD\"], ascending=[False, True], na_position=\"last\")\n    .reset_index(drop=True)\n)\n\nanswer = result.iloc[0][\"ADDR_PCT_CD\"]",
+            "subquestion": "In 2022 complaint records in <hop 1 answer> where the incident happened <hop 3 answer>, which precinct received the most complaints?",
+            "answer": "103"
+        },
+        "5": {
+            "source": "datagov/nypd-use-of-force-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nypd-use-of-force-incidents/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Occurrence Date\"] = pd.to_datetime(df[\"Occurrence Date\"], errors=\"coerce\")\nresult = df[(df[\"Occurrence Date\"].dt.year == 2024) & (df[\"Incident Pct\"] == 103)].copy()\n\nanswer = len(result)",
+            "subquestion": "In 2024, how many incidents involving officers using force occurred in precinct <hop 4 answer>?",
+            "answer": "258"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Identify borough of New York City is the largest by area."
+            ],
+            "answer": "Queens"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `CMPLNT_FR_DT` is in 2022 and `BORO_NM` = QUEENS, group by `ADDR_PCT_CD`, count complaints, sort descending, and keep the top precinct."
+            ],
+            "answer": 114
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `OCCUR_DATE` is in 2022 and `PRECINCT` = <hop 2 answer>, group by `LOC_OF_OCCUR_DESC`, count incidents, sort descending, and keep the most common location descriptor."
+            ],
+            "answer": "OUTSIDE"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Filter rows where `CMPLNT_FR_DT` is in 2022, `BORO_NM` = <hop 1 answer>, and `LOC_OF_OCCUR_DESC` = <hop 3 answer>, group by `ADDR_PCT_CD`, count complaints, sort descending, and keep the top precinct."
+            ],
+            "answer": 103
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Filter rows where `Occurrence Date` is in 2024 and `Incident Pct` = <hop 4 answer>, then count incidents."
+            ],
+            "answer": 258
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Queens/content.txt",
+        "datagov/nypd-complaint-data-historic/files/rows.txt",
+        "datagov/nypd-complaint-data-historic/signed-metadata.txt",
+        "datagov/nypd-complaint-data-historic/files/qgea-i56i.txt",
+        "datagov/nypd-shooting-incident-data-historic/files/rows.txt",
+        "datagov/nypd-shooting-incident-data-historic/signed-metadata.txt",
+        "datagov/nypd-shooting-incident-data-historic/files/833y-fsy8.txt",
+        "datagov/nypd-use-of-force-incidents/files/rows.txt",
+        "datagov/nypd-use-of-force-incidents/signed-metadata.txt",
+        "datagov/nypd-use-of-force-incidents/files/f4tj-796d.publisher-view.json"
+    ]
+}

@@ -1,0 +1,190 @@
+{
+  "question": "Among Texas counties in the top five for Capital Outlay expenditures in each year from 2018 through 2021, identify the two highest by average TDCJ releases in 2019 and 2020. Of those two, pick the county with the larger percentage increase in disability compensation recipients from 2020 to 2023. Who became the first mayor when that county's county-seat city was incorporated? Your response should be in the format [Answer].",
+  "answer": "James S. Holman",
+  "nodes": {
+    "1": {
+      "source": "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/texas-state-expenditures-by-county-2018/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ncounty = df['County'].astype(str).str.strip().str.title()\ncategory = df['Major Spending Category'].astype(str).str.strip().str.upper()\namount = pd.to_numeric(df['Amount'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'County': county, 'Amount': amount})[\n    fiscal_year.eq(2018)\n    & county.ne('')\n    & county.ne('Nan')\n    & category.str.contains('CAPITAL OUTLAY', regex=False, na=False)\n].copy()\nanswer = filtered.groupby('County')['Amount'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+      "subquestion": "Which Texas counties were in the top 5 by Capital Outlay expenditures in 2018?",
+      "answer": {
+        "Harris": 1303630847.3,
+        "Dallas": 838316444.65,
+        "Travis": 427160745.36,
+        "Montgomery": 424383088.05,
+        "Bexar": 269462082.97
+      }
+    },
+    "2": {
+      "source": "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/texas-state-expenditures-by-county-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ncounty = df['County'].astype(str).str.strip().str.title()\ncategory = df['Major Spending Category'].astype(str).str.strip().str.upper()\namount = pd.to_numeric(df['Amount'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'County': county, 'Amount': amount})[\n    fiscal_year.eq(2019)\n    & county.ne('')\n    & county.ne('Nan')\n    & category.str.contains('CAPITAL OUTLAY', regex=False, na=False)\n].copy()\nanswer = filtered.groupby('County')['Amount'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+      "subquestion": "Which Texas counties were in the top 5 by Capital Outlay expenditures in 2019?",
+      "answer": {
+        "Harris": 1391779835.06,
+        "Dallas": 827510409.8,
+        "Travis": 614936080.37,
+        "Montgomery": 416744287.28,
+        "Bexar": 302940592.72
+      }
+    },
+    "3": {
+      "source": "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/texas-state-expenditures-by-county-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ncounty = df['County'].astype(str).str.strip().str.title()\ncategory = df['Major Spending Category'].astype(str).str.strip().str.upper()\namount = pd.to_numeric(df['Amount'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'County': county, 'Amount': amount})[\n    fiscal_year.eq(2020)\n    & county.ne('')\n    & county.ne('Nan')\n    & category.str.contains('CAPITAL OUTLAY', regex=False, na=False)\n].copy()\nanswer = filtered.groupby('County')['Amount'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+      "subquestion": "Which Texas counties were in the top 5 by Capital Outlay expenditures in 2020?",
+      "answer": {
+        "Harris": 1663151150.96,
+        "Dallas": 1324261419.12,
+        "Travis": 821945717.49,
+        "Montgomery": 612813968.49,
+        "Bexar": 494340352.72
+      }
+    },
+    "4": {
+      "source": "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/texas-state-expenditures-by-county-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nfiscal_year = pd.to_numeric(df['Fiscal Year'], errors='coerce')\ncounty = df['County'].astype(str).str.strip().str.title()\ncategory = df['Major Spending Category'].astype(str).str.strip().str.upper()\namount = pd.to_numeric(df['Amount'].astype(str).str.replace(',', '', regex=False).str.replace('$', '', regex=False), errors='coerce')\nfiltered = pd.DataFrame({'County': county, 'Amount': amount})[\n    fiscal_year.eq(2021)\n    & county.ne('')\n    & county.ne('Nan')\n    & category.str.contains('CAPITAL OUTLAY', regex=False, na=False)\n].copy()\nanswer = filtered.groupby('County')['Amount'].sum().sort_values(ascending=False).head(5).round(2).to_dict()",
+      "subquestion": "Which Texas counties were in the top 5 by Capital Outlay expenditures in 2021?",
+      "answer": {
+        "Harris": 1741663003.68,
+        "Dallas": 1171406639.17,
+        "Travis": 774601022.23,
+        "Montgomery": 705433711.03,
+        "Bexar": 596386366.99
+      }
+    },
+    "5": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ncandidates = ['Harris', 'Dallas', 'Bexar', 'Travis', 'Montgomery']\ncounty = df['County'].astype(str).str.strip().str.title()\ncounts = county[county.isin(candidates)].value_counts()\nanswer = {name: int(counts.get(name, 0)) for name in sorted(candidates, key=lambda name: (-int(counts.get(name, 0)), name))}",
+      "subquestion": "For the counties in <hop 1 answer>, what were the TDCJ release counts in 2019?",
+      "answer": {
+        "Harris": 9029,
+        "Dallas": 5355,
+        "Bexar": 4545,
+        "Travis": 1857,
+        "Montgomery": 1315
+      }
+    },
+    "6": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ncandidates = ['Harris', 'Dallas', 'Bexar', 'Travis', 'Montgomery']\ncounty = df['County'].astype(str).str.strip().str.title()\ncounts = county[county.isin(candidates)].value_counts()\nanswer = {name: int(counts.get(name, 0)) for name in sorted(candidates, key=lambda name: (-int(counts.get(name, 0)), name))}",
+      "subquestion": "For the counties in <hop 1 answer>, what were the TDCJ release counts in 2020?",
+      "answer": {
+        "Harris": 7059,
+        "Dallas": 4540,
+        "Bexar": 3917,
+        "Travis": 1596,
+        "Montgomery": 1250
+      }
+    },
+    "7": {
+      "source": "datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ntargets = ['Harris', 'Dallas']\nstate = df['State'].astype(str).str.strip().str.lower()\ncounty = df['County Name'].astype(str).str.strip().str.replace(r'\\s+County$', '', regex=True).str.strip().str.title()\nrecipients = pd.to_numeric(df['Total: Disability Compensation Recipients'], errors='coerce')\nfiltered = pd.DataFrame({'County': county, 'Recipients': recipients})[state.eq('texas') & county.isin(targets)].copy()\ntotals = filtered.groupby('County')['Recipients'].sum()\nanswer = {name: int(totals.get(name, 0)) for name in targets}",
+      "subquestion": "For the counties in <hop 2 answer>, what were the disability compensation recipient counts in 2020?",
+      "answer": {
+        "Harris": 49804,
+        "Dallas": 26317
+      }
+    },
+    "8": {
+      "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\ntargets = ['Harris', 'Dallas']\nstate = df['State'].astype(str).str.strip().str.lower()\ncounty = df['County Name'].astype(str).str.strip().str.replace(r'\\s+County$', '', regex=True).str.strip().str.title()\nrecipients = pd.to_numeric(df['Total: Disability Compensation Recipients'], errors='coerce')\nfiltered = pd.DataFrame({'County': county, 'Recipients': recipients})[state.eq('texas') & county.isin(targets)].copy()\ntotals = filtered.groupby('County')['Recipients'].sum()\nanswer = {name: int(totals.get(name, 0)) for name in targets}",
+      "subquestion": "For the counties in <hop 2 answer>, what were the disability compensation recipient counts in 2023?",
+      "answer": {
+        "Harris": 54266,
+        "Dallas": 25704
+      }
+    },
+    "9": {
+      "source": "wikipedia/Houston/content.txt",
+      "fact": "The Allen brothers ran their first advertisement for Houston just four days later in the Telegraph and Texas Register, naming the notional town in honor of Sam Houston, who would become President later that year. They successfully lobbied the Republic of Texas Congress to designate Houston as the temporary capital, agreeing to provide the new government with a state capitol building. About a dozen persons resided in the town at the beginning of 1837, but that number grew to about 1,500 by the time the Texas Congress convened in Houston for the first time that May. The Republic of Texas granted Houston incorporation on June 5, 1837, as James S. Holman became its first mayor. In the same year, Houston became the county seat of Harrisburg County (now Harris County).",
+      "subquestion": "Who became the first mayor when the county-seat city of <hop 3 answer> was incorporated?",
+      "answer": "James S. Holman"
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: In `datagov/texas-state-expenditures-by-county-2018/files/rows.txt`, group by `County`, filter `Major Spending Category` to Capital Outlay, and sum `Amount`; the top five are Harris, Dallas, Travis, Montgomery, and Bexar.",
+        "Node 2: In `datagov/texas-state-expenditures-by-county-2019/files/rows.txt`, group by `County`, filter `Major Spending Category` to Capital Outlay, and sum `Amount`; the top five are Harris, Dallas, Travis, Montgomery, and Bexar.",
+        "Node 3: In `datagov/texas-state-expenditures-by-county-2020/files/rows.txt`, group by `County`, filter `Major Spending Category` to Capital Outlay, and sum `Amount`; the top five are Harris, Dallas, Travis, Montgomery, and Bexar.",
+        "Node 4: In `datagov/texas-state-expenditures-by-county-2021/files/rows.txt`, group by `County`, filter `Major Spending Category` to Capital Outlay, and sum `Amount`; the top five are Harris, Dallas, Travis, Montgomery, and Bexar.",
+        "Hop result: the counties appearing in the top five across 2018-2021 are Harris, Dallas, Travis, Montgomery, and Bexar."
+      ],
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Travis",
+        "Montgomery",
+        "Bexar"
+      ]
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5: In `datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt`, count rows by `County` for the counties in <hop 1 answer>; Harris has 9,029 and Dallas has 5,355, the two largest counts.",
+        "Node 6: In `datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt`, count rows by `County` for the counties in <hop 1 answer>; Harris has 7,059 and Dallas has 4,540, the two largest counts.",
+        "Hop result: averaging the 2019 and 2020 release counts for the counties in <hop 1 answer> gives Harris and Dallas as the top two."
+      ],
+      "answer": [
+        "Harris",
+        "Dallas"
+      ]
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        7,
+        8
+      ],
+      "reasoning": [
+        "Node 7: In `datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt`, keep `County Name` -> `Total: Disability Compensation Recipients` for <hop 2 answer>: Harris 49,804 and Dallas 26,317.",
+        "Node 8: In `datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt`, keep `County Name` -> `Total: Disability Compensation Recipients` for <hop 2 answer>: Harris 54,266 and Dallas 25,704.",
+        "Hop result: Harris changes by `(54266 - 49804) / 49804 * 100 = 8.96%`; Dallas changes by `(25704 - 26317) / 26317 * 100 = -2.33%`; Harris County has the larger percentage increase."
+      ],
+      "answer": "Harris County"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        9
+      ],
+      "reasoning": [
+        "Node 9: When the county-seat city of <hop 3 answer> was incorporated, `James S. Holman` became its first mayor.",
+        "Hop result: James S. Holman."
+      ],
+      "answer": "James S. Holman"
+    }
+  ],
+  "datasets_used": [
+    "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2018/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2018/files/f2iw-dtqt.txt",
+    "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2019/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2019/files/2x5x-m677.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2020/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/aact-g69n.publisher-view.json",
+    "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2021/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2021/files/tup7-smjg.publisher-view.json",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
+    "datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt",
+    "datagov/fy-2020-disability-compensation-recipients-by-county/signed-metadata.txt",
+    "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+    "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt",
+    "wikipedia/Houston/content.txt"
+  ]
+}

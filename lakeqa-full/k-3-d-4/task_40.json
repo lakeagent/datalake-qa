@@ -1,0 +1,170 @@
+{
+  "question": "Among NY counties with at least 65 bridges rated 'Poor', at least 50 fire departments, at least 100 bank ATMs, and at least 1.0 MW of operational renewable energy capacity, identify the counties that meet all criteria and their county seats. As of 2020, among those county-seat cities, how many are also the most populous municipality in their county? Your response should be in the format [Answer].",
+  "answer": 1,
+  "nodes": {
+    "1": {
+      "source": "datagov/bridge-conditions-nys-department-of-transportation/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/bridge-conditions-nys-department-of-transportation/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty = df[\"County\"].astype(str).str.strip().str.title()\npoor = df[\"Poor Status\"].astype(str).str.strip().str.upper()\ncounts = county[poor.eq(\"Y\") & county.ne(\"\") & county.ne(\"Nan\")].value_counts()\nanswer = [f\"{name} County\" for name in counts[counts.ge(65)].index.tolist()]",
+      "subquestion": "Which NY counties have at least 65 bridges rated 'Poor' status?",
+      "answer": [
+        "Ulster County",
+        "Erie County",
+        "Westchester County",
+        "Orange County"
+      ]
+    },
+    "2": {
+      "source": "datagov/fire-department-directory-for-new-york-state/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/fire-department-directory-for-new-york-state/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty = df[\"County Name\"].astype(str).str.strip().str.title()\ncounts = county[county.ne(\"\") & county.ne(\"Nan\")].value_counts()\nanswer = [f\"{name} County\" for name in counts[counts.ge(50)].index.tolist()]",
+      "subquestion": "Which NY counties have at least 50 fire departments?",
+      "answer": [
+        "Suffolk County",
+        "Erie County",
+        "Nassau County",
+        "Westchester County",
+        "Onondaga County",
+        "Orange County",
+        "Ulster County",
+        "Oneida County"
+      ]
+    },
+    "3": {
+      "source": "datagov/bank-owned-atm-locations-in-new-york-state/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/bank-owned-atm-locations-in-new-york-state/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty = df[\"County\"].astype(str).str.strip().str.title()\ncounts = county[county.ne(\"\") & county.ne(\"Nan\")].value_counts()\nanswer = [f\"{name} County\" for name in counts[counts.ge(100)].index.tolist()]",
+      "subquestion": "Which NY counties have at least 100 bank ATMs?",
+      "answer": [
+        "New York County",
+        "Nassau County",
+        "Suffolk County",
+        "Queens County",
+        "Kings County",
+        "Westchester County",
+        "Erie County",
+        "Monroe County",
+        "Onondaga County",
+        "Bronx County",
+        "Albany County",
+        "Orange County",
+        "Dutchess County",
+        "Richmond County"
+      ]
+    },
+    "4": {
+      "source": "datagov/large-scale-renewable-projects-reported-by-nyserda-beginning-2004/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/large-scale-renewable-projects-reported-by-nyserda-beginning-2004/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty = df[\"County/Province\"].astype(str).str.strip().str.title()\nstatus = df[\"Project Status\"].astype(str).str.strip().str.title()\nstate = df[\"State/Province\"].astype(str).str.strip().str.upper()\ncapacity = pd.to_numeric(df[\"New Renewable Capacity (MW)\"], errors=\"coerce\")\nfiltered = pd.DataFrame({\"County\": county, \"Capacity\": capacity})[\n    status.eq(\"Operational\") & state.eq(\"NY\") & county.ne(\"\") & county.ne(\"Nan\")\n].copy()\ntotals = filtered.groupby(\"County\")[\"Capacity\"].sum().sort_values(ascending=False)\nanswer = [f\"{name} County\" for name in totals[totals.ge(1.0)].index.tolist()]",
+      "subquestion": "Which NY counties have at least 1.0 MW of operational renewable energy capacity?",
+      "answer": [
+        "Steuben County",
+        "Chautauqua County",
+        "Lewis County",
+        "Livingston County",
+        "Montgomery County",
+        "Broome County",
+        "Franklin County",
+        "Schoharie County",
+        "Washington County",
+        "Albany County",
+        "Chenango County",
+        "Cortland County",
+        "Saratoga County",
+        "Schenectady County",
+        "Erie County",
+        "Jefferson County",
+        "Westchester County",
+        "Sullivan County",
+        "Oswego County"
+      ]
+    },
+    "5": {
+      "source": "wikipedia/Erie_County,_New_York/content.txt",
+      "fact": "Erie County's county seat is Buffalo, which makes up about 28% of the county's population.",
+      "subquestion": "What is the county seat of Erie County from <hop 1 answer>?",
+      "answer": "Buffalo"
+    },
+    "6": {
+      "source": "wikipedia/Westchester_County,_New_York/content.txt",
+      "fact": "Westchester County's county seat is the city of White Plains.",
+      "subquestion": "What is the county seat of Westchester County from <hop 1 answer>?",
+      "answer": "White Plains"
+    },
+    "7": {
+      "source": "wikipedia/Erie_County,_New_York/content.txt",
+      "fact": "Erie County's county seat is Buffalo. As of the 2020 census, Buffalo was the county's most populous municipality, with 278,349 residents.",
+      "subquestion": "As of 2020, is this city from <hop 2 answer> also the most populous municipality in its county?",
+      "answer": {
+        "city": "Buffalo",
+        "is_most_populous_municipality": true
+      }
+    },
+    "8": {
+      "source": "wikipedia/Westchester_County,_New_York/content.txt",
+      "fact": "The county seat is the city of White Plains. As of the 2020 census, the most populous municipality in Westchester County was the city of Yonkers, with 211,569 residents.",
+      "subquestion": "As of 2020, is this city from <hop 2 answer> also the most populous municipality in its county?",
+      "answer": {
+        "city": "White Plains",
+        "is_most_populous_municipality": false
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: Per the NYS DOT Bridge Conditions dataset, NY counties with at least 65 bridges rated 'Poor': Ulster (84), Erie (82), Westchester (68), Orange (67).",
+        "Node 2: Per the NYS Fire Department Directory, NY counties with at least 50 fire departments: Suffolk (108), Erie (91), Nassau (70), Westchester (57), Onondaga (53), Orange (52), Ulster (51), Oneida (50).",
+        "Node 3: Per the NYS Bank-Owned ATM Locations dataset, NY counties with at least 100 bank ATMs: New York (676), Nassau (515), Suffolk (494), Queens (429), Kings (388), Westchester (335), Erie (244), Monroe (232), Onondaga (182), Bronx (158), Albany (148), Orange (128), Dutchess (125), Richmond (115). Ulster has only 76 ATMs.",
+        "Node 4: Per the NYSERDA Large-Scale Renewable Projects dataset, NY counties with at least 1.0 MW of operational renewable energy capacity: Steuben (286.29), Chautauqua (185.90), Lewis (183.99), Livingston (177.00), Montgomery (130.00), Broome (111.80), Franklin (79.30), Schoharie (50.00), Washington (40.00), Saratoga (20.00), Albany (20.00), Cortland (20.00), Chenango (20.00), Schenectady (19.99), Erie (11.48), Jefferson (7.35), Westchester (2.64), Sullivan (2.18), Oswego (1.32). Orange has 0 MW operational capacity.",
+        "Derive hop 1 answer using nodes 1, 2, 3, 4: Nodes 1-4 ask for NY county sets meeting four independent thresholds (poor bridges, fire departments, ATMs, and operational renewable capacity); intersecting the sets yields Erie County and Westchester County. Hop answer: Erie County and Westchester County."
+      ],
+      "answer": "Erie County and Westchester County"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5: Erie County from <hop 1 answer> has county seat Buffalo.",
+        "Node 6: Westchester County from <hop 1 answer> has county seat White Plains.",
+        "Derive hop 2 answer using nodes 5 and 6: map the two counties from <hop 1 answer> to their county seats. Hop answer: Buffalo and White Plains."
+      ],
+      "answer": "Buffalo and White Plains"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        7,
+        8
+      ],
+      "reasoning": [
+        "Node 7: As of the 2020 census, one city from <hop 2 answer>, Buffalo, is the county seat and the most populous municipality in Erie County.",
+        "Node 8: As of the 2020 census, the other city from <hop 2 answer>, White Plains, is the county seat of Westchester County, but Yonkers is the county's most populous municipality.",
+        "Derive hop 3 answer using nodes 7 and 8: as of the 2020 census, exactly one of the two county-seat cities is also the most populous municipality in its county. Hop answer: 1."
+      ],
+      "answer": 1
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/Erie_County,_New_York/content.txt",
+    "wikipedia/Westchester_County,_New_York/content.txt",
+    "datagov/bridge-conditions-nys-department-of-transportation/files/rows.txt",
+    "datagov/bridge-conditions-nys-department-of-transportation/signed-metadata.txt",
+    "datagov/bridge-conditions-nys-department-of-transportation/files/wpyb-cjy8.txt",
+    "datagov/fire-department-directory-for-new-york-state/files/rows.txt",
+    "datagov/fire-department-directory-for-new-york-state/signed-metadata.txt",
+    "datagov/fire-department-directory-for-new-york-state/files/qfsu-zcpv.txt",
+    "datagov/bank-owned-atm-locations-in-new-york-state/files/rows.txt",
+    "datagov/bank-owned-atm-locations-in-new-york-state/signed-metadata.txt",
+    "datagov/bank-owned-atm-locations-in-new-york-state/files/ndex-ad5r.txt",
+    "datagov/large-scale-renewable-projects-reported-by-nyserda-beginning-2004/files/rows.txt",
+    "datagov/large-scale-renewable-projects-reported-by-nyserda-beginning-2004/signed-metadata.txt",
+    "datagov/large-scale-renewable-projects-reported-by-nyserda-beginning-2004/files/dprp-55ye.txt"
+  ]
+}

@@ -1,0 +1,183 @@
+{
+    "question": "Identify the DC Council member who represents the ward that, among the top two wards, recorded both the highest average violent crimes, and the higher average 311 service requests from 2019 through 2020. This council member earned a graduate degree from a university whose flagship building is a National Historic Landmark. Among the founder of the university and the person this flagship building is named after, in what year was the ealier of the two individuals born? Please return the year only. Your response should be in the format [Answer].",
+    "answer": "1735",
+    "nodes": {
+        "1": {
+            "source": "datagov/crime-incidents-in-2019/files/data.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/crime-incidents-in-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.json_normalize(data[\"features\"])\n\nviolent_offenses = [\"HOMICIDE\", \"ASSAULT W/DANGEROUS WEAPON\", \"ROBBERY\", \"SEX ABUSE\"]\nresult = (\n    df[\n        df[\"properties.OFFENSE\"].isin(violent_offenses)\n        & df[\"properties.WARD\"].notna()\n    ]\n    .groupby(\"properties.WARD\")\n    .size()\n    .reset_index(name=\"violent_crime_count\")\n    .sort_values([\"violent_crime_count\", \"properties.WARD\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = [f\"Ward {int(row['properties.WARD'])} ({row['violent_crime_count']})\" for _, row in result.iterrows()]",
+            "subquestion": "What are the 2019 violent crime counts by ward for offenses in {HOMICIDE, ASSAULT W/DANGEROUS WEAPON, ROBBERY, SEX ABUSE}, so they can be combined with 2020 to identify the top two wards by average violent crimes?",
+            "answer": [
+                "Ward 7 (905)",
+                "Ward 8 (765)"
+            ],
+            "limit": 2
+        },
+        "2": {
+            "source": "datagov/crime-incidents-in-2020/files/data.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/crime-incidents-in-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.json_normalize(data[\"features\"])\n\nviolent_offenses = [\"HOMICIDE\", \"ASSAULT W/DANGEROUS WEAPON\", \"ROBBERY\", \"SEX ABUSE\"]\nresult = (\n    df[\n        df[\"properties.OFFENSE\"].isin(violent_offenses)\n        & df[\"properties.WARD\"].notna()\n    ]\n    .groupby(\"properties.WARD\")\n    .size()\n    .reset_index(name=\"violent_crime_count\")\n    .sort_values([\"violent_crime_count\", \"properties.WARD\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = [f\"Ward {int(row['properties.WARD'])} ({row['violent_crime_count']})\" for _, row in result.iterrows()]",
+            "subquestion": "What are the 2020 violent crime counts by ward for offenses in {HOMICIDE, ASSAULT W/DANGEROUS WEAPON, ROBBERY, SEX ABUSE}, so they can be combined with 2019 to identify the top two wards by average violent crimes?",
+            "answer": [
+                "Ward 7 (945)",
+                "Ward 8 (907)"
+            ],
+            "limit": 2
+        },
+        "3": {
+            "source": "datagov/311-city-service-requests-in-2019/files/data.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/311-city-service-requests-in-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.json_normalize(data[\"features\"])\n\nresult = (\n    df[df[\"properties.WARD\"].isin([\"7\", \"8\", 7, 8])]\n    .groupby(\"properties.WARD\")\n    .size()\n    .reset_index(name=\"service_request_count\")\n)\nresult[\"ward_num\"] = result[\"properties.WARD\"].astype(int)\nresult = result.sort_values([\"service_request_count\", \"ward_num\"], ascending=[False, True]).reset_index(drop=True)\nanswer = [f\"Ward {int(row['ward_num'])} ({row['service_request_count']:,})\" for _, row in result.iterrows()]",
+            "subquestion": "What are the 2019 311 service request counts for the wards in <hop 1 answer>, so they can be averaged with 2020 to determine which ward had the higher average 311 request volume?",
+            "answer": [
+                "Ward 7 (42,226)",
+                "Ward 8 (34,959)"
+            ],
+            "limit": 2
+        },
+        "4": {
+            "source": "datagov/311-city-service-requests-in-2020/files/data.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/311-city-service-requests-in-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read())\ndf = pd.json_normalize(data[\"features\"])\n\nresult = (\n    df[df[\"properties.WARD\"].isin([\"7\", \"8\", 7, 8])]\n    .groupby(\"properties.WARD\")\n    .size()\n    .reset_index(name=\"service_request_count\")\n)\nresult[\"ward_num\"] = result[\"properties.WARD\"].astype(int)\nresult = result.sort_values([\"service_request_count\", \"ward_num\"], ascending=[False, True]).reset_index(drop=True)\nanswer = [f\"Ward {int(row['ward_num'])} ({row['service_request_count']:,})\" for _, row in result.iterrows()]",
+            "subquestion": "What are the 2020 311 service request counts for the wards in <hop 1 answer>, so they can be averaged with 2019 to determine which ward had the higher average 311 request volume?",
+            "answer": [
+                "Ward 8 (37,124)",
+                "Ward 7 (36,113)"
+            ],
+            "limit": 2
+        },
+        "5": {
+            "source": "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+            "fact": "Ward 7 Councilmember: Wendell Felder\nPopulation (2022): 77,456",
+            "subquestion": "Who is the DC Council member for <hop 2 answer>?",
+            "answer": "Wendell Felder"
+        },
+        "6": {
+            "source": "wikipedia/Wendell_Felder/content.txt",
+            "fact": "Felder went on to receive a B.S. from Bowie State University and a M.A. from Georgetown University.",
+            "subquestion": "Which university did <hop 3 answer> attend for graduate studies?",
+            "answer": "Georgetown University"
+        },
+        "7": {
+            "source": "wikipedia/Georgetown_University/content.txt",
+            "fact": "Founded by Bishop John Carroll in 1789, it is the oldest Catholic institution of higher education in the United States, the oldest university in Washington, D.C., and the nation's first federally chartered university.",
+            "subquestion": "Who founded <hop 4 answer>?",
+            "answer": "John Carroll"
+        },
+        "8": {
+            "source": "wikipedia/Georgetown_University/content.txt",
+            "fact": "Enrollment did not recover until the late 19th century, during the presidency of Patrick Francis Healy from 1873 to 1881. Born in Athens, Georgia as a slave by law and mixed-race by ancestry, Healy was the first person of African descent to head a predominantly white American university. He identified as Irish Catholic, like his father, and was educated in Catholic schools in the United States and France. He is credited with reforming the undergraduate curriculum, lengthening the medical and law programs, and creating the Alumni Association. One of his largest undertakings was the construction of a major new building, subsequently named Healy Hall in his honor.",
+            "subquestion": "After whom is Healy Hall, the flagship building of <hop 4 answer> and a National Historic Landmark, named?",
+            "answer": "Patrick Francis Healy"
+        },
+        "9": {
+            "source": "wikipedia/John_Carroll_(archbishop_of_Baltimore)/content.txt",
+            "fact": "John Carroll  (January 8, 1735 – December 3, 1815) was an American Catholic prelate who served as the first Bishop of Baltimore, then the only diocese in the nascent United States, from 1789 to 1815.",
+            "subquestion": "What birth year does <node 7 answer> have for the final comparison against <node 8 answer>?",
+            "answer": "1735"
+        },
+        "10": {
+            "source": "wikipedia/Patrick_Francis_Healy/content.txt",
+            "fact": "Patrick Francis Healy  (February 27, 1834January 10, 1910) was an American Catholic priest and Jesuit who was an influential president of Georgetown University, becoming known as its \"second founder\".",
+            "subquestion": "What birth year does <node 8 answer> have for the final comparison against <node 7 answer>?",
+            "answer": "1834"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter 2019 rows where `properties.OFFENSE` is in {HOMICIDE, ASSAULT W/DANGEROUS WEAPON, ROBBERY, SEX ABUSE}, group by `properties.WARD`, and return ward-level violent-crime counts.",
+                "Node 2: Apply the same `properties.OFFENSE` filter to the 2020 dataset and return ward-level violent-crime counts by `properties.WARD`.",
+                "Hop result: average the 2019 and 2020 violent-crime counts by ward; the top two wards are [\"Ward 7\", \"Ward 8\"]."
+            ],
+            "answer": [
+                "Ward 7",
+                "Ward 8"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter 2019 311 rows where `properties.WARD` is in <hop 1 answer> and return service-request counts by ward.",
+                "Node 4: Filter 2020 311 rows where `properties.WARD` is in <hop 1 answer> and return service-request counts by ward.",
+                "Hop result: average the 2019 and 2020 service-request counts for <hop 1 answer>; Ward 7 has the higher average."
+            ],
+            "answer": "Ward 7"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: <hop 2 answer> is represented on the DC Council by Wendell Felder.",
+                "Hop result: <node 5 answer>"
+            ],
+            "answer": "Wendell Felder"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: <hop 3 answer> earned a graduate degree from Georgetown University.",
+                "Hop result: <node 6 answer>"
+            ],
+            "answer": "Georgetown University"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: John Carroll founded <hop 4 answer>.",
+                "Node 8: Healy Hall, the flagship building of <hop 4 answer> and a National Historic Landmark, is named after Patrick Francis Healy.",
+                "Hop result: the two people to compare are [\"John Carroll\", \"Patrick Francis Healy\"]."
+            ],
+            "answer": [
+                "John Carroll",
+                "Patrick Francis Healy"
+            ]
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                9,
+                10
+            ],
+            "reasoning": [
+                "Node 9: <node 7 answer> was born in 1735.",
+                "Node 10: <node 8 answer> was born in 1834.",
+                "Hop result: compare the two birth years from <hop 5 answer>; 1735 is earlier."
+            ],
+            "answer": "1735"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+        "wikipedia/Wendell_Felder/content.txt",
+        "wikipedia/Georgetown_University/content.txt",
+        "wikipedia/John_Carroll_(archbishop_of_Baltimore)/content.txt",
+        "wikipedia/Patrick_Francis_Healy/content.txt",
+        "datagov/crime-incidents-in-2019/files/data.txt",
+        "datagov/crime-incidents-in-2019/signed-metadata.txt",
+        "datagov/crime-incidents-in-2019/files/1.arcgis-layer.json",
+        "datagov/crime-incidents-in-2020/files/data.txt",
+        "datagov/crime-incidents-in-2020/signed-metadata.txt",
+        "datagov/crime-incidents-in-2020/files/2.arcgis-layer.json",
+        "datagov/311-city-service-requests-in-2019/files/data.txt",
+        "datagov/311-city-service-requests-in-2019/signed-metadata.txt",
+        "datagov/311-city-service-requests-in-2019/files/10.arcgis-layer.json",
+        "datagov/311-city-service-requests-in-2020/files/data.txt",
+        "datagov/311-city-service-requests-in-2020/signed-metadata.txt",
+        "datagov/311-city-service-requests-in-2020/files/11.arcgis-layer.json"
+    ]
+}

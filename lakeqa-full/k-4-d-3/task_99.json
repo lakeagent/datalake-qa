@@ -1,0 +1,109 @@
+{
+  "question": "Among all government departments in the city that Bruno Mars was born and raised in, if higher efficiency means fewer average workdays to complete non-complex public-records requests, determine the department with the second highest efficiency. For that department in the same city, find its final budgets in 2016, 2017, and 2018, then identify the year with the second highest budget. Which city hosted the Winter Olympics in that year? Return only the city name. Your response should be in the format [Answer].",
+  "answer": "Pyeongchang",
+  "nodes": {
+    "1": {
+      "source": "wikipedia/Bruno_Mars/content.txt",
+      "fact": "Peter Gene Hernandez was born on October 8, 1985, in Honolulu, Hawaii, to Peter Hernandez and Bernadette San Pedro Bayot. He was raised in the Waikiki neighborhood of Honolulu.",
+      "subquestion": "Which city was Bruno Mars born and raised in?",
+      "answer": "Honolulu"
+    },
+    "2": {
+      "source": "datagov/oip-master-uipa-record-request-semiannual-log-for-fy-2016/files/oip-master-uipa-record-request-semiannual-log-for-fy-2016-csv.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/oip-master-uipa-record-request-semiannual-log-for-fy-2016/files/oip-master-uipa-record-request-semiannual-log-for-fy-2016-csv.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_1_answer = \"Honolulu\"\ncity = str(node_1_answer).strip().upper()\ndf = df[df[\"Department\"].astype(str).str.startswith(f\"CC_{city}\")].copy()\ndf[\"Complex Request?\"] = pd.to_numeric(df[\"Complex Request?\"], errors=\"coerce\").fillna(0)\ndf[\"# of Workdays to Complete\"] = pd.to_numeric(df[\"# of Workdays to Complete\"], errors=\"coerce\").fillna(0)\ndf = df[df[\"Complex Request?\"].eq(0)].copy()\nname_map = {\n    'CC_HONOLULU_TRANSPORTATION_SERVICES': 'Transportation Services',\n    'CC_HONOLULU_PARKS_AND_RECREATION': 'Parks and Recreation',\n    'CC_HONOLULU_HUMAN_RESOURCES': 'Human Resources',\n    'CC_HONOLULU_MEDICAL_EXAMINER': 'Medical Examiner',\n    'CC_HONOLULU_HONOLULU_BOARD_OF_WATER_SUPPLY': 'Honolulu Board of Water Supply',\n    'CC_HONOLULU_CORPORATION_COUNSEL': 'Corporation Counsel',\n    'CC_HONOLULU_CUSTOMER_SERVICES': 'Customer Services',\n    'CC_HONOLULU_DESIGN_AND_CONSTRUCTION': 'Design and Construction',\n    'CC_HONOLULU_PLANNING_AND_PERMITTING': 'Planning and Permitting',\n    'CC_HONOLULU_ENVIRONMENTAL_SERVICES': 'Environmental Services',\n    'CC_HONOLULU_HOUSING': 'Housing',\n    'CC_HONOLULU_MAYOR': 'Mayor',\n    'CC_HONOLULU_HONOLULU_FIRE_DEPARTMENT': 'Honolulu Fire Department'\n}\ndf[\"Department Name\"] = df[\"Department\"].map(name_map).fillna(df[\"Department\"])\nranked = (\n    df.groupby(\"Department Name\", as_index=False)[\"# of Workdays to Complete\"]\n    .mean()\n    .sort_values([\"# of Workdays to Complete\", \"Department Name\"], ascending=[True, True])\n    .reset_index(drop=True)\n)\nanswer = str(ranked.iloc[1][\"Department Name\"])\n",
+      "subquestion": "Among all government departments in <hop 1 answer>, if higher efficiency means fewer workdays to complete requests that are not complex, which department has the 2nd highest efficiency?",
+      "answer": "Transportation Services"
+    },
+    "3": {
+      "source": "datagov/adopted-fy16-budget/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/adopted-fy16-budget/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_2_answer = \"Transportation Services\"\ncol = \"FY 2016 Final Budget\"\nfiltered = df[df[\"Department Name\"].astype(str).str.strip().eq(str(node_2_answer).strip())].copy()\nfiltered[col] = pd.to_numeric(filtered[col].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\").fillna(0)\nanswer = str(int(filtered[col].sum()))\n",
+      "subquestion": "What is the 2016 final budget for <hop 2 answer> in <hop 1 answer>?",
+      "answer": "285196912"
+    },
+    "4": {
+      "source": "datagov/adopted-fy17-budget/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/adopted-fy17-budget/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_2_answer = \"Transportation Services\"\ncol = \"FY 2017 Final Budget\"\nfiltered = df[df[\"Department Name\"].astype(str).str.strip().eq(str(node_2_answer).strip())].copy()\nfiltered[col] = pd.to_numeric(filtered[col].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\").fillna(0)\nanswer = str(int(filtered[col].sum()))\n",
+      "subquestion": "What is the 2017 final budget for <hop 2 answer> in <hop 1 answer>?",
+      "answer": "269066066"
+    },
+    "5": {
+      "source": "datagov/adopted-fy18-budget/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/adopted-fy18-budget/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_2_answer = \"Transportation Services\"\ncol = \"FY 2018 Final Budget\"\nfiltered = df[df[\"Department Name\"].astype(str).str.strip().eq(str(node_2_answer).strip())].copy()\nfiltered[col] = pd.to_numeric(filtered[col].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\").fillna(0)\nanswer = str(int(filtered[col].sum()))\n",
+      "subquestion": "What is the 2018 final budget for <hop 2 answer> in <hop 1 answer>?",
+      "answer": "271760078"
+    },
+    "6": {
+      "source": "wikipedia/2018/content.txt",
+      "fact": "February 9–25 – The 2018 Winter Olympics are held in Pyeongchang, South Korea.",
+      "subquestion": "Which city hosted the Winter Olympics in the second-highest budget year from <hop 3 answer>?",
+      "answer": "Pyeongchang"
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Bruno_Mars/content.txt",
+    "datagov/oip-master-uipa-record-request-semiannual-log-for-fy-2016/files/oip-master-uipa-record-request-semiannual-log-for-fy-2016-csv.txt",
+    "datagov/oip-master-uipa-record-request-semiannual-log-for-fy-2016/signed-metadata.txt",
+    "datagov/adopted-fy16-budget/files/rows.txt",
+    "datagov/adopted-fy16-budget/files/columns.txt",
+    "datagov/adopted-fy17-budget/files/rows.txt",
+    "datagov/adopted-fy17-budget/files/fpu3-7m4z.txt",
+    "datagov/adopted-fy18-budget/files/rows.txt",
+    "datagov/adopted-fy18-budget/signed-metadata.txt",
+    "wikipedia/2018/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Bruno Mars was born in Honolulu and raised in the Waikiki neighborhood of Honolulu.",
+        "Hop result: `Honolulu`."
+      ],
+      "answer": "Honolulu"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Among Honolulu departments with non-complex public-records requests, Transportation Services has the second highest efficiency when fewer average workdays means higher efficiency.",
+        "Hop result: `Transportation Services`."
+      ],
+      "answer": "Transportation Services"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 3: The 2016 final budget for Transportation Services is 285196912.",
+        "Node 4: The 2017 final budget for Transportation Services is 269066066.",
+        "Node 5: The 2018 final budget for Transportation Services is 271760078.",
+        "The second highest budget year is 2018, and the highest budget is 285196912, whose last three digits define rank 912.",
+        "Hop result: the second-highest budget year is `2018`, the rank is `912`, and the second-highest budget value is `271760078`."
+      ],
+      "answer": {
+        "second_highest_budget_year": "2018",
+        "rank": 912,
+        "second_highest_budget": 271760078
+      }
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: The second-highest budget year from <hop 3 answer> is 2018, and the 2018 Winter Olympics were held in Pyeongchang, South Korea.",
+        "Hop result: `Pyeongchang`."
+      ],
+      "answer": "Pyeongchang"
+    }
+  ]
+}

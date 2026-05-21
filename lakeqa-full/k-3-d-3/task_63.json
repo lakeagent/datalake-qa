@@ -1,0 +1,88 @@
+{
+  "question": "Using the Pittsburgh neighborhoods in the neighborhood profile, which neighborhood is the only one to appear in all three 1984 top-ten lists for share of college graduates, median household income, and share of workers employed within Pittsburgh? How many city neighborhood borders does that neighborhood have? Please return only the number in the format [Answer].",
+  "answer": 5,
+  "nodes": {
+    "1": {
+      "source": "datagov/a-community-profile-of-pittsburgh-neighborhoods-1974/files/arrests-for-major-crimes-1972.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/a-community-profile-of-pittsburgh-neighborhoods-1974/files/arrests-for-major-crimes-1972.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['neighborhood'] = df['neighborhood'].astype(str).str.strip()\nanswer = '; '.join(sorted(df['neighborhood'].dropna().unique().tolist()))\n",
+      "subquestion": "In this Pittsburgh neighborhood profile, which neighborhood names appear? Return them as a semicolon-separated list sorted alphabetically.",
+      "answer": "31st Ward; Allegheny Center; Allegheny West; Allentown; Arlington; Arlington Heights; Banksville; Bedford Dwellings; Beechview; Beltzhoover; Bloomfield; Bon Air; Brighton Heights; Brookline; California Ave.; Carrick; Central North Side; Crafton Heights - Westwood - Oakwood; East Carnegie; East Hills; East Liberty; East North Side; Elliot; Esplen; Friendship; Garfield; Greenfield; Harpen Hilltop; Hazelwood-Glenwood-Glen Hazel; Highland Park; Homewood North; Homewood South; Homewood West; Knoxville; Larimer; Lawrenceville; Lincoln-Lemington-Belmar; Lower Lawrenceville; Lower Oakland; Manchester; Middle Hill; Morningside; Mount Washington - Duquesne Heights; North Oakland; North View Heights; Perry North; Perry South; Point Breeze; Polish Hill; Regent Square; Ridgemont - Chicken Hill; Shadeland Halls Grove; Shadyside; Sheraton Chartiers; South Oakland; Southside Flats; Southside Slopes; Spring Hill; Squirrel Hill - North of Forbes; Squirrel Hill - South of Forbes; St. Clair; Stanton Heights; Swisshelm Park; Terrace Village; The Bluff; The Strip; Troy Hill; Upper Hill; Upper Lawrenceville; West End Valley"
+    },
+    "2": {
+      "source": "datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/files/civics.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/files/civics.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_1_answer = '31st Ward; Allegheny Center; Allegheny West; Allentown; Arlington; Arlington Heights; Banksville; Bedford Dwellings; Beechview; Beltzhoover; Bloomfield; Bon Air; Brighton Heights; Brookline; California Ave.; Carrick; Central North Side; Crafton Heights - Westwood - Oakwood; East Carnegie; East Hills; East Liberty; East North Side; Elliot; Esplen; Friendship; Garfield; Greenfield; Harpen Hilltop; Hazelwood-Glenwood-Glen Hazel; Highland Park; Homewood North; Homewood South; Homewood West; Knoxville; Larimer; Lawrenceville; Lincoln-Lemington-Belmar; Lower Lawrenceville; Lower Oakland; Manchester; Middle Hill; Morningside; Mount Washington - Duquesne Heights; North Oakland; North View Heights; Perry North; Perry South; Point Breeze; Polish Hill; Regent Square; Ridgemont - Chicken Hill; Shadeland Halls Grove; Shadyside; Sheraton Chartiers; South Oakland; Southside Flats; Southside Slopes; Spring Hill; Squirrel Hill - North of Forbes; Squirrel Hill - South of Forbes; St. Clair; Stanton Heights; Swisshelm Park; Terrace Village; The Bluff; The Strip; Troy Hill; Upper Hill; Upper Lawrenceville; West End Valley'\nallowed = set(node_1_answer.split('; '))\ndf['Community'] = df['Community'].astype(str).str.strip()\ndf['%grad_coll'] = pd.to_numeric(df['%grad_coll'].astype(str).str.replace('%', '', regex=False).str.strip(), errors='coerce')\nfiltered = df[df['Community'].isin(allowed) & df['%grad_coll'].notna()].copy()\nranked = filtered[['Community', '%grad_coll']].drop_duplicates().sort_values(['%grad_coll', 'Community'], ascending=[False, True]).head(10)\nanswer = '; '.join(ranked['Community'].tolist())\n",
+      "subquestion": "Among the neighborhoods listed in node 1, which ten rank highest by share of college graduates in 1984? Return them as a semicolon-separated list in rank order.",
+      "answer": "Point Breeze; Regent Square; Shadyside; Highland Park; Allegheny Center; Friendship; Banksville; Stanton Heights; East Liberty; Greenfield"
+    },
+    "3": {
+      "source": "datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/files/income.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/files/income.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_1_answer = '31st Ward; Allegheny Center; Allegheny West; Allentown; Arlington; Arlington Heights; Banksville; Bedford Dwellings; Beechview; Beltzhoover; Bloomfield; Bon Air; Brighton Heights; Brookline; California Ave.; Carrick; Central North Side; Crafton Heights - Westwood - Oakwood; East Carnegie; East Hills; East Liberty; East North Side; Elliot; Esplen; Friendship; Garfield; Greenfield; Harpen Hilltop; Hazelwood-Glenwood-Glen Hazel; Highland Park; Homewood North; Homewood South; Homewood West; Knoxville; Larimer; Lawrenceville; Lincoln-Lemington-Belmar; Lower Lawrenceville; Lower Oakland; Manchester; Middle Hill; Morningside; Mount Washington - Duquesne Heights; North Oakland; North View Heights; Perry North; Perry South; Point Breeze; Polish Hill; Regent Square; Ridgemont - Chicken Hill; Shadeland Halls Grove; Shadyside; Sheraton Chartiers; South Oakland; Southside Flats; Southside Slopes; Spring Hill; Squirrel Hill - North of Forbes; Squirrel Hill - South of Forbes; St. Clair; Stanton Heights; Swisshelm Park; Terrace Village; The Bluff; The Strip; Troy Hill; Upper Hill; Upper Lawrenceville; West End Valley'\nallowed = set(node_1_answer.split('; '))\ndf['Community'] = df['Community'].astype(str).str.strip()\ndf['median_household'] = pd.to_numeric(df['median_household'].astype(str).str.replace(',', '', regex=False).str.strip(), errors='coerce')\nfiltered = df[df['Community'].isin(allowed) & df['median_household'].notna()].copy()\nranked = filtered[['Community', 'median_household']].drop_duplicates().sort_values(['median_household', 'Community'], ascending=[False, True]).head(10)\nanswer = '; '.join(ranked['Community'].tolist())\n",
+      "subquestion": "Among the neighborhoods listed in node 1, which ten rank highest by median household income in 1984? Return them as a semicolon-separated list in rank order.",
+      "answer": "Stanton Heights; Point Breeze; Swisshelm Park; Highland Park; Banksville; Regent Square; Bon Air; Brookline; Greenfield; Beechview"
+    },
+    "4": {
+      "source": "datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/files/labor-force.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/files/labor-force.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_1_answer = '31st Ward; Allegheny Center; Allegheny West; Allentown; Arlington; Arlington Heights; Banksville; Bedford Dwellings; Beechview; Beltzhoover; Bloomfield; Bon Air; Brighton Heights; Brookline; California Ave.; Carrick; Central North Side; Crafton Heights - Westwood - Oakwood; East Carnegie; East Hills; East Liberty; East North Side; Elliot; Esplen; Friendship; Garfield; Greenfield; Harpen Hilltop; Hazelwood-Glenwood-Glen Hazel; Highland Park; Homewood North; Homewood South; Homewood West; Knoxville; Larimer; Lawrenceville; Lincoln-Lemington-Belmar; Lower Lawrenceville; Lower Oakland; Manchester; Middle Hill; Morningside; Mount Washington - Duquesne Heights; North Oakland; North View Heights; Perry North; Perry South; Point Breeze; Polish Hill; Regent Square; Ridgemont - Chicken Hill; Shadeland Halls Grove; Shadyside; Sheraton Chartiers; South Oakland; Southside Flats; Southside Slopes; Spring Hill; Squirrel Hill - North of Forbes; Squirrel Hill - South of Forbes; St. Clair; Stanton Heights; Swisshelm Park; Terrace Village; The Bluff; The Strip; Troy Hill; Upper Hill; Upper Lawrenceville; West End Valley'\nallowed = set(node_1_answer.split('; '))\ndf['Community'] = df['Community'].astype(str).str.strip()\ndf['%work_in_Pitt'] = pd.to_numeric(df['%work_in_Pitt'].astype(str).str.replace('%', '', regex=False).str.strip(), errors='coerce')\nfiltered = df[df['Community'].isin(allowed) & df['%work_in_Pitt'].notna()].copy()\nranked = filtered[['Community', '%work_in_Pitt']].drop_duplicates().sort_values(['%work_in_Pitt', 'Community'], ascending=[False, True]).head(10)\nanswer = '; '.join(ranked['Community'].tolist())\n",
+      "subquestion": "Among the neighborhoods listed in node 1, which ten rank highest by share of workers employed within Pittsburgh in 1984? Return them as a semicolon-separated list in rank order.",
+      "answer": "Allegheny West; Arlington Heights; North Oakland; Morningside; South Oakland; Stanton Heights; Hazelwood-Glenwood-Glen Hazel; Polish Hill; Terrace Village; Knoxville"
+    },
+    "5": {
+      "source": "wikipedia/Stanton_Heights/content.txt",
+      "fact": "Stanton Heights has five city neighborhood borders with Morningside to the north and east, East Liberty to the southeast, Garfield to the south-southeast, Central Lawrenceville from the south to southwest and Upper Lawrenceville from the west to the north.",
+      "subquestion": "How many city neighborhood borders does <hop 2 answer> have?",
+      "answer": 5
+    }
+  },
+  "datasets_used": [
+    "datagov/a-community-profile-of-pittsburgh-neighborhoods-1974/files/arrests-for-major-crimes-1972.txt",
+    "datagov/a-community-profile-of-pittsburgh-neighborhoods-1974/signed-metadata.txt",
+    "datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/files/civics.txt",
+    "datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/files/income.txt",
+    "datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/files/labor-force.txt",
+    "datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/files/population.txt",
+    "datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/files/housing-units.txt",
+    "datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/signed-metadata.txt",
+    "datagov/1984-community-profiles-a-descriptive-picture-of-communities-in-allegheny-county/files/employment-by-occupation.txt",
+    "wikipedia/Stanton_Heights/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: The Pittsburgh neighborhood profile enumerates the candidate neighborhood universe, including Allegheny Center, Point Breeze, Regent Square, Shadyside, Stanton Heights, Swisshelm Park, Terrace Village, and West End Valley.",
+        "Hop result: 31st Ward; Allegheny Center; Allegheny West; Allentown; Arlington; Arlington Heights; Banksville; Bedford Dwellings; Beechview; Beltzhoover; Bloomfield; Bon Air; Brighton Heights; Brookline; California Ave.; Carrick; Central North Side; Crafton Heights - Westwood - Oakwood; East Carnegie; East Hills; East Liberty; East North Side; Elliot; Esplen; Friendship; Garfield; Greenfield; Harpen Hilltop; Hazelwood-Glenwood-Glen Hazel; Highland Park; Homewood North; Homewood South; Homewood West; Knoxville; Larimer; Lawrenceville; Lincoln-Lemington-Belmar; Lower Lawrenceville; Lower Oakland; Manchester; Middle Hill; Morningside; Mount Washington - Duquesne Heights; North Oakland; North View Heights; Perry North; Perry South; Point Breeze; Polish Hill; Regent Square; Ridgemont - Chicken Hill; Shadeland Halls Grove; Shadyside; Sheraton Chartiers; South Oakland; Southside Flats; Southside Slopes; Spring Hill; Squirrel Hill - North of Forbes; Squirrel Hill - South of Forbes; St. Clair; Stanton Heights; Swisshelm Park; Terrace Village; The Bluff; The Strip; Troy Hill; Upper Hill; Upper Lawrenceville; West End Valley"
+      ],
+      "answer": "31st Ward; Allegheny Center; Allegheny West; Allentown; Arlington; Arlington Heights; Banksville; Bedford Dwellings; Beechview; Beltzhoover; Bloomfield; Bon Air; Brighton Heights; Brookline; California Ave.; Carrick; Central North Side; Crafton Heights - Westwood - Oakwood; East Carnegie; East Hills; East Liberty; East North Side; Elliot; Esplen; Friendship; Garfield; Greenfield; Harpen Hilltop; Hazelwood-Glenwood-Glen Hazel; Highland Park; Homewood North; Homewood South; Homewood West; Knoxville; Larimer; Lawrenceville; Lincoln-Lemington-Belmar; Lower Lawrenceville; Lower Oakland; Manchester; Middle Hill; Morningside; Mount Washington - Duquesne Heights; North Oakland; North View Heights; Perry North; Perry South; Point Breeze; Polish Hill; Regent Square; Ridgemont - Chicken Hill; Shadeland Halls Grove; Shadyside; Sheraton Chartiers; South Oakland; Southside Flats; Southside Slopes; Spring Hill; Squirrel Hill - North of Forbes; Squirrel Hill - South of Forbes; St. Clair; Stanton Heights; Swisshelm Park; Terrace Village; The Bluff; The Strip; Troy Hill; Upper Hill; Upper Lawrenceville; West End Valley"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 2: Among the neighborhoods from node 1, the top ten by 1984 share of college graduates are Point Breeze, Regent Square, Shadyside, Highland Park, Allegheny Center, Friendship, Banksville, Stanton Heights, East Liberty, and Greenfield.",
+        "Node 3: Among the neighborhoods from node 1, the top ten by 1984 median household income are Stanton Heights, Point Breeze, Swisshelm Park, Highland Park, Banksville, Regent Square, Bon Air, Brookline, Greenfield, and Beechview.",
+        "Node 4: Among the neighborhoods from node 1, the top ten by 1984 share of workers employed within Pittsburgh are Allegheny West, Arlington Heights, North Oakland, Morningside, South Oakland, Stanton Heights, Hazelwood-Glenwood-Glen Hazel, Polish Hill, Terrace Village, and Knoxville.",
+        "Intersecting the three top-ten sets leaves a single common neighborhood: Stanton Heights.",
+        "Hop result: Stanton Heights"
+      ],
+      "answer": "Stanton Heights"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: The source says <hop 2 answer> has five city neighborhood borders.",
+        "Hop result: 5."
+      ],
+      "answer": 5
+    }
+  ]
+}

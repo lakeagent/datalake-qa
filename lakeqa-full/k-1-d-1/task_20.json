@@ -1,0 +1,30 @@
+{
+    "question": "Which year from 2011-2016 has the lowest average traffic count across stations for Sioux Falls, South Dakota? Your response should be in the format [Answer].",
+    "answer": "2013",
+    "nodes": {
+        "1": {
+            "source": "datagov/traffic-counts-fc3cd/files/data.txt",
+            "fact": "import collections\nimport json\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/traffic-counts-fc3cd/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\nvalues = collections.defaultdict(list)\nfor feature in geo.get(\"features\", []):\n    props = feature.get(\"properties\", {}) or {}\n    for year in range(2011, 2017):\n        value = props.get(f\"Y{year}\")\n        if value is not None:\n            try:\n                values[year].append(float(value))\n            except (TypeError, ValueError):\n                pass\nyearly_averages = {year: sum(vals) / len(vals) for year, vals in values.items() if vals}\nanswer = str(min(yearly_averages, key=lambda year: (yearly_averages[year], year)))\n",
+            "subquestion": "Which year from 2011-2016 has the lowest average traffic count across stations for Sioux Falls, South Dakota?",
+            "answer": "2013"
+        }
+    },
+    "datasets_used": [
+        "datagov/traffic-counts-fc3cd/files/data.txt",
+        "datagov/traffic-counts-fc3cd/signed-metadata.txt",
+        "datagov/traffic-counts-fc3cd/files/cityofsfgis::traffic-counts.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: For each year from 2011 through 2016, average the corresponding yearly traffic-count property across stations and select the year with the smallest average. The answer is 2013.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2013"
+        }
+    ]
+}

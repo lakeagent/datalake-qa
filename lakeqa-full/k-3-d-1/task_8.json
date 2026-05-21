@@ -1,0 +1,66 @@
+{
+    "question": "For Arizona's capital city, identify its county from postsecondary institution records. Which federally recognized tribal community in that county was permanently created by an executive order of President Rutherford B. Hayes? Your response should be in the format [Answer].",
+    "answer": "Salt River Pima-Maricopa Indian Community",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Arizona/content.txt",
+            "fact": "The capital of Arizona is Phoenix.",
+            "subquestion": "What is the capital city of Arizona?",
+            "answer": "Phoenix"
+        },
+        "2": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Phoenix'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n]\nanswer = filtered[\"NMCNTY\"].dropna().astype(str).str.strip().iloc[0]\n",
+            "subquestion": "In school year 2022-2023, among postsecondary institutions located in the city of <node_1 answer>, what is the county name?",
+            "answer": "Maricopa County"
+        },
+        "3": {
+            "source": "wikipedia/Salt_River_Pima–Maricopa_Indian_Community/content.txt",
+            "fact": "Location of Salt River Pima-Maricopa Indian Community in Maricopa County, Arizona. The Salt River Pima-Maricopa Indian Community comprises two distinct Native American tribes, the Pima and the Maricopa. The community was permanently created by an Executive Order of US President Rutherford B. Hayes on June 14th, 1879. The community is a federally recognized tribe located in Arizona.",
+            "subquestion": "Which federally recognized tribal community in <hop 2 answer> was permanently created by an executive order of President Rutherford B. Hayes?",
+            "answer": "Salt River Pima-Maricopa Indian Community"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Arizona/content.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt",
+        "wikipedia/Salt_River_Pima–Maricopa_Indian_Community/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Phoenix is the capital of Arizona.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Phoenix"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter records where `CITY` is <hop 1 answer> and `SCHOOLYEAR` is 2022-2023, then take the first non-null value in `NMCNTY`.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Maricopa County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Use <hop 2 answer> and the executive-order clue to identify the federally recognized tribal community.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Salt River Pima-Maricopa Indian Community"
+        }
+    ]
+}

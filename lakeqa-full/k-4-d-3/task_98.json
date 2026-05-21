@@ -1,0 +1,107 @@
+{
+  "question": "Harry Mitchell served as mayor of a city. For that city, determine the year with the highest dissatisfied rate for the city's website, the year with the 6th highest yearly dissatisfied rate for the security in parks, and the year with the third highest dissatisfied rate for the city's online services such as registration or payment. Including all those years in total, identify the U.S. state with the third highest total healthcare service utilization rate per 1,000 beneficiaries excluding usage in December in these years. How many other U.S. states does that state border? Please return only the number in the format [Answer].",
+  "answer": 1,
+  "nodes": {
+    "1": {
+      "source": "wikipedia/Harry_Mitchell/content.txt",
+      "fact": "Re-elected in 1974, Mitchell ran for Mayor of Tempe in 1978, gaining a majority of votes cast in the primary and avoiding a runoff.",
+      "subquestion": "Which city was Harry Mitchell mayor of?",
+      "answer": "Tempe"
+    },
+    "2": {
+      "source": "datagov/2-04-city-website-satisfaction-summary-a0c0e/files/data.txt",
+      "fact": "import io\nimport json\nimport boto3\n\nsource = 'datagov/2-04-city-website-satisfaction-summary-a0c0e/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\n\nnode_1_answer = \"Tempe\"\nfeatures = data[\"features\"]\nbest = max(features, key=lambda item: float(item[\"properties\"].get(\"Dissatisfied\") or 0))\nanswer = str(int(best[\"properties\"][\"Year\"]))\n",
+      "subquestion": "Which year has the highest dissatisfied rate for <hop 1 answer>'s city website?",
+      "answer": "2019"
+    },
+    "3": {
+      "source": "datagov/1-23-feeling-of-safety-in-parks-summary-e4bb8/files/data.txt",
+      "fact": "import io\nimport json\nimport boto3\n\nsource = 'datagov/1-23-feeling-of-safety-in-parks-summary-e4bb8/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\n\nnode_1_answer = \"Tempe\"\nfeatures = data[\"features\"]\nyearly_max = {}\nfor item in features:\n    props = item[\"properties\"]\n    year = int(props[\"Year\"])\n    dissatisfied = float(props.get(\"Dissatisfied\") or 0)\n    yearly_max[year] = max(yearly_max.get(year, float(\"-inf\")), dissatisfied)\nranked = sorted(yearly_max.items(), key=lambda pair: (-pair[1], pair[0]))\nanswer = str(ranked[5][0])\n",
+      "subquestion": "Which year has the 6th highest yearly dissatisfied rate for the security of parks in <hop 1 answer>?",
+      "answer": "2019"
+    },
+    "4": {
+      "source": "datagov/2-05-online-service-satisfaction-summary-1dbc9/files/data.txt",
+      "fact": "import io\nimport json\nimport boto3\n\nsource = 'datagov/2-05-online-service-satisfaction-summary-1dbc9/files/data.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\n\nnode_1_answer = \"Tempe\"\nfeatures = [item for item in data[\"features\"] if item[\"properties\"].get(\"Survey_Question\")]\nranked = sorted(features, key=lambda item: (-float(item[\"properties\"].get(\"Dissatisfied\") or 0), int(item[\"properties\"][\"Year\"])))\nanswer = str(int(ranked[2][\"properties\"][\"Year\"]))\n",
+      "subquestion": "Which year has the third highest dissatisfied rate for <hop 1 answer>'s online services including registration or payment?",
+      "answer": "2021"
+    },
+    "5": {
+      "source": "datagov/behavioral-health-servicesprovided-to-the-medicaid-and-chip-population-b6f90/files/Behavioral-Health-Services-Provided-to-the-MedicaidCHIP-Population.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/behavioral-health-servicesprovided-to-the-medicaid-and-chip-population-b6f90/files/Behavioral-Health-Services-Provided-to-the-MedicaidCHIP-Population.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_2_answer = \"2019\"\nnode_3_answer = \"2019\"\nnode_4_answer = \"2021\"\nyears = {str(node_2_answer).strip(), str(node_3_answer).strip(), str(node_4_answer).strip()}\nfiltered = df[df[\"Year\"].isin(years)].copy()\nfiltered = filtered[~filtered[\"Month\"].fillna(\"\").str.endswith(\"12\")].copy()\nfiltered[\"RatePer1000Beneficiaries\"] = pd.to_numeric(filtered[\"RatePer1000Beneficiaries\"], errors=\"coerce\")\nstate_totals = filtered.groupby(\"State\")[\"RatePer1000Beneficiaries\"].sum().sort_values(ascending=False)\nanswer = str(state_totals.index[2])\n",
+      "subquestion": "Which U.S. state has the third highest healthcare service utilization rate per 1,000 beneficiaries in all years from <hop 2 answer>, excluding December usage?",
+      "answer": "Maine"
+    },
+    "6": {
+      "source": "wikipedia/Maine/content.txt",
+      "fact": "It is the only state to border only one other state, which is New Hampshire.",
+      "subquestion": "How many other U.S. states does <hop 3 answer> border?",
+      "answer": 1
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Harry_Mitchell/content.txt",
+    "datagov/2-04-city-website-satisfaction-summary-a0c0e/files/data.txt",
+    "datagov/2-04-city-website-satisfaction-summary-a0c0e/signed-metadata.txt",
+    "datagov/2-04-city-website-satisfaction-summary-a0c0e/files/0.arcgis-layer.json",
+    "datagov/1-23-feeling-of-safety-in-parks-summary-e4bb8/files/data.txt",
+    "datagov/1-23-feeling-of-safety-in-parks-summary-e4bb8/signed-metadata.txt",
+    "datagov/1-23-feeling-of-safety-in-parks-summary-e4bb8/files/0.arcgis-layer.json",
+    "datagov/2-05-online-service-satisfaction-summary-1dbc9/files/data.txt",
+    "datagov/2-05-online-service-satisfaction-summary-1dbc9/signed-metadata.txt",
+    "datagov/2-05-online-service-satisfaction-summary-1dbc9/files/0.arcgis-layer.json",
+    "datagov/behavioral-health-servicesprovided-to-the-medicaid-and-chip-population-b6f90/files/Behavioral-Health-Services-Provided-to-the-MedicaidCHIP-Population.txt",
+    "datagov/behavioral-health-servicesprovided-to-the-medicaid-and-chip-population-b6f90/signed-metadata.txt",
+    "wikipedia/Maine/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Harry Mitchell served as mayor of Tempe.",
+        "Hop result: `Tempe`."
+      ],
+      "answer": "Tempe"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 2: In the city website satisfaction summary for <hop 1 answer>, the highest Dissatisfied value occurs in 2019.",
+        "Node 3: In the feeling of safety in parks summary for <hop 1 answer>, ranking each year by its highest Dissatisfied value gives 2019 as the 6th highest year.",
+        "Node 4: In the online service satisfaction summary for <hop 1 answer>, the third highest Dissatisfied year is 2021.",
+        "Hop result: `2019, 2019, 2021`."
+      ],
+      "answer": "2019, 2019, 2021"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: In the behavioral health services dataset, filtering to the years from <hop 2 answer>, excluding December rows, and summing RatePer1000Beneficiaries by state shows that Maine has the third highest total.",
+        "Hop result: `Maine`."
+      ],
+      "answer": "Maine"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: The state from <hop 3 answer> borders only one other state, New Hampshire.",
+        "Hop result: `1`."
+      ],
+      "answer": 1
+    }
+  ]
+}

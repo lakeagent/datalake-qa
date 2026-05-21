@@ -1,0 +1,66 @@
+{
+    "question": "Using the 2010 USGS survey of Assateague Island National Seashore, identify the NASA facility where the survey system was developed. Then find which county that facility is located in. Finally, report the largest town in that county. Only report the town. Your response should be in the format [Answer].",
+    "answer": "Chincoteague",
+    "nodes": {
+        "1": {
+            "source": "datagov/eaarl-coastal-topography-assateague-island-national-seashore-maryland-and-virginia-2010/files/USGS.b40f54c8-02fd-4152-8883-b7131059f8af.txt",
+            "fact": "Elevation measurements were collected over Assateague Island National Seashore on March 19 and 24, 2010, using the Experimental Advanced Airborne Research Lidar (EAARL), a pulsed laser ranging system mounted onboard an aircraft. The EAARL, developed originally by the National Aeronautics and Space Administration (NASA) at Wallops Flight Facility in Virginia, measures ground elevation with a vertical resolution of +/-15 centimeters.",
+            "subquestion": "Which NASA facility developed the system used to survey Assateague Island National Seashore in the 2010 USGS survey?",
+            "answer": "Wallops Flight Facility"
+        },
+        "2": {
+            "source": "wikipedia/Wallops_Flight_Facility/content.txt",
+            "fact": "Wallops Flight Facility is a NASA rocket launch site on Wallops Island on the Eastern Shore of Virginia, located in Accomack County.",
+            "subquestion": "In which Virginia county is <node_1 answer> located?",
+            "answer": "Accomack County"
+        },
+        "3": {
+            "source": "wikipedia/Accomack_County,_Virginia/content.txt",
+            "fact": "Accomack County is a county on the Eastern Shore of Virginia. The town of Accomac serves as the county seat, while Chincoteague is the largest town in the county.",
+            "subquestion": "What is the largest town in <node_2 answer>?",
+            "answer": "Chincoteague"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Wallops_Flight_Facility/content.txt",
+        "wikipedia/Accomack_County,_Virginia/content.txt",
+        "datagov/eaarl-coastal-topography-assateague-island-national-seashore-maryland-and-virginia-2010/files/USGS.b40f54c8-02fd-4152-8883-b7131059f8af.txt",
+        "datagov/eaarl-coastal-topography-assateague-island-national-seashore-maryland-and-virginia-2010/signed-metadata.txt",
+        "datagov/eaarl-coastal-topography-assateague-island-national-seashore-maryland-and-virginia-2010/files/metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: The 2010 USGS survey text states that the survey used the EAARL system and that EAARL was developed by NASA at Wallops Flight Facility in Virginia.",
+                "Hop result: Wallops Flight Facility."
+            ],
+            "answer": "Wallops Flight Facility"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Wallops Flight Facility is located in Accomack County, Virginia.",
+                "Hop result: Accomack County."
+            ],
+            "answer": "Accomack County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Chincoteague is the largest town in Accomack County.",
+                "Hop result: Chincoteague."
+            ],
+            "answer": "Chincoteague"
+        }
+    ]
+}

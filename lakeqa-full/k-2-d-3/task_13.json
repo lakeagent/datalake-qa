@@ -1,0 +1,91 @@
+{
+  "question": "I am looking for Missouri state agencies that consistently ranked in the top 5 for average employee salary between 2018 and 2020. Among those agencies, how many correspond to executive department heads elected by Missouri voters? Return the number only. Your response should be in the format [Answer].",
+  "answer": 2,
+  "nodes": {
+    "1": {
+      "source": "datagov/2018-state-employee-pay/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2018-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.groupby(\"Agency Name\", dropna=False)[\"YTD Gross Pay\"]\n    .mean()\n    .sort_values(ascending=False)\n)\nanswer = result.index.tolist()",
+      "subquestion": "Which Missouri state agencies had the highest average employee salary in 2018?",
+      "answer": [
+        "OFFICE OF ATTORNEY GENERAL",
+        "OFFICE OF STATE AUDITOR",
+        "LEGISLATURE",
+        "OFFICE OF ADMINISTRATION",
+        "ECONOMIC DEVELOPMENT"
+      ],
+      "limit": 5
+    },
+    "2": {
+      "source": "datagov/2019-state-employee-pay/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2019-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nagency_avg_pay = (\n    df.groupby(\"Agency Name\", dropna=False)[\"YTD Gross Pay\"]\n    .mean()\n    .sort_values(ascending=False)\n)\nanswer = agency_avg_pay.head(5).index.tolist()",
+      "subquestion": "Which Missouri state agencies had the highest average employee salary in 2019?",
+      "answer": [
+        "OFFICE OF GOVERNOR",
+        "OFFICE OF ATTORNEY GENERAL",
+        "JUDICIARY",
+        "OFFICE OF STATE AUDITOR",
+        "OFFICE OF ADMINISTRATION"
+      ],
+      "limit": 5
+    },
+    "3": {
+      "source": "datagov/2020-state-employee-pay/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2020-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nagency_avg_pay = (\n    df.groupby(\"Agency Name\", dropna=False)[\"YTD Gross Pay\"]\n    .mean()\n    .sort_values(ascending=False)\n)\nanswer = agency_avg_pay.head(5).index.tolist()",
+      "subquestion": "Which Missouri state agencies had the highest average employee salary in 2020?",
+      "answer": [
+        "OFFICE OF STATE AUDITOR",
+        "OFFICE OF GOVERNOR",
+        "OFFICE OF LIEUTENANT GOVERNOR",
+        "OFFICE OF ATTORNEY GENERAL",
+        "JUDICIARY"
+      ],
+      "limit": 5
+    },
+    "4": {
+      "source": "wikipedia/Government_of_Missouri/content.txt",
+      "fact": "Missouri voters also elect the heads of several executive departments: the Missouri Attorney General, Missouri Secretary of State, State Treasurer of Missouri, and the State Auditor of Missouri.",
+      "subquestion": "How many agencies from <hop 1 answer> correspond to executive department heads elected by Missouri voters?",
+      "answer": 2
+    }
+  },
+  "datasets_used": [
+    "datagov/2018-state-employee-pay/files/rows.txt",
+    "datagov/2018-state-employee-pay/signed-metadata.txt",
+    "datagov/2019-state-employee-pay/files/rows.txt",
+    "datagov/2019-state-employee-pay/signed-metadata.txt",
+    "datagov/2020-state-employee-pay/files/rows.txt",
+    "datagov/2020-state-employee-pay/signed-metadata.txt",
+    "wikipedia/Government_of_Missouri/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop_id": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: Group 2018 rows by `Agency Name`, compute mean `YTD Gross Pay`, sort descending, and keep the top five agencies.",
+        "Node 2: Group 2019 rows by `Agency Name`, compute mean `YTD Gross Pay`, sort descending, and keep the top five agencies.",
+        "Node 3: Group 2020 rows by `Agency Name`, compute mean `YTD Gross Pay`, sort descending, and keep the top five agencies.",
+        "Hop result: intersect the three yearly top-five agency sets to keep the agencies that remained in the top five across 2018 through 2020."
+      ],
+      "answer": [
+        "OFFICE OF ATTORNEY GENERAL",
+        "OFFICE OF STATE AUDITOR"
+      ]
+    },
+    {
+      "hop_id": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: The source names the Missouri Attorney General and the State Auditor of Missouri among executive department heads elected by Missouri voters.",
+        "Hop result: both agencies from <hop 1 answer> correspond to those elected department heads, so the count is 2."
+      ],
+      "answer": 2
+    }
+  ]
+}

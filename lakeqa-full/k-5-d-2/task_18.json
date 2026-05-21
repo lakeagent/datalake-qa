@@ -1,0 +1,160 @@
+{
+    "question": "Identify the Montana county that had between 2500 and 2700 VA disability compensation recipients in FY 2023 and borders Canada. Then identify the counties adjacent to it. Among those adjacent counties, identify the one that had at least 200 and fewer than 240 VA disability compensation recipients in FY 2023 and had a Montana license plate code between 27 and 35. Finally, identify that county's county seat. Which Montana Cattle King had a home at the National Historic Site located in that city? Your response should be in the format [Answer].",
+    "answer": "Conrad Kohrs",
+    "nodes": {
+        "1": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Montana'.lower())].copy()\nfiltered['Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['Total: Disability Compensation Recipients'] >= 2500) & (filtered['Total: Disability Compensation Recipients'] <= 2700)]\ncounty_names = filtered['County Name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Montana counties had between 2500 and 2700 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Flathead County",
+                "Lewis and Clark County"
+            ]
+        },
+        "2": {
+            "source": "wikipedia/Flathead_County,_Montana/content.txt",
+            "fact": "Flathead County's northern border is on Montana's north border, making it contiguous with the Canada-US border facing British Columbia.",
+            "subquestion": "Which Montana counties share a border with Canada?",
+            "answer": [
+                "Lincoln County",
+                "Flathead County",
+                "Glacier County",
+                "Toole County",
+                "Liberty County",
+                "Hill County",
+                "Blaine County",
+                "Phillips County",
+                "Valley County",
+                "Roosevelt County",
+                "Sheridan County",
+                "Daniels County"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Flathead_County,_Montana/content.txt",
+            "fact": "According to the Flathead County, Montana article, the adjacent counties are Glacier County - east, Pondera County - east, Teton County - east, Lewis and Clark County - southeast, Powell County - southeast, Missoula County - southeast, Lake County - south, Sanders County - southwest, and Lincoln County - west.",
+            "subquestion": "Which counties are adjacent to <intersection of node_1, node_2>?",
+            "answer": [
+                "Glacier County",
+                "Pondera County",
+                "Teton County",
+                "Lewis and Clark County",
+                "Powell County",
+                "Missoula County",
+                "Lake County",
+                "Sanders County",
+                "Lincoln County"
+            ]
+        },
+        "4": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_3_answer = ['Glacier County', 'Pondera County', 'Teton County', 'Lewis and Clark County', 'Powell County', 'Missoula County', 'Lake County', 'Sanders County', 'Lincoln County']\n\nstate_name = \"Montana\"\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq(state_name.lower())].copy()\nfiltered[\"Total: Disability Compensation Recipients\"] = pd.to_numeric(filtered[\"Total: Disability Compensation Recipients\"], errors=\"coerce\")\nfiltered = filtered[(filtered[\"Total: Disability Compensation Recipients\"] >= 200) & (filtered[\"Total: Disability Compensation Recipients\"] < 240)]\n\ncandidate_norm = {str(c).replace(\" County\", \"\").strip().lower() for c in node_3_answer}\nfiltered = filtered[filtered[\"County Name\"].astype(str).str.strip().str.lower().isin(candidate_norm)]\ncounty_names = filtered[\"County Name\"].dropna().astype(str).str.strip().apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which counties in <node_3 answer> had between 200 and 240 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Powell County",
+                "Glacier County"
+            ]
+        },
+        "5": {
+            "source": "wikipedia/Vehicle_registration_plates_of_Montana/content.txt",
+            "fact": "Among the counties adjacent to Flathead County, Powell County has code 28, Teton County has code 31, Sanders County has code 35, Glacier County has code 38, Pondera County has code 26, Lewis and Clark County has code 5, Missoula County has code 4, Lake County has code 15, and Lincoln County has code 56.",
+            "subquestion": "Which counties in <node_3 answer> have license plate codes between 27 and 35?",
+            "answer": [
+                "Powell County",
+                "Teton County",
+                "Sanders County"
+            ]
+        },
+        "6": {
+            "source": "wikipedia/Powell_County,_Montana/content.txt",
+            "fact": "Powell County, Montana has county seat Deer Lodge.",
+            "subquestion": "What is the county seat of <intersection of node_3, node_4>?",
+            "answer": "Deer Lodge"
+        },
+        "7": {
+            "source": "wikipedia/Deer_Lodge,_Montana/content.txt",
+            "fact": "Deer Lodge is also the location of Grant-Kohrs Ranch National Historic Site, dedicated to the interpretation of the frontier cattle ranching era. This site was the home of Conrad Kohrs, one of the famous \"Cattle Kings\" of Montana, whose land holdings once stretched over a million acres (4,000 km2) of Montana, Wyoming, and Alberta, Canada.",
+            "subquestion": "Which Montana Cattle King had a home at the National Historic Site located in <hop 4 answer>?",
+            "answer": "Conrad Kohrs"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `State` is Montana, keep counties with `Total: Disability Compensation Recipients` between 2500 and 2700 inclusive, and return the distinct `County Name` values.",
+                "Node 2: Flathead County is contiguous with the Canada-US border because its northern border lies on Montana's northern border with British Columbia.",
+                "Hop result: intersection of <node_1 answer> and <node_2 answer> = ['Flathead County']."
+            ],
+            "answer": "Flathead County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Glacier County, Pondera County, and Teton County are east of Flathead County; Lewis and Clark County, Powell County, and Missoula County are southeast; Lake County is south; Sanders County is southwest; and Lincoln County is west.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": [
+                "Glacier County",
+                "Pondera County",
+                "Teton County",
+                "Lewis and Clark County",
+                "Powell County",
+                "Missoula County",
+                "Lake County",
+                "Sanders County",
+                "Lincoln County"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 4: Filter rows where `State` is Montana, keep counties with `Total: Disability Compensation Recipients` at least 200 and less than 240, restrict `County Name` to counties in <hop 2 answer>, and return the matching county names.",
+                "Node 5: Powell County, Teton County, and Sanders County are counties in <hop 2 answer> with license plate codes between 27 and 35.",
+                "Hop result: intersection of <node_4 answer> and <node_5 answer> = ['Powell County']."
+            ],
+            "answer": "Powell County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Deer Lodge is the county seat of <hop 3 answer>.",
+                "Hop result: <node_6 answer>"
+            ],
+            "answer": "Deer Lodge"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Use <hop 4 answer> as the city. The evidence states that Deer Lodge is the location of Grant-Kohrs Ranch National Historic Site and that this site was the home of Conrad Kohrs, one of the famous \"Cattle Kings\" of Montana.",
+                "Hop result: the Montana Cattle King was Conrad Kohrs."
+            ],
+            "answer": "Conrad Kohrs"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Flathead_County,_Montana/content.txt",
+        "wikipedia/Vehicle_registration_plates_of_Montana/content.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt",
+        "wikipedia/Powell_County,_Montana/content.txt",
+        "wikipedia/Deer_Lodge,_Montana/content.txt"
+    ]
+}

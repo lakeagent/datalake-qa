@@ -1,0 +1,85 @@
+{
+  "question": "From 2010 through 2012, first find the Missouri county with the highest average monthly number of first reports of injury after excluding Saint Louis. In the city from that county with the most active alcohol license records, as of 2025, for the NFL, MLB, and MLS teams named for that city, how many league championships have those three teams won in total? Please return only the number in the format [Answer].",
+  "answer": 8,
+  "nodes": {
+    "1": {
+      "source": "datagov/missouri-first-reports-of-injury-by-county/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/missouri-first-reports-of-injury-by-county/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\ndef normalize_county(value):\n    value = str(value).strip().upper()\n    value = value.replace('SAINT', 'ST').replace('ST.', 'ST')\n    value = value.replace(' COUNTY', '').replace(' CO.', ' CO')\n    value = ' '.join(value.split())\n    return value\n\nfiltered = df[\n    df['county'].astype(str).str.strip().ne('MISSING')\n    & pd.to_numeric(df['year'], errors='coerce').between(2010, 2012)\n].copy()\nfiltered['county_norm'] = filtered['county'].map(normalize_county)\nfiltered = filtered[~filtered['county_norm'].str.startswith('ST LOUIS')].copy()\nfiltered['count'] = pd.to_numeric(filtered['count'], errors='coerce')\navg_counts = filtered.groupby('county_norm')['count'].mean().sort_values(ascending=False)\nanswer = str(avg_counts.idxmax()).title()\n",
+      "subquestion": "From 2010 through 2012, which Missouri county had the highest average monthly number of first reports of injury after excluding Saint Louis?",
+      "answer": "Jackson"
+    },
+    "2": {
+      "source": "datagov/missouri-active-alcohol-license-data/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/missouri-active-alcohol-license-data/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nnode_1_answer = 'Jackson'\n\ndef normalize_county(value):\n    value = str(value).strip().upper()\n    value = value.replace('SAINT', 'ST').replace('ST.', 'ST')\n    value = value.replace(' COUNTY', '').replace(' CO.', ' CO')\n    value = ' '.join(value.split())\n    return value\n\ndef normalize_city(value):\n    value = str(value).strip().upper()\n    value = value.replace('SAINT', 'ST').replace('ST.', 'ST')\n    value = ' '.join(value.split())\n    return value\n\nfiltered = df[df['COUNTY'].map(normalize_county).eq(str(node_1_answer).upper())].copy()\nfiltered['city_norm'] = filtered['CITY'].map(normalize_city)\ncity_counts = filtered['city_norm'].value_counts()\nanswer = str(city_counts.idxmax()).title()\n",
+      "subquestion": "Within the county from node 1, which city has the most active alcohol license records?",
+      "answer": "Kansas City"
+    },
+    "3": {
+      "source": "wikipedia/Kansas_City_Chiefs/content.txt",
+      "fact": "The Kansas City Chiefs are a professional American football team based in Kansas City, Missouri. The Chiefs compete in the National Football League (NFL) as a member of the American Football Conference (AFC) West division.\n\nEstablished in 1959 as a charter member of the American Football League (AFL), the Chiefs started playing in 1960 as the Dallas Texans, owned by league founder Lamar Hunt. In 1963, the team moved to Kansas City, and adopted its current name. The Chiefs joined the NFL in 1970 as a result of the AFL–NFL merger; entering the 2024 season, the team is valued at over US$4.85 billion. After Hunt's death in 2006, his wife, Norma, and children became legal owners of the team. After Norma's death in 2023, the Hunt children inherited her stake in the franchise. Clark Hunt, one of the Hunts' children, has served as chairman and CEO since 2006 and is the ultimate authority over personnel decisions. He is also the team representative at league owner meetings.\n\nThe Chiefs were victorious and won three AFL championships, in 1962, 1966, and 1969, and were the second AFL team (after the New York Jets) to defeat an NFL team in a Super Bowl when they won Super Bowl IV, which was the final game before the league merger went into full effect. The Chiefs were also the second team, after the Green Bay Packers (whom they played in Super Bowl I), to appear in more than one Super Bowl (and the first AFL team to do so) and the first to appear in the championship game in two different decades. Despite this post-season success, the team failed to find success in the playoffs for decades, including losing ten of twelve playoff games from 1993 to 2017, which included an eight-game losing streak.\n\nSince then, the Chiefs have risen to dynastic success under head coach Andy Reid, quarterback Patrick Mahomes, tight end Travis Kelce, and defensive tackle Chris Jones, appearing in five Super Bowls since 2019 and being victorious in three: LIV, LVII, and LVIII.",
+      "subquestion": "As of 2025, how many Super Bowls has the NFL team named for <hop 2 answer> won?",
+      "answer": 4
+    },
+    "4": {
+      "source": "wikipedia/Kansas_City_Royals/content.txt",
+      "fact": "The new team quickly became a powerhouse, appearing in the playoffs seven times from 1976 to 1985, winning one World Series championship and another AL pennant, led by stars such as Amos Otis, Hal McRae, John Mayberry, George Brett, Frank White, Willie Wilson, and Bret Saberhagen. The team remained competitive throughout the early 1990s, but then had only one winning season (2003) from 1995 to 2012. For 28 consecutive seasons (1986–2013), the Royals did not qualify to play in the MLB postseason, one of the longest postseason droughts during baseball's current wild-card era. The team broke this streak in 2014 by securing the franchise's first wild card berth and advancing to the 2014 World Series, where they lost to the San Francisco Giants in seven games. The Royals, led by players like Salvador Perez, Alex Gordon, Johnny Cueto, Danny Duffy, Eric Hosmer, Mike Moustakas,  Lorenzo Cain, and an elite group of bullpen pitchers, followed this up by winning the team's first AL Central division title in 2015 and defeating the New York Mets in five games in the 2015 World Series to win their second World Series championship.\n\nFrom 1969 to 2025, the Royals have an all time win–loss record of  (). Entering the 2023 season, the team is valued at US$1.2 billion, placing them 27th out of MLB's 30 teams. Since 2019, the team has been owned by majority owner John Sherman, amongst many other Kansas City business owners and entrepreneurs.",
+      "subquestion": "As of 2025, how many World Series championships has the MLB team named for <hop 2 answer> won?",
+      "answer": 2
+    },
+    "5": {
+      "source": "wikipedia/Sporting_Kansas_City/content.txt",
+      "fact": "Sporting Kansas City is an American professional soccer club based in the Kansas City metropolitan area. The club competes in Major League Soccer (MLS) as a member of the Western Conference. The administrative offices are located in downtown Kansas City, Missouri, and the team clubhouse and practice facilities are located in Kansas City, Kansas. The team has played its home matches at Sporting Park since 2011.\n\nSporting Kansas City began play in 1996 as a charter team in the league, then named Kansas City Wiz. The team was founded by Lamar Hunt in 1995. Starting in 1997, the franchise was named Kansas City Wizards. The team rebranded in November 2010, coinciding with its move to its new home stadium, Sporting Park. Since moving across the state line, they have been the only major professional sports league franchise to play their home games in Kansas. The franchise has won the MLS Cup in 2000 and 2013, the Supporters' Shield in 2000, and the U.S. Open Cup in 2004, 2012, 2015, and 2017.",
+      "subquestion": "As of 2025, how many MLS Cups has the MLS team named for <hop 2 answer> won?",
+      "answer": 2
+    }
+  },
+  "datasets_used": [
+    "datagov/missouri-first-reports-of-injury-by-county/files/rows.txt",
+    "datagov/missouri-first-reports-of-injury-by-county/signed-metadata.txt",
+    "datagov/missouri-active-alcohol-license-data/files/rows.txt",
+    "datagov/missouri-active-alcohol-license-data/signed-metadata.txt",
+    "datagov/missouri-active-alcohol-license-data/files/yyhn-562y.txt",
+    "wikipedia/Kansas_City_Chiefs/content.txt",
+    "wikipedia/Kansas_City_Royals/content.txt",
+    "wikipedia/Sporting_Kansas_City/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Across 2010 through 2012, after excluding the St. Louis naming cluster, Jackson has the highest average monthly first-reported injury count at 1,163.972.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "Jackson"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Within Jackson County, Kansas City has the most alcohol-license records in the Missouri active alcohol license dataset, with 1,147 records.",
+        "Hop result: <node_2 answer>"
+      ],
+      "answer": "Kansas City"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 3: The Kansas City Chiefs have won four Super Bowls: Super Bowl IV and three since 2019.",
+        "Node 4: The Kansas City Royals have won two World Series championships.",
+        "Node 5: Sporting Kansas City has won two MLS Cups.",
+        "Hop result: 4 + 2 + 2 = 8 championships."
+      ],
+      "answer": 8
+    }
+  ]
+}

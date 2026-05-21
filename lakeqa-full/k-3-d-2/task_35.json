@@ -1,0 +1,82 @@
+{
+    "question": "Identify the Montana county that had at least 210 and fewer than 225 VA disability compensation recipients in FY 2019 and at least 220 and fewer than 235 VA disability compensation recipients in FY 2023. Then identify that county's county seat. What was the first flight date of the municipal airport owned by that city and its county? Your response should be in the format [Answer].",
+    "answer": "June 1, 1941",
+    "nodes": {
+        "1": {
+            "source": "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Montana'.lower())].copy()\nfiltered['# Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['# Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['# Total: Disability Compensation Recipients'] >= 210) & (filtered['# Total: Disability Compensation Recipients'] < 225)]\ncounty_names = filtered['County name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Montana counties had at least 210 and fewer than 225 VA disability compensation recipients in FY 2019?",
+            "answer": [
+                "Glacier County",
+                "Custer County",
+                "Carbon County"
+            ]
+        },
+        "2": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Montana'.lower())].copy()\nfiltered['Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['Total: Disability Compensation Recipients'] >= 220) & (filtered['Total: Disability Compensation Recipients'] < 235)]\ncounty_names = filtered['County Name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Montana counties had at least 220 and fewer than 235 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Glacier County",
+                "Madison County"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Glacier_County,_Montana/content.txt",
+            "fact": "Cut Bank, the county seat with a population of around 3,000, is located in eastern Glacier County, on the edge of the Great Plains.",
+            "subquestion": "What is the county seat of <hop 1 answer>?",
+            "answer": "Cut Bank"
+        },
+        "4": {
+            "source": "wikipedia/Cut_Bank_Municipal_Airport/content.txt",
+            "fact": "Cut Bank Municipal Airport is three miles southwest of Cut Bank, in Glacier County, Montana, United States. It is owned by Cut Bank and Glacier County. The airport's website calls it Cut Bank International Airport. Its first flight was on 1 June 1941.",
+            "subquestion": "What was the first flight date of the municipal airport owned by <hop 2 answer> and <hop 1 answer>?",
+            "answer": "June 1, 1941"
+        }
+    },
+    "datasets_used": [
+        "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+        "datagov/fy-2019-disability-pension-recipient-by-county/signed-metadata.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt",
+        "wikipedia/Glacier_County,_Montana/content.txt",
+        "wikipedia/Cut_Bank_Municipal_Airport/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `State` is Montana, keep counties with `# Total: Disability Compensation Recipients` at least 210 and fewer than 225, and return the distinct county names.",
+                "Node 2: Filter rows where `State` is Montana, keep counties with `Total: Disability Compensation Recipients` at least 220 and fewer than 235, and return the distinct county names.",
+                "Hop result: intersection of <node_1 answer> and <node_2 answer> = ['Glacier County']."
+            ],
+            "answer": "Glacier County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Cut Bank is the county seat of <hop 1 answer>.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Cut Bank"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: The municipal airport owned by <hop 2 answer> and <hop 1 answer> had its first flight on June 1, 1941.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "June 1, 1941"
+        }
+    ]
+}

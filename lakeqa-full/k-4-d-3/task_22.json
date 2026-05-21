@@ -1,0 +1,131 @@
+{
+    "question": "For all races ages 15 to 24, which ten years have most people died because of the unintentional motor and vehicle traffic? Among the years in that answer, which three years had the highest number of births for females ages 15 to 17 in Connecticut? For each of those three years, define a state's most expensive medicines as the one with the highest reimbursed amount per unit and at least 1,000 prescriptions, and define medical cost as the share of all reimbursed dollars of that medicine. Which states have the 47th through 49th most medical cost in the first year, 47th through 49th most medical cost in the second year, and 46th through 48th most medical cost in the third year? For the state appearing in all three answers, which two counties had the 7th and 8th lowest operation expenses in 2015? Finally, what was the average population in 2020 of those two counties? Please return only the number in the format [Answer].",
+    "answer": "3330",
+    "nodes": {
+        "1": {
+            "source": "datagov/nchs-injury-mortality-united-states-377d2/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nchs-injury-mortality-united-states-377d2/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['Deaths_num'] = pd.to_numeric(df['Deaths'], errors='coerce')\nfiltered = df[\n    df['Sex'].eq('Both sexes')\n    & df['Age Group (Years)'].eq('15–24')\n    & df['Race'].eq('All races')\n    & df['Injury Mechanism'].eq('Motor vehicle traffic')\n    & df['Injury Intent'].eq('Unintentional')\n    & df['Deaths_num'].notna()\n].copy()\nranked = filtered.sort_values(['Deaths_num', 'Year'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[0:10]['Year'].tolist())\n",
+            "subquestion": "For all races ages 15 to 24, which ten years have most people died because of the unintentional motor and vehicle traffic?",
+            "answer": "2002; 2004; 2006; 2003; 2005; 2001; 2000; 2007; 1999; 2008"
+        },
+        "2": {
+            "source": "datagov/nchs-u-s-and-state-trends-on-teen-births/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nchs-u-s-and-state-trends-on-teen-births/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = '2002; 2004; 2006; 2003; 2005; 2001; 2000; 2007; 1999; 2008'\ncandidate_years = [part.strip() for part in node_1_answer.split(';') if part.strip()]\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['State Births_num'] = pd.to_numeric(df['State Births'], errors='coerce')\nfiltered = df[\n    df['Year'].isin(candidate_years)\n    & df['State'].eq('Connecticut')\n    & df['Age Group (Years)'].eq('15-17 years')\n    & df['State Births_num'].notna()\n].copy()\nranked = filtered.sort_values(['State Births_num', 'Year'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[3:6]['Year'].tolist())\n",
+            "subquestion": "Among the years in <node_1 answer>, which three years had the highest number of births for females ages 15 to 17 in Connecticut?",
+            "answer": "2002; 2004; 2006"
+        },
+        "3": {
+            "source": "datagov/state-drug-utilization-data-2002-954e0/files/StateDrugUtilizationData2002.txt",
+            "fact": "import pandas as pd\nimport boto3\nfrom collections import defaultdict\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nstate_map = {'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'DC': 'District of Columbia', 'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'}\nsource = 'datagov/state-drug-utilization-data-2002-954e0/files/StateDrugUtilizationData2002.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\nstate_total = defaultdict(float)\nprod_state = defaultdict(lambda: [0.0, 0.0, 0.0])\nfor chunk in pd.read_csv(obj['Body'], dtype=str, low_memory=False, usecols=['State', 'Product Name', 'Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed'], chunksize=500000):\n    chunk = chunk.fillna('')\n    chunk = chunk[chunk['State'].isin(state_map) & chunk['Product Name'].ne('')].copy()\n    for col in ['Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed']:\n        chunk[col] = pd.to_numeric(chunk[col].astype(str).str.replace(',', '', regex=False), errors='coerce')\n    chunk = chunk[chunk['Units Reimbursed'].gt(0) & chunk['Total Amount Reimbursed'].gt(0)].copy()\n    for st, amt in chunk.groupby('State')['Total Amount Reimbursed'].sum().items():\n        state_total[st] += float(amt)\n    grouped = chunk.groupby(['State', 'Product Name']).agg(units=('Units Reimbursed', 'sum'), rx=('Number of Prescriptions', 'sum'), amt=('Total Amount Reimbursed', 'sum'))\n    for (st, prod), row in grouped.iterrows():\n        acc = prod_state[(st, prod)]\n        acc[0] += float(row['units']) if pd.notna(row['units']) else 0.0\n        acc[1] += float(row['rx']) if pd.notna(row['rx']) else 0.0\n        acc[2] += float(row['amt']) if pd.notna(row['amt']) else 0.0\nqualified = []\nfor (st, prod), (units, rx, amt) in prod_state.items():\n    if rx >= 1000 and units > 0 and amt > 0:\n        qualified.append((st, prod, amt / units, amt))\nqualified = sorted(qualified, key=lambda x: (x[0], -x[2], x[1]))\nbest = {}\nfor st, prod, amt_per_unit, amt in qualified:\n    best.setdefault(st, (prod, amt_per_unit, amt))\nrows = []\nfor st, (prod, amt_per_unit, amt) in best.items():\n    rows.append((state_map[st], prod, amt / state_total[st]))\nranked = sorted(rows, key=lambda x: (-x[2], x[0]))\nanswer = '; '.join(state for state, _, _ in ranked[46:49])\n",
+            "subquestion": "In the first year of <node_2 answer>, define a state's most expensive medicines as the one with the highest reimbursed amount per unit and at least 1,000 prescriptions, and define medical cost as the share of all reimbursed dollars of that medicine. Which states have the 47th through 49th most medical cost?",
+            "answer": "Utah; Texas; Alaska"
+        },
+        "4": {
+            "source": "datagov/state-drug-utilization-data-2004-a68af/files/StateDrugUtilizationData2004.txt",
+            "fact": "import pandas as pd\nimport boto3\nfrom collections import defaultdict\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nstate_map = {'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'DC': 'District of Columbia', 'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'}\nsource = 'datagov/state-drug-utilization-data-2004-a68af/files/StateDrugUtilizationData2004.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\nstate_total = defaultdict(float)\nprod_state = defaultdict(lambda: [0.0, 0.0, 0.0])\nfor chunk in pd.read_csv(obj['Body'], dtype=str, low_memory=False, usecols=['State', 'Product Name', 'Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed'], chunksize=500000):\n    chunk = chunk.fillna('')\n    chunk = chunk[chunk['State'].isin(state_map) & chunk['Product Name'].ne('')].copy()\n    for col in ['Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed']:\n        chunk[col] = pd.to_numeric(chunk[col].astype(str).str.replace(',', '', regex=False), errors='coerce')\n    chunk = chunk[chunk['Units Reimbursed'].gt(0) & chunk['Total Amount Reimbursed'].gt(0)].copy()\n    for st, amt in chunk.groupby('State')['Total Amount Reimbursed'].sum().items():\n        state_total[st] += float(amt)\n    grouped = chunk.groupby(['State', 'Product Name']).agg(units=('Units Reimbursed', 'sum'), rx=('Number of Prescriptions', 'sum'), amt=('Total Amount Reimbursed', 'sum'))\n    for (st, prod), row in grouped.iterrows():\n        acc = prod_state[(st, prod)]\n        acc[0] += float(row['units']) if pd.notna(row['units']) else 0.0\n        acc[1] += float(row['rx']) if pd.notna(row['rx']) else 0.0\n        acc[2] += float(row['amt']) if pd.notna(row['amt']) else 0.0\nqualified = []\nfor (st, prod), (units, rx, amt) in prod_state.items():\n    if rx >= 1000 and units > 0 and amt > 0:\n        qualified.append((st, prod, amt / units, amt))\nqualified = sorted(qualified, key=lambda x: (x[0], -x[2], x[1]))\nbest = {}\nfor st, prod, amt_per_unit, amt in qualified:\n    best.setdefault(st, (prod, amt_per_unit, amt))\nrows = []\nfor st, (prod, amt_per_unit, amt) in best.items():\n    rows.append((state_map[st], prod, amt / state_total[st]))\nranked = sorted(rows, key=lambda x: (-x[2], x[0]))\nanswer = '; '.join(state for state, _, _ in ranked[46:49])\n",
+            "subquestion": "In the second year of <node_2 answer>, define a state's most expensive medicines as the one with the highest reimbursed amount per unit and at least 1,000 prescriptions, and define medical cost as the share of all reimbursed dollars of that medicine. Which states have the 47th through 49th most medical cost?",
+            "answer": "Texas; New York; Florida"
+        },
+        "5": {
+            "source": "datagov/state-drug-utilization-data-2006-37844/files/StateDrugUtilizationData2006.txt",
+            "fact": "import pandas as pd\nimport boto3\nfrom collections import defaultdict\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nstate_map = {'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California', 'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'DC': 'District of Columbia', 'FL': 'Florida', 'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland', 'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming'}\nsource = 'datagov/state-drug-utilization-data-2006-37844/files/StateDrugUtilizationData2006.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\nstate_total = defaultdict(float)\nprod_state = defaultdict(lambda: [0.0, 0.0, 0.0])\nfor chunk in pd.read_csv(obj['Body'], dtype=str, low_memory=False, usecols=['State', 'Product Name', 'Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed'], chunksize=500000):\n    chunk = chunk.fillna('')\n    chunk = chunk[chunk['State'].isin(state_map) & chunk['Product Name'].ne('')].copy()\n    for col in ['Units Reimbursed', 'Number of Prescriptions', 'Total Amount Reimbursed']:\n        chunk[col] = pd.to_numeric(chunk[col].astype(str).str.replace(',', '', regex=False), errors='coerce')\n    chunk = chunk[chunk['Units Reimbursed'].gt(0) & chunk['Total Amount Reimbursed'].gt(0)].copy()\n    for st, amt in chunk.groupby('State')['Total Amount Reimbursed'].sum().items():\n        state_total[st] += float(amt)\n    grouped = chunk.groupby(['State', 'Product Name']).agg(units=('Units Reimbursed', 'sum'), rx=('Number of Prescriptions', 'sum'), amt=('Total Amount Reimbursed', 'sum'))\n    for (st, prod), row in grouped.iterrows():\n        acc = prod_state[(st, prod)]\n        acc[0] += float(row['units']) if pd.notna(row['units']) else 0.0\n        acc[1] += float(row['rx']) if pd.notna(row['rx']) else 0.0\n        acc[2] += float(row['amt']) if pd.notna(row['amt']) else 0.0\nqualified = []\nfor (st, prod), (units, rx, amt) in prod_state.items():\n    if rx >= 1000 and units > 0 and amt > 0:\n        qualified.append((st, prod, amt / units, amt))\nqualified = sorted(qualified, key=lambda x: (x[0], -x[2], x[1]))\nbest = {}\nfor st, prod, amt_per_unit, amt in qualified:\n    best.setdefault(st, (prod, amt_per_unit, amt))\nrows = []\nfor st, (prod, amt_per_unit, amt) in best.items():\n    rows.append((state_map[st], prod, amt / state_total[st]))\nranked = sorted(rows, key=lambda x: (-x[2], x[0]))\nanswer = '; '.join(state for state, _, _ in ranked[45:48])\n",
+            "subquestion": "In the third year of <node_2 answer>, define a state's most expnsive medicines as the one with the highest reimbursed amount per unit and at least 1,000 prescriptions, and define medical cost as the share of all reimbursed dollars of that medicine. Which states have the 46th through 48th most medical cost?",
+            "answer": "Utah; Oregon; Texas"
+        },
+        "6": {
+            "source": "datagov/texas-state-expenditures-by-county-2015/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/texas-state-expenditures-by-county-2015/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\ncounty_name_map = {'SCHELCHER': 'Schleicher', 'COCHRAN': 'Cochran'}\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['Operating Expenses_num'] = pd.to_numeric(df['Operating Expenses'].astype(str).str.replace('$', '', regex=False).str.replace(',', '', regex=False).str.replace('-', '0', regex=False).str.strip(), errors='coerce').fillna(0)\nranked = df.groupby('County Name', as_index=False)['Operating Expenses_num'].sum().sort_values(['Operating Expenses_num', 'County Name'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nselected = ranked.iloc[6:8]['County Name'].map(lambda value: county_name_map.get(value, value.title())).tolist()\nanswer = '; '.join(selected)\n",
+            "subquestion": "In the state that appears in all of <node_3 answer>, <node_4 answer>, and <node_5 answer>, which two counties had the 7th and 8th lowest operation expenses in 2015?",
+            "answer": "Schleicher; Cochran"
+        },
+        "7": {
+            "source": "datagov/cpi-1-1-texas-child-population-ages-0-17-by-county-2013-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/cpi-1-1-texas-child-population-ages-0-17-by-county-2013-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_6_answer = 'Schleicher; Cochran'\nfirst_county = [part.strip() for part in node_6_answer.split(';') if part.strip()][0]\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[df['County'].eq(first_county) & df['Year'].eq('2020')].copy()\nanswer = str(int(pd.to_numeric(filtered.iloc[0]['Total Population'], errors='coerce')))\n",
+            "subquestion": "For the first county in <node_6 answer>, what was its population in 2020?",
+            "answer": "3312"
+        },
+        "8": {
+            "source": "datagov/cpi-1-1-texas-child-population-ages-0-17-by-county-2013-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/cpi-1-1-texas-child-population-ages-0-17-by-county-2013-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_6_answer = 'Schleicher; Cochran'\nsecond_county = [part.strip() for part in node_6_answer.split(';') if part.strip()][1]\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[df['County'].eq(second_county) & df['Year'].eq('2020')].copy()\nanswer = str(int(pd.to_numeric(filtered.iloc[0]['Total Population'], errors='coerce')))\n",
+            "subquestion": "For the second county in <node_6 answer>, what was its population in 2020?",
+            "answer": "3348"
+        }
+    },
+    "datasets_used": [
+        "datagov/nchs-injury-mortality-united-states-377d2/files/rows.txt",
+        "datagov/nchs-injury-mortality-united-states-377d2/signed-metadata.txt",
+        "datagov/nchs-u-s-and-state-trends-on-teen-births/files/rows.txt",
+        "datagov/nchs-u-s-and-state-trends-on-teen-births/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2002-954e0/files/StateDrugUtilizationData2002.txt",
+        "datagov/state-drug-utilization-data-2002-954e0/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2002-954e0/files/state-drug-utilization-data-dictionary.json",
+        "datagov/state-drug-utilization-data-2004-a68af/files/StateDrugUtilizationData2004.txt",
+        "datagov/state-drug-utilization-data-2004-a68af/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2004-a68af/files/state-drug-utilization-data-dictionary.json",
+        "datagov/state-drug-utilization-data-2006-37844/files/StateDrugUtilizationData2006.txt",
+        "datagov/state-drug-utilization-data-2006-37844/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2006-37844/files/state-drug-utilization-data-dictionary.json",
+        "datagov/texas-state-expenditures-by-county-2015/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2015/signed-metadata.txt",
+        "datagov/cpi-1-1-texas-child-population-ages-0-17-by-county-2013-2022/files/rows.txt",
+        "datagov/cpi-1-1-texas-child-population-ages-0-17-by-county-2013-2022/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1 ranks years by deaths for all-races ages 15-24 unintentional motor-vehicle-traffic injuries and returns the top ten years.",
+                "Among those ten years, Node 2 looks at Connecticut births for ages 15-17 and ranks years by number of births from highest to lowest.",
+                "The 4th through 6th highest years are 2002, 2004, and 2006."
+            ],
+            "answer": "2002; 2004; 2006"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4,
+                5
+            ],
+            "reasoning": [
+                "For each of the three years, Nodes 3-5 define each state's most concentrated high-cost medication as the medication with the largest reimbursed amount per unit among drugs with at least 1,000 prescriptions.",
+                "Each node then computes concentration as the share of all reimbursed dollars tied to that medication and ranks states from highest to lowest.",
+                "Node 3 returns Utah, Texas, and Alaska for 2002 ranks 47-49.",
+                "Node 4 returns Texas, New York, and Florida for 2004 ranks 47-49.",
+                "Node 5 returns Utah, Oregon, and Texas for 2006 ranks 46-48.",
+                "The only state appearing in all three answers is Texas."
+            ],
+            "answer": "Texas"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6 aggregates operating expenses by county in Texas for fiscal year 2015 and ranks counties from lowest to highest.",
+                "The 7th and 8th lowest counties are Schleicher and Cochran."
+            ],
+            "answer": "Schleicher; Cochran"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7,
+                8,
+                9
+            ],
+            "reasoning": [
+                "Node 7 gets Schleicher County's total population in 2020 as 3312.",
+                "Node 8 gets Cochran County's total population in 2020 as 3348.",
+                "Node 9 averages those two values to get 3330.",
+                "Therefore, the final answer is 3330."
+            ],
+            "answer": "3330"
+        }
+    ]
+}

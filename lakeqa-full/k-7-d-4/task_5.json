@@ -1,0 +1,197 @@
+{
+    "question": "In which city, county, and state is Virginia Tech's main campus located? In that state, identify the county that consistently ranks in the top three statewide for the number of public schools, private schools, and school district offices. Among the counties that meet these criteria, select the one with the highest number of postsecondary institutions. For that specific county, calculate the total count of public, private, and postsecondary schools and subtract the number of school district offices. Give the final answer as an integer.",
+    "answer": "347",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Virginia_Tech/content.txt",
+            "fact": "with its main campus in Blacksburg, Virginia, United States.",
+            "subquestion": "Virginia Tech has its main campus in what town?",
+            "answer": "Blacksburg"
+        },
+        "2": {
+            "source": "wikipedia/Blacksburg,_Virginia/content.txt",
+            "fact": "Blacksburg is an incorporated town in Montgomery County, Virginia, United States,",
+            "subquestion": "<hop 1 answer> is located in which county?",
+            "answer": "Montgomery County"
+        },
+        "3": {
+            "source": "wikipedia/Montgomery_County,_Virginia/content.txt",
+            "fact": "Montgomery County is a county located in the Valley and Ridge area of the U.S. state of Virginia.",
+            "subquestion": "<hop 2 answer> is located in which U.S. state?",
+            "answer": "Virginia"
+        },
+        "4": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nresult = df.loc[\n    (df[\"CITY\"] == \"Blacksburg\")\n    & (df[\"NMCNTY\"] == \"Montgomery County\"),\n    [\"CITY\", \"NMCNTY\", \"STATE\", \"STFIP\"]\n].copy()\n\nresult = result.drop_duplicates().sort_values([\"CITY\", \"NMCNTY\", \"STATE\", \"STFIP\"]).reset_index(drop=True)\nanswer = result[\"STFIP\"].dropna().unique().tolist()\nif len(answer) == 1:\n    answer = answer[0]\nelse:\n    answer = answer",
+            "subquestion": "In the postsecondary school listings, entries with CITY='<hop 1 answer>' and NMCNTY='<hop 2 answer>' (in the U.S. state '<hop 3 answer>') share what two-digit state FIPS code (STFIP)?",
+            "answer": "51"
+        },
+        "5": {
+            "source": "datagov/public-school-locations-2016-17-b4d7f/files/data-qZVBY3.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-2016-17-b4d7f/files/data-qZVBY3.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nresult = (\n    df.loc[df[\"STFIP\"].astype(str).str.zfill(2) == \"51\"]\n    .groupby(\"NMCNTY\", dropna=False)\n    .size()\n    .reset_index(name=\"public_school_count\")\n    .sort_values([\"public_school_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = \"; \".join(result.head(3)[\"NMCNTY\"].tolist())",
+            "subquestion": "For STFIP='51', what are the public school counts for each county, ranked from highest to lowest, so the top three counties can be identified?",
+            "answer": "Fairfax County; Prince William County; Loudoun County"
+        },
+        "6": {
+            "source": "datagov/private-school-locations-2021-22-1ec7b/files/nces::private-school-locations-2021-22.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-2021-22-1ec7b/files/nces::private-school-locations-2021-22.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nresult = (\n    df.loc[df[\"STFIP\"].astype(str).str.zfill(2) == \"51\"]\n    .groupby(\"NMCNTY\", dropna=False)\n    .size()\n    .reset_index(name=\"private_school_count\")\n    .sort_values([\"private_school_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = \"; \".join(result.head(3)[\"NMCNTY\"].tolist())",
+            "subquestion": "For STFIP='51', what are the private school counts for each county, ranked from highest to lowest, so the top three counties can be identified?",
+            "answer": "Fairfax County; Loudoun County; Virginia Beach city"
+        },
+        "7": {
+            "source": "datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nresult = (\n    df.loc[df[\"STFIP\"].astype(str).str.zfill(2) == \"51\"]\n    .groupby(\"NMCNTY\", dropna=False)\n    .size()\n    .reset_index(name=\"school_district_office_count\")\n    .sort_values([\"school_district_office_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = \"; \".join(result.head(3)[\"NMCNTY\"].tolist())",
+            "subquestion": "For STFIP='51', what are the school district office counts for each county, ranked from highest to lowest with alphabetical order as the tiebreaker, so the top three counties can be identified?",
+            "answer": "Richmond city; Augusta County; Fairfax County"
+        },
+        "8": {
+            "source": "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nset_a = {\"Fairfax County\", \"Prince William County\", \"Loudoun County\"}\nset_b = {\"Fairfax County\", \"Loudoun County\", \"Virginia Beach city\"}\nset_c = {\"Richmond city\", \"Augusta County\", \"Fairfax County\"}\ncandidates = sorted(set_a & set_b & set_c)\n\nresult = (\n    df.loc[\n        (df[\"STFIP\"].astype(str).str.zfill(2) == \"51\")\n        & (df[\"NMCNTY\"].isin(candidates))\n    ]\n    .groupby(\"NMCNTY\", dropna=False)\n    .size()\n    .reset_index(name=\"postsecondary_count\")\n    .sort_values([\"postsecondary_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = result.iloc[0][\"NMCNTY\"]",
+            "subquestion": "Among the counties in <hop 5 answer>, what are the postsecondary institution counts in STFIP='51', and which county has the highest count?",
+            "answer": "Fairfax County"
+        },
+        "9": {
+            "source": "datagov/public-school-locations-2016-17-b4d7f/files/data-qZVBY3.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-2016-17-b4d7f/files/data-qZVBY3.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nresult = df.loc[\n    (df[\"STFIP\"].astype(str).str.zfill(2) == \"51\")\n    & (df[\"NMCNTY\"] == \"Fairfax County\")\n].copy()\n\nanswer = len(result)",
+            "subquestion": "How many public schools have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 223
+        },
+        "10": {
+            "source": "datagov/private-school-locations-2021-22-1ec7b/files/nces::private-school-locations-2021-22.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-2021-22-1ec7b/files/nces::private-school-locations-2021-22.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nresult = df.loc[\n    (df[\"STFIP\"].astype(str).str.zfill(2) == \"51\")\n    & (df[\"NMCNTY\"] == \"Fairfax County\")\n].copy()\n\nanswer = len(result)",
+            "subquestion": "How many private schools have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 110
+        },
+        "11": {
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [col.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for col in df.columns]\n\nresult = df.loc[\n    (df[\"STFIP\"].astype(str).str.zfill(2) == \"51\")\n    & (df[\"NMCNTY\"] == \"Fairfax County\")\n].copy()\n\nanswer = len(result)",
+            "subquestion": "How many school district offices have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 4
+        },
+        "12": {
+            "source": "datagov/postsecondary-school-locations-current-40ae1/files/nces::postsecondary-school-locations-current-1.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nimport xml.etree.ElementTree as ET\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-40ae1/files/nces::postsecondary-school-locations-current-1.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\nroot = ET.fromstring(obj[\"Body\"].read())\nns = {\"kml\": \"http://www.opengis.net/kml/2.2\"}\n\nrows = []\nfor placemark in root.findall(\".//kml:Placemark\", ns):\n    row = {}\n    for simple_data in placemark.findall(\".//kml:SimpleData\", ns):\n        row[simple_data.attrib[\"name\"]] = simple_data.text\n    if row:\n        rows.append(row)\n\ndf = pd.DataFrame(rows)\n\nresult = df.loc[\n    (df[\"STFIP\"].astype(str).str.zfill(2) == \"51\")\n    & (df[\"NMCNTY\"] == \"Fairfax County\")\n].copy()\n\nanswer = len(result)",
+            "subquestion": "How many postsecondary institutions have NMCNTY='<hop 6 answer>' and STFIP='<node_4 answer>'?",
+            "answer": 18
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Read the town where Virginia Tech's main campus is located from the cited Wikipedia source.",
+                "Hop result: the town is Blacksburg."
+            ],
+            "answer": "Blacksburg"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Read the county containing <hop 1 answer> from the cited Blacksburg Wikipedia source.",
+                "Hop result: the county is Montgomery County."
+            ],
+            "answer": "Montgomery County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Read the U.S. state containing <hop 2 answer> from the cited Montgomery County Wikipedia source.",
+                "Hop result: the state is Virginia."
+            ],
+            "answer": "Virginia"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3 establishes that <hop 2 answer> is in Virginia.",
+                "Node 4 maps the city/county/state combination `<hop 1 answer>`, `<hop 2 answer>`, `<hop 3 answer>` to the shared two-digit state FIPS code `51`, which is the dataset key needed for the downstream statewide queries.",
+                "Hop result: the relevant state is Virginia, queried downstream via `STFIP` 51."
+            ],
+            "answer": "Virginia"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5,
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 5: For `STFIP` = `51`, count public schools by county and keep the top three county names.",
+                "Node 6: For `STFIP` = `51`, count private schools by county and keep the top three county names.",
+                "Node 7: For `STFIP` = `51`, count school district offices by county, applying alphabetical order as the tiebreaker, and keep the top three county names.",
+                "Hop result: intersect the three top-three county sets; the only shared county is Fairfax County."
+            ],
+            "answer": [
+                "Fairfax County"
+            ]
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: For `STFIP` = `51`, count postsecondary institutions by county, restrict to the counties in <hop 5 answer>, and keep the county with the highest count.",
+                "Hop result: the county is Fairfax County."
+            ],
+            "answer": "Fairfax County"
+        },
+        {
+            "hop": 7,
+            "node_ids": [
+                9,
+                10,
+                11,
+                12
+            ],
+            "reasoning": [
+                "Node 9: For `STFIP` = `51` and `NMCNTY` = <hop 6 answer>, count public schools.",
+                "Node 10: For `STFIP` = `51` and `NMCNTY` = <hop 6 answer>, count private schools.",
+                "Node 11: For `STFIP` = `51` and `NMCNTY` = <hop 6 answer>, count school district offices.",
+                "Node 12: For `STFIP` = `51` and `NMCNTY` = <hop 6 answer>, count postsecondary institutions.",
+                "Hop result: compute `223 + 110 + 18 - 4 = 347`."
+            ],
+            "answer": 347
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Virginia_Tech/content.txt",
+        "wikipedia/Blacksburg,_Virginia/content.txt",
+        "wikipedia/Montgomery_County,_Virginia/content.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt",
+        "datagov/public-school-locations-2016-17-b4d7f/files/data-qZVBY3.txt",
+        "datagov/public-school-locations-2016-17-b4d7f/signed-metadata.txt",
+        "datagov/public-school-locations-2016-17-b4d7f/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-2021-22-1ec7b/files/nces::private-school-locations-2021-22.txt",
+        "datagov/private-school-locations-2021-22-1ec7b/signed-metadata.txt",
+        "datagov/private-school-locations-2021-22-1ec7b/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt",
+        "datagov/school-district-office-locations-2022-23/signed-metadata.txt",
+        "datagov/school-district-office-locations-2022-23/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+        "datagov/postsecondary-school-locations-2022-23/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2022-23/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-current-40ae1/files/nces::postsecondary-school-locations-current-1.txt",
+        "datagov/postsecondary-school-locations-current-40ae1/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-40ae1/files/0.arcgis-layer.json"
+    ]
+}

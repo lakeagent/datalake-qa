@@ -1,0 +1,83 @@
+{
+    "question": "Can you tell me the population of the largest city in the Idaho county reported in the 2020 census that had between 90 and 110 U.S. Department of Veterans Affairs disability compensation recipients in 2023 AND had between 88 and 92 recipients in 2019?. Your response should be in the format [Answer].",
+    "answer": "2643",
+    "nodes": {
+        "1": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Idaho'.lower())].copy()\nfiltered['Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['Total: Disability Compensation Recipients'] >= 90) & (filtered['Total: Disability Compensation Recipients'] <= 110)]\ncounty_names = filtered['County Name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Idaho counties had between 90 and 110 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Bear Lake County",
+                "Caribou County",
+                "Power County",
+                "Lewis County"
+            ]
+        },
+        "2": {
+            "source": "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Idaho'.lower())].copy()\nfiltered['# Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['# Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['# Total: Disability Compensation Recipients'] >= 88) & (filtered['# Total: Disability Compensation Recipients'] <= 92)]\ncounty_names = filtered['County name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Idaho counties had between 88 and 92 VA disability compensation recipients in FY 2019?",
+            "answer": [
+                "Bear Lake County",
+                "Custer County"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Bear_Lake_County,_Idaho/content.txt",
+            "fact": "Montpelier is the largest city in Bear Lake County, Idaho, while Paris serves as the county seat.",
+            "subquestion": "What is the largest city in <intersection of node_1, node_2>?",
+            "answer": "Montpelier"
+        },
+        "4": {
+            "source": "wikipedia/Montpelier,_Idaho/content.txt",
+            "fact": "As of the 2020 United States census, Montpelier, Idaho had a population of 2,643.",
+            "subquestion": "What was the population of <node_3 answer> in the 2020 census?",
+            "answer": "2643"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Bear_Lake_County,_Idaho/content.txt",
+        "wikipedia/Montpelier,_Idaho/content.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt",
+        "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+        "datagov/fy-2019-disability-pension-recipient-by-county/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `State` is Idaho, keep counties with `Total: Disability Compensation Recipients` between 90 and 110 inclusive, normalize `County Name` to end with `County`, and return the unique county names.",
+                "Node 2: Filter rows where `State` is Idaho, keep counties with `# Total: Disability Compensation Recipients` between 88 and 92 inclusive, normalize `County name` to end with `County`, and return the unique county names.",
+                "Hop result: intersection of <node_1 answer> and <node_2 answer> = ['Bear Lake County']."
+            ],
+            "answer": "Bear Lake County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Montpelier is the largest city in <hop 1 answer>.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Montpelier"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: 2643 is the 2020 census population of <hop 2 answer>.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "2643"
+        }
+    ]
+}

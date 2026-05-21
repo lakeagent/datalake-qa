@@ -1,0 +1,90 @@
+{
+    "question": "In 2019 data reported by the Los Angeles Police Department, find the geo area with the most violations of moving traffic arrests. Then, find that area's numeric Area ID, and the most common 2019 crime description for that Area ID. Using 2020-present crime data for the same Area ID, find the 2020 incident count for that description, then in 2021 identify the crime description whose incident count is the smallest value exceeding that 2020 count and report that 2021 count as your final answer. Your response should be in the format [Answer].",
+    "answer": "915",
+    "nodes": {
+        "1": {
+            "source": "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = \"datagov/arrest-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\n\ncounts = {}\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"Arrest Date\", \"Area Name\", \"Charge Group Description\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    filtered = chunk[\n        chunk[\"Arrest Date\"].astype(str).str.contains(\"2019\", na=False)\n        & chunk[\"Charge Group Description\"].astype(str).str.strip().str.lower().eq(\"moving traffic violations\")\n    ]\n    vc = filtered[\"Area Name\"].astype(str).str.strip().value_counts()\n    for area, cnt in vc.items():\n        counts[area] = counts.get(area, 0) + int(cnt)\nanswer = str(max(counts, key=counts.get))\n",
+            "subquestion": "In 2019 arrest data, which area has the most arrests in the charge group \"Moving Traffic Violations\"?",
+            "answer": "Van Nuys"
+        },
+        "2": {
+            "source": "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = \"datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = \"Van Nuys\"\n\nfiltered = df[df[\"Area Name\"].astype(str).str.strip().str.lower().eq(str(node_1_answer).strip().lower())]\narea_ids = pd.to_numeric(filtered[\"Area ID\"], errors=\"coerce\").dropna().astype(int)\nanswer = int(area_ids.mode().iloc[0])\n",
+            "subquestion": "In the LAPD stop-incident records collected under California's RIPA program, what Area ID corresponds to area name <node_1 answer> (answer as an integer)?",
+            "answer": "9"
+        },
+        "3": {
+            "source": "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = \"datagov/crime-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\nnode_2_answer = \"9\"\n\narea_id = pd.to_numeric(str(node_2_answer).strip(), errors=\"coerce\")\ncounts = {}\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"DATE OCC\", \"AREA \", \"Crm Cd Desc\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    filtered = chunk[chunk[\"DATE OCC\"].astype(str).str.contains(\"2019\", na=False)]\n    area_col = pd.to_numeric(filtered[\"AREA \"], errors=\"coerce\")\n    filtered = filtered[area_col.eq(area_id)]\n    vc = filtered[\"Crm Cd Desc\"].astype(str).str.strip().value_counts()\n    for offense, cnt in vc.items():\n        counts[offense] = counts.get(offense, 0) + int(cnt)\ntop_offense = max(counts, key=counts.get)\nanswer = str(top_offense)\n",
+            "subquestion": "In 2019 crime data, within Area ID <node_2 answer>, which crime description is most common?",
+            "answer": "THEFT OF IDENTITY"
+        },
+        "4": {
+            "source": "datagov/crime-data-from-2020-to-present/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = \"datagov/crime-data-from-2020-to-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    csv_path = local_path\nelse:\n    s3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\n    obj = s3.get_object(Bucket=bucket, Key=source)\n    csv_path = io.BytesIO(obj[\"Body\"].read())\nnode_2_answer = \"9\"\nnode_3_answer = \"THEFT OF IDENTITY\"\n\narea_id = pd.to_numeric(str(node_2_answer).strip(), errors=\"coerce\")\ntarget_desc = str(node_3_answer).strip()\ncount_2020 = 0\ncounts_2021 = {}\n\nfor chunk in pd.read_csv(\n    csv_path,\n    usecols=[\"DATE OCC\", \"AREA\", \"Crm Cd Desc\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    area_col = pd.to_numeric(chunk[\"AREA\"], errors=\"coerce\")\n    area_mask = area_col.eq(area_id)\n    date_col = chunk[\"DATE OCC\"].astype(str)\n    desc_col = chunk[\"Crm Cd Desc\"].astype(str).str.strip()\n\n    mask_2020_target = area_mask & date_col.str.contains(\"2020\", na=False) & desc_col.eq(target_desc)\n    count_2020 += int(mask_2020_target.sum())\n\n    filtered_2021 = chunk[area_mask & date_col.str.contains(\"2021\", na=False)]\n    vc = (\n        filtered_2021[\"Crm Cd Desc\"]\n        .astype(str)\n        .str.strip()\n        .replace({\"\": pd.NA, \"nan\": pd.NA})\n        .dropna()\n        .value_counts()\n    )\n    for offense, cnt in vc.items():\n        counts_2021[offense] = counts_2021.get(offense, 0) + int(cnt)\n\neligible_counts = [cnt for cnt in counts_2021.values() if cnt > count_2020]\nif not eligible_counts:\n    raise ValueError(\"No 2021 incident count exceeds the 2020 threshold.\")\n\nanswer = int(min(eligible_counts))\n",
+            "subquestion": "Using the 2020–present crime data for Area ID <node_2 answer>, in 2021 what is the incident count of the crime description whose count is the closest value above the 2020 incident count for crime description <node_3 answer>?",
+            "answer": "915"
+        }
+    },
+    "datasets_used": [
+        "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+        "datagov/arrest-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/arrest-data-from-2010-to-2019/files/yru6-6re4.publisher-view.json",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/signed-metadata.txt",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/5gp9-8nrb.txt",
+        "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+        "datagov/crime-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/crime-data-from-2010-to-2019/files/63jg-8b9z.txt",
+        "datagov/crime-data-from-2020-to-present/files/rows.txt",
+        "datagov/crime-data-from-2020-to-present/signed-metadata.txt",
+        "datagov/crime-data-from-2020-to-present/files/2nrs-mtv8.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: In 2019, the area with the most arrests in the charge group \"Moving Traffic Violations\" is Van Nuys (455 arrests).",
+                "Derive hop 1 answer using node 1."
+            ],
+            "answer": "Van Nuys"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: In the LAPD RIPA stop-incident records, the area name Van Nuys corresponds to Area ID 9.",
+                "Derive hop 2 answer using node 2."
+            ],
+            "answer": "9"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: In 2019 crime data for AREA = 9, the most common crime description is THEFT OF IDENTITY (807 incidents).",
+                "Derive hop 3 answer using node 3."
+            ],
+            "answer": "THEFT OF IDENTITY"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In 2020 crime data for AREA = 9, there were 761 incidents with crime description THEFT OF IDENTITY. In 2021 crime data for AREA = 9, the smallest incident count that is still greater than 761 is 915, corresponding to VEHICLE - STOLEN (unique within scope).",
+                "Derive hop 4 answer using node 4."
+            ],
+            "answer": "915"
+        }
+    ]
+}

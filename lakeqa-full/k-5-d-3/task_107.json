@@ -1,0 +1,131 @@
+{
+    "question": "Among operational New York wind-energy projects from 2004 through 2015, find the county with the greatest total energy capacity for projects. In that county, find the municipality that appears in all three groups: the four cities with the most retail food stores, the four cities with the most active liquor licenses, and the municipalities with statewide energy-storage projects. In that municipality, which New York state route had the highest-count traffic segment in 2019? In the wind-project county, use that route to find the road name with the longest sidewalk segment. Since 1924, how many suffixed routes have been designated for the route named in that result? Please return only the number in the format [Answer].",
+    "answer": 14,
+    "nodes": {
+        "1": {
+            "source": "datagov/wind-energy-projects-2004-2015/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/wind-energy-projects-2004-2015/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str)\ndf.columns = df.columns.str.strip()\noperational = df[df['Status'].astype(str).str.strip().eq('Operational')].copy()\noperational['Project MW'] = pd.to_numeric(operational['Project MW'], errors='coerce')\ncounty_totals = operational.groupby('Location County', dropna=True)['Project MW'].sum().sort_values(ascending=False)\ntop_county = str(county_totals.index[0]).strip()\ntop_capacity = county_totals.iloc[0]\nanswer = f\"{top_county} County, {top_capacity:.1f} MW\"\n",
+            "subquestion": "Among operational New York wind-energy projects from 2004 through 2015, which county has the greatest total energy capacity for projects, and how many megawatts is that total?",
+            "answer": "Clinton County, 501.0 MW"
+        },
+        "2": {
+            "source": "datagov/retail-food-stores/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/retail-food-stores/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = 'Clinton County, 501.0 MW'\ncounty = node_1_answer.split(',')[0].replace('County', '').strip()\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str)\nfiltered = df[df['County'].astype(str).str.strip().str.upper().eq(county.upper())].copy()\ncity_counts = (\n    filtered['City']\n    .astype(str)\n    .str.strip()\n    .str.upper()\n    .replace('', pd.NA)\n    .dropna()\n    .value_counts()\n    .rename_axis('city')\n    .reset_index(name='count')\n    .sort_values(['count', 'city'], ascending=[False, True])\n    .head(4)\n)\nanswer = '; '.join(f\"{row['city'].title()}, {int(row['count'])}\" for _, row in city_counts.iterrows())\n",
+            "subquestion": "In the county from <hop 1 answer>, which four cities have the most retail food stores, and how many are there for each city?",
+            "answer": "Plattsburgh, 65; Champlain, 9; Peru, 8; West Chazy, 6"
+        },
+        "3": {
+            "source": "datagov/current-liquor-authority-active-licenses/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/current-liquor-authority-active-licenses/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = 'Clinton County, 501.0 MW'\ncounty = node_1_answer.split(',')[0].replace('County', '').strip()\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str)\nfiltered = df[df['Premises County'].astype(str).str.strip().str.upper().eq(county.upper())].copy()\ncity_counts = (\n    filtered['City']\n    .astype(str)\n    .str.strip()\n    .str.upper()\n    .replace('', pd.NA)\n    .dropna()\n    .value_counts()\n    .rename_axis('city')\n    .reset_index(name='count')\n    .sort_values(['count', 'city'], ascending=[False, True])\n    .head(4)\n)\nanswer = '; '.join(f\"{row['city'].title()}, {int(row['count'])}\" for _, row in city_counts.iterrows())\n",
+            "subquestion": "In the county from <hop 1 answer>, which four cities have the most active liquor licenses, and how many are there for each city?",
+            "answer": "Plattsburgh, 128; Champlain, 15; Peru, 14; Rouses Point, 10"
+        },
+        "4": {
+            "source": "datagov/all-statewide-energy-storage-projects/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/all-statewide-energy-storage-projects/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = 'Clinton County, 501.0 MW'\ncounty = node_1_answer.split(',')[0].replace('County', '').strip()\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str)\nfiltered = df[df['County'].astype(str).str.strip().str.upper().eq(county.upper())].copy()\nplaces = (\n    filtered['City/Town']\n    .astype(str)\n    .str.strip()\n    .str.title()\n    .replace('', pd.NA)\n    .dropna()\n    .drop_duplicates()\n    .sort_values()\n)\nanswer = '; '.join(places.tolist())\n",
+            "subquestion": "In the county from <hop 1 answer>, which municipalities have statewide energy-storage projects?",
+            "answer": "Chazy; Ellenburg Depot; Plattsburgh; Saranac"
+        },
+        "5": {
+            "source": "datagov/annual-average-daily-traffic-aadt-beginning-1977/files/rows.txt",
+            "fact": "import pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/annual-average-daily-traffic-aadt-beginning-1977/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = 'Clinton County, 501.0 MW'\nhop_2_answer = 'Plattsburgh'\ntarget_year = '2019'\ncounty = node_1_answer.split(',')[0].replace('County', '').strip()\nmunicipality = hop_2_answer.strip()\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\nusecols = ['Year', 'Station ID', 'County', 'Signing', 'State Route', 'Beginning Description', 'Ending Description', 'Municipality', 'Count']\nrows = []\nfor chunk in pd.read_csv(obj['Body'], usecols=usecols, dtype=str, chunksize=100000, low_memory=False):\n    filtered = chunk[\n        chunk['Year'].astype(str).str.strip().eq(target_year)\n        & chunk['County'].astype(str).str.strip().str.upper().eq(county.upper())\n        & chunk['Municipality'].astype(str).str.upper().str.contains(municipality.upper(), na=False)\n        & chunk['Signing'].astype(str).str.strip().str.upper().eq('NY')\n    ].copy()\n    if not filtered.empty:\n        rows.append(filtered)\ntraffic = pd.concat(rows, ignore_index=True)\ntraffic['count_num'] = pd.to_numeric(traffic['Count'], errors='coerce')\ntop = traffic.sort_values(['count_num', 'State Route', 'Station ID'], ascending=[False, True, True]).iloc[0]\nroute_number = str(top['State Route']).strip()\nroute = f\"NY Route {int(float(route_number))}\" if route_number.replace('.', '', 1).isdigit() else f\"NY Route {route_number}\"\nanswer = f\"{route}, {int(top['count_num']):,}\"\n",
+            "subquestion": "For the municipality in <hop 2 answer>, which New York state route had the highest-count traffic segment in 2019, and what was the count?",
+            "answer": "NY Route 3, 28,393"
+        },
+        "6": {
+            "source": "datagov/sidewalks-on-nys-owned-highways/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/sidewalks-on-nys-owned-highways/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = 'Clinton County, 501.0 MW'\nnode_5_answer = 'NY Route 3, 28,393'\ncounty_name = node_1_answer.split(',')[0].replace('County', '').strip()\ncounty_code = {'Clinton': 'CLN'}[county_name]\nroute_number = node_5_answer.split(',')[0].replace('NY Route', '').strip()\nroute_code = f'NY{route_number}'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\nfiltered = df[\n    df['County'].astype(str).str.strip().str.upper().eq(county_code)\n    & df['Route'].astype(str).str.strip().str.upper().eq(route_code.upper())\n].copy()\nfiltered['Len_feet_num'] = pd.to_numeric(filtered['Len_feet'], errors='coerce')\ntop = filtered.sort_values(['Len_feet_num', 'Road', 'From_desc'], ascending=[False, True, True]).iloc[0]\nanswer = f\"{str(top['Road']).strip()}, {top['Len_feet_num']:.8f} feet\"\n",
+            "subquestion": "In the county from <hop 1 answer>, for the route from <hop 3 answer>, which road name has the longest sidewalk segment, and how long is it in feet?",
+            "answer": "State Route 3, 2524.28062202 feet"
+        },
+        "7": {
+            "source": "wikipedia/New_York_State_Route_3/content.txt",
+            "fact": "Since 1924, there have been 14 suffixed routes of NY 3, all designated between NY 3A and NY 3G. Of these, all but one only existed during the 1930s. The only active designation is NY 3A, which was assigned in the 1950s to an alternate route of NY 3 in Jefferson County.",
+            "subquestion": "Since 1924, how many suffixed routes have been designated for the route named in <hop 4 answer>?",
+            "answer": 14
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter operational New York wind-energy projects from 2004 through 2015, sum project megawatts by county, and select the county with the largest total capacity.",
+                "Hop result: Clinton County has the greatest total capacity, 501.0 MW."
+            ],
+            "answer": "Clinton County, 501.0 MW"
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 2: Within the county from <hop 1 answer>, count retail food stores by city and keep the four cities with the most stores.",
+                "Node 3: Within the county from <hop 1 answer>, count active liquor licenses by city and keep the four cities with the most licenses.",
+                "Node 4: Within the county from <hop 1 answer>, identify municipalities with statewide energy-storage projects.",
+                "Hop result: intersect the places from Nodes 2, 3, and 4; Plattsburgh is the only place present in all three sets."
+            ],
+            "answer": "Plattsburgh"
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Within the municipality from <hop 2 answer>, filter 2019 annual average daily traffic records to New York state routes and select the segment with the highest count.",
+                "Hop result: NY Route 3 has the highest-count segment, with 28,393."
+            ],
+            "answer": "NY Route 3, 28,393"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: For the county from <hop 1 answer> and the route from <hop 3 answer>, filter sidewalk records and select the road name with the greatest length in feet.",
+                "Hop result: State Route 3 has the longest sidewalk segment, 2524.28062202 feet."
+            ],
+            "answer": "State Route 3, 2524.28062202 feet"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Retrieve how many suffixed routes have been designated for the route named in <hop 4 answer> since 1924.",
+                "Hop result: there have been 14 suffixed routes."
+            ],
+            "answer": 14
+        }
+    ],
+    "datasets_used": [
+        "datagov/wind-energy-projects-2004-2015/files/rows.txt",
+        "datagov/wind-energy-projects-2004-2015/signed-metadata.txt",
+        "datagov/retail-food-stores/files/rows.txt",
+        "datagov/retail-food-stores/signed-metadata.txt",
+        "datagov/current-liquor-authority-active-licenses/files/rows.txt",
+        "datagov/current-liquor-authority-active-licenses/signed-metadata.txt",
+        "datagov/all-statewide-energy-storage-projects/files/rows.txt",
+        "datagov/all-statewide-energy-storage-projects/signed-metadata.txt",
+        "datagov/annual-average-daily-traffic-aadt-beginning-1977/files/rows.txt",
+        "datagov/annual-average-daily-traffic-aadt-beginning-1977/signed-metadata.txt",
+        "datagov/sidewalks-on-nys-owned-highways/files/rows.txt",
+        "datagov/sidewalks-on-nys-owned-highways/signed-metadata.txt",
+        "datagov/sidewalks-on-nys-owned-highways/files/columns.txt",
+        "datagov/sidewalks-on-nys-owned-highways/files/fjfd-5dtd.txt",
+        "datagov/wind-energy-projects-2004-2015/files/jmxa-iz8m.publisher-view.json",
+        "datagov/retail-food-stores/files/9a8c-vfzj.publisher-view.json",
+        "datagov/current-liquor-authority-active-licenses/files/9s3h-dpkz.publisher-view.json",
+        "datagov/all-statewide-energy-storage-projects/files/hspb-4n4p.publisher-view.json",
+        "datagov/annual-average-daily-traffic-aadt-beginning-1977/files/6amx-2pbv.publisher-view.json",
+        "wikipedia/New_York_State_Route_3/content.txt"
+    ]
+}

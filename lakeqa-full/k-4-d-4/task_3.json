@@ -1,0 +1,172 @@
+{
+    "question": "Identify Texas counties with highway construction expenditures between $150 million and $500 million consistently across fiscal years 2018 through 2021. Among those that also had fewer than 15,000 VA disability compensation recipients in FY 2023 and whose county seat name differs from the county name, who founded the first permanent settlement in that county seat, and in what year was the Texas county named after that founder created? Report the year only. Your response should be in the format [Answer].",
+    "answer": "1850",
+    "nodes": {
+        "1": {
+            "source": "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/texas-state-expenditures-by-county-2018/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nresult = (\n    df[(df['Fiscal Year'] == 2018) & (df['Major Spending Category'] == 'HIGHWAY CONSTRUCTION-CAPITAL OUTLAY')]\n    .groupby('County', dropna=False)['Amount']\n    .sum()\n    .reset_index()\n)\nresult = result[(result['Amount'] >= 150_000_000) & (result['Amount'] <= 500_000_000)].sort_values('Amount', ascending=False)\nanswer = result['County'].tolist()",
+            "subquestion": "Which Texas counties had highway construction expenditures between $150 million and $500 million in fiscal year 2018?",
+            "answer": [
+                "MONTGOMERY",
+                "TRAVIS",
+                "BEXAR",
+                "TARRANT",
+                "DENTON",
+                "NUECES",
+                "HAYS"
+            ]
+        },
+        "2": {
+            "source": "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/texas-state-expenditures-by-county-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nresult = (\n    df[(df['Fiscal Year'] == 2019) & (df['Major Spending Category'] == 'HIGHWAY CONSTRUCTION-CAPITAL OUTLAY')]\n    .groupby('County', dropna=False)['Amount']\n    .sum()\n    .reset_index()\n)\nresult = result[(result['Amount'] >= 150_000_000) & (result['Amount'] <= 500_000_000)].sort_values('Amount', ascending=False)\nanswer = result['County'].tolist()",
+            "subquestion": "Which Texas counties had highway construction expenditures between $150 million and $500 million in fiscal year 2019?",
+            "answer": [
+                "TRAVIS",
+                "MONTGOMERY",
+                "BEXAR",
+                "DENTON",
+                "NUECES",
+                "TARRANT",
+                "WILLIAMSON"
+            ]
+        },
+        "3": {
+            "source": "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/texas-state-expenditures-by-county-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nresult = (\n    df[(df['Fiscal Year'] == 2020) & (df['Major Spending Category'] == 'HIGHWAY CONSTRUCTION-CAPITAL OUTLAY')]\n    .groupby('County', dropna=False)['Amount']\n    .sum()\n    .reset_index()\n)\nresult = result[(result['Amount'] >= 150_000_000) & (result['Amount'] <= 500_000_000)].sort_values('Amount', ascending=False)\nanswer = result['County'].tolist()",
+            "subquestion": "Which Texas counties had highway construction expenditures between $150 million and $500 million in fiscal year 2020?",
+            "answer": [
+                "BEXAR",
+                "DENTON",
+                "NUECES",
+                "HAYS",
+                "TARRANT",
+                "MCLENNAN",
+                "WILLIAMSON"
+            ]
+        },
+        "4": {
+            "source": "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/texas-state-expenditures-by-county-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nresult = (\n    df[(df['Fiscal Year'] == 2021) & (df['Major Spending Category'] == 'HIGHWAY CONSTRUCTION-CAPITAL OUTLAY')]\n    .groupby('County', dropna=False)['Amount']\n    .sum()\n    .reset_index()\n)\nresult = result[(result['Amount'] >= 150_000_000) & (result['Amount'] <= 500_000_000)].sort_values('Amount', ascending=False)\nanswer = result['County'].tolist()",
+            "subquestion": "Which Texas counties had highway construction expenditures between $150 million and $500 million in fiscal year 2021?",
+            "answer": [
+                "BEXAR",
+                "DENTON",
+                "HAYS",
+                "TARRANT",
+                "NUECES"
+            ]
+        },
+        "5": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\ncounties = ['Bexar', 'Denton', 'Nueces', 'Tarrant']\nresult = df[(df['State'] == 'Texas') & (df['County Name'].isin(counties)) & (df['Total: Disability Compensation Recipients'] < 15000)].sort_values('Total: Disability Compensation Recipients')\nanswer = result['County Name'].tolist()",
+            "subquestion": "Among <hop 1 answer>, which Texas counties had fewer than 15,000 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Nueces",
+                "Denton"
+            ]
+        },
+        "6": {
+            "source": "wikipedia/Denton_County,_Texas/content.txt",
+            "fact": "The county seat is Denton.",
+            "subquestion": "What is the county seat of Denton County, Texas?",
+            "answer": "Denton"
+        },
+        "7": {
+            "source": "wikipedia/Nueces_County,_Texas/content.txt",
+            "fact": "The county seat is Corpus Christi",
+            "subquestion": "What is the county seat of Nueces County, Texas?",
+            "answer": "Corpus Christi"
+        },
+        "8": {
+            "source": "wikipedia/Corpus_Christi,_Texas/content.txt",
+            "fact": "In 1839, the first known permanent settlement of Corpus Christi was established by Colonel Henry Lawrence Kinney and William P. Aubrey as Kinney's Trading Post, or Kinney's Ranch.",
+            "subquestion": "Who founded the first permanent settlement in the county seat of <hop 2 answer>?",
+            "answer": "Henry Lawrence Kinney"
+        },
+        "9": {
+            "source": "wikipedia/Kinney_County,_Texas/content.txt",
+            "fact": "The county was created in 1850 and later organized in 1874. It is named for Henry Lawrence Kinney, an early settler.",
+            "subquestion": "In what year was the Texas county named after <hop 3 answer> created?",
+            "answer": "1850"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Denton_County,_Texas/content.txt",
+        "wikipedia/Nueces_County,_Texas/content.txt",
+        "wikipedia/Corpus_Christi,_Texas/content.txt",
+        "wikipedia/Kinney_County,_Texas/content.txt",
+        "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2018/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2018/files/f2iw-dtqt.txt",
+        "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2019/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2019/files/2x5x-m677.txt",
+        "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2020/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2020/files/aact-g69n.publisher-view.json",
+        "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2021/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2021/files/tup7-smjg.publisher-view.json",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Fiscal Year` is `2018` and `Major Spending Category` is `HIGHWAY CONSTRUCTION-CAPITAL OUTLAY`, sum `Amount` by `County`, and keep counties with totals between $150 million and $500 million.",
+                "Node 2: Filter rows where `Fiscal Year` is `2019` and `Major Spending Category` is `HIGHWAY CONSTRUCTION-CAPITAL OUTLAY`, sum `Amount` by `County`, and keep counties with totals between $150 million and $500 million.",
+                "Node 3: Filter rows where `Fiscal Year` is `2020` and `Major Spending Category` is `HIGHWAY CONSTRUCTION-CAPITAL OUTLAY`, sum `Amount` by `County`, and keep counties with totals between $150 million and $500 million.",
+                "Node 4: Filter rows where `Fiscal Year` is `2021` and `Major Spending Category` is `HIGHWAY CONSTRUCTION-CAPITAL OUTLAY`, sum `Amount` by `County`, and keep counties with totals between $150 million and $500 million.",
+                "Hop result: semantically intersect the four yearly county sets."
+            ],
+            "answer": [
+                "BEXAR",
+                "DENTON",
+                "NUECES",
+                "TARRANT"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5,
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 5: Among <hop 1 answer>, keep counties whose `Total: Disability Compensation Recipients` is below 15,000 in FY 2023.",
+                "Node 6: Denton County has county seat `Denton`, which has the same name as the county.",
+                "Node 7: Nueces County has county seat `Corpus Christi`, which has a different name from the county.",
+                "Hop result: among <node 5 answer>, keep the county whose seat name differs from the county name."
+            ],
+            "answer": "Nueces County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: The first permanent settlement in the county seat of <hop 2 answer> was founded by Henry Lawrence Kinney."
+            ],
+            "answer": "Henry Lawrence Kinney"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: The Texas county named after <hop 3 answer> was created in 1850."
+            ],
+            "answer": "1850"
+        }
+    ]
+}

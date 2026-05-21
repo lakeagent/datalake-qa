@@ -1,0 +1,228 @@
+{
+    "question": "Among the five Texas counties with the highest average annual number of state prison releases from 2019 to 2022, identify the one with the most consistent annual releases based on coefficient of variation. Its county seat has an NBA champion team based in it. Now, find the county that hosts the team defeated by this champion in its first NBA championship. In 2020, what was the absolute difference between the number of firearm crimes and hate crimes reported in that county? Only report that number in your answer. Your response should be in the format [Answer].",
+    "answer": "816",
+    "nodes": {
+        "1": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty_counts = (\n    df.groupby(\"County\")\n    .size()\n    .rename(index=lambda x: str(x).upper())\n    .rename_axis(\"County\")\n    .reset_index(name=\"release_count\")\n    .sort_values([\"release_count\", \"County\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = dict(zip(county_counts[\"County\"], county_counts[\"release_count\"]))",
+            "subquestion": "What were the FY2019 state prison release counts for every Texas county, with county names normalized to uppercase?",
+            "limit": 10,
+            "answer": {
+                "HARRIS": 9029,
+                "DALLAS": 5355,
+                "TARRANT": 4769,
+                "BEXAR": 4545,
+                "HIDALGO": 1861,
+                "TRAVIS": 1857,
+                "MONTGOMERY": 1315,
+                "EL PASO": 1261,
+                "MCLENNAN": 1002,
+                "SMITH": 954
+            }
+        },
+        "2": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty_counts = (\n    df.groupby(\"County\")\n    .size()\n    .rename(index=lambda x: str(x).upper())\n    .rename_axis(\"County\")\n    .reset_index(name=\"release_count\")\n    .sort_values([\"release_count\", \"County\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = dict(zip(county_counts[\"County\"], county_counts[\"release_count\"]))",
+            "subquestion": "What were the FY2020 state prison release counts for every Texas county, with county names normalized to uppercase?",
+            "limit": 10,
+            "answer": {
+                "HARRIS": 7059,
+                "DALLAS": 4540,
+                "TARRANT": 4450,
+                "BEXAR": 3917,
+                "TRAVIS": 1596,
+                "HIDALGO": 1572,
+                "MONTGOMERY": 1250,
+                "EL PASO": 1121,
+                "MCLENNAN": 994,
+                "SMITH": 897
+            }
+        },
+        "3": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty_counts = (\n    df.groupby(\"County\")\n    .size()\n    .rename(index=lambda x: str(x).upper())\n    .rename_axis(\"County\")\n    .reset_index(name=\"release_count\")\n    .sort_values([\"release_count\", \"County\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = dict(zip(county_counts[\"County\"], county_counts[\"release_count\"]))",
+            "subquestion": "What were the FY2021 state prison release counts for every Texas county, with county names normalized to uppercase?",
+            "limit": 10,
+            "answer": {
+                "HARRIS": 5210,
+                "DALLAS": 3565,
+                "TARRANT": 3252,
+                "BEXAR": 3236,
+                "HIDALGO": 1147,
+                "TRAVIS": 1036,
+                "EL PASO": 967,
+                "MONTGOMERY": 797,
+                "SMITH": 763,
+                "MCLENNAN": 726
+            }
+        },
+        "4": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty_counts = (\n    df.groupby(\"County\")\n    .size()\n    .rename(index=lambda x: str(x).upper())\n    .rename_axis(\"County\")\n    .reset_index(name=\"release_count\")\n    .sort_values([\"release_count\", \"County\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = dict(zip(county_counts[\"County\"], county_counts[\"release_count\"]))",
+            "subquestion": "What were the FY2022 state prison release counts for every Texas county, with county names normalized to uppercase?",
+            "limit": 10,
+            "answer": {
+                "HARRIS": 4988,
+                "DALLAS": 3557,
+                "TARRANT": 3231,
+                "BEXAR": 2918,
+                "HIDALGO": 1015,
+                "MONTGOMERY": 874,
+                "EL PASO": 834,
+                "TRAVIS": 790,
+                "SMITH": 783,
+                "JEFFERSON": 714
+            }
+        },
+        "5": {
+            "source": "wikipedia/Bexar_County,_Texas/content.txt",
+            "fact": "its county seat is San Antonio",
+            "subquestion": "What is the county seat of <hop 1 answer>?",
+            "answer": "San Antonio"
+        },
+        "6": {
+            "source": "wikipedia/San_Antonio/content.txt",
+            "fact": "is home to the five-time NBA champion San Antonio Spurs",
+            "subquestion": "What five-time NBA champion team is based in <hop 2 answer>?",
+            "answer": "San Antonio Spurs"
+        },
+        "7": {
+            "source": "wikipedia/San_Antonio_Spurs/content.txt",
+            "fact": "they faced the New York Knicks, who had made history by becoming the first eighth seed to ever make the NBA Finals. The Spurs won the series 4-1 and the franchise's first NBA Championship",
+            "subquestion": "Which team did <hop 3 answer> defeat in its first NBA championship?",
+            "answer": "New York Knicks"
+        },
+        "8": {
+            "source": "wikipedia/New_York_Knicks/content.txt",
+            "fact": "based in the New York City borough of Manhattan",
+            "subquestion": "In which borough is <hop 4 answer> based?",
+            "answer": "Manhattan"
+        },
+        "9": {
+            "source": "wikipedia/Manhattan/content.txt",
+            "fact": "Coextensive with New York County",
+            "subquestion": "Which county is coextensive with <hop 5 answer>?",
+            "answer": "New York County"
+        },
+        "10": {
+            "source": "datagov/hate-crimes-by-county-and-bias-type-beginning-2010/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/hate-crimes-by-county-and-bias-type-beginning-2010/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"Year\"] == 2020)\n    & (df[\"County\"] == \"New York\")\n    & (df[\"Crime Type\"].isin([\"Crimes Against Persons\", \"Property Crimes\"]))\n]\nanswer = int(filtered[\"Total Incidents\"].sum())",
+            "subquestion": "How many total hate crime incidents were there in <hop 6 answer> in 2020?",
+            "answer": 82
+        },
+        "11": {
+            "source": "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"Year\"] == 2020) & (df[\"County\"] == \"New York\")]\nanswer = int(filtered[\"Firearm Count\"].iloc[0])",
+            "subquestion": "How many firearm crimes were there in <hop 6 answer> in 2020?",
+            "answer": 898
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Group the FY2019 releases file by `County`, count rows, and normalize county names to uppercase to get 2019 release counts for all counties.",
+                "Node 2: Group the FY2020 releases file by `County`, count rows, and normalize county names to uppercase to get 2020 release counts for all counties.",
+                "Node 3: Group the FY2021 releases file by `County`, count rows, and normalize county names to uppercase to get 2021 release counts for all counties.",
+                "Node 4: Group the FY2022 releases file by `County`, count rows, and normalize county names to uppercase to get 2022 release counts for all counties.",
+                "Hop result: average each county's yearly release counts across 2019-2022, keep the five counties with the highest averages (HARRIS, DALLAS, TARRANT, BEXAR, HIDALGO), then compute each of those counties' coefficients of variation across the four yearly counts; BEXAR has the lowest coefficient of variation, so the most consistent county is Bexar County."
+            ],
+            "answer": "Bexar County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Read the county seat of <hop 1 answer> from the cited Wikipedia source.",
+                "Hop result: the county seat is San Antonio."
+            ],
+            "answer": "San Antonio"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Read the five-time NBA champion team based in <hop 2 answer> from the cited Wikipedia source.",
+                "Hop result: the team is the San Antonio Spurs."
+            ],
+            "answer": "San Antonio Spurs"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Read which team <hop 3 answer> defeated in its first NBA championship from the cited Wikipedia source.",
+                "Hop result: the defeated team is the New York Knicks."
+            ],
+            "answer": "New York Knicks"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Read the New York City borough where <hop 4 answer> is based from the cited Wikipedia source.",
+                "Hop result: the borough is Manhattan."
+            ],
+            "answer": "Manhattan"
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: Read which county is coextensive with <hop 5 answer> from the cited Wikipedia source.",
+                "Hop result: the county is New York County."
+            ],
+            "answer": "New York County"
+        },
+        {
+            "hop": 7,
+            "node_ids": [
+                10,
+                11
+            ],
+            "reasoning": [
+                "Node 10: Filter rows where `Year` = 2020, `County` = `New York`, and `Crime Type` is either `Crimes Against Persons` or `Property Crimes`, then sum `Total Incidents` to get the 2020 hate-crime total for <hop 6 answer>.",
+                "Node 11: Filter rows where `Year` = 2020 and `County` = `New York`, then read `Firearm Count` for <hop 6 answer>.",
+                "Hop result: take the absolute difference between firearm crimes and hate crimes in New York County in 2020: |898 - 82| = 816."
+            ],
+            "answer": 816
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Bexar_County,_Texas/content.txt",
+        "wikipedia/San_Antonio/content.txt",
+        "wikipedia/San_Antonio_Spurs/content.txt",
+        "wikipedia/New_York_Knicks/content.txt",
+        "wikipedia/Manhattan/content.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2021/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2022/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2022/signed-metadata.txt",
+        "datagov/hate-crimes-by-county-and-bias-type-beginning-2010/files/rows.txt",
+        "datagov/hate-crimes-by-county-and-bias-type-beginning-2010/signed-metadata.txt",
+        "datagov/hate-crimes-by-county-and-bias-type-beginning-2010/files/6xda-q7ev.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/signed-metadata.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/DCJS_IndexCrimeRatesByCounty_DataDictionary.pdf"
+    ]
+}

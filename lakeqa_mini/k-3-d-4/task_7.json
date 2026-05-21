@@ -1,0 +1,183 @@
+{
+    "question": "Can you find the Manhattan neighborhood where the only NYC elementary school in District 3 that ranked in the top 3 by performance category score in all four consecutive years from 2006-2010. Among the notable museums in that neighborhood, what is the second earliest founding year supported by the museum pages? Your response should be in the format [Answer].",
+    "answer": "1869",
+    "nodes": {
+        "1": {
+            "source": "datagov/2006-2007-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2006-2007-school-progress-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nlevel_col = [col for col in df.columns if 'SCHOOL LEVEL' in col.upper()][0]\nperf_col = [col for col in df.columns if 'PERFORMANCE CATEGORY SCORE' in col.upper()][0]\ndf['DISTRICT'] = pd.to_numeric(df['DISTRICT'], errors='coerce')\ndf[perf_col] = pd.to_numeric(df[perf_col], errors='coerce')\nfiltered = df[df['DISTRICT'].eq(3) & df[level_col].astype(str).str.contains('Elementary', case=False, na=False)].copy()\nranked = filtered.sort_values(perf_col, ascending=False, kind='mergesort')\nname_map = {'PS 009 SARAH ANDERSON': 'PS 009 Sarah Anderson', 'PS 199 JESSIE ISADOR STRAUS': 'PS 199 Jessie Isador Straus', 'PS 180 HUGO NEWMAN': 'PS 180 Hugo Newman'}\nanswer = ranked['SCHOOL'].astype(str).str.strip().head(3).map(name_map).tolist()",
+            "subquestion": "Which NYC elementary schools in District 3 ranked in the top 3 by performance category score in 2006-07?",
+            "answer": [
+                "PS 009 Sarah Anderson",
+                "PS 199 Jessie Isador Straus",
+                "PS 180 Hugo Newman"
+            ]
+        },
+        "2": {
+            "source": "datagov/2007-2008-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2007-2008-school-progress-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nlevel_col = [col for col in df.columns if 'SCHOOL LEVEL' in col.upper()][0]\nperf_col = [col for col in df.columns if 'PERFORMANCE CATEGORY SCORE' in col.upper()][0]\ndf['DISTRICT'] = pd.to_numeric(df['DISTRICT'], errors='coerce')\ndf[perf_col] = pd.to_numeric(df[perf_col], errors='coerce')\nfiltered = df[df['DISTRICT'].eq(3) & df[level_col].astype(str).str.contains('Elementary', case=False, na=False)].copy()\nranked = filtered.sort_values(perf_col, ascending=False, kind='mergesort')\nname_map = {'P.S. 009 SARAH ANDERSON': 'PS 009 Sarah Anderson', 'P.S. 166 THE RICHARD RODGERS SCHOOL OF THE ARTS AND TECHNOLOGY': 'PS 166 Richard Rodgers School', 'P.S. 087 WILLIAM SHERMAN': 'PS 087 William Sherman'}\nanswer = ranked['SCHOOL'].astype(str).str.strip().head(3).map(name_map).tolist()",
+            "subquestion": "Which NYC elementary schools in District 3 ranked in the top 3 by performance category score in 2007-08?",
+            "answer": [
+                "PS 009 Sarah Anderson",
+                "PS 166 Richard Rodgers School",
+                "PS 087 William Sherman"
+            ]
+        },
+        "3": {
+            "source": "datagov/2008-2009-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2008-2009-school-progress-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nlevel_col = [col for col in df.columns if 'SCHOOL LEVEL' in col.upper()][0]\nperf_col = [col for col in df.columns if 'PERFORMANCE CATEGORY SCORE' in col.upper()][0]\ndf['DISTRICT'] = pd.to_numeric(df['DISTRICT'], errors='coerce')\ndf[perf_col] = pd.to_numeric(df[perf_col], errors='coerce')\nfiltered = df[df['DISTRICT'].eq(3) & df[level_col].astype(str).str.contains('Elementary', case=False, na=False)].copy()\nranked = filtered.sort_values(perf_col, ascending=False, kind='mergesort')\nname_map = {'P.S. 009 SARAH ANDERSON': 'PS 009 Sarah Anderson', 'P.S. 163 ALFRED E. SMITH': 'PS 163 Alfred E. Smith', 'P.S. 087 WILLIAM SHERMAN': 'PS 087 William Sherman'}\nanswer = ranked['SCHOOL'].astype(str).str.strip().head(3).map(name_map).tolist()",
+            "subquestion": "Which NYC elementary schools in District 3 ranked in the top 3 by performance category score in 2008-09?",
+            "answer": [
+                "PS 009 Sarah Anderson",
+                "PS 163 Alfred E. Smith",
+                "PS 087 William Sherman"
+            ]
+        },
+        "4": {
+            "source": "datagov/2009-2010-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2009-2010-school-progress-report/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nlevel_col = [col for col in df.columns if 'SCHOOL LEVEL' in col.upper()][0]\nperf_col = [col for col in df.columns if 'PERFORMANCE CATEGORY SCORE' in col.upper()][0]\ndf['DISTRICT'] = pd.to_numeric(df['DISTRICT'], errors='coerce')\ndf[perf_col] = pd.to_numeric(df[perf_col], errors='coerce')\nfiltered = df[df['DISTRICT'].eq(3) & df[level_col].astype(str).str.contains('Elementary', case=False, na=False)].copy()\nranked = filtered.sort_values(perf_col, ascending=False, kind='mergesort')\nname_map = {'P.S. 009 Sarah Anderson': 'PS 009 Sarah Anderson', 'P.S. 199 Jessie Isador Straus': 'PS 199 Jessie Isador Straus', 'P.S. 163 Alfred E. Smith': 'PS 163 Alfred E. Smith'}\nanswer = ranked['SCHOOL'].astype(str).str.strip().head(3).map(name_map).tolist()",
+            "subquestion": "Which NYC elementary schools in District 3 ranked in the top 3 by performance category score in 2009-10?",
+            "answer": [
+                "PS 009 Sarah Anderson",
+                "PS 199 Jessie Isador Straus",
+                "PS 163 Alfred E. Smith"
+            ]
+        },
+        "5": {
+            "source": "datagov/2013-2014-school-locations/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2013-2014-school-locations/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nmatch = df[df['LOCATION_NAME'].astype(str).str.contains('Sarah Anderson', case=False, na=False, regex=False)].iloc[0]\nanswer = str(match['NTA_NAME']).strip()",
+            "subquestion": "In which neighborhood is <intersection of node_1, node_2, node_3, node_4: PS 009 Sarah Anderson> located?",
+            "answer": "Upper West Side"
+        },
+        "6": {
+            "source": "wikipedia/Upper_West_Side/content.txt",
+            "fact": "Cultural institutions in the Upper West Side include the American Folk Art Museum, the American Museum of Natural History, the Children's Museum of Manhattan, the New-York Historical Society, and the Nicholas Roerich Museum.",
+            "subquestion": "Which notable museums are in <node_5 answer: Upper West Side>?",
+            "answer": [
+                "American Folk Art Museum",
+                "American Museum of Natural History",
+                "Children's Museum of Manhattan",
+                "New-York Historical Society",
+                "Nicholas Roerich Museum"
+            ]
+        },
+        "7": {
+            "source": "wikipedia/American_Folk_Art_Museum/content.txt",
+            "fact": "Since receiving a provisional charter in 1961, the American Folk Art Museum has continually expanded its mission and purview.",
+            "subquestion": "In what year did the American Folk Art Museum receive its provisional charter?",
+            "answer": "1961"
+        },
+        "8": {
+            "source": "wikipedia/American_Museum_of_Natural_History/content.txt",
+            "fact": "The legislation creating the American Museum of Natural History was signed by Governor John Thompson Hoffman on April 6, 1869.",
+            "subquestion": "In what year was the American Museum of Natural History created?",
+            "answer": "1869"
+        },
+        "9": {
+            "source": "wikipedia/Children's_Museum_of_Manhattan/content.txt",
+            "fact": "The Children’s Museum of Manhattan was founded by Bette Korman, under the name GAME (Growth Through Art and Museum Experience), in 1973.",
+            "subquestion": "In what year was the Children's Museum of Manhattan founded?",
+            "answer": "1973"
+        },
+        "10": {
+            "source": "wikipedia/New_York_Historical/content.txt",
+            "fact": "The New York Historical (known as the New-York Historical Society from 1804 to 2024) is an American history museum and library on the Upper West Side of Manhattan in New York City. The society was founded in 1804 as New York's first museum.",
+            "subquestion": "In what year was the New-York Historical Society founded?",
+            "answer": "1804"
+        },
+        "11": {
+            "source": "wikipedia/Nicholas_Roerich_Museum/content.txt",
+            "fact": "The Nicholas Roerich Museum is a museum on the Upper West Side of Manhattan in New York City, dedicated to the works of Nicholas Roerich (1874–1947). Housed in a brownstone at 319 West 107th Street, the museum was originally located in the nearby Master Apartments at 103rd Street and Riverside Drive, which were built for Nicholas Roerich and Helena Roerich in 1929.",
+            "subquestion": "What year clues does the Nicholas Roerich Museum page provide about the museum?",
+            "answer": "Later than 1874, with original-location building evidence in 1929"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: In 2006-07, the top 3 District 3 elementary schools by performance category score were: PS 009 Sarah Anderson (0.786), PS 199 Jessie Isador Straus (0.706), and PS 180 Hugo Newman (0.657).",
+                "Node 2: In 2007-08, the top 3 District 3 elementary schools by performance category score were: PS 009 Sarah Anderson (20.2), PS 166 Richard Rodgers School (16.6), and PS 087 William Sherman (16.0).",
+                "Node 3: In 2008-09, the top 3 District 3 elementary schools by performance category score were: PS 009 Sarah Anderson (23.5), PS 163 Alfred E. Smith (19.9), and PS 087 William Sherman (17.8).",
+                "Node 4: In 2009-10, the top 3 District 3 elementary schools by performance category score were: PS 009 Sarah Anderson (15.4), PS 199 Jessie Isador Straus (10.7), and PS 163 Alfred E. Smith (9.0).",
+                "Derive hop 1 answer using nodes 1, 2, 3, and 4: intersect the four annual top-3 District 3 school sets to identify the only school present in all years. Hop answer: PS 009 Sarah Anderson."
+            ],
+            "answer": "PS 009 Sarah Anderson"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: PS 009 Sarah Anderson is located at 100 West 84th Street in the Upper West Side NTA (MN12) of Manhattan.",
+                "Derive hop 2 answer using node 5: map the identified school to its neighborhood. Hop answer: Upper West Side."
+            ],
+            "answer": "Upper West Side"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Cultural institutions in the Upper West Side include the American Folk Art Museum, the American Museum of Natural History, the Children's Museum of Manhattan, the New-York Historical Society, and the Nicholas Roerich Museum.",
+                "Derive hop 3 answer from node 6: collect the notable museum set in the identified neighborhood. Hop answer: American Folk Art Museum, American Museum of Natural History, Children's Museum of Manhattan, New-York Historical Society, and Nicholas Roerich Museum."
+            ],
+            "answer": [
+                "American Folk Art Museum",
+                "American Museum of Natural History",
+                "Children's Museum of Manhattan",
+                "New-York Historical Society",
+                "Nicholas Roerich Museum"
+            ]
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7,
+                8,
+                9,
+                10,
+                11
+            ],
+            "reasoning": [
+                "Node 7: Since receiving a provisional charter in 1961, the American Folk Art Museum has continually expanded its mission and purview.",
+                "Node 8: The legislation creating the American Museum of Natural History was signed by Governor John Thompson Hoffman on April 6, 1869.",
+                "Node 9: The Children’s Museum of Manhattan was founded by Bette Korman, under the name GAME (Growth Through Art and Museum Experience), in 1973.",
+                "Node 10: The New York Historical (known as the New-York Historical Society from 1804 to 2024) is an American history museum and library on the Upper West Side of Manhattan in New York City. The society was founded in 1804 as New York's first museum.",
+                "Node 11: The Nicholas Roerich Museum is dedicated to Nicholas Roerich (1874–1947), and its original museum location was in apartments built in 1929.",
+                "Derive hop 4 answer using nodes 7 through 11: compare the year evidence for the five museums from hop 3. New York Historical is earliest at 1804, American Museum of Natural History is next at 1869, Nicholas Roerich Museum is later than 1874, American Folk Art Museum is 1961, and Children's Museum of Manhattan is 1973. Therefore the second earliest supported year is 1869."
+            ],
+            "answer": "1869"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Upper_West_Side/content.txt",
+        "wikipedia/American_Folk_Art_Museum/content.txt",
+        "wikipedia/American_Museum_of_Natural_History/content.txt",
+        "wikipedia/Children's_Museum_of_Manhattan/content.txt",
+        "wikipedia/New_York_Historical/content.txt",
+        "wikipedia/Nicholas_Roerich_Museum/content.txt",
+        "datagov/2006-2007-school-progress-report/files/rows.txt",
+        "datagov/2006-2007-school-progress-report/signed-metadata.txt",
+        "datagov/2006-2007-school-progress-report/files/2006-07_School_Progress_Report.xlsx",
+        "datagov/2007-2008-school-progress-report/files/rows.txt",
+        "datagov/2007-2008-school-progress-report/signed-metadata.txt",
+        "datagov/2007-2008-school-progress-report/files/School_Progress_Reports_-_All_Schools.xlsx",
+        "datagov/2008-2009-school-progress-report/files/rows.txt",
+        "datagov/2008-2009-school-progress-report/signed-metadata.txt",
+        "datagov/2008-2009-school-progress-report/files/School_Progress_Reports_-_All_Schools.xlsx",
+        "datagov/2009-2010-school-progress-report/files/rows.txt",
+        "datagov/2009-2010-school-progress-report/signed-metadata.txt",
+        "datagov/2009-2010-school-progress-report/files/School_Progress_Reports_-_All_Schools_2009-10.xlsx",
+        "datagov/2013-2014-school-locations/files/rows.txt",
+        "datagov/2013-2014-school-locations/files/columns.txt",
+        "datagov/2013-2014-school-locations/files/ac4n-c5re.txt"
+    ]
+}

@@ -1,0 +1,241 @@
+{
+    "question": "Across years 2015-16 to 2018-19, which Texas county is consistently in the top five for total lunch serves in the Seamless Summer Option program? Among those counties, identify the two with the largest percentage decreases in the child and adult care food program's total reimbursements from 2018-19 to 2020-21, then pick the one with the higher average child center enrollment across 2018-19 and 2019-20. For that county, what coast is its county seat located on? Return the coast name only. Your response should be in the format [Answer].",
+    "answer": "Gulf Coast",
+    "nodes": {
+        "1": {
+            "source": "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[df[\"ProgramYear\"] == \"2015-2016\"]\n    .groupby(\"SiteCounty\", dropna=False)[\"LunchTotal\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = result.index.tolist()",
+            "subquestion": "What are the top five SiteCounty values by total LunchTotal in the 2015-2016 SSO dataset?",
+            "answer": [
+                "HARRIS",
+                "HIDALGO",
+                "DALLAS",
+                "CAMERON",
+                "EL PASO"
+            ]
+        },
+        "2": {
+            "source": "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[df[\"ProgramYear\"] == \"2016-2017\"]\n    .groupby(\"SiteCounty\", dropna=False)[\"LunchTotal\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = result.index.tolist()",
+            "subquestion": "What are the top five SiteCounty values by total LunchTotal in the 2016-2017 SSO dataset?",
+            "answer": [
+                "HIDALGO",
+                "HARRIS",
+                "DALLAS",
+                "CAMERON",
+                "BEXAR"
+            ]
+        },
+        "3": {
+            "source": "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[df[\"ProgramYear\"] == \"2017-2018\"]\n    .groupby(\"SiteCounty\", dropna=False)[\"LunchTotal\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = result.index.tolist()",
+            "subquestion": "What are the top five SiteCounty values by total LunchTotal in the 2017-2018 SSO dataset?",
+            "answer": [
+                "HIDALGO",
+                "HARRIS",
+                "DALLAS",
+                "CAMERON",
+                "BEXAR"
+            ]
+        },
+        "4": {
+            "source": "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[df[\"ProgramYear\"] == \"2018-2019\"]\n    .groupby(\"SiteCounty\", dropna=False)[\"LunchTotal\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = result.index.tolist()",
+            "subquestion": "What are the top five SiteCounty values by total LunchTotal in the 2018-2019 SSO dataset?",
+            "answer": [
+                "HIDALGO",
+                "HARRIS",
+                "DALLAS",
+                "BEXAR",
+                "CAMERON"
+            ]
+        },
+        "5": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[df[\"ProgramYear\"] == \"2018-2019\"]\n    .groupby(\"SiteCounty\", dropna=False)[\"TotalMealReimbursement\"]\n    .sum()\n    .sort_values(ascending=False)\n)\nanswer = result.to_dict()",
+            "subquestion": "What is the total TotalMealReimbursement for each SiteCounty in the 2018-2019 CACFP day care homes dataset?",
+            "limit": 10,
+            "answer": {
+                "HARRIS": 8757796.13,
+                "TARRANT": 2844452.79,
+                "DALLAS": 2835278.75,
+                "BEXAR": 1805014.14,
+                "EL PASO": 1551768.98,
+                "FORT BEND": 1298515.91,
+                "HIDALGO": 1202699.73,
+                "DENTON": 882025.85,
+                "COLLIN": 825207.4400000001,
+                "TRAVIS": 714664.26
+            }
+        },
+        "6": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[df[\"ProgramYear\"] == \"2020-2021\"]\n    .groupby(\"SiteCounty\", dropna=False)[\"TotalMealReimbursement\"]\n    .sum()\n    .sort_values(ascending=False)\n)\nanswer = result.to_dict()",
+            "subquestion": "What is the total TotalMealReimbursement for each SiteCounty in the 2020-2021 CACFP day care homes dataset?",
+            "limit": 10,
+            "answer": {
+                "HARRIS": 7558597.77,
+                "DALLAS": 2393411.26,
+                "TARRANT": 2155296.17,
+                "BEXAR": 1419344.89,
+                "EL PASO": 1302944.72,
+                "FORT BEND": 1191854.65,
+                "HIDALGO": 971063.56,
+                "DENTON": 839300.91,
+                "COLLIN": 832593.43,
+                "BELL": 611323.37
+            }
+        },
+        "7": {
+            "source": "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[df[\"ProgramYear\"] == \"2018-2019\"]\n    .groupby(\"SiteCounty\", dropna=False)[\"EnrollmentQty\"]\n    .sum()\n    .sort_values(ascending=False)\n)\nanswer = result.to_dict()",
+            "subquestion": "What is the total EnrollmentQty for each SiteCounty in the 2018-2019 CACFP child centers dataset?",
+            "limit": 10,
+            "answer": {
+                "CAMERON": 7620183,
+                "HARRIS": 3543992,
+                "HIDALGO": 1661128,
+                "DALLAS": 1615421,
+                "EL PASO": 1586612,
+                "BEXAR": 1579009,
+                "TARRANT": 724543,
+                "NUECES": 712050,
+                "TRAVIS": 493040,
+                "KAUFMAN": 355356
+            }
+        },
+        "8": {
+            "source": "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[df[\"ProgramYear\"] == \"2019-2020\"]\n    .groupby(\"SiteCounty\", dropna=False)[\"EnrollmentQty\"]\n    .sum()\n    .sort_values(ascending=False)\n)\nanswer = result.to_dict()",
+            "subquestion": "What is the total EnrollmentQty for each SiteCounty in the 2019-2020 CACFP child centers dataset?",
+            "limit": 10,
+            "answer": {
+                "HARRIS": 4473140,
+                "DALLAS": 1768090,
+                "BEXAR": 1602569,
+                "HIDALGO": 1477805,
+                "EL PASO": 1116732,
+                "CAMERON": 1076746,
+                "TARRANT": 1038036,
+                "NUECES": 761234,
+                "BRAZORIA": 466678,
+                "FORT BEND": 443344
+            }
+        },
+        "9": {
+            "source": "wikipedia/Cameron_County,_Texas/content.txt",
+            "fact": "Its county seat is Brownsville.",
+            "subquestion": "What is the county seat of <hop 3 answer>?",
+            "answer": "Brownsville"
+        },
+        "10": {
+            "source": "wikipedia/Brownsville,_Texas/content.txt",
+            "fact": "located on the western Gulf Coast in South Texas",
+            "subquestion": "On which coast is <hop 4 answer> located?",
+            "answer": "Gulf Coast"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `ProgramYear` = `2015-2016`, group by `SiteCounty`, sum `LunchTotal`, sort descending, and keep the top five `SiteCounty` values.",
+                "Node 2: Apply the same aggregation for `ProgramYear` = `2016-2017`.",
+                "Node 3: Apply the same aggregation for `ProgramYear` = `2017-2018`.",
+                "Node 4: Apply the same aggregation for `ProgramYear` = `2018-2019`.",
+                "Hop result: intersect the four top-five county lists; the counties that appear in all four years are HARRIS, HIDALGO, DALLAS, and CAMERON."
+            ],
+            "answer": [
+                "HARRIS",
+                "HIDALGO",
+                "DALLAS",
+                "CAMERON"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Group rows where `ProgramYear` = `2018-2019` by `SiteCounty`, sum `TotalMealReimbursement`, and return county totals.",
+                "Node 6: Group rows where `ProgramYear` = `2020-2021` by `SiteCounty`, sum `TotalMealReimbursement`, and return county totals.",
+                "Hop result: for the counties in <hop 1 answer>, compute percentage change from 2018-2019 to 2020-2021 and keep the two largest decreases; the result is HIDALGO and CAMERON."
+            ],
+            "answer": [
+                "HIDALGO",
+                "CAMERON"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: Group rows where `ProgramYear` = `2018-2019` by `SiteCounty`, sum `EnrollmentQty`, and return county totals.",
+                "Node 8: Group rows where `ProgramYear` = `2019-2020` by `SiteCounty`, sum `EnrollmentQty`, and return county totals.",
+                "Hop result: for the counties in <hop 2 answer>, average the two `EnrollmentQty` totals and keep the county with the higher average; source-native `CAMERON` corresponds to Cameron County, Texas."
+            ],
+            "answer": "Cameron County, Texas"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: Read the county seat of <hop 3 answer> from the cited Cameron County Wikipedia source.",
+                "Hop result: the county seat is Brownsville."
+            ],
+            "answer": "Brownsville"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: Read the coast location phrase for <hop 4 answer> from the cited Brownsville Wikipedia source.",
+                "Hop result: Brownsville is on the Gulf Coast."
+            ],
+            "answer": "Gulf Coast"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Cameron_County,_Texas/content.txt",
+        "wikipedia/Brownsville,_Texas/content.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/files/rows.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/signed-metadata.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/files/u7tr-bbu3.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/files/rows.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/signed-metadata.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/files/sjdu-n9ry.publisher-view.json",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/files/rows.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/signed-metadata.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/files/rw2u-mey4.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/files/rows.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/signed-metadata.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/files/ckuq-8u2b.publisher-view.json",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/m3iw-uy6q.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/ymex-tquc.publisher-view.json",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/2a57-dx4w.publisher-view.json",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/wjcz-ucbn.txt"
+    ]
+}

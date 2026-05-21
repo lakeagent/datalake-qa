@@ -1,0 +1,231 @@
+{
+    "question": "I am looking for Texas counties that consistently ranked in the top five for child care center sites participating in the federal meal-reimbursement program for children and adults between 2018 and 2022. Among these leaders, find the ones that reported over 600 children removed from their homes by child protective services in 2022 despite completing fewer than 14,000 investigations into possible child abuse or neglect. Compare this county's establishment date with Tarrant County's; for the earliest one, report the admission order number of the U.S. state admitted to the Union in that year. Please return the order number only. Your response should be in the format [Answer].",
+    "answer": "25",
+    "nodes": {
+        "1": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2018-2019\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+            "subquestion": "What is the number of child care center sites in each Texas county participating in the federal meal-reimbursement program for children and adults for 2018-2019?",
+            "answer": {
+                "HARRIS": 1781,
+                "DALLAS": 1207,
+                "HIDALGO": 878,
+                "BEXAR": 622,
+                "TARRANT": 562,
+                "EL PASO": 459,
+                "CAMERON": 455,
+                "TRAVIS": 306,
+                "KAUFMAN": 232,
+                "FORT BEND": 150
+            },
+            "limit": 10
+        },
+        "2": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2019-2020\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+            "subquestion": "What is the number of child care center sites in each Texas county participating in the federal meal-reimbursement program for children and adults for 2019-2020?",
+            "answer": {
+                "HARRIS": 2179,
+                "DALLAS": 1435,
+                "HIDALGO": 1203,
+                "BEXAR": 888,
+                "CAMERON": 592,
+                "TARRANT": 588,
+                "EL PASO": 524,
+                "TRAVIS": 343,
+                "KAUFMAN": 204,
+                "WEBB": 200
+            },
+            "limit": 10
+        },
+        "3": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2020-2021\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+            "subquestion": "What is the number of child care center sites in each Texas county participating in the federal meal-reimbursement program for children and adults for 2020-2021?",
+            "answer": {
+                "HARRIS": 1709,
+                "DALLAS": 1120,
+                "HIDALGO": 918,
+                "BEXAR": 756,
+                "TARRANT": 592,
+                "EL PASO": 456,
+                "CAMERON": 418,
+                "TRAVIS": 267,
+                "FORT BEND": 202,
+                "BELL": 188
+            },
+            "limit": 10
+        },
+        "4": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2021-2022\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+            "subquestion": "What is the number of child care center sites in each Texas county participating in the federal meal-reimbursement program for children and adults for 2021-2022?",
+            "answer": {
+                "HARRIS": 1871,
+                "DALLAS": 1269,
+                "HIDALGO": 924,
+                "BEXAR": 772,
+                "TARRANT": 687,
+                "EL PASO": 443,
+                "CAMERON": 417,
+                "TRAVIS": 301,
+                "FORT BEND": 212,
+                "KAUFMAN": 172
+            },
+            "limit": 10
+        },
+        "5": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"ProgramYear\"] == \"2022-2023\"]\n      .groupby(\"SiteCounty\", dropna=False)\n      .size()\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+            "subquestion": "What is the number of child care center sites in each Texas county participating in the federal meal-reimbursement program for children and adults for 2022-2023?",
+            "answer": {
+                "HARRIS": 2183,
+                "DALLAS": 1352,
+                "HIDALGO": 947,
+                "BEXAR": 743,
+                "TARRANT": 715,
+                "EL PASO": 452,
+                "CAMERON": 424,
+                "TRAVIS": 328,
+                "WEBB": 225,
+                "FORT BEND": 177
+            },
+            "limit": 10
+        },
+        "6": {
+            "source": "datagov/cpi-3-1-completed-abuse-neglect-investigations-by-county-fy2013-fy2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/cpi-3-1-completed-abuse-neglect-investigations-by-county-fy2013-fy2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"County_norm\"] = df[\"County\"].astype(str).str.strip().str.upper()\ndf[\"Completed Investigations\"] = pd.to_numeric(df[\"Completed Investigations\"], errors=\"coerce\")\nresult = (\n    df.loc[df[\"Fiscal Year\"] == 2022]\n      .groupby(\"County_norm\", dropna=False)[\"Completed Investigations\"]\n      .sum(min_count=1)\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+            "subquestion": "What is the 2022 total number of completed investigations into possible child abuse or neglect for each county?",
+            "answer": {
+                "HARRIS": 23468,
+                "DALLAS": 14192,
+                "TARRANT": 13286,
+                "BEXAR": 13020,
+                "TRAVIS": 5315,
+                "HIDALGO": 4984,
+                "EL PASO": 4709,
+                "DENTON": 3761,
+                "COLLIN": 3526,
+                "MONTGOMERY": 3484
+            },
+            "limit": 10
+        },
+        "7": {
+            "source": "datagov/cps-2-1-removals-by-county-fy2013-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/cps-2-1-removals-by-county-fy2013-2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"County_norm\"] = df[\"County\"].astype(str).str.strip().str.upper()\ndf[\"Removals\"] = pd.to_numeric(df[\"Removals\"], errors=\"coerce\")\nresult = (\n    df.loc[df[\"Fiscal Year\"] == 2022]\n      .groupby(\"County_norm\", dropna=False)[\"Removals\"]\n      .sum(min_count=1)\n      .sort_values(ascending=False, kind=\"stable\")\n      .to_dict()\n)\nanswer = result",
+            "subquestion": "What is the 2022 total number of children removed from their homes by child protective services for each county?",
+            "answer": {
+                "BEXAR": 1074,
+                "DALLAS": 738,
+                "HARRIS": 566,
+                "TARRANT": 555,
+                "BELL": 470,
+                "TRAVIS": 273,
+                "NUECES": 258,
+                "TAYLOR": 205,
+                "LUBBOCK": 194,
+                "MCLENNAN": 171
+            },
+            "limit": 10
+        },
+        "8": {
+            "source": "wikipedia/Bexar_County,_Texas/content.txt",
+            "fact": "Bexar County was created on December 20, 1836, as one of the original counties of the Republic of Texas.",
+            "subquestion": "When was <hop 2 answer> created?",
+            "answer": "1836"
+        },
+        "9": {
+            "source": "wikipedia/Tarrant_County,_Texas/content.txt",
+            "fact": "Tarrant County was established in 1849.",
+            "subquestion": "When was Tarrant County created?",
+            "answer": "1849"
+        },
+        "10": {
+            "source": "wikipedia/Arkansas/content.txt",
+            "fact": "Arkansas was admitted to the Union as the 25th state on June 15, 1836.",
+            "subquestion": "What admission order number did the U.S. state admitted in <hop 3 answer> have?",
+            "answer": "25"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Bexar_County,_Texas/content.txt",
+        "wikipedia/Tarrant_County,_Texas/content.txt",
+        "wikipedia/Arkansas/content.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2018/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2018/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2018/files/gxdu-rsbb.publisher-view.json",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2019/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2019/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2019/files/8rqi-6nkw.publisher-view.json",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2020/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2020/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2020/files/fiuw-37jg.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2021/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2021/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2021/files/shjz-5r49.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2022/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2022/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-centers-site-level-contact-and-program-parti-2022/files/9585-asdn.publisher-view.json",
+        "datagov/cpi-3-1-completed-abuse-neglect-investigations-by-county-fy2013-fy2022/files/rows.txt",
+        "datagov/cpi-3-1-completed-abuse-neglect-investigations-by-county-fy2013-fy2022/signed-metadata.txt",
+        "datagov/cps-2-1-removals-by-county-fy2013-2022/files/rows.txt",
+        "datagov/cps-2-1-removals-by-county-fy2013-2022/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `ProgramYear` equals `2018-2019`, count rows by `SiteCounty`, and keep the full county-level CACFP site-count mapping.",
+                "Node 2: Filter rows where `ProgramYear` equals `2019-2020`, count rows by `SiteCounty`, and keep the full county-level CACFP site-count mapping.",
+                "Node 3: Filter rows where `ProgramYear` equals `2020-2021`, count rows by `SiteCounty`, and keep the full county-level CACFP site-count mapping.",
+                "Node 4: Filter rows where `ProgramYear` equals `2021-2022`, count rows by `SiteCounty`, and keep the full county-level CACFP site-count mapping.",
+                "Node 5: Filter rows where `ProgramYear` equals `2022-2023`, count rows by `SiteCounty`, and keep the full county-level CACFP site-count mapping.",
+                "Hop result: compute the 2018-2022 average site count for each county shared across nodes 1-5 and keep the top five counties = HARRIS, DALLAS, HIDALGO, BEXAR, TARRANT."
+            ],
+            "answer": "HARRIS, DALLAS, HIDALGO, BEXAR, TARRANT"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 6: From the full FY2022 `Completed Investigations` mapping, keep counties in <hop 1 answer> with totals below 14000.",
+                "Node 7: From the full FY2022 `Removals` mapping, keep counties in <hop 1 answer> with totals above 600.",
+                "Hop result: semantic intersection of those two filtered sets = BEXAR."
+            ],
+            "answer": "BEXAR"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                8,
+                9
+            ],
+            "reasoning": [
+                "Node 8: Bexar County was created in 1836.",
+                "Node 9: Tarrant County was established in 1849.",
+                "Hop result: the earlier year is 1836."
+            ],
+            "answer": "1836"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: Arkansas was admitted to the Union as the 25th state on June 15, 1836."
+            ],
+            "answer": "25"
+        }
+    ]
+}

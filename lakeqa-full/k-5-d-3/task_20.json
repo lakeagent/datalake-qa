@@ -1,0 +1,145 @@
+{
+    "question": "Which public educational institution in the 2022 Texas School Nutrition Program was both managed by a food service management company and received the highest total reimbursement? What is the ZIP code of that institution's active site with the highest identified student percentage? Find the reporting month in the final quarter of 2021 with the most children served, and the average monthly income of families served in that ZIP during that month. Among the final reporting months of the first three quarters of that same year for the same ZIP code, which quarter's average monthly income was closest to that value? Please return only the quarter in the format [Answer].",
+    "answer": "2021 Q1",
+    "nodes": {
+        "1": {
+            "source": "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['TypeOfAgency'] = df['TypeOfAgency'].astype(str).str.strip()\ndf['TypeOfOrg'] = df['TypeOfOrg'].astype(str).str.strip()\ndf['CEID'] = df['CEID'].astype(str).str.strip()\ndf['CEName'] = df['CEName'].astype(str).str.strip()\ndf['TotalReimbursement'] = pd.to_numeric(df['TotalReimbursement'], errors='coerce').fillna(0)\n\npublic = df[(df['TypeOfAgency'] == 'Educational Institution') & (df['TypeOfOrg'] == 'Public')].copy()\nagg = public.groupby(['CEID', 'CEName'], as_index=False)['TotalReimbursement'].sum()\nagg = agg.sort_values(['TotalReimbursement', 'CEID'], ascending=[False, True]).head(5)\n\nanswer = '; '.join(\n    f\"{row.CEID} | {row.CEName} | {row.TotalReimbursement:.2f}\"\n    for row in agg.itertuples()\n)\n",
+            "subquestion": "Which five public educational institutions received the most total reimbursement in the 2021-2022 Texas School Nutrition Program?",
+            "answer": "00654 | BEAUMONT ISD | 9950303.79; 00531 | SHELDON ISD | 5443732.14; 00565 | EDCOUCH-ELSA ISD | 3115644.79; 00569 | MERCEDES ISD | 2764431.65; 00916 | LIVINGSTON ISD | 2564634.59"
+        },
+        "2": {
+            "source": "datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['TypeOfAgency'] = df['TypeOfAgency'].astype(str).str.strip()\ndf['TypeOfOrg'] = df['TypeOfOrg'].astype(str).str.strip()\ndf['FsmcManaged'] = df['FsmcManaged'].astype(str).str.strip()\ndf['CEID'] = df['CEID'].astype(str).str.strip()\n\npublic_fsmc = sorted(\n    df[(df['TypeOfAgency'] == 'Educational Institution') & (df['TypeOfOrg'] == 'Public') & (df['FsmcManaged'] == 'Y')]['CEID']\n    .dropna()\n    .unique()\n    .tolist()\n)\n\nanswer = ', '.join(public_fsmc)\n",
+            "subquestion": "Which public educational institutions in the 2021-2022 Texas School Nutrition Program were managed by a food service management company? Return their IDs.",
+            "answer": "00002, 00005, 00006, 00022, 00027, 00029, 00031, 00032, 00078, 00107, 00109, 00129, 00131, 00142, 00143, 00145, 00154, 00163, 00171, 00187, 00200, 00201, 00204, 00214, 00215, 00222, 00231, 00238, 00239, 00240, 00242, 00275, 00277, 00280, 00282, 00285, 00289, 00291, 00297, 00298, 00301, 00304, 00315, 00320, 00332, 00335, 00345, 00381, 00385, 00394, 00395, 00396, 00407, 00410, 00426, 00428, 00452, 00456, 00467, 00521, 00523, 00534, 00536, 00549, 00551, 00552, 00582, 00591, 00592, 00594, 00607, 00612, 00621, 00625, 00637, 00656, 00658, 00660, 00661, 00663, 00668, 00672, 00673, 00676, 00683, 00685, 00688, 00689, 00693, 00712, 00713, 00714, 00724, 00733, 00741, 00751, 00754, 00755, 00756, 00758, 00772, 00782, 00783, 00789, 00793, 00794, 00795, 00800, 00803, 00807, 00808, 00812, 00845, 00860, 00861, 00867, 00873, 00874, 00884, 00894, 00905, 00906, 00907, 00914, 00916, 00918, 00920, 00921, 00925, 00946, 00956, 00967, 00970, 00976, 00980, 00986, 00991, 01020, 01022, 01025, 01027, 01029, 01040, 01041, 01054, 01069, 01072, 01073, 01076, 01096, 01098, 01100, 01112, 01113, 01115, 01127, 01130, 01138, 01144, 01148, 01150, 01151, 01152, 01153, 01154, 01156, 01158, 01183"
+        },
+        "3": {
+            "source": "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nhop_1_answer = '00916'\n\ndf['CEID'] = df['CEID'].astype(str).str.strip()\ndf['SiteID'] = df['SiteID'].astype(str).str.strip()\ndf['SiteName'] = df['SiteName'].astype(str).str.strip()\ndf['SiteStatus'] = df['SiteStatus'].astype(str).str.strip()\ndf['SiteStreetAddressZipCode'] = df['SiteStreetAddressZipCode'].astype(str).str.strip()\ndf['SiteISP'] = pd.to_numeric(df['SiteISP'], errors='coerce')\n\nfiltered = df[(df['CEID'] == hop_1_answer) & (df['SiteStatus'] == 'ACTIVE') & df['SiteISP'].notna()].copy()\nfiltered = filtered.sort_values(['SiteISP', 'SiteID', 'SiteName'], ascending=[False, True, True])\nrow = filtered.iloc[0]\n\nanswer = row['SiteStreetAddressZipCode'].split('-')[0].strip()\n",
+            "subquestion": "For the public educational institution that appears in both <node_1 answer> and <node_2 answer>, what is the ZIP code of its active site with the highest identified student percentage?",
+            "answer": "77351"
+        },
+        "4": {
+            "source": "datagov/monthly-child-care-services-data-report-children-served-by-zip-code-2021-q4/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/monthly-child-care-services-data-report-children-served-by-zip-code-2021-q4/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_3_answer = '77351'\n\ndf['ZIPCode'] = df['ZIPCode'].astype(str).str.strip()\ndf['Reporting_Date'] = df['Reporting_Date'].astype(str).str.strip()\ndf['ChildMale'] = pd.to_numeric(df['ChildMale'], errors='coerce').fillna(0)\ndf['ChildFemale'] = pd.to_numeric(df['ChildFemale'], errors='coerce').fillna(0)\n\nfiltered = df[df['ZIPCode'] == node_3_answer].copy()\nfiltered['TotalDemand'] = filtered['ChildMale'] + filtered['ChildFemale']\nmax_total = filtered['TotalDemand'].max()\nwinners = filtered[filtered['TotalDemand'] == max_total].sort_values('Reporting_Date')\n\nanswer = winners.iloc[0]['Reporting_Date']\n",
+            "subquestion": "For ZIP code <node_3 answer>, which month in 2021 Q4 had the most children served?",
+            "answer": "12/01/2021"
+        },
+        "5": {
+            "source": "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q4/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q4/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_3_answer = '77351'\nnode_4_answer = '12/01/2021'\n\ndf['ZIPCode'] = df['ZIPCode'].astype(str).str.strip()\ndf['ReportingDate'] = df['ReportingDate'].astype(str).str.strip()\ndf['AvgMonthlyIncome'] = pd.to_numeric(df['AvgMonthlyIncome'], errors='coerce')\n\nfiltered = df[(df['ZIPCode'] == node_3_answer) & (df['ReportingDate'] == node_4_answer)].copy()\nrow = filtered.iloc[0]\n\nanswer = str(int(row['AvgMonthlyIncome']))\n",
+            "subquestion": "For ZIP code <node_3 answer> in <node_4 answer>, what was the average monthly income of the families served?",
+            "answer": "1914"
+        },
+        "6": {
+            "source": "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q1/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q1/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_3_answer = '77351'\nnode_5_answer = '1914'\n\ndf['ZIPCode'] = df['ZIPCode'].astype(str).str.strip()\ndf['ReportingDate'] = df['ReportingDate'].astype(str).str.strip()\ndf['AvgMonthlyIncome'] = pd.to_numeric(df['AvgMonthlyIncome'], errors='coerce')\n\nfiltered = df[df['ZIPCode'] == node_3_answer].copy().sort_values('ReportingDate')\nrow = filtered.iloc[-1]\nincome = int(row['AvgMonthlyIncome'])\ndiff = abs(income - int(node_5_answer))\n\nanswer = f\"2021 Q1 | {row['ReportingDate']} | {income} | {diff}\"\n",
+            "subquestion": "For ZIP code <node_3 answer>, in the last month of 2021 Q1, what was the average monthly income of the families served, and how many dollars away was it from <node_5 answer>?",
+            "answer": "2021 Q1 | 03/01/2021 | 1915 | 1"
+        },
+        "7": {
+            "source": "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q2/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q2/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_3_answer = '77351'\nnode_5_answer = '1914'\n\ndf['ZIPCode'] = df['ZIPCode'].astype(str).str.strip()\ndf['ReportingDate'] = df['ReportingDate'].astype(str).str.strip()\ndf['AvgMonthlyIncome'] = pd.to_numeric(df['AvgMonthlyIncome'], errors='coerce')\n\nfiltered = df[df['ZIPCode'] == node_3_answer].copy().sort_values('ReportingDate')\nrow = filtered.iloc[-1]\nincome = int(row['AvgMonthlyIncome'])\ndiff = abs(income - int(node_5_answer))\n\nanswer = f\"2021 Q2 | {row['ReportingDate']} | {income} | {diff}\"\n",
+            "subquestion": "For ZIP code <node_3 answer>, in the last month of 2021 Q2, what was the average monthly income of the families served, and how many dollars away was it from <node_5 answer>?",
+            "answer": "2021 Q2 | 06/01/2021 | 2171 | 257"
+        },
+        "8": {
+            "source": "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q3-a65b5/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q3-a65b5/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_3_answer = '77351'\nnode_5_answer = '1914'\n\ndf['ZIPCode'] = df['ZIPCode'].astype(str).str.strip()\ndf['ReportingDate'] = df['ReportingDate'].astype(str).str.strip()\ndf['AvgMonthlyIncome'] = pd.to_numeric(df['AvgMonthlyIncome'], errors='coerce')\n\nfiltered = df[df['ZIPCode'] == node_3_answer].copy().sort_values('ReportingDate')\nrow = filtered.iloc[-1]\nincome = int(row['AvgMonthlyIncome'])\ndiff = abs(income - int(node_5_answer))\n\nanswer = f\"2021 Q3 | {row['ReportingDate']} | {income} | {diff}\"\n",
+            "subquestion": "For ZIP code <node_3 answer>, in the last month of 2021 Q3, what was the average monthly income of the families served, and how many dollars away was it from <node_5 answer>?",
+            "answer": "2021 Q3 | 09/01/2021 | 2045 | 131"
+        }
+    },
+    "datasets_used": [
+        "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/files/rows.txt",
+        "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/signed-metadata.txt",
+        "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2021-2022/files/9bfr-4jjm.txt",
+        "datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/files/rows.txt",
+        "datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/signed-metadata.txt",
+        "datagov/school-nutrition-programs-food-service-management-company-fsmc-information-program-ye-2021/files/hwx2-yfy5.txt",
+        "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt",
+        "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/signed-metadata.txt",
+        "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/shme-pbr8.txt",
+        "datagov/monthly-child-care-services-data-report-children-served-by-zip-code-2021-q4/files/rows.txt",
+        "datagov/monthly-child-care-services-data-report-children-served-by-zip-code-2021-q4/signed-metadata.txt",
+        "datagov/monthly-child-care-services-data-report-children-served-by-zip-code-2021-q4/files/hxbn-ucb9.txt",
+        "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q4/files/rows.txt",
+        "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q4/signed-metadata.txt",
+        "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q4/files/672x-8sfe.publisher-view.json",
+        "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q1/files/rows.txt",
+        "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q1/signed-metadata.txt",
+        "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q1/files/a3kf-rekk.txt",
+        "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q2/files/rows.txt",
+        "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q2/signed-metadata.txt",
+        "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q2/files/wahx-q39f.publisher-view.json",
+        "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q3-a65b5/files/rows.txt",
+        "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q3-a65b5/signed-metadata.txt",
+        "datagov/monthly-child-care-services-data-report-families-served-by-zip-code-2021-q3-a65b5/files/3jzt-et6m.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: The top five public educational institutions by total meal reimbursement in 2021-2022 were 00654 (Beaumont ISD), 00531 (Sheldon ISD), 00565 (Edcouch-Elsa ISD), 00569 (Mercedes ISD), and 00916 (Livingston ISD).",
+                "Node 2: The FSMC-managed public educational institution CEID set contains 168 members, including 00916 but excluding 00654, 00531, 00565, and 00569.",
+                "Intersecting the CEIDs in <node_1 answer> with <node_2 answer> leaves a single winner: 00916 | LIVINGSTON ISD.",
+                "Hop result: 00916 | LIVINGSTON ISD"
+            ],
+            "answer": "00916 | LIVINGSTON ISD"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Within 00916 | LIVINGSTON ISD, the active site with the highest SiteISP is LIVINGSTON H S ACADEMY at 77.78, and its ZIP code is 77351.",
+                "Hop result: 77351"
+            ],
+            "answer": "77351"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In ZIP code 77351, total child-care demand is 177 in 10/01/2021, 178 in 11/01/2021, and 179 in 12/01/2021.",
+                "Hop result: 12/01/2021"
+            ],
+            "answer": "12/01/2021"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In ZIP code 77351 on 12/01/2021, the average monthly income of families served is 1914.",
+                "Hop result: 1914"
+            ],
+            "answer": "1914"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                6,
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 6: In the final reporting month of 2021 Q1 for ZIP code 77351, the average monthly income is 1915 on 03/01/2021, which is 1 away from 1914.",
+                "Node 7: In the final reporting month of 2021 Q2 for ZIP code 77351, the average monthly income is 2171 on 06/01/2021, which is 257 away from 1914.",
+                "Node 8: In the final reporting month of 2021 Q3 for ZIP code 77351, the average monthly income is 2045 on 09/01/2021, which is 131 away from 1914.",
+                "Comparing the three absolute differences, 1 is the smallest, so the closest quarter is 2021 Q1.",
+                "Hop result: 2021 Q1"
+            ],
+            "answer": "2021 Q1"
+        }
+    ]
+}

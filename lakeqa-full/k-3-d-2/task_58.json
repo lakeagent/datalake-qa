@@ -1,0 +1,93 @@
+{
+  "question": "Among the agencies that had at least 10 items cut from their 2016-17 budget, which three actually lost the least amount of money overall? Looking only at the standard payrolls and operating costs for those agencies, which year had the second-highest total spending? In that year, which state ranks 8th for having the most colleges located in mid-sized cities, mid-sized suburbs, and rural areas close to a city? In that state and during that year, among counties with at least 10 schools, which county ranked 14th for the lowest student-teacher ratio? As of 2025, how many adjacent counties are from another state? Please return only the number in the format [Answer].",
+  "answer": 2,
+  "nodes": {
+    "1": {
+      "source": "datagov/new-york-state-budget-vetoes-2016-17/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/new-york-state-budget-vetoes-2016-17/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nclean_amount = df['Amount'].str.replace('$', '', regex=False).str.replace(',', '', regex=False).str.replace('(', '-', regex=False).str.replace(')', '', regex=False)\ndf['Amount_num'] = pd.to_numeric(clean_amount, errors='coerce').fillna(0)\nranked = df.groupby('Agency', as_index=False).agg(veto_count=('Veto Number', 'nunique'), total_amount=('Amount_num', 'sum'))\nranked = ranked[ranked['veto_count'] >= 10].sort_values(['total_amount', 'Agency'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[:3]['Agency'].tolist())\n",
+      "subquestion": "Among the agencies that had at least 10 items cut from their 2016-17 budget, which three actually lost the least amount of money overall?",
+      "answer": "OPRHP; DOS; DOT"
+    },
+    "2": {
+      "source": "datagov/new-york-state-budget-and-actuals-beginning-fiscal-year-1994-95/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/new-york-state-budget-and-actuals-beginning-fiscal-year-1994-95/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = 'OPRHP; DOS; DOT'\nagency_map = {\n    'OPRHP': 'Parks, Recreation and Historic Preservation, Office of',\n    'DOS': 'State, Department of',\n    'DOT': 'Transportation, Department of'\n}\ntarget_agencies = [agency_map[part.strip()] for part in node_1_answer.split(';') if part.strip() in agency_map]\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nactual_cols = [col for col in df.columns if col.endswith('Actuals')]\nfor col in actual_cols:\n    clean = df[col].str.replace('$', '', regex=False).str.replace(',', '', regex=False).str.replace('(', '-', regex=False).str.replace(')', '', regex=False)\n    df[col + '_num'] = pd.to_numeric(clean, errors='coerce').fillna(0)\nfiltered = df[df['Agency'].isin(target_agencies) & df['Fund Type'].eq('General Fund') & df['FP Category'].isin(['Personal Service', 'Non-Personal Service'])].copy()\nrecords = []\nfor col in actual_cols:\n    fiscal_year = col[:7]\n    records.append((fiscal_year, float(filtered[col + '_num'].sum())))\nranked = sorted(records, key=lambda item: (-item[1], item[0]))\nanswer = str(ranked[1][0])\n",
+      "subquestion": "Looking only at the standard payrolls and operating costs for agencies in <node_1 answer>, which year had the second-highest total spending?",
+      "answer": "2022-23"
+    },
+    "3": {
+      "source": "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_2_answer = '2022-23'\nraw = json.loads(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read())\ndf = pd.DataFrame([feature['properties'] for feature in raw['features']])\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['schoolyear_norm'] = df['SCHOOLYEAR'].str.replace('2022-2023', '2022-23', regex=False)\nfiltered = df[df['schoolyear_norm'].eq(node_2_answer) & df['CBSATYPE'].eq('1') & df['LOCALE'].isin(['12', '22', '41'])].copy()\nranked = filtered['STATE'].value_counts().reset_index()\nranked.columns = ['STATE', 'count']\nranked = ranked.sort_values(['count', 'STATE'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nstate_map = {'WA': 'Washington'}\nanswer = state_map.get(str(ranked.iloc[7]['STATE']), str(ranked.iloc[7]['STATE']))\n",
+      "subquestion": "In <node_2 answer>, which state ranks 8th for having the most colleges located in mid-sized cities, mid-sized suburbs, and rural areas close to a city?",
+      "answer": "Washington"
+    },
+    "4": {
+      "source": "datagov/report-card-student-teacher-ratio-school-years-2017-18-to-2023-24-61974/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/report-card-student-teacher-ratio-school-years-2017-18-to-2023-24-61974/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_2_answer = '2022-23'\nnode_3_answer = 'Washington'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['ratio_num'] = pd.to_numeric(df['StudentToTeacherRatio'], errors='coerce')\nfiltered = df[df['SchoolYear'].eq(node_2_answer) & df['OrganizationLevel'].eq('School') & df['ratio_num'].notna()].copy()\nranked = filtered.groupby('County', as_index=False).agg(avg_ratio=('ratio_num', 'mean'), school_count=('SchoolCode', 'nunique'))\nranked = ranked[ranked['school_count'] >= 10].sort_values(['avg_ratio', 'County'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = str(ranked.iloc[13]['County'])\n",
+      "subquestion": "In <node_3 answer>, which county ranked 14th for the lowest (student/teacher) ratio during <node_2 answer>?",
+      "answer": "Asotin"
+    },
+    "5": {
+      "source": "wikipedia/Asotin_County,_Washington/content.txt",
+      "fact": "Adjacent counties\nWhitman County – north\nNez Perce County, Idaho – east\nWallowa County, Oregon – south\nGarfield County – west",
+      "subquestion": "As of 2025, how many counties adjacent to the county named in <hop 2 answer> are from another state?",
+      "answer": 2
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1 ranks New York agencies by total vetoed amount after restricting to agencies with at least 10 vetoed items, returning OPRHP, DOS, and DOT.",
+        "Node 2 maps those abbreviations to their full agency names in the budget actuals table.",
+        "Keeping only General Fund rows with FP Category equal to Personal Service or Non-Personal Service, it sums the agencies' actual spending by fiscal year.",
+        "The 2nd highest combined year is 2022-23."
+      ],
+      "answer": "2022-23"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 3 stays in 2022-23 and counts postsecondary institutions in metropolitan areas whose locale codes correspond to midsize city, midsize suburb, or rural fringe communities.",
+        "The 8th highest state by institution count is Washington.",
+        "Node 4 then uses Washington school-level student-teacher ratio data for 2022-23.",
+        "Among counties with at least 10 schools reporting, the 14th lowest countywide average ratio belongs to Asotin."
+      ],
+      "answer": "Asotin"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5 gives four adjacent counties for the county from hop 2.",
+        "Nez Perce County is in Idaho and Wallowa County is in Oregon, while Whitman County and Garfield County are in the same state as the county from hop 2.",
+        "The number outside Washington is 2."
+      ],
+      "answer": 2
+    }
+  ],
+  "datasets_used": [
+    "datagov/new-york-state-budget-vetoes-2016-17/files/rows.txt",
+    "datagov/new-york-state-budget-vetoes-2016-17/signed-metadata.txt",
+    "datagov/new-york-state-budget-vetoes-2016-17/files/ht4x-zbvr.publisher-view.json",
+    "datagov/new-york-state-budget-and-actuals-beginning-fiscal-year-1994-95/files/rows.txt",
+    "datagov/new-york-state-budget-and-actuals-beginning-fiscal-year-1994-95/signed-metadata.txt",
+    "datagov/new-york-state-budget-and-actuals-beginning-fiscal-year-1994-95/files/4mpt-rfrw.publisher-view.json",
+    "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+    "datagov/postsecondary-school-locations-2022-23/signed-metadata.txt",
+    "datagov/postsecondary-school-locations-2022-23/files/0.arcgis-layer.json",
+    "datagov/report-card-student-teacher-ratio-school-years-2017-18-to-2023-24-61974/files/rows.txt",
+    "datagov/report-card-student-teacher-ratio-school-years-2017-18-to-2023-24-61974/signed-metadata.txt",
+    "datagov/report-card-student-teacher-ratio-school-years-2017-18-to-2023-24-61974/files/ReportCardDataNotes_Educator_2026.01.27.xlsx",
+    "wikipedia/Asotin_County,_Washington/content.txt"
+  ]
+}

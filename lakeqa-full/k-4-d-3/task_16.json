@@ -1,0 +1,125 @@
+{
+    "question": "In 2017, which state had the 5th lowest death rate for chronic lower respiratory diseases? In that state, which five fiscal years received the largest total money to private colleges based on their graduation numbers? Among those years, which three fiscal years had the largest total planned budget for capital building projects? In the first, second, and third years of those three years, which agencies had 5th through 7th, 3rd through 5th, and 4th through 6th largest budget for new upgrades and system improvements in New York State? Finally, across all distinct agencies appearing in those three answers, what was the average budget in 2020-2021 for new upgrades and system improvements? Please return only the number in the format [Answer].",
+    "answer": "39478000",
+    "nodes": {
+        "1": {
+            "source": "datagov/nchs-leading-causes-of-death-united-states/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nchs-leading-causes-of-death-united-states/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['rate_num'] = pd.to_numeric(df['Age-adjusted Death Rate'], errors='coerce')\nfiltered = df[\n    df['Year'].eq('2017')\n    & df['Cause Name'].eq('CLRD')\n    & df['State'].ne('United States')\n    & df['State'].ne('')\n    & df['rate_num'].notna()\n].copy()\nranked = filtered.sort_values(['rate_num', 'State'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = str(ranked.iloc[4]['State'])\n",
+            "subquestion": "In 2017, which state had the 5th lowest death rate for chronic lower respiratory diseases?",
+            "answer": "Maryland"
+        },
+        "2": {
+            "source": "datagov/state-of-maryland-grant-and-loan-data-fy2009-to-fy2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/state-of-maryland-grant-and-loan-data-fy2009-to-fy2018/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['amount_num'] = pd.to_numeric(df['Amount'].astype(str).str.replace(',', '', regex=False), errors='coerce')\ndf['fy_num'] = pd.to_numeric(df['Fiscal Year'], errors='coerce')\nfiltered = df[\n    df['Description'].eq('Sellinger Formula Aid')\n    & df['amount_num'].notna()\n    & df['fy_num'].notna()\n].copy()\nranked = filtered.groupby('fy_num', as_index=False)['amount_num'].sum().sort_values(['amount_num', 'fy_num'], ascending=[False, False], kind='mergesort').head(5)\nanswer = ', '.join(str(int(x)) for x in sorted(ranked['fy_num'].tolist()))\n",
+            "subquestion": "In <node_1 answer>, in which five years did the government give out the most total money to private colleges based on their graduation numbers?",
+            "answer": "2015, 2016, 2017, 2018, 2019"
+        },
+        "3": {
+            "source": "datagov/state-of-ct-expense-data-2012-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/state-of-ct-expense-data-2012-present/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_2_answer = '2015, 2016, 2017, 2018, 2019'\ntarget_years = {part.strip() for part in str(node_2_answer).split(',') if part.strip()}\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['rec_num'] = pd.to_numeric(df['RECOMMENDED_AMOUNT'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nfiltered = df[\n    df['DEPARTMENT'].eq('Department of Transportation')\n    & df['FUND_TYPE'].eq('Capital Projects')\n    & df['FISCAL_YEAR'].isin(target_years)\n    & df['rec_num'].notna()\n].copy()\nranked = filtered.groupby('FISCAL_YEAR', as_index=False)['rec_num'].sum().sort_values(['rec_num', 'FISCAL_YEAR'], ascending=[False, False], kind='mergesort').head(3)\nanswer = ', '.join(sorted(ranked['FISCAL_YEAR'].tolist()))\n",
+            "subquestion": "Among the fiscal years in <node_2 answer>, which three years had the largest total planned budget for capital building projects in Connecticut?",
+            "answer": "2017, 2018, 2019"
+        },
+        "4": {
+            "source": "datagov/new-york-state-executive-budget-capital-appropriations-2017-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/new-york-state-executive-budget-capital-appropriations-2017-2018/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\ndf.columns = [str(c).replace('\\xa0', ' ').strip() for c in df.columns]\namt_col = [c for c in df.columns if c.startswith('Appropriations Recommended')][0]\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['amt_num'] = pd.to_numeric(df[amt_col].astype(str).str.replace(',', '', regex=False), errors='coerce').fillna(0)\nfiltered = df[df['State Purpose'].eq('Program Improvement/Change')].copy()\nranked = filtered.groupby('Agency Name', as_index=False)['amt_num'].sum().sort_values(['amt_num', 'Agency Name'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[4:7]['Agency Name'].tolist())\n",
+            "subquestion": "In the first year from <node_3 answer>, which three agencies had 5th through 7th largest budget for new upgrades and system improvements in New York State?",
+            "answer": "Health, Department of; Homeland Security and Emergency Services, Division of; Education Department, State"
+        },
+        "5": {
+            "source": "datagov/new-york-state-executive-budget-capital-appropriations-2018-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/new-york-state-executive-budget-capital-appropriations-2018-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\ndf.columns = [str(c).replace('\\xa0', ' ').strip() for c in df.columns]\namt_col = [c for c in df.columns if c.startswith('Appropriations Recommended')][0]\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['amt_num'] = pd.to_numeric(df[amt_col].astype(str).str.replace(',', '', regex=False), errors='coerce').fillna(0)\nfiltered = df[df['State Purpose'].eq('Program Improvement/Change')].copy()\nranked = filtered.groupby('Agency Name', as_index=False)['amt_num'].sum().sort_values(['amt_num', 'Agency Name'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[2:5]['Agency Name'].tolist())\n",
+            "subquestion": "In the second year from <node_3 answer>, which three agencies had 3rd through 5th largest budget for new upgrades and system improvements in New York State?",
+            "answer": "State Police, Division of; Children and Family Services, Office of; Health, Department of"
+        },
+        "6": {
+            "source": "datagov/new-york-state-executive-budget-capital-appropriations-2019-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/new-york-state-executive-budget-capital-appropriations-2019-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\ndf.columns = [str(c).replace('\\xa0', ' ').strip() for c in df.columns]\namt_col = [c for c in df.columns if c.startswith('Appropriations Recommended')][0]\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['amt_num'] = pd.to_numeric(df[amt_col].astype(str).str.replace(',', '', regex=False), errors='coerce').fillna(0)\nfiltered = df[df['State Purpose'].eq('Program Improvement/Change')].copy()\nranked = filtered.groupby('Agency Name', as_index=False)['amt_num'].sum().sort_values(['amt_num', 'Agency Name'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[3:6]['Agency Name'].tolist())\n",
+            "subquestion": "In the third year from <node_3 answer>, which three agencies had 4th through 6th largest budget for new upgrades and system improvements in New York State?",
+            "answer": "State Police, Division of; Education Department, State; Health, Department of"
+        },
+        "7": {
+            "source": "datagov/new-york-state-executive-budget-capital-appropriations-2020-21/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/new-york-state-executive-budget-capital-appropriations-2020-21/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\ndf.columns = [str(c).replace('\\xa0', ' ').strip() for c in df.columns]\namt_col = [c for c in df.columns if c.startswith('Appropriations Recommended')][0]\nnode_4_answer = 'Health, Department of; Homeland Security and Emergency Services, Division of; Education Department, State'\nnode_5_answer = 'State Police, Division of; Children and Family Services, Office of; Health, Department of'\nnode_6_answer = 'State Police, Division of; Education Department, State; Health, Department of'\ntarget_agencies = []\nfor value in [node_4_answer, node_5_answer, node_6_answer]:\n    target_agencies.extend([part.strip() for part in str(value).split(';') if part.strip()])\ntarget_agencies = list(dict.fromkeys(target_agencies))\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['amt_num'] = pd.to_numeric(df[amt_col].astype(str).str.replace(',', '', regex=False), errors='coerce').fillna(0)\nfiltered = df[df['State Purpose'].eq('Program Improvement/Change')].copy()\nranked = filtered.groupby('Agency Name', as_index=False)['amt_num'].sum()\nselected = ranked[ranked['Agency Name'].isin(target_agencies)].copy().sort_values(['Agency Name'], ascending=[True], kind='mergesort').reset_index(drop=True)\navg_value = selected['amt_num'].mean()\nanswer = str(int(round(avg_value))) if abs(avg_value - round(avg_value)) < 1e-9 else str(avg_value)\n",
+            "subquestion": "Across all distinct agencies appearing in <node_4 answer>, <node_5 answer>, and <node_6 answer>, what was the average budget in 2020-2021 for new upgrades and system improvements?",
+            "answer": "39478000"
+        }
+    },
+    "datasets_used": [
+        "datagov/nchs-leading-causes-of-death-united-states/files/rows.txt",
+        "datagov/nchs-leading-causes-of-death-united-states/signed-metadata.txt",
+        "datagov/state-of-maryland-grant-and-loan-data-fy2009-to-fy2018/files/rows.txt",
+        "datagov/state-of-maryland-grant-and-loan-data-fy2009-to-fy2018/signed-metadata.txt",
+        "datagov/state-of-ct-expense-data-2012-present/files/rows.txt",
+        "datagov/state-of-ct-expense-data-2012-present/signed-metadata.txt",
+        "datagov/state-of-ct-expense-data-2012-present/files/43fc-9893.txt",
+        "datagov/new-york-state-executive-budget-capital-appropriations-2017-2018/files/rows.txt",
+        "datagov/new-york-state-executive-budget-capital-appropriations-2017-2018/signed-metadata.txt",
+        "datagov/new-york-state-executive-budget-capital-appropriations-2017-2018/files/4ukq-mtyf.txt",
+        "datagov/new-york-state-executive-budget-capital-appropriations-2018-2019/files/rows.txt",
+        "datagov/new-york-state-executive-budget-capital-appropriations-2018-2019/signed-metadata.txt",
+        "datagov/new-york-state-executive-budget-capital-appropriations-2018-2019/files/atzh-qh32.publisher-view.json",
+        "datagov/new-york-state-executive-budget-capital-appropriations-2019-2020/files/rows.txt",
+        "datagov/new-york-state-executive-budget-capital-appropriations-2019-2020/signed-metadata.txt",
+        "datagov/new-york-state-executive-budget-capital-appropriations-2019-2020/files/ut2e-pvb7.txt",
+        "datagov/new-york-state-executive-budget-capital-appropriations-2020-21/files/rows.txt",
+        "datagov/new-york-state-executive-budget-capital-appropriations-2020-21/signed-metadata.txt",
+        "datagov/new-york-state-executive-budget-capital-appropriations-2020-21/files/w3xg-gkfi.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: In the NCHS leading-causes-of-death table, filter to 2017, cause name CLRD, and the states only.",
+                "Rank states by ascending age-adjusted death rate.",
+                "The 5th-lowest state is Maryland."
+            ],
+            "answer": "Maryland"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 2: In the Maryland grant-and-loan data, filter to Sellinger Formula Aid and sum amounts by fiscal year.",
+                "The five highest fiscal years are 2015, 2016, 2017, 2018, and 2019.",
+                "Node 3: In the Connecticut expense data, keep Department of Transportation with Capital Projects and only those five fiscal years, then sum recommended amounts by year.",
+                "The three highest years are 2017, 2018, and 2019."
+            ],
+            "answer": "2017, 2018, 2019"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: In the 2017-18 New York capital appropriations data, under Program Improvement/Change, the agencies ranked 5th through 7th are Health, Homeland Security and Emergency Services, and Education Department.",
+                "Node 5: In the 2018-19 file, the agencies ranked 3rd through 5th are State Police, Children and Family Services, and Health.",
+                "Node 6: In the 2019-20 file, the agencies ranked 4th through 6th are State Police, Education Department, and Health.",
+                "Taking the union of these answers yields five distinct agencies: Health, Homeland Security and Emergency Services, Education Department, State Police, and Children and Family Services."
+            ],
+            "answer": "Health, Department of; Homeland Security and Emergency Services, Division of; Education Department, State; State Police, Division of; Children and Family Services, Office of"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: In the 2020-21 New York capital appropriations data, keep Program Improvement/Change and those five agencies from the previous hop.",
+                "Their total recommended appropriations are 50,000,000; 25,000,000; 39,390,000; 66,000,000; and 17,000,000.",
+                "The average is 39,478,000.",
+                "Therefore the final answer is 39478000."
+            ],
+            "answer": "39478000"
+        }
+    ]
+}

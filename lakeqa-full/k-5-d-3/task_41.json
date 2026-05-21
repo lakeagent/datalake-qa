@@ -1,0 +1,134 @@
+{
+    "question": "If the dangerousness of a school is defined by the combined total of drug, alcohol, and bomb related incidents, which New York City schools are the 5th to 10th most dangerous in New York in the school years of 2012-2013, 2013-2014, and 2014-2015? Rank alphabetically if there is a tie and split with comma. For all schools in those three answers, what are the top 11 schools with most students residing in shelter in the school year of 2019-2020? Then, using these 11 schools, if we define a more caring school as one with more students with disability and are in poverty, then which 9 schools among those 11 schools are the most caring? For those 9 schools, if we define school quality as (number of advanced placement exams passed / number of advanced placement exams taken) * number of people taking the advanced placement exams, then which schools have 3rd to 7th highest quality? Finally, in these 5 schools, what is the average number of faculty members that completed college advisor training for each school in the school year of 2018-2019? Please return only the number in the format [Answer].",
+    "answer": "6",
+    "nodes": {
+        "1": {
+            "source": "datagov/2012-2013-vadir-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2012-2013-vadir-incidents/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nincident_cols = [\"Drug Possession\", \"Alcohol Possession\", \"Bomb Threat\"]\nfor col in incident_cols:\n    df[col] = pd.to_numeric(df[col], errors=\"coerce\").fillna(0)\n\ndf[\"School Name\"] = df[\"School Name\"].fillna(\"\").str.strip()\ndf[\"BEDS Code\"] = df[\"BEDS Code\"].fillna(\"\").str.strip()\ndf[\"Need/Resource Category\"] = df[\"Need/Resource Category\"].fillna(\"\").str.strip()\nfiltered = df[\n    df[\"Need/Resource Category\"].eq(\"New York City\")\n    & df[\"School Name\"].ne(\"\")\n].copy()\naggregated = filtered.groupby([\"School Name\", \"BEDS Code\"], as_index=False)[incident_cols].sum()\naggregated[\"dangerous_total\"] = aggregated[incident_cols].sum(axis=1)\nranked = aggregated.sort_values(\n    [\"dangerous_total\", \"School Name\", \"BEDS Code\"],\n    ascending=[False, True, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[4:10][\"School Name\"].tolist())\n",
+            "subquestion": "If the dangerousness of a school is defined by the combined total of drug, alcohol, and bomb related incidents, which New York City schools are the 5th to 10th most dangerous in New York in the school year of 2012-2013? Rank alphabetically if there is a tie and split with comma.",
+            "answer": "Richmond Hill High School, Stuyvesant High School, High School Of Arts And Technology, Abraham Lincoln High School, Brooklyn Technical High School, Queens Metropolitan High School"
+        },
+        "2": {
+            "source": "datagov/2013-2014-vadir-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2013-2014-vadir-incidents/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nincident_cols = [\"Drug Possession\", \"Alcohol Possession\", \"Bomb Threat\"]\nfor col in incident_cols:\n    df[col] = pd.to_numeric(df[col], errors=\"coerce\").fillna(0)\n\ndf[\"School Name\"] = df[\"School Name\"].fillna(\"\").str.strip()\ndf[\"BEDS Code\"] = df[\"BEDS Code\"].fillna(\"\").str.strip()\ndf[\"Need/Resource Category\"] = df[\"Need/Resource Category\"].fillna(\"\").str.strip()\nfiltered = df[\n    df[\"Need/Resource Category\"].eq(\"New York City\")\n    & df[\"School Name\"].ne(\"\")\n].copy()\naggregated = filtered.groupby([\"School Name\", \"BEDS Code\"], as_index=False)[incident_cols].sum()\naggregated[\"dangerous_total\"] = aggregated[incident_cols].sum(axis=1)\nranked = aggregated.sort_values(\n    [\"dangerous_total\", \"School Name\", \"BEDS Code\"],\n    ascending=[False, True, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[4:10][\"School Name\"].tolist())\n",
+            "subquestion": "If the dangerousness of a school is defined by the combined total of drug, alcohol, and bomb related incidents, which New York City schools are the 5th to 10th most dangerous in New York in the school year of 2013-2014? Rank alphabetically if there is a tie and split with comma.",
+            "answer": "Richmond Hill High School, James Madison High School, Queens Vocational And Technical High School, Art And Design High School, High School Of Graphic Communication Arts, John Bowne High School"
+        },
+        "3": {
+            "source": "datagov/2014-2015-vadir-incidents/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2014-2015-vadir-incidents/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nincident_cols = [\"Drug Possession\", \"Alcohol Possession\", \"Bomb Threat\"]\nfor col in incident_cols:\n    df[col] = pd.to_numeric(df[col], errors=\"coerce\").fillna(0)\n\ndf[\"School Name\"] = df[\"School Name\"].fillna(\"\").str.strip()\ndf[\"BEDS Code\"] = df[\"BEDS Code\"].fillna(\"\").str.strip()\ndf[\"Need/Resource Category\"] = df[\"Need/Resource Category\"].fillna(\"\").str.strip()\nfiltered = df[\n    df[\"Need/Resource Category\"].eq(\"New York City\")\n    & df[\"School Name\"].ne(\"\")\n].copy()\naggregated = filtered.groupby([\"School Name\", \"BEDS Code\"], as_index=False)[incident_cols].sum()\naggregated[\"dangerous_total\"] = aggregated[incident_cols].sum(axis=1)\nranked = aggregated.sort_values(\n    [\"dangerous_total\", \"School Name\", \"BEDS Code\"],\n    ascending=[False, True, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[4:10][\"School Name\"].tolist())\n",
+            "subquestion": "If the dangerousness of a school is defined by the combined total of drug, alcohol, and bomb related incidents, which New York City schools are the 5th to 10th most dangerous in New York in the school year of 2014-2015? Rank alphabetically if there is a tie and split with comma.",
+            "answer": "Tottenville High School, Bronx High School Of Science, Fort Hamilton High School, High School For Health Professions & Human Services, Long Island City High School, Benjamin N Cardozo High School"
+        },
+        "4": {
+            "source": "datagov/2019-20-students-in-temporary-housing/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2019-20-students-in-temporary-housing/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_1_answer = \"Richmond Hill High School, Stuyvesant High School, High School Of Arts And Technology, Abraham Lincoln High School, Brooklyn Technical High School, Queens Metropolitan High School\"\nnode_2_answer = \"Richmond Hill High School, James Madison High School, Queens Vocational And Technical High School, Art And Design High School, High School Of Graphic Communication Arts, John Bowne High School\"\nnode_3_answer = \"Tottenville High School, Bronx High School Of Science, Fort Hamilton High School, High School For Health Professions & Human Services, Long Island City High School, Benjamin N Cardozo High School\"\n\nall_schools = []\nfor value in [node_1_answer, node_2_answer, node_3_answer]:\n    all_schools.extend([part.strip() for part in str(value).split(\",\") if part.strip()])\ntarget_schools = sorted(set(all_schools))\nname_to_dbn = {\n    \"Abraham Lincoln High School\": \"21K410\",\n    \"Art And Design High School\": \"02M630\",\n    \"Benjamin N Cardozo High School\": \"26Q415\",\n    \"Bronx High School Of Science\": \"10X445\",\n    \"Brooklyn Technical High School\": \"13K430\",\n    \"Fort Hamilton High School\": \"20K490\",\n    \"High School For Health Professions & Human Services\": \"02M420\",\n    \"High School Of Arts And Technology\": \"03M494\",\n    \"High School Of Graphic Communication Arts\": \"02M625\",\n    \"James Madison High School\": \"22K425\",\n    \"John Bowne High School\": \"25Q425\",\n    \"Long Island City High School\": \"30Q450\",\n    \"Queens Metropolitan High School\": \"28Q686\",\n    \"Queens Vocational And Technical High School\": \"24Q600\",\n    \"Richmond Hill High School\": \"27Q475\",\n    \"Stuyvesant High School\": \"02M475\",\n    \"Tottenville High School\": \"31R455\",\n}\nrecords = pd.DataFrame([{\"School Name\": name, \"DBN\": name_to_dbn[name]} for name in target_schools if name in name_to_dbn])\n\ndf[\"DBN\"] = df[\"DBN\"].fillna(\"\").str.strip()\ndf[\"# Students Residing in Shelter\"] = df[\"# Students Residing in Shelter\"].fillna(\"\").str.strip()\ndf[\"shelter_num\"] = pd.to_numeric(df[\"# Students Residing in Shelter\"].replace({\"s\": pd.NA}), errors=\"coerce\")\nmerged = records.merge(df[[\"DBN\", \"shelter_num\"]], on=\"DBN\", how=\"left\")\nfiltered = merged[merged[\"shelter_num\"].notna() & merged[\"shelter_num\"].ne(0)].copy()\nranked = filtered.sort_values([\"shelter_num\", \"School Name\", \"DBN\"], ascending=[False, True, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked[\"School Name\"].tolist())\n",
+            "subquestion": "For all schools in <node_1 answer>, <node_2 answer>, and <node_3 answer>, what are the top 11 schools with most students residing in shelter in the school year of 2019-2020?",
+            "answer": "Long Island City High School, Abraham Lincoln High School, High School For Health Professions & Human Services, John Bowne High School, High School Of Arts And Technology, Benjamin N Cardozo High School, Richmond Hill High School, James Madison High School, Art And Design High School, Fort Hamilton High School, Brooklyn Technical High School"
+        },
+        "5": {
+            "source": "datagov/2013-2018-demographic-snapshot-school/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2013-2018-demographic-snapshot-school/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_4_answer = \"Long Island City High School, Abraham Lincoln High School, High School For Health Professions & Human Services, John Bowne High School, High School Of Arts And Technology, Benjamin N Cardozo High School, Richmond Hill High School, James Madison High School, Art And Design High School, Fort Hamilton High School, Brooklyn Technical High School\"\ntarget_schools = [part.strip() for part in str(node_4_answer).split(\",\") if part.strip()]\ndbn_map = {\n    \"Long Island City High School\": \"30Q450\",\n    \"Abraham Lincoln High School\": \"21K410\",\n    \"High School For Health Professions & Human Services\": \"02M420\",\n    \"John Bowne High School\": \"25Q425\",\n    \"High School Of Arts And Technology\": \"03M494\",\n    \"Benjamin N Cardozo High School\": \"26Q415\",\n    \"Richmond Hill High School\": \"27Q475\",\n    \"James Madison High School\": \"22K425\",\n    \"Art And Design High School\": \"02M630\",\n    \"Fort Hamilton High School\": \"20K490\",\n    \"Brooklyn Technical High School\": \"13K430\",\n}\ntarget_dbns = [dbn_map[name] for name in target_schools if name in dbn_map]\n\ndf[\"DBN\"] = df[\"DBN\"].fillna(\"\").str.strip()\ndf[\"Year\"] = df[\"Year\"].fillna(\"\").str.strip()\ndf[\"# Students with Disabilities\"] = pd.to_numeric(df[\"# Students with Disabilities\"], errors=\"coerce\")\ndf[\"# Poverty\"] = pd.to_numeric(df[\"# Poverty\"], errors=\"coerce\")\nfiltered = df[df[\"DBN\"].isin(target_dbns) & df[\"Year\"].eq(\"2017-18\")].copy()\ncanonical_name = {\n    \"30Q450\": \"Long Island City High School\",\n    \"21K410\": \"Abraham Lincoln High School\",\n    \"02M420\": \"High School For Health Professions & Human Services\",\n    \"25Q425\": \"John Bowne High School\",\n    \"03M494\": \"High School Of Arts And Technology\",\n    \"26Q415\": \"Benjamin N Cardozo High School\",\n    \"27Q475\": \"Richmond Hill High School\",\n    \"22K425\": \"James Madison High School\",\n    \"02M630\": \"Art And Design High School\",\n    \"20K490\": \"Fort Hamilton High School\",\n    \"13K430\": \"Brooklyn Technical High School\",\n}\nfiltered[\"canonical_name\"] = filtered[\"DBN\"].map(canonical_name)\nfiltered[\"care_total\"] = filtered[\"# Students with Disabilities\"].fillna(0) + filtered[\"# Poverty\"].fillna(0)\nranked = filtered.sort_values([\"care_total\", \"canonical_name\", \"DBN\"], ascending=[False, True, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.head(len(ranked) - 2)[\"canonical_name\"].tolist())\n",
+            "subquestion": "Define a more caring school as one with a larger number of students with disability and are in poverty, which 9 schools among <node_4 answer> are the most caring?",
+            "answer": "Fort Hamilton High School, Brooklyn Technical High School, James Madison High School, John Bowne High School, Benjamin N Cardozo High School, Long Island City High School, Abraham Lincoln High School, Richmond Hill High School, High School For Health Professions & Human Services"
+        },
+        "6": {
+            "source": "datagov/2012-ap-results/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2012-ap-results/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_5_answer = \"Fort Hamilton High School, Brooklyn Technical High School, James Madison High School, John Bowne High School, Benjamin N Cardozo High School, Long Island City High School, Abraham Lincoln High School, Richmond Hill High School, High School For Health Professions & Human Services\"\ntarget_schools = [part.strip() for part in str(node_5_answer).split(\",\") if part.strip()]\ndbn_map = {\n    \"Fort Hamilton High School\": \"20K490\",\n    \"Brooklyn Technical High School\": \"13K430\",\n    \"James Madison High School\": \"22K425\",\n    \"John Bowne High School\": \"25Q425\",\n    \"Benjamin N Cardozo High School\": \"26Q415\",\n    \"Long Island City High School\": \"30Q450\",\n    \"Abraham Lincoln High School\": \"21K410\",\n    \"Richmond Hill High School\": \"27Q475\",\n    \"High School For Health Professions & Human Services\": \"02M420\",\n}\nrecords = pd.DataFrame([{\"canonical_name\": name, \"DBN\": dbn_map[name]} for name in target_schools if name in dbn_map])\n\ndf[\"DBN\"] = df[\"DBN\"].fillna(\"\").str.strip()\nfor col in [\"Num of AP Test Takers\", \"Num of AP Total Exams Taken\", \"Num of AP Exams Passed\"]:\n    df[col] = pd.to_numeric(df[col], errors=\"coerce\")\nmerged = records.merge(df[[\"DBN\", \"Num of AP Test Takers\", \"Num of AP Total Exams Taken\", \"Num of AP Exams Passed\"]], on=\"DBN\", how=\"left\")\nmerged[\"quality\"] = (\n    merged[\"Num of AP Exams Passed\"]\n    .div(merged[\"Num of AP Total Exams Taken\"])\n    .mul(merged[\"Num of AP Test Takers\"])\n)\nranked = merged.sort_values([\"quality\", \"canonical_name\", \"DBN\"], ascending=[False, True, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[2:7][\"canonical_name\"].tolist())\n",
+            "subquestion": "For the schools in <node_5 answer>, if we define school quality as (number of advanced placement exams passed / number of advanced placement exams taken) * number of people taking the advanced placement exams, which schools have 3rd to 7th highest quality?",
+            "answer": "Fort Hamilton High School, James Madison High School, John Bowne High School, Long Island City High School, Abraham Lincoln High School"
+        },
+        "7": {
+            "source": "datagov/2018-19-guidance-counselor-report-post-secondary-planning/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2018-19-guidance-counselor-report-post-secondary-planning/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_6_answer = \"Fort Hamilton High School, James Madison High School, John Bowne High School, Long Island City High School, Abraham Lincoln High School\"\ntarget_schools = [part.strip() for part in str(node_6_answer).split(\",\") if part.strip()]\ndbn_map = {\n    \"Fort Hamilton High School\": \"20K490\",\n    \"James Madison High School\": \"22K425\",\n    \"John Bowne High School\": \"25Q425\",\n    \"Long Island City High School\": \"30Q450\",\n    \"Abraham Lincoln High School\": \"21K410\",\n}\nrecords = pd.DataFrame([{\"canonical_name\": name, \"DBN\": dbn_map[name]} for name in target_schools if name in dbn_map])\n\ndf[\"DBN\"] = df[\"DBN\"].fillna(\"\").str.strip()\ndf[\"Staff Completing Training\"] = pd.to_numeric(df[\"Staff Completing Training\"], errors=\"coerce\")\nmerged = records.merge(df[[\"DBN\", \"Staff Completing Training\"]], on=\"DBN\", how=\"left\")\navg_value = merged[\"Staff Completing Training\"].mean()\nanswer = str(int(avg_value)) if pd.notna(avg_value) and float(avg_value).is_integer() else str(avg_value)\n",
+            "subquestion": "What is the average number of faculty members that completed college advisor training for each school in <node_6 answer> in the school year of 2018-2019?",
+            "answer": "6"
+        }
+    },
+    "datasets_used": [
+        "datagov/2012-2013-vadir-incidents/files/rows.txt",
+        "datagov/2012-2013-vadir-incidents/files/columns.txt",
+        "datagov/2013-2014-vadir-incidents/files/rows.txt",
+        "datagov/2013-2014-vadir-incidents/files/columns.txt",
+        "datagov/2014-2015-vadir-incidents/files/rows.txt",
+        "datagov/2014-2015-vadir-incidents/files/vadir-glossary.html",
+        "datagov/2019-20-students-in-temporary-housing/files/rows.txt",
+        "datagov/2019-20-students-in-temporary-housing/signed-metadata.txt",
+        "datagov/2013-2018-demographic-snapshot-school/files/rows.txt",
+        "datagov/2013-2018-demographic-snapshot-school/signed-metadata.txt",
+        "datagov/2013-2018-demographic-snapshot-school/files/2013_-_2018_Demographic_Snapshot_District_DD.xlsx",
+        "datagov/2012-ap-results/files/rows.txt",
+        "datagov/2012-ap-results/signed-metadata.txt",
+        "datagov/2012-ap-results/files/2012_AP_RESULTS.xlsx",
+        "datagov/2018-19-guidance-counselor-report-post-secondary-planning/files/rows.txt",
+        "datagov/2018-19-guidance-counselor-report-post-secondary-planning/signed-metadata.txt",
+        "datagov/2018-19-guidance-counselor-report-post-secondary-planning/files/2018-19_Guidance_Counselor_Reporting_-_Post_Secondary_Planning.xlsx"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: In the 2012-2013 VADIR incidents dataset, ranking New York City schools by the sum of Drug Possession, Alcohol Possession, and Bomb Threat gives the 5th to 10th schools as Richmond Hill High School, Stuyvesant High School, High School Of Arts And Technology, Abraham Lincoln High School, Brooklyn Technical High School, and Queens Metropolitan High School.",
+                "Node 2: In the 2013-2014 VADIR incidents dataset, the 5th to 10th schools are Richmond Hill High School, James Madison High School, Queens Vocational And Technical High School, Art And Design High School, High School Of Graphic Communication Arts, and John Bowne High School.",
+                "Node 3: In the 2014-2015 VADIR incidents dataset, the 5th to 10th schools are Tottenville High School, Bronx High School Of Science, Fort Hamilton High School, High School For Health Professions & Human Services, Long Island City High School, and Benjamin N Cardozo High School.",
+                "Hop result: <node_1 answer>, <node_2 answer>, <node_3 answer>"
+            ],
+            "answer": "Richmond Hill High School, Stuyvesant High School, High School Of Arts And Technology, Abraham Lincoln High School, Brooklyn Technical High School, Queens Metropolitan High School; Richmond Hill High School, James Madison High School, Queens Vocational And Technical High School, Art And Design High School, High School Of Graphic Communication Arts, John Bowne High School; Tottenville High School, Bronx High School Of Science, Fort Hamilton High School, High School For Health Professions & Human Services, Long Island City High School, Benjamin N Cardozo High School"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Taking the union of schools across nodes 1-3 and checking the 2019-20 Students In Temporary Housing dataset yields x = 11 schools with reported numeric shelter counts greater than 0.",
+                "Ranking those 11 schools by shelter count descending gives Long Island City High School, Abraham Lincoln High School, High School For Health Professions & Human Services, John Bowne High School, High School Of Arts And Technology, Benjamin N Cardozo High School, Richmond Hill High School, James Madison High School, Art And Design High School, Fort Hamilton High School, and Brooklyn Technical High School.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "Long Island City High School, Abraham Lincoln High School, High School For Health Professions & Human Services, John Bowne High School, High School Of Arts And Technology, Benjamin N Cardozo High School, Richmond Hill High School, James Madison High School, Art And Design High School, Fort Hamilton High School, Brooklyn Technical High School"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In the 2017-18 Demographic Snapshot School data, compute caring as # Students with Disabilities + # Poverty for the 11 schools from node 4.",
+                "Since x = 11, choose x-2 = 9 schools with the highest caring totals.",
+                "Those 9 schools are Fort Hamilton High School, Brooklyn Technical High School, James Madison High School, John Bowne High School, Benjamin N Cardozo High School, Long Island City High School, Abraham Lincoln High School, Richmond Hill High School, and High School For Health Professions & Human Services.",
+                "Hop result: <node_5 answer>"
+            ],
+            "answer": "Fort Hamilton High School, Brooklyn Technical High School, James Madison High School, John Bowne High School, Benjamin N Cardozo High School, Long Island City High School, Abraham Lincoln High School, Richmond Hill High School, High School For Health Professions & Human Services"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: For the 9 schools from node 5, compute quality as (Num of AP Exams Passed / Num of AP Total Exams Taken) * Num of AP Test Takers using the 2012 AP Results dataset.",
+                "Ranking by that quality yields Brooklyn Technical High School, Benjamin N Cardozo High School, Fort Hamilton High School, James Madison High School, John Bowne High School, Long Island City High School, Abraham Lincoln High School, High School For Health Professions & Human Services, and Richmond Hill High School.",
+                "Therefore the schools ranked 3rd to 7th are Fort Hamilton High School, James Madison High School, John Bowne High School, Long Island City High School, and Abraham Lincoln High School.",
+                "Hop result: <node_6 answer>"
+            ],
+            "answer": "Fort Hamilton High School, James Madison High School, John Bowne High School, Long Island City High School, Abraham Lincoln High School"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: In the 2018-19 Guidance Counselor Report Post-Secondary Planning dataset, the schools in node 6 have Staff Completing Training values of 2, 10, 3, 10, and 5.",
+                "The average is (2 + 10 + 3 + 10 + 5) / 5 = 6.",
+                "Hop result: <node_7 answer>"
+            ],
+            "answer": "6"
+        }
+    ]
+}

@@ -1,0 +1,70 @@
+{
+    "question": "First identify the state that appears in both of these data.gov-derived groups: If you group Providence property owners by their home state, which states come in 7th through 11th place when comparing how much their 2009 property-tax bills varied? Break any ties alphabetically.; and If you group the institutions seeking exemption from Oregon's foreclosure-mediation process in 2018 by state, which states come in 6th through 10th place when comparing the middle number of foreclosure actions they reported for the previous year? Break any ties alphabetically.. After identifying that state, what food became the official state snack food of that state as the result of an elementary school project? Your response should be in the format [Answer].",
+    "answer": "popcorn",
+    "nodes": {
+        "1": {
+            "source": "datagov/2009-property-tax-roll/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2009-property-tax-roll/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\nstate_series = df[\"Owner State\"].astype(str).str.strip()\nstate_series = state_series.replace({\"\": pd.NA, \"nan\": pd.NA, \"None\": pd.NA})\nnormalized_state = state_series.map(lambda x: state_map.get(x.upper(), x.title()) if pd.notna(x) else pd.NA)\n\ntotal_taxes = pd.to_numeric(df[\"Total Taxes\"], errors=\"coerce\")\nstate_metric = (\n    pd.DataFrame({\"state\": normalized_state, \"total_taxes\": total_taxes})\n    .dropna(subset=[\"state\", \"total_taxes\"])\n    .groupby(\"state\", as_index=False)[\"total_taxes\"]\n    .std(ddof=1)\n    .rename(columns={\"total_taxes\": \"sample_stddev_total_taxes\"})\n)\n\nranked = state_metric.sort_values([\"sample_stddev_total_taxes\", \"state\"], ascending=[False, True]).reset_index(drop=True)\nanswer = ranked.iloc[6:11][\"state\"].tolist()",
+            "subquestion": "If you group Providence property owners by their home state, which states come in 7th through 11th place when comparing how much their 2009 property-tax bills varied? Break any ties alphabetically.",
+            "answer": [
+                "Massachusetts",
+                "Alabama",
+                "Illinois",
+                "Maine",
+                "Rhode Island"
+            ]
+        },
+        "2": {
+            "source": "datagov/2018-foreclosure-avoidance-mediation-beneficiary-exemption-affidavits-pursuant-to-sb-558/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2018-foreclosure-avoidance-mediation-beneficiary-exemption-affidavits-pursuant-to-sb-558/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\nstate_series = df[\"State\"].astype(str).str.strip()\nstate_series = state_series.replace({\"\": pd.NA, \"nan\": pd.NA, \"None\": pd.NA})\nnormalized_state = state_series.map(lambda x: state_map.get(x.upper(), x.title()) if pd.notna(x) else pd.NA)\n\nforeclosures_prev_year = pd.to_numeric(df[\"Foreclosures previous year\"], errors=\"coerce\")\nstate_metric = (\n    pd.DataFrame({\"state\": normalized_state, \"foreclosures_previous_year\": foreclosures_prev_year})\n    .dropna(subset=[\"state\", \"foreclosures_previous_year\"])\n    .groupby(\"state\", as_index=False)[\"foreclosures_previous_year\"]\n    .median()\n    .rename(columns={\"foreclosures_previous_year\": \"median_foreclosures_previous_year\"})\n)\n\nranked = state_metric.sort_values([\"median_foreclosures_previous_year\", \"state\"], ascending=[False, True]).reset_index(drop=True)\nanswer = ranked.iloc[5:10][\"state\"].tolist()",
+            "subquestion": "If you group the institutions seeking exemption from Oregon's foreclosure-mediation process in 2018 by state, which states come in 6th through 10th place when comparing the middle number of foreclosure actions they reported for the previous year? Break any ties alphabetically.",
+            "answer": [
+                "Wyoming",
+                "Missouri",
+                "Illinois",
+                "Arkansas",
+                "Connecticut"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Popcorn/content.txt",
+            "fact": "The Popcorn page states that, as the result of an elementary school project, popcorn became the official state snack food of Illinois.",
+            "subquestion": "What food became the official state snack food of <hop 1 answer> as the result of an elementary school project?",
+            "answer": "popcorn"
+        }
+    },
+    "datasets_used": [
+        "datagov/2009-property-tax-roll/files/rows.txt",
+        "datagov/2009-property-tax-roll/signed-metadata.txt",
+        "datagov/2009-property-tax-roll/files/9p3h-3q5i.publisher-view.json",
+        "datagov/2018-foreclosure-avoidance-mediation-beneficiary-exemption-affidavits-pursuant-to-sb-558/files/rows.txt",
+        "datagov/2018-foreclosure-avoidance-mediation-beneficiary-exemption-affidavits-pursuant-to-sb-558/signed-metadata.txt",
+        "wikipedia/Popcorn/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Normalize `Owner State` values to full state names, convert `Total Taxes` to numeric, group by normalized state to compute the sample standard deviation of `Total Taxes`, sort by standard deviation descending and state ascending to break ties alphabetically, and take ranks 7 through 11.",
+                "Node 2: Normalize `State` values to full state names, convert `Foreclosures previous year` to numeric, group by normalized state to compute the median of `Foreclosures previous year`, sort by median descending and state ascending to break ties alphabetically, and take ranks 6 through 10.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Illinois."
+            ],
+            "answer": "Illinois"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: The Popcorn page identifies popcorn as the food that became the official state snack food of the computed state.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "popcorn"
+        }
+    ]
+}

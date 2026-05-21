@@ -1,0 +1,130 @@
+{
+    "question": "In the 2014-15 school year of Washington, which top 5 schools had the largest low-income students amount that are expected to take Biology graduation test, which top 5 schools had the most low-income students who are left schools after 7 years, and which top 5 schools had the most low-income students enrolled? Among the schools that appear in at least two of those three answers, which three years had the highest total number of low-income students who left schools in four years? Using those years A, B, and C, we define a county is careless when a large portion of children ages 0-5 enter state-supervised care because of parental substance use. Which five counties are the most careless in years A, B, and C? Among those counties, across those same years A, B, and C, which counties have 2nd lowest and 2nd highest most transaction registration for passenger cars? Finally, what was the average of those two counties' 2010 census populations? Please return only the number in the format [Answer].",
+    "answer": "48617",
+    "nodes": {
+        "1": {
+            "source": "datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[\n    df['OrganizationLevel'].eq('School')\n    & df['StudentGroup'].eq('Low-Income')\n    & df['TestSubject'].eq('Biology')\n    & df['GradeLevel'].eq('All Grades')\n    & df['Suppression'].ne('Yes')\n].copy()\nfiltered['expected_num'] = pd.to_numeric(filtered['Count of Students Expected to Test'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = filtered.sort_values(['expected_num', 'SchoolCode'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked.iloc[0:5]['SchoolCode'] + ' ' + ranked.iloc[0:5]['SchoolName']).tolist())\n",
+            "subquestion": "In the 2014-15 school year of Washington, which top 5 schools had the largest low-income students amount that are expected to take Biology graduation test?",
+            "answer": "2116 Davis High School; 5164 Chiawana Senior High School; 3206 Eisenhower High School; 2917 Pasco Senior High School; 3688 Mariner High School"
+        },
+        "2": {
+            "source": "datagov/report-card-graduation-2014-15/files/rows.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/report-card-graduation-2014-15/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = json.loads(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read().decode('utf-8'))\ncols_meta = obj['meta']['view']['columns']\nstart_idx = next(i for i, col in enumerate(cols_meta) if col.get('dataTypeName') != 'meta_data')\ncolumns = [col['name'] for col in cols_meta[start_idx:]]\ndf = pd.DataFrame([row[start_idx:start_idx + len(columns)] for row in obj['data']], columns=columns)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[\n    df['OrganizationLevel'].eq('School')\n    & df['StudentGroup'].eq('Low-Income')\n    & df['Cohort'].eq('Seven year')\n    & df['Suppression'].ne('Yes')\n].copy()\nfiltered['graduate_num'] = pd.to_numeric(filtered['Graduate'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = filtered.sort_values(['graduate_num', 'SchoolCode'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked.iloc[0:5]['SchoolCode'] + ' ' + ranked.iloc[0:5]['SchoolName']).tolist())\n",
+            "subquestion": "In the 2014-15 school year of Washington, which top 5 schools had the most low-income students who are left schools after 7 years?",
+            "answer": "2959 Sunnyside High School; 2917 Pasco Senior High School; 5164 Chiawana Senior High School; 2116 Davis High School; 3688 Mariner High School"
+        },
+        "3": {
+            "source": "datagov/report-card-enrollment-2014-15-school-year/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/report-card-enrollment-2014-15-school-year/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[df['OrganizationLevel'].eq('School') & df['GradeLevel'].eq('All Grades')].copy()\nfiltered['low_income_num'] = pd.to_numeric(filtered['Low-Income'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = filtered.sort_values(['low_income_num', 'SchoolCode'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked.iloc[0:5]['SchoolCode'] + ' ' + ranked.iloc[0:5]['SchoolName']).tolist())\n",
+            "subquestion": "In the 2014-15 school year of Washington, which top 5 schools had the most low-income students enrolled?",
+            "answer": "2116 Davis High School; 5164 Chiawana Senior High School; 2797 Kent-Meridian High School; 3206 Eisenhower High School; 2917 Pasco Senior High School"
+        },
+        "4": {
+            "source": "datagov/report-card-graduation-2014-15-to-most-recent-year-cc1d5/files/rows.txt",
+            "fact": "import json\nimport re\nfrom collections import Counter\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/report-card-graduation-2014-15-to-most-recent-year-cc1d5/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = '2116 Davis High School; 5164 Chiawana Senior High School; 3206 Eisenhower High School; 2917 Pasco Senior High School; 3688 Mariner High School'\nnode_2_answer = '2959 Sunnyside High School; 2917 Pasco Senior High School; 5164 Chiawana Senior High School; 2116 Davis High School; 3688 Mariner High School'\nnode_3_answer = '2116 Davis High School; 5164 Chiawana Senior High School; 2797 Kent-Meridian High School; 3206 Eisenhower High School; 2917 Pasco Senior High School'\nall_codes = []\nfor value in [node_1_answer, node_2_answer, node_3_answer]:\n    all_codes.extend(re.findall(r'\\b(\\d{4})\\b', str(value)))\ntarget_codes = sorted([code for code, count in Counter(all_codes).items() if count >= 2])\nobj = json.loads(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read().decode('utf-8'))\ncols_meta = obj['meta']['view']['columns']\nstart_idx = next(i for i, col in enumerate(cols_meta) if col.get('dataTypeName') != 'meta_data')\ncolumns = [col['name'] for col in cols_meta[start_idx:]]\ndf = pd.DataFrame([row[start_idx:start_idx + len(columns)] for row in obj['data']], columns=columns)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfiltered = df[\n    df['OrganizationLevel'].eq('School')\n    & df['StudentGroup'].eq('Low-Income')\n    & df['Cohort'].eq('Four Year')\n    & df['Suppression'].ne('Yes')\n    & df['SchoolCode'].isin(target_codes)\n].copy()\nfiltered['graduate_num'] = pd.to_numeric(filtered['Graduate'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = filtered.groupby('SchoolYear', as_index=False)['graduate_num'].sum().sort_values(['graduate_num', 'SchoolYear'], ascending=[False, False], kind='mergesort').reset_index(drop=True)\nanswer = ', '.join(sorted(ranked.iloc[0:3]['SchoolYear'].tolist()))\n",
+            "subquestion": "Among the schools that appear in at least two of <node_1 answer>, <node_2 answer>, and <node_3 answer>, which three years had the highest number low-income students who left schools in four years?",
+            "answer": "2019, 2020, 2021"
+        },
+        "5": {
+            "source": "datagov/age-distribution-for-children-entering-out-of-home-care-2010-2022/files/rows.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/age-distribution-for-children-entering-out-of-home-care-2010-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_4_answer = '2019, 2020, 2021'\ntarget_years = {int(x) for x in re.findall(r'\\d{4}', node_4_answer)}\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['Year_num'] = pd.to_numeric(df['Year'], errors='coerce')\ndf['Age_num'] = pd.to_numeric(df['Age in Years'], errors='coerce')\ndf['pct_num'] = pd.to_numeric(df['Percent of County by Year'].astype(str).str.replace('%', '', regex=False), errors='coerce')\nfiltered = df[\n    df['Year_num'].isin(target_years)\n    & df['Feature'].eq('With Indicated Parental Substance Use')\n    & df['Age_num'].between(0, 5)\n].copy()\nranked = filtered.groupby('County', as_index=False)['pct_num'].sum().sort_values(['pct_num', 'County'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[0:5]['County'].tolist())\n",
+            "subquestion": "We define a county is careless when a large portion of children ages 0-5 enter state-supervised care because of parental substance use. Which five counties are the most careless in <node_4 answer>?",
+            "answer": "Adams; Garfield; Grays Harbor; Island; King"
+        },
+        "6": {
+            "source": "datagov/vehicle-registration-summary/files/rows.txt",
+            "fact": "import io\nimport csv\nimport re\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/vehicle-registration-summary/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_4_answer = '2019, 2020, 2021'\nnode_5_answer = 'Adams; Garfield; Grays Harbor; Island; King'\ntarget_years = {part.strip() for part in re.findall(r'\\d{4}', node_4_answer)}\ntarget_counties = [part.strip() for part in node_5_answer.split(';') if part.strip()]\ntotals = {county: 0 for county in target_counties}\nbody = io.TextIOWrapper(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'], encoding='utf-8', errors='replace')\nreader = csv.DictReader(body)\nfor row in reader:\n    county = str(row.get('County', '')).strip()\n    if county not in totals:\n        continue\n    if str(row.get('State', '')).strip() != 'WA':\n        continue\n    if str(row.get('Fiscal Year', '')).strip() not in target_years:\n        continue\n    if str(row.get('Transaction Type', '')).strip() != 'Registration Renewal':\n        continue\n    if str(row.get('Primary Use', '')).strip() != 'Passenger Vehicle':\n        continue\n    if str(row.get('Vehicle Type', '')).strip() != 'PASSENGER CAR':\n        continue\n    totals[county] += int(str(row.get('Transaction Count', '0')).strip() or '0')\nascending = sorted(totals.items(), key=lambda item: (item[1], item[0]))\ndescending = sorted(totals.items(), key=lambda item: (-item[1], item[0]))\nanswer = f\"{ascending[1][0]}; {descending[1][0]}\"\n",
+            "subquestion": "Among the counties in <node_5 answer> and across the years in <node_4 answer>, which counties have 2nd lowest and 2nd highest most transaction registration for passenger cars?",
+            "answer": "Adams; Island"
+        },
+        "7": {
+            "source": "wikipedia/Adams_County,_Washington/content.txt",
+            "fact": "import re\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'wikipedia/Adams_County,_Washington/content.txt'\nbucket = 'lakeqa-yc4103-datalake'\ntext = boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read().decode('utf-8', errors='replace')\nmatch = re.search(r'As of the 2010 census, there were ([0-9,]+)', text)\nanswer = match.group(1).replace(',', '')\n",
+            "subquestion": "What was the 2010 census population of the first county in <node_6 answer>?",
+            "answer": "18728"
+        },
+        "8": {
+            "source": "wikipedia/Island_County,_Washington/content.txt",
+            "fact": "import re\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'wikipedia/Island_County,_Washington/content.txt'\nbucket = 'lakeqa-yc4103-datalake'\ntext = boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read().decode('utf-8', errors='replace')\nmatch = re.search(r'As of the 2010 census, there were ([0-9,]+)', text)\nanswer = match.group(1).replace(',', '')\n",
+            "subquestion": "What was the 2010 census population of the second county in <node_6 answer>?",
+            "answer": "78506"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Adams_County,_Washington/content.txt",
+        "wikipedia/Island_County,_Washington/content.txt",
+        "datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt",
+        "datagov/report-card-assessment-data-2014-15-school-year/signed-metadata.txt",
+        "datagov/report-card-assessment-data-2014-15-school-year/files/jjrr-uy75.txt",
+        "datagov/report-card-graduation-2014-15/files/rows.txt",
+        "datagov/report-card-graduation-2014-15/signed-metadata.txt",
+        "datagov/report-card-enrollment-2014-15-school-year/files/rows.txt",
+        "datagov/report-card-enrollment-2014-15-school-year/signed-metadata.txt",
+        "datagov/report-card-enrollment-2014-15-school-year/files/i9gq-g35m.publisher-view.json",
+        "datagov/report-card-graduation-2014-15-to-most-recent-year-cc1d5/files/rows.txt",
+        "datagov/report-card-graduation-2014-15-to-most-recent-year-cc1d5/signed-metadata.txt",
+        "datagov/age-distribution-for-children-entering-out-of-home-care-2010-2022/files/rows.txt",
+        "datagov/age-distribution-for-children-entering-out-of-home-care-2010-2022/signed-metadata.txt",
+        "datagov/age-distribution-for-children-entering-out-of-home-care-2010-2022/files/2i33-bdcz.txt",
+        "datagov/vehicle-registration-summary/files/rows.txt",
+        "datagov/vehicle-registration-summary/signed-metadata.txt",
+        "datagov/vehicle-registration-summary/files/8xjw-yrdy.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1 ranks schools by low-income Biology expected-test counts in 2014-15 and returns Davis, Chiawana, Eisenhower, Pasco, and Mariner.",
+                "Node 2 ranks schools by low-income seven-year graduates in 2014-15 and returns Sunnyside, Pasco, Chiawana, Davis, and Mariner.",
+                "Node 3 ranks schools by total low-income enrollment in 2014-15 and returns Davis, Chiawana, Kent-Meridian, Eisenhower, and Pasco.",
+                "The schools that appear in at least two of those three answers are Davis, Chiawana, Eisenhower, Pasco, and Mariner."
+            ],
+            "answer": "2116 Davis High School; 5164 Chiawana Senior High School; 3206 Eisenhower High School; 2917 Pasco Senior High School; 3688 Mariner High School"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4 filters the long-run graduation dataset to those five repeated schools, low-income students, and the four-year cohort.",
+                "Summing graduates by year and ranking from highest to lowest yields 2020, 2021, and 2019 as the top three years.",
+                "Sorted chronologically, the selected years are 2019, 2020, and 2021."
+            ],
+            "answer": "2019, 2020, 2021"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5 uses those years in the out-of-home-care age distribution dataset, keeps entries with indicated parental substance use and ages 0-5, sums county percentages, and breaks ties alphabetically.",
+                "The top five counties are Adams, Garfield, Grays Harbor, Island, and King.",
+                "Node 6 keeps those counties in the Washington vehicle registration summary and aggregates 2019-2021 transaction counts for registration renewals of passenger-use passenger cars.",
+                "Within that set, Adams ranks 2nd lowest and Island ranks 2nd highest."
+            ],
+            "answer": "Adams; Island"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7 reads the Adams County, Washington Wikipedia page and extracts its 2010 census population of 18,728.",
+                "Node 8 reads the Island County, Washington Wikipedia page and extracts its 2010 census population of 78,506.",
+                "Their average is 48,617."
+            ],
+            "answer": "48617"
+        }
+    ]
+}

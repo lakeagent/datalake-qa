@@ -1,0 +1,117 @@
+{
+  "question": "Among Harris, Hidalgo, Dallas, and Cameron counties in Texas, identify the two counties with the largest percentage decreases in day care home meal reimbursements from 2018-19 to 2020-21, then find which of those two had the higher average child-center enrollment across 2018-19 and 2019-20. How many years after that county was founded did the current incorporation of its county seat take effect? Your response should be in the format [Answer].",
+  "answer": 5,
+  "nodes": {
+    "1": {
+      "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"SiteCounty\"] = df[\"SiteCounty\"].astype(str).str.strip()\ndf = df[df[\"SiteCounty\"].isin([\"HARRIS\", \"HIDALGO\", \"DALLAS\", \"CAMERON\"])].copy()\ndf[\"TotalMealReimbursement\"] = pd.to_numeric(df[\"TotalMealReimbursement\"], errors=\"coerce\")\ncounty_totals = df.groupby(\"SiteCounty\", dropna=True)[\"TotalMealReimbursement\"].sum()\nanswer = {county: round(float(county_totals.loc[county]), 2) for county in county_totals.sort_index().index}\n",
+      "subquestion": "For ProgramYear 2018-2019, what were the total day care home meal reimbursements for Harris, Hidalgo, Dallas, and Cameron counties?",
+      "answer": {
+        "CAMERON": 392489.51,
+        "DALLAS": 2835278.75,
+        "HARRIS": 8757796.13,
+        "HIDALGO": 1202699.73
+      }
+    },
+    "2": {
+      "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"SiteCounty\"] = df[\"SiteCounty\"].astype(str).str.strip()\ndf = df[df[\"SiteCounty\"].isin([\"HARRIS\", \"HIDALGO\", \"DALLAS\", \"CAMERON\"])].copy()\ndf[\"TotalMealReimbursement\"] = pd.to_numeric(df[\"TotalMealReimbursement\"], errors=\"coerce\")\ncounty_totals = df.groupby(\"SiteCounty\", dropna=True)[\"TotalMealReimbursement\"].sum()\nanswer = {county: round(float(county_totals.loc[county]), 2) for county in county_totals.sort_index().index}\n",
+      "subquestion": "For ProgramYear 2020-2021, what were the total day care home meal reimbursements for Harris, Hidalgo, Dallas, and Cameron counties?",
+      "answer": {
+        "CAMERON": 330003.06,
+        "DALLAS": 2393411.26,
+        "HARRIS": 7558597.77,
+        "HIDALGO": 971063.56
+      }
+    },
+    "3": {
+      "source": "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"SiteCounty\"] = df[\"SiteCounty\"].astype(str).str.strip()\ndf = df[df[\"SiteCounty\"].isin([\"CAMERON\", \"HIDALGO\"])].copy()\ndf[\"EnrollmentQty\"] = pd.to_numeric(df[\"EnrollmentQty\"], errors=\"coerce\")\ncounty_totals = df.groupby(\"SiteCounty\", dropna=True)[\"EnrollmentQty\"].sum()\nanswer = {county: int(county_totals.loc[county]) for county in county_totals.sort_index().index}\n",
+      "subquestion": "For ProgramYear 2018-2019, what were the total child center enrollments for Hidalgo and Cameron counties?",
+      "answer": {
+        "CAMERON": 7620183,
+        "HIDALGO": 1661128
+      }
+    },
+    "4": {
+      "source": "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"SiteCounty\"] = df[\"SiteCounty\"].astype(str).str.strip()\ndf = df[df[\"SiteCounty\"].isin([\"CAMERON\", \"HIDALGO\"])].copy()\ndf[\"EnrollmentQty\"] = pd.to_numeric(df[\"EnrollmentQty\"], errors=\"coerce\")\ncounty_totals = df.groupby(\"SiteCounty\", dropna=True)[\"EnrollmentQty\"].sum()\nanswer = {county: int(county_totals.loc[county]) for county in county_totals.sort_index().index}\n",
+      "subquestion": "For ProgramYear 2019-2020, what were the total child center enrollments for Hidalgo and Cameron counties?",
+      "answer": {
+        "CAMERON": 1076746,
+        "HIDALGO": 1477805
+      }
+    },
+    "5": {
+      "source": "wikipedia/Cameron_County,_Texas/content.txt",
+      "fact": "Cameron County was founded in 1848, and its county seat is Brownsville.",
+      "subquestion": "In what year was <hop 2 answer> founded?",
+      "answer": 1848
+    },
+    "6": {
+      "source": "wikipedia/Brownsville,_Texas/content.txt",
+      "fact": "Brownsville was made the county seat of Cameron County on January 13, 1849. The state originally incorporated the city on January 24, 1850; this was repealed on April 1, 1852. The state reincorporated the city on February 7, 1853; this remains in effect.",
+      "subquestion": "In what year did the current incorporation of <hop 2 answer>'s county seat take effect?",
+      "answer": 1853
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1 totals (2018-2019): Harris 8,757,796.13; Dallas 2,835,278.75; Hidalgo 1,202,699.73; Cameron 392,489.51",
+        "Node 2 totals (2020-2021): Harris 7,558,597.77; Dallas 2,393,411.26; Hidalgo 971,063.56; Cameron 330,003.06",
+        "Percent decreases: Hidalgo -19.26%, Cameron -15.92%, Dallas -15.58%, Harris -13.69% -> two largest decreases {Hidalgo, Cameron}",
+        "Hop result: Hidalgo, Cameron"
+      ],
+      "answer": "Hidalgo, Cameron"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 3 totals (2018-2019): Cameron 7,620,183; Hidalgo 1,661,128",
+        "Node 4 totals (2019-2020): Cameron 1,076,746; Hidalgo 1,477,805",
+        "Average enrollment: Cameron 4,348,464.5 vs Hidalgo 1,569,466.5 -> Cameron County",
+        "Hop result: Cameron County"
+      ],
+      "answer": "Cameron County"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5: <hop 2 answer> was founded in `1848`.",
+        "Node 6: The current incorporation of <hop 2 answer>'s county seat took effect in `1853`.",
+        "Hop result: `1853 - 1848 = 5`."
+      ],
+      "answer": 5
+    }
+  ],
+  "datasets_used": [
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+    "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt",
+    "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/m3iw-uy6q.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/ymex-tquc.publisher-view.json",
+    "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/2a57-dx4w.publisher-view.json",
+    "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/wjcz-ucbn.txt",
+    "wikipedia/Cameron_County,_Texas/content.txt",
+    "wikipedia/Brownsville,_Texas/content.txt"
+  ]
+}

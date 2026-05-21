@@ -1,0 +1,146 @@
+{
+    "question": "Among Washington, DC wards 2, 4, 5, and 6, identify the two wards with the highest average crime-incident counts from 2022 to 2024. Among the two wards, which ward had more wireless-hotspot sites at libraries in mid-April 2024? In that ward, which open library is the central library? According to that library's Wikipedia article, who designed it? In which city was that architect born? Please return the city only. Your response should be in the format [Answer].",
+    "answer": "Aachen",
+    "nodes": {
+        "1": {
+            "source": "datagov/crime-incidents-in-2022/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/crime-incidents-in-2022/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ncounts = (\n    df[df[\"properties.WARD\"].astype(str).isin([\"2\", \"4\", \"5\", \"6\"])]\n    .groupby(\"properties.WARD\")\n    .size()\n    .sort_index()\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {x}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "For Washington, DC wards 2, 4, 5, and 6, how many crime incidents were recorded in 2022?",
+            "answer": {
+                "Ward 2": 4794,
+                "Ward 4": 2547,
+                "Ward 5": 4497,
+                "Ward 6": 3685
+            }
+        },
+        "2": {
+            "source": "datagov/crime-incidents-in-2023/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/crime-incidents-in-2023/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ncounts = (\n    df[df[\"properties.WARD\"].astype(str).isin([\"2\", \"4\", \"5\", \"6\"])]\n    .groupby(\"properties.WARD\")\n    .size()\n    .sort_index()\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {x}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "For Washington, DC wards 2, 4, 5, and 6, how many crime incidents were recorded in 2023?",
+            "answer": {
+                "Ward 2": 5469,
+                "Ward 4": 3135,
+                "Ward 5": 5629,
+                "Ward 6": 4281
+            }
+        },
+        "3": {
+            "source": "datagov/crime-incidents-in-2024/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/crime-incidents-in-2024/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ncounts = (\n    df[df[\"properties.WARD\"].astype(str).isin([\"2\", \"4\", \"5\", \"6\"])]\n    .groupby(\"properties.WARD\")\n    .size()\n    .sort_index()\n)\ncounts.index = counts.index.map(lambda x: f\"Ward {x}\")\nanswer = counts.to_dict()\n",
+            "subquestion": "For Washington, DC wards 2, 4, 5, and 6, how many crime incidents were recorded in 2024?",
+            "answer": {
+                "Ward 2": 4420,
+                "Ward 4": 2595,
+                "Ward 5": 4585,
+                "Ward 6": 3549
+            }
+        },
+        "4": {
+            "source": "datagov/wireless-hotspots-from-dc-government/files/data.txt",
+            "fact": "import json\nimport urllib.request\nfrom collections import Counter\n\nurl = 'https://lakeqa-yc4103-datalake.s3.amazonaws.com/datagov/wireless-hotspots-from-dc-government/files/data.txt'\nwith urllib.request.urlopen(url, timeout=60) as r:\n    data = json.load(r)\n\ncounts = Counter()\nfor feat in data['features']:\n    props = feat.get('properties', {})\n    ward = str(props.get('WARD', '')).strip()\n    if ward in {'Ward 2', 'Ward 5'} and props.get('SITE_TYPE') == 'Library':\n        counts[ward] += 1\n\nanswer = max(['Ward 2', 'Ward 5'], key=lambda ward: (counts.get(ward, 0), ward))\n",
+            "subquestion": "Among the wards in <hop 1 answer>, which ward had more wireless-hotspot sites at libraries in mid-April 2024?",
+            "answer": "Ward 2"
+        },
+        "5": {
+            "source": "datagov/libraries-39c9d/files/data.txt",
+            "fact": "import json\nimport urllib.request\n\nurl = 'https://lakeqa-yc4103-datalake.s3.amazonaws.com/datagov/libraries-39c9d/files/data.txt'\nwith urllib.request.urlopen(url, timeout=60) as r:\n    data = json.load(r)\n\nmatches = []\nfor feat in data['features']:\n    props = feat.get('properties', {})\n    if str(props.get('WARD', '')).strip() == 'Ward 2' and props.get('STATUS') == 'Open' and props.get('TYPE') == 'Central Library':\n        matches.append(props.get('NAME'))\n\nanswer = matches[0] if len(matches) == 1 else matches\n",
+            "subquestion": "What is the central library in <hop 2 answer>?",
+            "answer": "Martin Luther King Jr. Memorial Library"
+        },
+        "6": {
+            "source": "wikipedia/Martin_Luther_King_Jr._Memorial_Library/content.txt",
+            "fact": "Architect Ludwig Mies van der Rohe designed the 400,000 square foot (37,000 m2) steel, brick, and glass structure, an example of modern architecture, in Washington, D.C.",
+            "subquestion": "Which Architect designed <hop 3 answer>?",
+            "answer": "Ludwig Mies van der Rohe"
+        },
+        "7": {
+            "source": "wikipedia/Ludwig_Mies_van_der_Rohe/content.txt",
+            "fact": "Mies was born March 27, 1886, in Aachen, Germany.",
+            "subquestion": "In which city was <hop 4 answer> born?",
+            "answer": "Aachen"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Martin_Luther_King_Jr._Memorial_Library/content.txt",
+        "wikipedia/Ludwig_Mies_van_der_Rohe/content.txt",
+        "datagov/crime-incidents-in-2022/files/data.txt",
+        "datagov/crime-incidents-in-2022/signed-metadata.txt",
+        "datagov/crime-incidents-in-2022/files/4.arcgis-layer.json",
+        "datagov/crime-incidents-in-2023/files/data.txt",
+        "datagov/crime-incidents-in-2023/signed-metadata.txt",
+        "datagov/crime-incidents-in-2023/files/5.arcgis-layer.json",
+        "datagov/crime-incidents-in-2024/files/data.txt",
+        "datagov/crime-incidents-in-2024/signed-metadata.txt",
+        "datagov/crime-incidents-in-2024/files/6.arcgis-layer.json",
+        "datagov/wireless-hotspots-from-dc-government/files/data.txt",
+        "datagov/wireless-hotspots-from-dc-government/signed-metadata.txt",
+        "datagov/wireless-hotspots-from-dc-government/files/14.arcgis-layer.json",
+        "datagov/libraries-39c9d/files/data.txt",
+        "datagov/libraries-39c9d/signed-metadata.txt",
+        "datagov/libraries-39c9d/files/4.arcgis-layer.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Normalize the 2022 crime-incidents GeoJSON, filter rows where `properties.WARD` is 2, 4, 5, or 6, count incidents by `properties.WARD`, and return the yearly ward mapping.",
+                "Node 2: Normalize the 2023 crime-incidents GeoJSON, filter rows where `properties.WARD` is 2, 4, 5, or 6, count incidents by `properties.WARD`, and return the yearly ward mapping.",
+                "Node 3: Normalize the 2024 crime-incidents GeoJSON, filter rows where `properties.WARD` is 2, 4, 5, or 6, count incidents by `properties.WARD`, and return the yearly ward mapping.",
+                "Hop result: average the three yearly incident counts and keep the two wards with the highest overall averages: Ward 5 and Ward 2."
+            ],
+            "answer": [
+                "Ward 5",
+                "Ward 2"
+            ]
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In the wireless-hotspots dataset, filter rows where `WARD` is Ward 2 or Ward 5 from <hop 1 answer> and `SITE_TYPE` = `Library`, count hotspot-site rows by ward, and select the ward with the higher count.",
+                "Hop result: Ward 2 has more library hotspot sites than Ward 5."
+            ],
+            "answer": "Ward 2"
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In the libraries dataset, filter rows where `WARD` = `Ward 2`, `STATUS` = `Open`, and `TYPE` = `Central Library`, then return the matching library name.",
+                "Hop result: the library is Martin Luther King Jr. Memorial Library."
+            ],
+            "answer": "Martin Luther King Jr. Memorial Library"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Read the Wikipedia article for <hop 3 answer> and retrieve the architect who designed the library.",
+                "Hop result: the architect is Ludwig Mies van der Rohe."
+            ],
+            "answer": "Ludwig Mies van der Rohe"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Read the Wikipedia article for <hop 4 answer> and retrieve the city where the architect was born.",
+                "Hop result: the birth city is Aachen."
+            ],
+            "answer": "Aachen"
+        }
+    ]
+}

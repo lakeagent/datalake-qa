@@ -1,0 +1,139 @@
+{
+    "question": "What is the total of evaluated revenues and grants given by the government to all Business Improvement Districts in New York in 2017, 2018, and 2019? In the year with the lowest amount among those three results, which county had the second highest number of individuals subsequently identified as victims in the administratively closed investigations? Then, in this county, in which year was the number of disabled adults aged between 18-64 the highest? Next, go back 5 years from that year and, defining affordability as units that are affordable divided by total units available in the market, determine which county has the 5th lowest affordability. Finally, calculate the absolute difference between the 2020 census populations of this county and the county that appeared earlier in this question? Please return only the number in the format [Answer].",
+    "answer": "1140885",
+    "nodes": {
+        "1": {
+            "source": "datagov/fy17-bid-trends-report-data/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/fy17-bid-trends-report-data/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Assessment revenue\"] = pd.to_numeric(df[\"Assessment revenue\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\").fillna(0)\ndf[\"Government grants\"] = pd.to_numeric(df[\"Government grants\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\").fillna(0)\nanswer = str(int((df[\"Assessment revenue\"] + df[\"Government grants\"]).sum()))\n",
+            "subquestion": "What is the total of evaluated revenues and grants given by the government to all Business Improvement Districts in New York in 2017",
+            "answer": "111465989"
+        },
+        "2": {
+            "source": "datagov/fy18-bid-trends-report-data/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/fy18-bid-trends-report-data/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Assessment revenue\"] = pd.to_numeric(df[\"Assessment revenue\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\").fillna(0)\ndf[\"Government grants\"] = pd.to_numeric(df[\"Government grants\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\").fillna(0)\nanswer = str(int((df[\"Assessment revenue\"] + df[\"Government grants\"]).sum()))\n",
+            "subquestion": "What is the total of evaluated revenues and grants given by the government to all Business Improvement Districts in New York in 2018",
+            "answer": "117167518"
+        },
+        "3": {
+            "source": "datagov/fy19-bid-trends-report-data/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/fy19-bid-trends-report-data/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Assessment revenue\"] = pd.to_numeric(df[\"Assessment revenue\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\").fillna(0)\ndf[\"Government grants\"] = pd.to_numeric(df[\"Government grants\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\").fillna(0)\nanswer = str(int((df[\"Assessment revenue\"] + df[\"Government grants\"]).sum()))\n",
+            "subquestion": "What is the total of evaluated revenues and grants given by the government to all Business Improvement Districts in New York in 2019",
+            "answer": "124594784"
+        },
+        "4": {
+            "source": "datagov/cpi-3-14-outcomes-for-investigations-closed-administratively-fy2013-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/cpi-3-14-outcomes-for-investigations-closed-administratively-fy2013-2022/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_1_answer = \"111465989\"\nnode_2_answer = \"117167518\"\nnode_3_answer = \"124594784\"\nfy_totals = {\n    2017: float(str(node_1_answer).strip()),\n    2018: float(str(node_2_answer).strip()),\n    2019: float(str(node_3_answer).strip()),\n}\ntarget_fy = min(fy_totals, key=fy_totals.get)\n\ndf[\"Fiscal Year\"] = pd.to_numeric(df[\"Fiscal Year\"], errors=\"coerce\")\ndf[\"Alleged Victims in Admin Closed Investigation\"] = pd.to_numeric(df[\"Alleged Victims in Admin Closed Investigation\"], errors=\"coerce\").fillna(0)\nfiltered = df[\n    df[\"Fiscal Year\"].eq(target_fy)\n    & df[\"Subsequently Alleged as Victims\"].astype(str).str.strip().str.lower().eq(\"yes\")\n].copy()\ncounty_totals = filtered.groupby(\"County\")[\"Alleged Victims in Admin Closed Investigation\"].sum().sort_values(ascending=False)\nanswer = str(county_totals.index[1])\n",
+            "subquestion": "For the year with the lowest amount among <node_1 answer>, <node_2 answer>, and <node_3 answer>, which county had the second highest number of individuals subsequently identified as victims in the administratively closed investigations?",
+            "answer": "Dallas"
+        },
+        "5": {
+            "source": "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_4_answer = \"Dallas\"\ndf[\"Fiscal Year\"] = pd.to_numeric(df[\"Fiscal Year\"], errors=\"coerce\")\ndf[\"Adult Disabled 18-64: Population\"] = pd.to_numeric(df[\"Adult Disabled 18-64: Population\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[df[\"County\"].astype(str).str.strip().str.lower().eq(str(node_4_answer).strip().lower())].copy()\nranked = filtered.sort_values([\"Adult Disabled 18-64: Population\", \"Fiscal Year\"], ascending=[False, True])\nanswer = str(int(ranked.iloc[0][\"Fiscal Year\"]))\n",
+            "subquestion": "In <node_4 answer>, in which year was the number of disabled adults aged between 18-64 the highest?",
+            "answer": "2019"
+        },
+        "6": {
+            "source": "datagov/office-of-finance-and-development-9-low-income-housing-tax-credits/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/office-of-finance-and-development-9-low-income-housing-tax-credits/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_5_answer = \"2019\"\ntarget_year = int(str(node_5_answer).strip()) - 5\nfor col in [\"Calendar Year\", \"Affordable Units\", \"Total Units\"]:\n    df[col] = pd.to_numeric(df[col].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[df[\"Calendar Year\"].eq(target_year)].copy()\nfiltered = filtered.dropna(subset=[\"County\", \"Affordable Units\", \"Total Units\"])\nfiltered = filtered[filtered[\"Total Units\"] > 0]\ncounty_totals = filtered.groupby(\"County\", as_index=False)[[\"Affordable Units\", \"Total Units\"]].sum()\ncounty_totals[\"affordability\"] = county_totals[\"Affordable Units\"] / county_totals[\"Total Units\"]\nranked = county_totals.sort_values([\"affordability\", \"County\"], ascending=[True, True]).reset_index(drop=True)\nanswer = str(ranked.iloc[4][\"County\"])\n",
+            "subquestion": "5 years before <node_5 answer>, if affordability is measured as units that are affordable divided by total units available in the market, which county has the 5th lowest affordability?",
+            "answer": "BRONX"
+        },
+        "7": {
+            "source": "wikipedia/The_Bronx/content.txt",
+            "fact": "According to Wikipedia, The Bronx had a population of 1,472,654 at the 2020 census.",
+            "subquestion": "What is the population of <node_6 answer> in the 2020 census?",
+            "answer": "1472654"
+        },
+        "8": {
+            "source": "wikipedia/Dallas_County,_Texas/content.txt",
+            "fact": "According to Wikipedia, Dallas County, Texas had a population of 2,613,539 at the 2020 census.",
+            "subquestion": "What is the population of <node_4 answer> in the 2020 census?",
+            "answer": "2613539"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/The_Bronx/content.txt",
+        "wikipedia/Dallas_County,_Texas/content.txt",
+        "datagov/fy17-bid-trends-report-data/files/rows.txt",
+        "datagov/fy17-bid-trends-report-data/signed-metadata.txt",
+        "datagov/fy18-bid-trends-report-data/files/rows.txt",
+        "datagov/fy18-bid-trends-report-data/signed-metadata.txt",
+        "datagov/fy19-bid-trends-report-data/files/rows.txt",
+        "datagov/fy19-bid-trends-report-data/signed-metadata.txt",
+        "datagov/cpi-3-14-outcomes-for-investigations-closed-administratively-fy2013-2022/files/rows.txt",
+        "datagov/cpi-3-14-outcomes-for-investigations-closed-administratively-fy2013-2022/signed-metadata.txt",
+        "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/rows.txt",
+        "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/signed-metadata.txt",
+        "datagov/aps-1-1-texas-adult-populations-at-risk-by-county-region-fy2013-fy2022/files/qjby-4sji.publisher-view.json",
+        "datagov/office-of-finance-and-development-9-low-income-housing-tax-credits/files/rows.txt",
+        "datagov/office-of-finance-and-development-9-low-income-housing-tax-credits/signed-metadata.txt",
+        "datagov/office-of-finance-and-development-9-low-income-housing-tax-credits/files/sfm6-zmzx.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Summing \"Assessment revenue\" and \"Government grants\" across all rows in the FY2017 BID trends dataset gives 111465989.",
+                "Node 2: Summing the same two columns across all rows in the FY2018 BID trends dataset gives 117167518.",
+                "Node 3: Summing the same two columns across all rows in the FY2019 BID trends dataset gives 124594784.",
+                "Compare the three totals to identify the fiscal year with the lowest amount.",
+                "Hop result: FY2017"
+            ],
+            "answer": "FY2017"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In the CPI outcomes for investigations closed administratively dataset, filter to Fiscal Year 2017 and rows where \"Subsequently Alleged as Victims\" = \"Yes\", then sum \"Alleged Victims in Admin Closed Investigation\" by county.",
+                "The county with the second highest total is Dallas.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "Dallas"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In the APS Texas adult populations at risk dataset, among rows for Dallas County, the highest value of disabled adults aged between 18-64 occurs in fiscal year 2019.",
+                "Hop result: <node_5 answer>"
+            ],
+            "answer": "2019"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: In <node_5 answer> - 5 year, set affordability = \"Affordable Units\" / \"Total Units\", aggregate by county, then order counties by affordability ascending and county ascending to identify the 5th lowest county.",
+                "The county in 5th position is BRONX.",
+                "Hop result: <node_6 answer>"
+            ],
+            "answer": "BRONX"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: According to Wikipedia, the 2020 census population of The Bronx is 1,472,654.",
+                "Node 8: According to Wikipedia, the 2020 census population of Dallas County, Texas is 2,613,539.",
+                "Compute the absolute difference between these two populations.",
+                "Hop result: 1140885"
+            ],
+            "answer": "1140885"
+        }
+    ]
+}

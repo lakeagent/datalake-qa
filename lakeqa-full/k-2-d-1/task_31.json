@@ -1,0 +1,47 @@
+{
+  "question": "Start with the Oklahoma county that has the most listings in the public library directory. What was the population of that county at the 2020 census? Please return only the number in the format [Answer].",
+  "answer": 669279,
+  "nodes": {
+    "1": {
+      "source": "datagov/oklahoma-public-library-directory-c11a9/files/data-oklahoma-public-library-directory.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/oklahoma-public-library-directory-c11a9/files/data-oklahoma-public-library-directory.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['county_norm'] = df['COUNTY'].astype(str).str.strip().str.upper()\ncounty_counts = df.groupby('county_norm', dropna=True).size().sort_values(ascending=False)\nanswer = str(county_counts.idxmax()).title()\n",
+      "subquestion": "Which Oklahoma county has the most listings in the public library directory?",
+      "answer": "Tulsa"
+    },
+    "2": {
+      "source": "wikipedia/Tulsa_County,_Oklahoma/content.txt",
+      "fact": "Tulsa County is a county located in the U.S. state of Oklahoma. As of the 2020 census, the population was 669,279, making it the second-most populous county in the state, behind only Oklahoma County. Its county seat and largest city is Tulsa, the second-largest city in the state. Founded at statehood, in 1907, it was named after the previously established city of Tulsa. Before statehood, the area was part of both the Creek Nation and the Cooweescoowee District of Cherokee Nation in Indian Territory. Tulsa County is included in the Tulsa metropolitan statistical area. Tulsa County is notable for being the most densely populated county in the state. Tulsa County also ranks as having the highest income.Per capita income in Tulsa County highest in state | Tulsa World",
+      "subquestion": "What was the population of <hop 1 answer> County, Oklahoma, at the 2020 census?",
+      "answer": 669279
+    }
+  },
+  "datasets_used": [
+    "datagov/oklahoma-public-library-directory-c11a9/files/data-oklahoma-public-library-directory.txt",
+    "datagov/oklahoma-public-library-directory-c11a9/signed-metadata.txt",
+    "wikipedia/Tulsa_County,_Oklahoma/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the Oklahoma public library directory, Tulsa County has the most listings with 27, ahead of Oklahoma County with 20.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "Tulsa"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Tulsa County, Oklahoma had a population of 669,279 at the 2020 census.",
+        "Hop result: 669,279."
+      ],
+      "answer": 669279
+    }
+  ]
+}

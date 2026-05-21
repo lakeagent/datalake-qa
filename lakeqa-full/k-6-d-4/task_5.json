@@ -1,0 +1,149 @@
+{
+    "question": "Identify the private in-person school founded by Sal Khan, then the city and county where it is located. Using school district office listings for that city and county, determine the two-digit state FIPS code. In that state, find the counties that rank in the top three for public schools, private schools, and school district offices; among their intersection, what is the highest postsecondary institution count? Only report the number. Your response should be in the format [Answer].",
+    "answer": "206",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Sal_Khan/content.txt",
+            "fact": "He is also the founder of Khan Lab School, a private in-person school in Mountain View, California.",
+            "subquestion": "Sal Khan is also the founder of what private in-person school in Mountain View, California?",
+            "answer": "Khan Lab School"
+        },
+        "2": {
+            "source": "wikipedia/Khan_Lab_School/content.txt",
+            "fact": "Khan Lab School is an independent school in Mountain View, California, associated with Khan Academy.",
+            "subquestion": "In what city is <hop 1 answer> located?",
+            "answer": "Mountain View"
+        },
+        "3": {
+            "source": "wikipedia/Mountain_View,_California/content.txt",
+            "fact": "Mountain View is a city in Santa Clara County, California, United States, part of the San Francisco Bay Area.",
+            "subquestion": "In which county is <hop 2 answer> located?",
+            "answer": "Santa Clara County"
+        },
+        "4": {
+            "source": "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [c.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for c in df.columns]\n\nfiltered = df[(df[\"CITY\"] == \"Mountain View\") & (df[\"NMCNTY\"] == \"Santa Clara County\")].copy()\nresult = filtered[[\"CITY\", \"NMCNTY\", \"STFIP\"]].drop_duplicates().sort_values([\"CITY\", \"NMCNTY\", \"STFIP\"]).reset_index(drop=True)\n\nunique_stfip = result[\"STFIP\"].dropna().astype(str).drop_duplicates().tolist()\nanswer = unique_stfip[0] if len(unique_stfip) == 1 else unique_stfip\nprint(answer)",
+            "subquestion": "In the school district office listings, entries with CITY='<hop 2 answer>' and NMCNTY='<hop 3 answer>' share what two-digit state FIPS code (STFIP)?",
+            "answer": "06"
+        },
+        "5": {
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/public-school-locations-current-23297/files/data-oyCYxF.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [c.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for c in df.columns]\n\nstate_df = df[df[\"STFIP\"].astype(str) == \"06\"].copy()\ncounty_counts = (\n    state_df.groupby(\"NMCNTY\", dropna=False)\n    .size()\n    .reset_index(name=\"public_school_count\")\n    .sort_values([\"public_school_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\ntop3 = county_counts.head(3)\nanswer = \"; \".join(top3[\"NMCNTY\"].tolist())\nprint(answer)",
+            "subquestion": "For STFIP='<hop 4 answer>', which 3 county names have the most public schools? Return the county names separated by '; '.",
+            "answer": "Los Angeles County; San Diego County; Orange County"
+        },
+        "6": {
+            "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [c.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for c in df.columns]\n\nstate_df = df[df[\"STFIP\"].astype(str) == \"06\"].copy()\ncounty_counts = (\n    state_df.groupby(\"NMCNTY\", dropna=False)\n    .size()\n    .reset_index(name=\"private_school_count\")\n    .sort_values([\"private_school_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\ntop3 = county_counts.head(3)\nanswer = \"; \".join(top3[\"NMCNTY\"].tolist())\nprint(answer)",
+            "subquestion": "For STFIP='<hop 4 answer>', which 3 county names have the most private schools? Return the county names separated by '; '.",
+            "answer": "Los Angeles County; Orange County; San Diego County"
+        },
+        "7": {
+            "source": "datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [c.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for c in df.columns]\n\nstate_df = df[df[\"STFIP\"].astype(str) == \"06\"].copy()\ncounty_counts = (\n    state_df.groupby(\"NMCNTY\", dropna=False)\n    .size()\n    .reset_index(name=\"school_district_office_count\")\n    .sort_values([\"school_district_office_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\ntop3 = county_counts.head(3)\nanswer = \"; \".join(top3[\"NMCNTY\"].tolist())\nprint(answer)",
+            "subquestion": "For STFIP='<hop 4 answer>', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+            "answer": "Los Angeles County; San Diego County; San Bernardino County"
+        },
+        "8": {
+            "source": "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ndf.columns = [c.replace(\"properties.\", \"\").replace(\"geometry.\", \"\") for c in df.columns]\n\nstate_df = df[df[\"STFIP\"].astype(str) == \"06\"].copy()\ncounty_counts = (\n    state_df.groupby(\"NMCNTY\", dropna=False)\n    .size()\n    .reset_index(name=\"postsecondary_institution_count\")\n    .sort_values([\"postsecondary_institution_count\", \"NMCNTY\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nintersection_counties = {\"Los Angeles County\", \"San Diego County\"}\nintersection_counts = county_counts[county_counts[\"NMCNTY\"].isin(intersection_counties)].copy()\nanswer = int(intersection_counts[\"postsecondary_institution_count\"].max())",
+            "subquestion": "For STFIP='<hop 4 answer>', what is the postsecondary institution count for each county, and among the counties in <hop 5 answer>, what is the maximum count?",
+            "answer": 206
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Read the Wikipedia article for Sal Khan and identify the private in-person school he founded.",
+                "Hop result: the school is Khan Lab School."
+            ],
+            "answer": "Khan Lab School"
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Read the Wikipedia article for <hop 1 answer> and identify the city where the school is located.",
+                "Hop result: the city is Mountain View."
+            ],
+            "answer": "Mountain View"
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Read the Wikipedia article for <hop 2 answer> and identify the county containing the city.",
+                "Hop result: the county is Santa Clara County."
+            ],
+            "answer": "Santa Clara County"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In the school district office listings, filter rows where `CITY == 'Mountain View'` and `NMCNTY == 'Santa Clara County'`, then read the shared `STFIP` value.",
+                "Hop result: the shared two-digit state FIPS code is 06."
+            ],
+            "answer": "06"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                5,
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 5: For `STFIP == '06'`, group by `NMCNTY`, count rows, and take the top three counties by public-school count.",
+                "Node 6: For `STFIP == '06'`, group by `NMCNTY`, count rows, and take the top three counties by private-school count.",
+                "Node 7: For `STFIP == '06'`, group by `NMCNTY`, count rows, and take the top three counties by school-district-office count.",
+                "Hop result: intersect the three top-three county sets; the shared counties are Los Angeles County and San Diego County."
+            ],
+            "answer": [
+                "Los Angeles County",
+                "San Diego County"
+            ]
+        },
+        {
+            "hop_id": 6,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: For `STFIP == '06'`, group by `NMCNTY`, count postsecondary institutions for each county, keep the counties from <hop 5 answer>, and take the maximum count.",
+                "Hop result: among Los Angeles County and San Diego County, the highest postsecondary institution count is 206."
+            ],
+            "answer": 206
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Sal_Khan/content.txt",
+        "wikipedia/Khan_Lab_School/content.txt",
+        "wikipedia/Mountain_View,_California/content.txt",
+        "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+        "datagov/school-district-office-locations-current-d848f/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-d848f/files/0.arcgis-layer.json",
+        "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+        "datagov/public-school-locations-current-23297/signed-metadata.txt",
+        "datagov/public-school-locations-current-23297/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+        "datagov/private-school-locations-current-f7d96/signed-metadata.txt",
+        "datagov/private-school-locations-current-f7d96/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt",
+        "datagov/school-district-office-locations-2022-23/signed-metadata.txt",
+        "datagov/school-district-office-locations-2022-23/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+        "datagov/postsecondary-school-locations-2022-23/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2022-23/files/0.arcgis-layer.json"
+    ]
+}

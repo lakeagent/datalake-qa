@@ -1,0 +1,59 @@
+{
+    "question": "I am conducting a study on the northernmost boroughs of New York City. With respect to this borough, I want to compute the yearly shooting/complaint ratio. That is, the number of complaints on the most common offense over the year, divided by the total number of shooting incidents occured of the same year reported by NYPD. Report the yearly shooting/complaint for 2023 and round to the closest integer. Your response should be in the format [Answer].",
+    "answer": "42",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/The_Bronx/content.txt",
+            "fact": "The Bronx article states that The Bronx is the northernmost of the five boroughs of New York City.",
+            "subquestion": "Which New York City borough is described as the northernmost of the five boroughs?",
+            "answer": "BRONX"
+        },
+        "2": {
+            "source": "datagov/nypd-complaint-data-historic/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/nypd-complaint-data-historic/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj[\"Body\"].read()),\n    usecols=[\"CMPLNT_FR_DT\", \"BORO_NM\", \"OFNS_DESC\"],\n    dtype=str,\n    low_memory=False,\n)\n\nnode_1_answer = \"BRONX\"\n\nfiltered = df[\n    df[\"CMPLNT_FR_DT\"].astype(str).str.contains(\"2023\", na=False)\n    & df[\"BORO_NM\"].astype(str).str.strip().str.upper().eq(node_1_answer.upper())\n].copy()\ncounts = filtered[\"OFNS_DESC\"].astype(str).str.strip().replace(\"\", pd.NA).dropna().value_counts()\nanswer = str(int(counts.max()))\n",
+            "subquestion": "In 2023 NYPD complaint data, within borough <node_1 answer>, how many complaints were filed for the most common offense description?",
+            "answer": "18613"
+        },
+        "3": {
+            "source": "datagov/nypd-shooting-incident-data-historic/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/nypd-shooting-incident-data-historic/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nnode_1_answer = \"BRONX\"\n\nfiltered = df[\n    df[\"OCCUR_DATE\"].astype(str).str.contains(\"2023\", na=False)\n    & df[\"BORO\"].astype(str).str.strip().str.upper().eq(node_1_answer.upper())\n]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In 2023 NYPD shooting incident data, how many shooting incidents occurred in borough <node_1 answer>?",
+            "answer": "439"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/The_Bronx/content.txt",
+        "datagov/nypd-complaint-data-historic/files/rows.txt",
+        "datagov/nypd-complaint-data-historic/signed-metadata.txt",
+        "datagov/nypd-complaint-data-historic/files/qgea-i56i.txt",
+        "datagov/nypd-shooting-incident-data-historic/files/rows.txt",
+        "datagov/nypd-shooting-incident-data-historic/signed-metadata.txt",
+        "datagov/nypd-shooting-incident-data-historic/files/833y-fsy8.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: The Bronx article states that The Bronx is the northernmost of the five boroughs of New York City.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "BRONX"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 2: Filter records where `CMPLNT_FR_DT` contains 2023 and `BORO_NM` is BRONX, count non-empty `OFNS_DESC` values, and take the largest count.",
+                "Node 3: Filter records where `OCCUR_DATE` contains 2023 and `BORO` is BRONX, then count the remaining rows as shooting incidents.",
+                "Hop result: round(<node_2 answer> / <node_3 answer>) = round(18613 / 439) = 42."
+            ],
+            "answer": "42"
+        }
+    ]
+}

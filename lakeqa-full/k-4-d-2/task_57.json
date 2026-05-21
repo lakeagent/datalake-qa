@@ -1,0 +1,113 @@
+{
+  "question": "Among New York counties outside of NYC, identify the top two by total mental health service recipients from 2017 to 2018. Between their county seats, find the one with the earlier incorporation date, then use its county. How many years apart were that county's agricultural society's first fair and the rebuilding of the main library of the public library system serving that county? Your response should be in the format [Answer].",
+  "answer": 144,
+  "nodes": {
+    "1": {
+      "source": "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nnyc_counties = {\"Bronx\", \"Kings\", \"New York\", \"Queens\", \"Richmond\"}\nresult = (\n    df[\n        df[\"Service Year\"].isin([2017, 2018])\n        & ~df[\"County Label\"].isin(nyc_counties)\n    ]\n    .groupby(\"County Label\", as_index=False)[\"Count of Recipients by Rate Code Group and County\"]\n    .sum()\n    .sort_values(\"Count of Recipients by Rate Code Group and County\", ascending=False)\n    .head(2)\n)\nanswer = result[\"County Label\"].tolist()\n",
+      "subquestion": "Which non-NYC counties have the two highest totals of Count of Recipients by Rate Code Group and County when summed across service years 2017 and 2018?",
+      "answer": [
+        "Erie",
+        "Monroe"
+      ]
+    },
+    "2": {
+      "source": "wikipedia/Erie_County,_New_York/content.txt",
+      "fact": "The county seat of Erie County, New York is Buffalo.",
+      "subquestion": "What is the county seat of Erie County, New York?",
+      "answer": "Buffalo"
+    },
+    "3": {
+      "source": "wikipedia/Monroe_County,_New_York/content.txt",
+      "fact": "The county seat of Monroe County, New York is Rochester.",
+      "subquestion": "What is the county seat of Monroe County, New York?",
+      "answer": "Rochester"
+    },
+    "4": {
+      "source": "wikipedia/Buffalo,_New_York/content.txt",
+      "fact": "Buffalo was selected as the terminus of the Erie Canal in 1825, which led to its incorporation in 1832.",
+      "subquestion": "In what year was <node 2 answer> incorporated as a city?",
+      "answer": "1832"
+    },
+    "5": {
+      "source": "wikipedia/Rochester,_New_York/content.txt",
+      "fact": "Rochester was rechartered as a city in 1834.",
+      "subquestion": "In what year was <node 3 answer> rechartered or incorporated as a city?",
+      "answer": "1834"
+    },
+    "6": {
+      "source": "wikipedia/Erie_County_Fair/content.txt",
+      "fact": "The Erie County Agricultural Society is a private, not for profit membership corporation established in 1819, then called the Niagara County Horticultural Society. It held its first fair in 1820 on what is now the site of the Donovan Office Building in Buffalo.",
+      "subquestion": "In what year did the county agricultural society for <hop 3 answer> hold its first fair?",
+      "answer": 1820
+    },
+    "7": {
+      "source": "wikipedia/Buffalo,_New_York/content.txt",
+      "fact": "Established in 1835, Buffalo's main library is the Central Library of the Buffalo & Erie County Public Library system. Rebuilt in 1964, it contains an auditorium, the original manuscript of the Adventures of Huckleberry Finn (donated by Mark Twain), and a collection of about two million books.",
+      "subquestion": "In what year was the main library of the public library system serving <hop 3 answer> rebuilt?",
+      "answer": 1964
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `Service Year` is in {2017, 2018} and `County Label` is not in {Bronx, Kings, New York, Queens, Richmond}, sum `Count of Recipients by Rate Code Group and County` by `County Label`, sort descending, and keep the top 2 counties.",
+        "Hop result: Erie, Monroe"
+      ],
+      "answer": "Erie, Monroe"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 2: Buffalo is the county seat of Erie County, New York.",
+        "Node 3: Rochester is the county seat of Monroe County, New York.",
+        "Hop result: Buffalo, Rochester"
+      ],
+      "answer": "Buffalo, Rochester"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 4: 1832 is Buffalo's incorporation year.",
+        "Node 5: 1834 is Rochester's recharter or incorporation year.",
+        "Hop result: min(1832, 1834) = 1832, so Buffalo is earlier-incorporated and its county is Erie County."
+      ],
+      "answer": "Erie County"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6,
+        7
+      ],
+      "reasoning": [
+        "Node 6: The county agricultural society for <hop 3 answer> held its first fair in `1820`.",
+        "Node 7: The main library of the public library system serving <hop 3 answer> was rebuilt in `1964`.",
+        "Hop result: `1964 - 1820 = 144`."
+      ],
+      "answer": 144
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/Erie_County,_New_York/content.txt",
+    "wikipedia/Monroe_County,_New_York/content.txt",
+    "wikipedia/Buffalo,_New_York/content.txt",
+    "wikipedia/Rochester,_New_York/content.txt",
+    "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/rows.txt",
+    "datagov/county-mental-health-profiles-phase-2-beginning-2014/signed-metadata.txt",
+    "datagov/county-mental-health-profiles-phase-2-beginning-2014/files/4uks-kzmv.txt",
+    "wikipedia/Erie_County_Fair/content.txt"
+  ]
+}

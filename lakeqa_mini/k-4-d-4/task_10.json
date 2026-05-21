@@ -1,0 +1,137 @@
+{
+    "question": "Using school district office records for Iowa City in Johnson County, determine the two-digit state FIPS code. In that state, find the counties that rank in the top three for public schools, private schools, and school district offices; among their intersection, select the county with the most postsecondary institutions. For that county, compute the total number of public schools, private schools, district offices, and postsecondary institutions. Only report the integer total. Your response should be in the format [Answer].",
+    "answer": "175",
+    "nodes": {
+        "1": {
+            "source": "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\nanswer = df.loc[(df[\"properties.CITY\"] == \"Iowa City\") & (df[\"properties.NMCNTY\"] == \"Johnson County\"), \"properties.STFIP\"].dropna().drop_duplicates().iloc[0]\n",
+            "subquestion": "In the school district office listings, entries with CITY equal to Iowa City and NMCNTY equal to Johnson County share what two-digit state FIPS code (STFIP)?",
+            "answer": "19"
+        },
+        "2": {
+            "source": "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ncounts = (\n    df[df[\"properties.STFIP\"].astype(str) == \"19\"]\n    .groupby(\"properties.NMCNTY\")\n    .size()\n    .sort_values(ascending=False)\n    .head(3)\n    .index.tolist()\n)\nanswer = \"; \".join(counts)\n",
+            "subquestion": "For STFIP equal to <node 1 answer>, which 3 county names have the most public schools? Return the county names separated by;.",
+            "answer": "Polk County; Linn County; Scott County"
+        },
+        "3": {
+            "source": "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ncounts = (\n    df[df[\"properties.STFIP\"].astype(str) == \"19\"]\n    .groupby(\"properties.NMCNTY\")\n    .size()\n    .sort_values(ascending=False)\n    .head(3)\n    .index.tolist()\n)\nanswer = \"; \".join(counts)\n",
+            "subquestion": "For STFIP equal to <node 1 answer>, which 3 county names have the most private schools? Return the county names separated by;.",
+            "answer": "Polk County; Linn County; Sioux County"
+        },
+        "4": {
+            "source": "datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\ncounts = (\n    df[df[\"properties.STFIP\"].astype(str) == \"19\"]\n    .groupby(\"properties.NMCNTY\")\n    .size()\n    .sort_values(ascending=False)\n    .head(3)\n    .index.tolist()\n)\nanswer = \"; \".join(counts)\n",
+            "subquestion": "For STFIP equal to <node 1 answer>, which 3 county names have the most school district offices? Return the county names separated by;.",
+            "answer": "Linn County; Polk County; Pottawattamie County"
+        },
+        "5": {
+            "source": "datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\nA = {\"Polk County\", \"Linn County\", \"Scott County\"}\nB = {\"Polk County\", \"Linn County\", \"Sioux County\"}\nC = {\"Linn County\", \"Polk County\", \"Pottawattamie County\"}\ncandidates = sorted(C & (A | B))\ncounts = (\n    df[(df[\"properties.STFIP\"].astype(str) == \"19\") & (df[\"properties.NMCNTY\"].isin(candidates))]\n    .groupby(\"properties.NMCNTY\")\n    .size()\n    .sort_values(ascending=False)\n)\nanswer = counts.index[0]\n",
+            "subquestion": "Among <hop 2 answer>, which single county has the most postsecondary institutions in STFIP equal to <node 1 answer>? Answer with the county name including the word County.",
+            "answer": "Polk County"
+        },
+        "6": {
+            "source": "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\nanswer = df[(df[\"properties.STFIP\"].astype(str) == \"19\") & (df[\"properties.NMCNTY\"] == 'Polk County')].shape[0]\n",
+            "subquestion": "How many public schools have NMCNTY equal to <hop 3 answer> and STFIP equal to <node 1 answer>?",
+            "answer": 130
+        },
+        "7": {
+            "source": "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\nanswer = df[(df[\"properties.STFIP\"].astype(str) == \"19\") & (df[\"properties.NMCNTY\"] == 'Polk County')].shape[0]\n",
+            "subquestion": "How many private schools have NMCNTY equal to <hop 3 answer> and STFIP equal to <node 1 answer>?",
+            "answer": 19
+        },
+        "8": {
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\nanswer = df[(df[\"properties.STFIP\"].astype(str) == \"19\") & (df[\"properties.NMCNTY\"] == 'Polk County')].shape[0]\n",
+            "subquestion": "How many school district offices have NMCNTY equal to <hop 3 answer> and STFIP equal to <node 1 answer>?",
+            "answer": 12
+        },
+        "9": {
+            "source": "datagov/postsecondary-school-locations-2017-18-fa280/files/data-7AG3Nw.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/postsecondary-school-locations-2017-18-fa280/files/data-7AG3Nw.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(obj[\"Body\"], encoding=\"utf-8\"))\ndf = pd.json_normalize(data[\"features\"])\nanswer = df[(df[\"properties.STFIP\"].astype(str) == \"19\") & (df[\"properties.NMCNTY\"] == 'Polk County')].shape[0]\n",
+            "subquestion": "How many postsecondary institutions have NMCNTY equal to <hop 3 answer> and STFIP equal to <node 1 answer>?",
+            "answer": 14
+        }
+    },
+    "datasets_used": [
+        "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+        "datagov/school-district-office-locations-current-d848f/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-d848f/files/0.arcgis-layer.json",
+        "datagov/public-school-locations-2018-19-42360/files/data-F2nGlG.txt",
+        "datagov/public-school-locations-2018-19-42360/signed-metadata.txt",
+        "datagov/public-school-locations-2018-19-42360/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-2017-18-f49f6/files/data-dqdQDP.txt",
+        "datagov/private-school-locations-2017-18-f49f6/signed-metadata.txt",
+        "datagov/private-school-locations-2017-18-f49f6/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2020-21-d8df0/files/data-UDaCeM.txt",
+        "datagov/school-district-office-locations-2020-21-d8df0/signed-metadata.txt",
+        "datagov/school-district-office-locations-2020-21-d8df0/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2019-20-64b31/files/data-cbxYz6.txt",
+        "datagov/postsecondary-school-locations-2019-20-64b31/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2019-20-64b31/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2017-18-fa280/files/data-7AG3Nw.txt",
+        "datagov/postsecondary-school-locations-2017-18-fa280/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2017-18-fa280/files/0.arcgis-layer.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `properties.CITY` equals `Iowa City` and `properties.NMCNTY` equals `Johnson County`, then extract the shared `properties.STFIP` value."
+            ],
+            "answer": "19"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `properties.STFIP` equals <hop 1 answer>, group by `properties.NMCNTY`, count public-school rows, sort descending, and keep the top 3 counties.",
+                "Node 3: Filter rows where `properties.STFIP` equals <hop 1 answer>, group by `properties.NMCNTY`, count private-school rows, sort descending, and keep the top 3 counties.",
+                "Node 4: Filter rows where `properties.STFIP` equals <hop 1 answer>, group by `properties.NMCNTY`, count school-district-office rows, sort descending, and keep the top 3 counties.",
+                "Hop result: semantic intersection of <node 4 answer> with the union of <node 2 answer> and <node 3 answer> = Linn County; Polk County."
+            ],
+            "answer": "Linn County; Polk County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Filter rows where `properties.STFIP` equals <hop 1 answer> and `properties.NMCNTY` is in <hop 2 answer>, group by `properties.NMCNTY`, count postsecondary-institution rows, and select the county with the highest count."
+            ],
+            "answer": "Polk County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6,
+                7,
+                8,
+                9
+            ],
+            "reasoning": [
+                "Node 6: Count rows where `properties.STFIP` equals <hop 1 answer> and `properties.NMCNTY` equals <hop 3 answer> in the public-school table.",
+                "Node 7: Count rows where `properties.STFIP` equals <hop 1 answer> and `properties.NMCNTY` equals <hop 3 answer> in the private-school table.",
+                "Node 8: Count rows where `properties.STFIP` equals <hop 1 answer> and `properties.NMCNTY` equals <hop 3 answer> in the school-district-office table.",
+                "Node 9: Count rows where `properties.STFIP` equals <hop 1 answer> and `properties.NMCNTY` equals <hop 3 answer> in the postsecondary-school table.",
+                "Hop result: 130 + 19 + 12 + 14 = 175."
+            ],
+            "answer": "175"
+        }
+    ]
+}

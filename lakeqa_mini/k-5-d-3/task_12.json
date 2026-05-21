@@ -1,0 +1,209 @@
+{
+    "question": "Among Washington state's public four-year universities, which two had the highest average contract counts in between 2014-2016? Find the counties where those two universities are located, then choose the county with the larger 2020 census population. In its county seat, what building had the highest average greenhouse gas emissions from 2015 to 2023? Finally, report the year that building was built. Your response should be in the format [Answer].",
+    "answer": "1936",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/List_of_colleges_and_universities_in_Washington_(state)/content.txt",
+            "fact": "The Wikipedia list of colleges and universities in Washington state lists the public four-year universities as University of Washington, Washington State University, Western Washington University, Eastern Washington University, Central Washington University, and Evergreen State College.",
+            "subquestion": "According to the list of colleges and universities in Washington state, which public four-year universities are in Washington?",
+            "answer": [
+                "University of Washington",
+                "Washington State University",
+                "Western Washington University",
+                "Eastern Washington University",
+                "Central Washington University",
+                "Evergreen State College"
+            ]
+        },
+        "2": {
+            "source": "datagov/agency-contracts-fiscal-year-2014/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/agency-contracts-fiscal-year-2014/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"agency_norm\"] = df[\"Agency Name\"].astype(str).str.replace(r\"\\s+\", \" \", regex=True).str.strip()\nuniversity_map = {\n    \"University of Washington (UW)\": \"University of Washington\",\n    \"Washington State University (WSU)\": \"Washington State University\",\n    \"Western Washington University (WWU)\": \"Western Washington University\",\n    \"Eastern Washington University (EWU)\": \"Eastern Washington University\",\n    \"Central Washington University (CWU)\": \"Central Washington University\",\n    \"The Evergreen State College (TESC)\": \"Evergreen State College\",\n}\n\ncounts = (\n    df[df[\"agency_norm\"].isin(university_map)]\n    .groupby(\"agency_norm\")\n    .size()\n    .reindex(university_map.keys(), fill_value=0)\n)\n\nanswer = {\n    canonical: int(counts[raw_name])\n    for raw_name, canonical in university_map.items()\n}",
+            "subquestion": "What were the FY 2014 contract counts for the Washington public four-year universities from <hop 1 answer>?",
+            "answer": {
+                "University of Washington": 3679,
+                "Washington State University": 484,
+                "Western Washington University": 799,
+                "Eastern Washington University": 840,
+                "Central Washington University": 223,
+                "Evergreen State College": 275
+            },
+            "limit": 6
+        },
+        "3": {
+            "source": "datagov/agency-contracts-fiscal-year-2015/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/agency-contracts-fiscal-year-2015/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"agency_norm\"] = df[\"Agency Name\"].astype(str).str.replace(r\"\\s+\", \" \", regex=True).str.strip()\nuniversity_map = {\n    \"University of Washington (UW)\": \"University of Washington\",\n    \"Washington State University (WSU)\": \"Washington State University\",\n    \"Western Washington University (WWU)\": \"Western Washington University\",\n    \"Eastern Washington University (EWU)\": \"Eastern Washington University\",\n    \"Central Washington University (CWU)\": \"Central Washington University\",\n    \"The Evergreen State College (TESC)\": \"Evergreen State College\",\n}\n\ncounts = (\n    df[df[\"agency_norm\"].isin(university_map)]\n    .groupby(\"agency_norm\")\n    .size()\n    .reindex(university_map.keys(), fill_value=0)\n)\n\nanswer = {\n    canonical: int(counts[raw_name])\n    for raw_name, canonical in university_map.items()\n}",
+            "subquestion": "What were the FY 2015 contract counts for the Washington public four-year universities from <hop 1 answer>?",
+            "answer": {
+                "University of Washington": 212,
+                "Washington State University": 498,
+                "Western Washington University": 605,
+                "Eastern Washington University": 600,
+                "Central Washington University": 274,
+                "Evergreen State College": 231
+            },
+            "limit": 6
+        },
+        "4": {
+            "source": "datagov/agency-contracts-fiscal-year-2016/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/agency-contracts-fiscal-year-2016/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"agency_norm\"] = df[\"Agency Name\"].astype(str).str.replace(r\"\\s+\", \" \", regex=True).str.strip()\nuniversity_map = {\n    \"University of Washington (UW)\": \"University of Washington\",\n    \"Washington State University (WSU)\": \"Washington State University\",\n    \"Western Washington University (WWU)\": \"Western Washington University\",\n    \"Eastern Washington University (EWU)\": \"Eastern Washington University\",\n    \"Central Washington University (CWU)\": \"Central Washington University\",\n    \"The Evergreen State College (TESC)\": \"Evergreen State College\",\n}\n\ncounts = (\n    df[df[\"agency_norm\"].isin(university_map)]\n    .groupby(\"agency_norm\")\n    .size()\n    .reindex(university_map.keys(), fill_value=0)\n)\n\nanswer = {\n    canonical: int(counts[raw_name])\n    for raw_name, canonical in university_map.items()\n}",
+            "subquestion": "What were the FY 2016 contract counts for the Washington public four-year universities from <hop 1 answer>?",
+            "answer": {
+                "University of Washington": 23,
+                "Washington State University": 466,
+                "Western Washington University": 132,
+                "Eastern Washington University": 505,
+                "Central Washington University": 362,
+                "Evergreen State College": 207
+            },
+            "limit": 6
+        },
+        "5": {
+            "source": "wikipedia/University_of_Washington/content.txt",
+            "fact": "The University of Washington is a public research university in Seattle, Washington, United States.",
+            "subquestion": "Where is the #1 public four-year university by average contracts from <hop 2 answer> located?",
+            "answer": "University of Washington is located in Seattle, Washington"
+        },
+        "6": {
+            "source": "wikipedia/Eastern_Washington_University/content.txt",
+            "fact": "Eastern Washington University is a public university in Cheney, Washington, United States.",
+            "subquestion": "Where is the #2 public four-year university by average contracts from <hop 2 answer> located?",
+            "answer": "Eastern Washington University is located in Cheney, Washington"
+        },
+        "7": {
+            "source": "wikipedia/King_County,_Washington/content.txt",
+            "fact": "King County is a county located in the U.S. state of Washington. The population was 2,269,675 in the 2020 census, making it the most populous county in Washington. The county seat is Seattle.",
+            "subquestion": "What is the 2020 census population and county seat of the county in <hop 3 answer> that contains Seattle?",
+            "answer": "King County had a 2020 population of 2,269,675 with Seattle as the county seat"
+        },
+        "8": {
+            "source": "wikipedia/Spokane_County,_Washington/content.txt",
+            "fact": "Spokane County is a county located in the U.S. state of Washington. As of the 2020 census, its population was 539,339. The county seat and largest city is Spokane.",
+            "subquestion": "What is the 2020 census population and county seat of the county in <hop 3 answer> that contains Cheney?",
+            "answer": "Spokane County had a 2020 population of 539,339 with Spokane as the county seat"
+        },
+        "9": {
+            "source": "datagov/building-energy-benchmarking-data-2015-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/building-energy-benchmarking-data-2015-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"DataYear\"] = pd.to_numeric(df[\"DataYear\"], errors=\"coerce\")\ndf[\"TotalGHGEmissions\"] = pd.to_numeric(df[\"TotalGHGEmissions\"], errors=\"coerce\")\n\nfull_result = (\n    df.loc[\n        df[\"City\"].astype(str).str.upper().eq(\"SEATTLE\")\n        & df[\"DataYear\"].between(2015, 2023, inclusive=\"both\")\n        & df[\"BuildingName\"].notna(),\n        [\"BuildingName\", \"TotalGHGEmissions\"],\n    ]\n    .groupby(\"BuildingName\", dropna=False)[\"TotalGHGEmissions\"]\n    .mean()\n    .reset_index(name=\"avg_TotalGHGEmissions\")\n    .sort_values([\"avg_TotalGHGEmissions\", \"BuildingName\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\n\nanswer = full_result.head(1).to_dict(orient=\"records\")",
+            "subquestion": "Which Seattle building, the county seat of the more populous county from <hop 4 answer>, has the highest average TotalGHGEmissions from 2015 to 2023?",
+            "answer": [
+                {
+                    "BuildingName": "BOEING PLANT 2 ISAL  (BLDG 2-122)-North Boeing Field Campus",
+                    "avg_TotalGHGEmissions": 20835.775
+                }
+            ],
+            "limit": 1
+        },
+        "10": {
+            "source": "wikipedia/Boeing_Plant_2/content.txt",
+            "fact": "Boeing Plant 2 (also known as Air Force Plant 17) was a factory building which was built in 1936 by The Boeing Company in Seattle, Washington, United States.",
+            "subquestion": "In what year was <hop 5 answer> built?",
+            "answer": "1936"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/List_of_colleges_and_universities_in_Washington_(state)/content.txt",
+        "wikipedia/University_of_Washington/content.txt",
+        "wikipedia/Eastern_Washington_University/content.txt",
+        "wikipedia/King_County,_Washington/content.txt",
+        "wikipedia/Spokane_County,_Washington/content.txt",
+        "wikipedia/Boeing_Plant_2/content.txt",
+        "datagov/agency-contracts-fiscal-year-2014/files/rows.txt",
+        "datagov/agency-contracts-fiscal-year-2014/signed-metadata.txt",
+        "datagov/agency-contracts-fiscal-year-2015/files/rows.txt",
+        "datagov/agency-contracts-fiscal-year-2015/signed-metadata.txt",
+        "datagov/agency-contracts-fiscal-year-2016/files/rows.txt",
+        "datagov/agency-contracts-fiscal-year-2016/signed-metadata.txt",
+        "datagov/building-energy-benchmarking-data-2015-present/files/rows.txt",
+        "datagov/building-energy-benchmarking-data-2015-present/signed-metadata.txt",
+        "datagov/building-energy-benchmarking-data-2015-present/files/teqw-tu6e.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Retrieve the set of Washington public four-year universities from the Wikipedia list page.",
+                "Hop result: the candidate institutions are University of Washington, Washington State University, Western Washington University, Eastern Washington University, Central Washington University, and Evergreen State College."
+            ],
+            "answer": [
+                "University of Washington",
+                "Washington State University",
+                "Western Washington University",
+                "Eastern Washington University",
+                "Central Washington University",
+                "Evergreen State College"
+            ]
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 2: Count FY 2014 contracts for each university in <hop 1 answer> using the agency-contracts dataset.",
+                "Node 3: Count FY 2015 contracts for each university in <hop 1 answer> using the agency-contracts dataset.",
+                "Node 4: Count FY 2016 contracts for each university in <hop 1 answer> using the agency-contracts dataset.",
+                "Hop result: among the public four-year universities that recorded contracts in all three fiscal years, compute the average contract count from FY 2014 to FY 2016 and rank them; the top two are University of Washington and Eastern Washington University."
+            ],
+            "answer": [
+                "University of Washington",
+                "Eastern Washington University"
+            ]
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Retrieve the location of the first university from <hop 2 answer> and map Seattle to King County.",
+                "Node 6: Retrieve the location of the second university from <hop 2 answer> and map Cheney to Spokane County.",
+                "Hop result: the candidate counties are King County and Spokane County."
+            ],
+            "answer": [
+                "King County",
+                "Spokane County"
+            ]
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: Retrieve the 2020 population and county seat for King County from <hop 3 answer>.",
+                "Node 8: Retrieve the 2020 population and county seat for Spokane County from <hop 3 answer>.",
+                "Hop result: compare the 2020 populations and select King County; its county seat is Seattle."
+            ],
+            "answer": "Seattle"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: Filter rows where `City` = <hop 4 answer>, convert `DataYear` and `TotalGHGEmissions` to numeric, keep `DataYear` from 2015 through 2023, group by `BuildingName`, compute mean `TotalGHGEmissions`, and select the highest-emission building.",
+                "Hop result: the building is BOEING PLANT 2 ISAL  (BLDG 2-122)-North Boeing Field Campus."
+            ],
+            "answer": "BOEING PLANT 2 ISAL  (BLDG 2-122)-North Boeing Field Campus"
+        },
+        {
+            "hop_id": 6,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: Retrieve the year when <hop 5 answer> was built.",
+                "Hop result: the year is 1936."
+            ],
+            "answer": 1936
+        }
+    ]
+}

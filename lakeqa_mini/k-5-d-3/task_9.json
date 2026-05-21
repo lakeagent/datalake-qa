@@ -1,0 +1,232 @@
+{
+    "question": "Identify the Chicago library branch that ranked in the top five for total number of items checked out over the year and total visitors, and in the top three for total public-computer logins, every year from 2019 to 2021. What community area number corresponds to the neighborhood where this branch is located? Return the number only. Your response should be in the format [Answer].",
+    "answer": "4",
+    "nodes": {
+        "1": {
+            "source": "datagov/libraries-2019-circulation-by-location/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/libraries-2019-circulation-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nranked = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"LOCATION\", as_index=False)[\"YTD\"].sum()\n    .sort_values([\"YTD\", \"LOCATION\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = ranked[\"LOCATION\"].tolist()",
+            "subquestion": "Which Chicago library branches were in the top 5 by total number of items checked out over the year in 2019?",
+            "answer": [
+                "HAROLD WASHINGTON LIBRARY CENTER",
+                "Sulzer Regional Library",
+                "Edgewater",
+                "Lincoln Belmont",
+                "Lincoln Park"
+            ],
+            "limit": 5
+        },
+        "2": {
+            "source": "datagov/libraries-2020-circulation-by-location/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/libraries-2020-circulation-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nranked = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"BRANCH\", as_index=False)[\"YTD\"].sum()\n    .sort_values([\"YTD\", \"BRANCH\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = ranked[\"BRANCH\"].tolist()",
+            "subquestion": "Which Chicago library branches were in the top 5 by total number of items checked out over the year in 2020?",
+            "answer": [
+                "Harold Washington Library Center",
+                "Sulzer Regional Library",
+                "Lincoln Belmont",
+                "Edgewater",
+                "Northtown"
+            ],
+            "limit": 5
+        },
+        "3": {
+            "source": "datagov/libraries-2021-circulation-by-location/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/libraries-2021-circulation-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nranked = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"BRANCH\", as_index=False)[\"YTD\"].sum()\n    .sort_values([\"YTD\", \"BRANCH\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = ranked[\"BRANCH\"].tolist()",
+            "subquestion": "Which Chicago library branches were in the top 5 by total number of items checked out over the year in 2021?",
+            "answer": [
+                "Harold Washington Library Center",
+                "Sulzer Regional Library",
+                "Lincoln Belmont",
+                "Edgewater",
+                "Lincoln Park"
+            ],
+            "limit": 5
+        },
+        "4": {
+            "source": "datagov/libraries-2019-visitors-by-location/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/libraries-2019-visitors-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nranked = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"LOCATION\", as_index=False)[\"YTD\"].sum()\n    .sort_values([\"YTD\", \"LOCATION\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = ranked[\"LOCATION\"].tolist()",
+            "subquestion": "Which Chicago library branches with physical addresses were in the top 5 by total visitors in 2019?",
+            "answer": [
+                "Harold Washtington Library Center",
+                "Sulzer Regional Library",
+                "Chinatown",
+                "Woodson Regional Library",
+                "Edgewater"
+            ],
+            "limit": 5
+        },
+        "5": {
+            "source": "datagov/libraries-2020-visitors-by-location/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/libraries-2020-visitors-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nranked = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"BRANCH\", as_index=False)[\"YTD\"].sum()\n    .sort_values([\"YTD\", \"BRANCH\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = ranked[\"BRANCH\"].tolist()",
+            "subquestion": "Which Chicago library branches were in the top 5 by total visitors in 2020?",
+            "answer": [
+                "Harold Washtington Library Center",
+                "Sulzer Regional Library",
+                "Edgewater",
+                "Woodson Regional Library",
+                "Rogers Park"
+            ],
+            "limit": 5
+        },
+        "6": {
+            "source": "datagov/libraries-2021-visitors-by-location/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/libraries-2021-visitors-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nranked = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"BRANCH\", as_index=False)[\"YTD\"].sum()\n    .sort_values([\"YTD\", \"BRANCH\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = ranked[\"BRANCH\"].tolist()",
+            "subquestion": "Which Chicago library branches were in the top 5 by total visitors in 2021?",
+            "answer": [
+                "Harold Washtington Library Center",
+                "Sulzer Regional Library",
+                "Edgewater",
+                "Chinatown",
+                "Logan Square"
+            ],
+            "limit": 5
+        },
+        "7": {
+            "source": "datagov/libraries-2019-computer-sessions-by-location/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/libraries-2019-computer-sessions-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nranked = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"LOCATION\", as_index=False)[\"YTD\"].sum()\n    .sort_values([\"YTD\", \"LOCATION\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = ranked[\"LOCATION\"].tolist()",
+            "subquestion": "Which Chicago library branches were in the top 3 by total public-computer logins in 2019?",
+            "answer": [
+                "HAROLD WASHINGTON LIBRARY CENTER",
+                "Woodson Regional Library",
+                "Sulzer Regional Library"
+            ],
+            "limit": 3
+        },
+        "8": {
+            "source": "datagov/libraries-2020-computer-sessions-by-location/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/libraries-2020-computer-sessions-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nranked = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"BRANCH\", as_index=False)[\"YTD\"].sum()\n    .sort_values([\"YTD\", \"BRANCH\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = ranked[\"BRANCH\"].tolist()",
+            "subquestion": "Which Chicago library branches were in the top 3 by total public-computer logins in 2020?",
+            "answer": [
+                "Harold Washington Library Center",
+                "Woodson Regional Library",
+                "Sulzer Regional Library"
+            ],
+            "limit": 3
+        },
+        "9": {
+            "source": "datagov/libraries-2021-computer-sessions-by-location/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/libraries-2021-computer-sessions-by-location/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nranked = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"BRANCH\", as_index=False)[\"YTD\"].sum()\n    .sort_values([\"YTD\", \"BRANCH\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nanswer = ranked[\"BRANCH\"].tolist()",
+            "subquestion": "Which Chicago library branches were in the top 3 by total public-computer logins in 2021?",
+            "answer": [
+                "Harold Washington Library Center",
+                "Woodson Regional Library",
+                "Sulzer Regional Library"
+            ],
+            "limit": 3
+        },
+        "10": {
+            "source": "wikipedia/Conrad_Sulzer_Regional_Library/content.txt",
+            "fact": "is located in the Lincoln Square neighborhood at 4455 N. Lincoln Avenue.",
+            "subquestion": "Which Chicago neighborhood is <hop 3 answer> located in?",
+            "answer": "Lincoln Square"
+        },
+        "11": {
+            "source": "datagov/public-health-statistics-life-expectancy-by-community-area/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/public-health-statistics-life-expectancy-by-community-area/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nanswer = int(df.loc[df[\"Community Area\"] == \"Lincoln Square\", \"Community Area Number\"].iloc[0])",
+            "subquestion": "What community area number corresponds to <hop 4 answer>?",
+            "answer": 4
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Conrad_Sulzer_Regional_Library/content.txt",
+        "datagov/libraries-2019-circulation-by-location/files/rows.txt",
+        "datagov/libraries-2019-circulation-by-location/signed-metadata.txt",
+        "datagov/libraries-2020-circulation-by-location/files/rows.txt",
+        "datagov/libraries-2020-circulation-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-circulation-by-location/files/rows.txt",
+        "datagov/libraries-2021-circulation-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-circulation-by-location/files/97es-3tbw.txt",
+        "datagov/libraries-2019-visitors-by-location/files/rows.txt",
+        "datagov/libraries-2019-visitors-by-location/signed-metadata.txt",
+        "datagov/libraries-2020-visitors-by-location/files/rows.txt",
+        "datagov/libraries-2020-visitors-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-visitors-by-location/files/rows.txt",
+        "datagov/libraries-2021-visitors-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-visitors-by-location/files/8i46-4b7w.txt",
+        "datagov/libraries-2019-computer-sessions-by-location/files/rows.txt",
+        "datagov/libraries-2019-computer-sessions-by-location/signed-metadata.txt",
+        "datagov/libraries-2020-computer-sessions-by-location/files/rows.txt",
+        "datagov/libraries-2020-computer-sessions-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-computer-sessions-by-location/files/rows.txt",
+        "datagov/libraries-2021-computer-sessions-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-computer-sessions-by-location/files/hcqe-be23.txt",
+        "datagov/public-health-statistics-life-expectancy-by-community-area/files/rows.txt",
+        "datagov/public-health-statistics-life-expectancy-by-community-area/signed-metadata.txt",
+        "datagov/public-health-statistics-life-expectancy-by-community-area/files/qjr3-bm53.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Filter 2019 rows where `ADDRESS` is present, group by `LOCATION NAME`, sum `YTD CIRC`, sort descending, and keep the top five library branches by circulation.",
+                "Node 2: Filter 2020 rows where `ADDRESS` is present, group by `LOCATION NAME`, sum `YTD CIRC`, sort descending, and keep the top five library branches by circulation.",
+                "Node 3: Filter 2021 rows where `ADDRESS` is present, group by `LOCATION NAME`, sum `YTD CIRC`, sort descending, and keep the top five library branches by circulation.",
+                "Hop result: intersect the three yearly top-five circulation lists to keep the branches that stayed in the top five every year."
+            ],
+            "answer": [
+                "Sulzer Regional Library",
+                "Edgewater",
+                "Lincoln Belmont"
+            ]
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: Filter 2019 rows where `ADDRESS` is present, group by `LOCATION NAME`, sum `YTD VISITS`, sort descending, and keep the top five library branches by visitors.",
+                "Node 5: Filter 2020 rows where `ADDRESS` is present, group by `LOCATION NAME`, sum `YTD VISITS`, sort descending, and keep the top five library branches by visitors.",
+                "Node 6: Filter 2021 rows where `ADDRESS` is present, group by `LOCATION NAME`, sum `YTD VISITS`, sort descending, and keep the top five library branches by visitors.",
+                "Hop result: intersect the three yearly top-five visitor lists with <hop 1 answer> to keep the branches that satisfy both criteria."
+            ],
+            "answer": [
+                "Sulzer Regional Library",
+                "Edgewater"
+            ]
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                7,
+                8,
+                9
+            ],
+            "reasoning": [
+                "Node 7: Filter 2019 rows where `ADDRESS` is present, group by `LOCATION NAME`, sum `YTD COMPUTER SESSIONS`, sort descending, and keep the top three branches by computer sessions.",
+                "Node 8: Filter 2020 rows where `ADDRESS` is present, group by `LOCATION NAME`, sum `YTD COMPUTER SESSIONS`, sort descending, and keep the top three branches by computer sessions.",
+                "Node 9: Filter 2021 rows where `ADDRESS` is present, group by `LOCATION NAME`, sum `YTD COMPUTER SESSIONS`, sort descending, and keep the top three branches by computer sessions.",
+                "Hop result: intersect the three yearly top-three computer-session lists with <hop 2 answer> to identify Sulzer Regional Library."
+            ],
+            "answer": "Sulzer Regional Library"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: Retrieve which neighborhood <hop 3 answer> is located in.",
+                "Hop result: the neighborhood is Lincoln Square."
+            ],
+            "answer": "Lincoln Square"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                11
+            ],
+            "reasoning": [
+                "Node 11: Filter rows where `Community Area` = `<hop 4 answer>` and return `Community Area Number`.",
+                "Hop result: the community area number is 4."
+            ],
+            "answer": 4
+        }
+    ]
+}

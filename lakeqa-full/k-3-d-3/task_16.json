@@ -1,0 +1,158 @@
+{
+  "question": "Across 2019-2021, identify the Texas counties that consistently rank in the top five for capital outlay spending. From those, keep only the counties that also rank in the statewide top five for releases from the Department of Criminal Justice in each of those years. Among those counties, which was founded or created earliest? Return the county name only. Your response should be in the format [Answer].",
+  "answer": "Bexar",
+  "nodes": {
+    "1": {
+      "source": "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/texas-state-expenditures-by-county-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nfiltered = df[df[\"Major Spending Category\"].astype(str).str.strip().str.upper().eq(\"CAPITAL OUTLAY\")].copy()\nfiltered[\"Amount\"] = pd.to_numeric(filtered[\"Amount\"], errors=\"coerce\")\nfiltered = filtered[filtered[\"County\"].notna()].copy()\nfiltered[\"County\"] = filtered[\"County\"].astype(str).str.strip().str.title()\ncounty_totals = filtered.groupby(\"County\", dropna=True)[\"Amount\"].sum().sort_values(ascending=False)\nanswer = county_totals.head(5).index.tolist()\n",
+      "subquestion": "In fiscal year 2019, which Texas counties were in the top 5 for Capital Outlay spending?",
+      "answer": [
+        "Harris",
+        "Travis",
+        "Dallas",
+        "Hardin",
+        "Bexar"
+      ]
+    },
+    "2": {
+      "source": "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/texas-state-expenditures-by-county-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nfiltered = df[df[\"Major Spending Category\"].astype(str).str.strip().str.upper().eq(\"CAPITAL OUTLAY\")].copy()\nfiltered[\"Amount\"] = pd.to_numeric(filtered[\"Amount\"], errors=\"coerce\")\nfiltered = filtered[filtered[\"County\"].notna()].copy()\nfiltered[\"County\"] = filtered[\"County\"].astype(str).str.strip().str.title()\ncounty_totals = filtered.groupby(\"County\", dropna=True)[\"Amount\"].sum().sort_values(ascending=False)\nanswer = county_totals.head(5).index.tolist()\n",
+      "subquestion": "In fiscal year 2020, which Texas counties were in the top 5 for Capital Outlay spending?",
+      "answer": [
+        "Travis",
+        "Harris",
+        "Dallas",
+        "Bexar",
+        "Grayson"
+      ]
+    },
+    "3": {
+      "source": "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/texas-state-expenditures-by-county-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nfiltered = df[df[\"Major Spending Category\"].astype(str).str.strip().str.upper().eq(\"CAPITAL OUTLAY\")].copy()\nfiltered[\"Amount\"] = pd.to_numeric(filtered[\"Amount\"], errors=\"coerce\")\nfiltered = filtered[filtered[\"County\"].notna()].copy()\nfiltered[\"County\"] = filtered[\"County\"].astype(str).str.strip().str.title()\ncounty_totals = filtered.groupby(\"County\", dropna=True)[\"Amount\"].sum().sort_values(ascending=False)\nanswer = county_totals.head(5).index.tolist()\n",
+      "subquestion": "In fiscal year 2021, which Texas counties were in the top 5 for Capital Outlay spending?",
+      "answer": [
+        "Harris",
+        "Travis",
+        "Dallas",
+        "Bexar",
+        "Guadalupe"
+      ]
+    },
+    "4": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['Harris', 'Travis', 'Dallas', 'Hardin', 'Bexar']\nnode_2_answer = ['Travis', 'Harris', 'Dallas', 'Bexar', 'Grayson']\nnode_3_answer = ['Harris', 'Travis', 'Dallas', 'Bexar', 'Guadalupe']\n\nfixed_candidate_mode = False\ndef norm_county(x):\n    return str(x).strip().title()\n\ncounty_counts = df[\"County\"].dropna().astype(str).map(norm_county).value_counts()\ntop5 = county_counts.head(5)\n\nif fixed_candidate_mode:\n    candidates = {\"Harris\", \"Travis\", \"Dallas\", \"Bexar\"}\nelse:\n    candidates = set(norm_county(x) for x in node_1_answer) & set(norm_county(x) for x in node_2_answer) & set(norm_county(x) for x in node_3_answer)\n\nanswer = [county for county in top5.index.tolist() if county in candidates]\n",
+      "subquestion": "In fiscal year 2019, among the counties in <hop 1 answer>, which were in the overall top 5 for releases from the Department of Criminal Justice?",
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Bexar"
+      ]
+    },
+    "5": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['Harris', 'Travis', 'Dallas', 'Hardin', 'Bexar']\nnode_2_answer = ['Travis', 'Harris', 'Dallas', 'Bexar', 'Grayson']\nnode_3_answer = ['Harris', 'Travis', 'Dallas', 'Bexar', 'Guadalupe']\n\nfixed_candidate_mode = False\ndef norm_county(x):\n    return str(x).strip().title()\n\ncounty_counts = df[\"County\"].dropna().astype(str).map(norm_county).value_counts()\ntop5 = county_counts.head(5)\n\nif fixed_candidate_mode:\n    candidates = {\"Harris\", \"Travis\", \"Dallas\", \"Bexar\"}\nelse:\n    candidates = set(norm_county(x) for x in node_1_answer) & set(norm_county(x) for x in node_2_answer) & set(norm_county(x) for x in node_3_answer)\n\nanswer = [county for county in top5.index.tolist() if county in candidates]\n",
+      "subquestion": "In fiscal year 2020, among the counties in <hop 1 answer>, which were in the overall top 5 for releases from the Department of Criminal Justice?",
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Bexar",
+        "Travis"
+      ]
+    },
+    "6": {
+      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['Harris', 'Travis', 'Dallas', 'Hardin', 'Bexar']\nnode_2_answer = ['Travis', 'Harris', 'Dallas', 'Bexar', 'Grayson']\nnode_3_answer = ['Harris', 'Travis', 'Dallas', 'Bexar', 'Guadalupe']\n\nfixed_candidate_mode = False\ndef norm_county(x):\n    return str(x).strip().title()\n\ncounty_counts = df[\"County\"].dropna().astype(str).map(norm_county).value_counts()\ntop5 = county_counts.head(5)\n\nif fixed_candidate_mode:\n    candidates = {\"Harris\", \"Travis\", \"Dallas\", \"Bexar\"}\nelse:\n    candidates = set(norm_county(x) for x in node_1_answer) & set(norm_county(x) for x in node_2_answer) & set(norm_county(x) for x in node_3_answer)\n\nanswer = [county for county in top5.index.tolist() if county in candidates]\n",
+      "subquestion": "In fiscal year 2021, among the counties in <hop 1 answer>, which were in the overall top 5 for releases from the Department of Criminal Justice?",
+      "answer": [
+        "Harris",
+        "Dallas",
+        "Bexar"
+      ]
+    },
+    "7": {
+      "source": "wikipedia/Harris_County,_Texas/content.txt",
+      "fact": "Harris County is a county located in the U.S. state of Texas. As of the 2020 census, the population was 4,731,145, and was estimated to be 5,009,302 in 2024, making it the most populous county in Texas and the third-most populous county in the United States. Its county seat is Houston, the most populous city in Texas and the fourth-most populous city in the United States. The county was founded on December 22, 1836 and organized on March 10, 1837.",
+      "subquestion": "For this county in <hop 2 answer>, what date was it founded or created?",
+      "answer": "December 22, 1836"
+    },
+    "8": {
+      "source": "wikipedia/Dallas_County,_Texas/content.txt",
+      "fact": "Dallas County is a county located in the U.S. state of Texas. As of the 2020 census, the population was 2,613,539, and was estimated to be 2,656,028 in 2024, making it the second-most populous county in Texas and the eighth-most populous county in the United States. Its county seat is Dallas, the third-most populous city in Texas and the ninth-most populous city in the United States. The county was founded on March 30, 1846 and was possibly named for George Mifflin Dallas, the 11th Vice President of the United States under U.S. President James K. Polk.",
+      "subquestion": "For this county in <hop 2 answer>, what date was it founded or created?",
+      "answer": "March 30, 1846"
+    },
+    "9": {
+      "source": "wikipedia/Bexar_County,_Texas/content.txt",
+      "fact": "Bexar County was created on December 20, 1836, and encompassed almost the entire western portion of the Republic of Texas. This included the disputed areas of eastern New Mexico northward to Wyoming.",
+      "subquestion": "For this county in <hop 2 answer>, what date was it founded or created?",
+      "answer": "December 20, 1836"
+    }
+  },
+  "datasets_used": [
+    "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2019/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2019/files/2x5x-m677.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2020/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/aact-g69n.publisher-view.json",
+    "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2021/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2021/files/tup7-smjg.publisher-view.json",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-releases-fy-2021/signed-metadata.txt",
+    "wikipedia/Harris_County,_Texas/content.txt",
+    "wikipedia/Dallas_County,_Texas/content.txt",
+    "wikipedia/Bexar_County,_Texas/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: According to Texas state expenditure data for fiscal year 2019, the top 5 counties by Capital Outlay spending were: HARRIS ($222,408,956.01), TRAVIS ($130,659,552.92), DALLAS ($87,456,413.40), HARDIN ($44,254,637.81), and BEXAR ($32,102,175.63).",
+        "Node 2: According to Texas state expenditure data for fiscal year 2020, the top 5 counties by Capital Outlay spending were: TRAVIS ($279,580,855.70), HARRIS ($182,107,791.26), DALLAS ($124,333,498.09), BEXAR ($96,531,261.46), and GRAYSON ($29,683,297.03).",
+        "Node 3: According to Texas state expenditure data for fiscal year 2021, the top 5 counties by Capital Outlay spending were: HARRIS ($339,910,977.18), TRAVIS ($171,854,028.76), DALLAS ($131,046,497.37), BEXAR ($104,956,196.72), and GUADALUPE ($49,356,346.09).",
+        "Hop result: <node_1 answer> \u2229 <node_2 answer> \u2229 <node_3 answer> = [\"Bexar\", \"Dallas\", \"Harris\", \"Travis\"]."
+      ],
+      "answer": "Harris, Travis, Dallas, Bexar"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 4: According to Texas Department of Criminal Justice release data for fiscal year 2019, the overall top 5 counties by releases were Harris (9,029), Dallas (5,355), Tarrant (4,769), Bexar (4,545), and Hidalgo (1,861). Among the hop 1 counties, Harris, Dallas, and Bexar were in that top 5.",
+        "Node 5: According to Texas Department of Criminal Justice release data for fiscal year 2020, the overall top 5 counties by releases were Harris (7,059), Dallas (4,540), Tarrant (4,450), Bexar (3,917), and Travis (1,596). Among the hop 1 counties, Harris, Dallas, Bexar, and Travis were in that top 5.",
+        "Node 6: According to Texas Department of Criminal Justice release data for fiscal year 2021, the overall top 5 counties by releases were Harris (5,210), Dallas (3,565), Tarrant (3,252), Bexar (3,236), and Hidalgo (1,147). Among the hop 1 counties, Harris, Dallas, and Bexar were in that top 5.",
+        "Hop result: <node_4 answer> \u2229 <node_5 answer> \u2229 <node_6 answer> = [\"Bexar\", \"Dallas\", \"Harris\"]."
+      ],
+      "answer": "Harris, Dallas, Bexar"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        7,
+        8,
+        9
+      ],
+      "reasoning": [
+        "Node 7: Harris County was founded on December 22, 1836.",
+        "Node 8: Dallas County was founded on March 30, 1846.",
+        "Node 9: Bexar County was created on December 20, 1836.",
+        "Hop result: among <hop 2 answer>, the earliest founding or creation date is December 20, 1836, so the answer is Bexar."
+      ],
+      "answer": "Bexar"
+    }
+  ]
+}

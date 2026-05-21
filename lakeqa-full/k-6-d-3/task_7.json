@@ -1,0 +1,161 @@
+{
+    "question": "Define a state as strongest in teacher support if (total dollars all grantees in the state received / the number of participating teachers) is the highest. Which state is the 7th strongest in teacher support under that definition in 2010? Then, within that state, which cities received the 7th through 9th lowest arts grants in 2022, the 10th through 12th lowest in 2023, and the 11th through 13th lowest in 2024? Across all cities mentioned in those three years, in which year did their total net payment of sales tax increase the most from the previous year? In that year, among people aged 30-39, which state had the 2nd highest number of deaths involving both COVID-19 and pneumonia? In that state, which counties ranked 9th and 10th highest by percentage of baby getting born early? Finally, find the average of those counties' 2020 census populations. Please return only the number in the format [Answer].",
+    "answer": "1327385.5",
+    "nodes": {
+        "1": {
+            "source": "datagov/teaching-american-history-2010-grantees-e205d/files/userssharedsdfteachingamericanhistory2010grantees.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/teaching-american-history-2010-grantees-e205d/files/userssharedsdfteachingamericanhistory2010grantees.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"Amount_num\"] = pd.to_numeric(df[\"Amount\"].astype(str).str.replace(\"$\", \"\", regex=False).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\ndf[\"numteachers_num\"] = pd.to_numeric(df[\"numteachers\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[df[\"State\"].ne(\"\") & df[\"Amount_num\"].notna() & df[\"numteachers_num\"].gt(0)].copy()\nranked = filtered.groupby(\"State\", as_index=False).agg(\n    total_amount=(\"Amount_num\", \"sum\"),\n    total_teachers=(\"numteachers_num\", \"sum\")\n)\nranked[\"support_ratio\"] = ranked[\"total_amount\"] / ranked[\"total_teachers\"]\nranked = ranked.sort_values([\"support_ratio\", \"State\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = str(ranked.iloc[6][\"State\"])\n",
+            "subquestion": "Define a state as strongest in teacher support if (total dollars all grantees in the state received / the number of participating teachers) is the highest. Which state is the 7th strongest in teacher support under that definition in 2010?",
+            "answer": "TX"
+        },
+        "2": {
+            "source": "datagov/tca-all-approved-grants-fy22/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/tca-all-approved-grants-fy22/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_1_answer = \"TX\"\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"Amount_num\"] = pd.to_numeric(df[\"Amount\"].astype(str).str.replace(\"$\", \"\", regex=False).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nranked = df[df[\"City\"].ne(\"\") & df[\"Amount_num\"].notna()].groupby(\"City\", as_index=False)[\"Amount_num\"].sum().sort_values(\n    [\"Amount_num\", \"City\"],\n    ascending=[True, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[6:9][\"City\"].tolist())\n",
+            "subquestion": "In <node_1 answer>, which cities received the 7th through 9th lowest arts grants in 2022?",
+            "answer": "Jourdanton, Hearne, Athens"
+        },
+        "3": {
+            "source": "datagov/tca-all-approved-grants-fy23/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/tca-all-approved-grants-fy23/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_1_answer = \"TX\"\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"Amount_num\"] = pd.to_numeric(df[\"Amount\"].astype(str).str.replace(\"$\", \"\", regex=False).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nranked = df[df[\"City\"].ne(\"\") & df[\"Amount_num\"].notna()].groupby(\"City\", as_index=False)[\"Amount_num\"].sum().sort_values(\n    [\"Amount_num\", \"City\"],\n    ascending=[True, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[9:12][\"City\"].tolist())\n",
+            "subquestion": "In <node_1 answer>, which cities received the 10th through 12th lowest arts grants in 2023?",
+            "answer": "Ballinger, Winters, Hearne"
+        },
+        "4": {
+            "source": "datagov/tca-all-approved-grants-fy24/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/tca-all-approved-grants-fy24/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_1_answer = \"TX\"\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"Amount_num\"] = pd.to_numeric(df[\"Amount\"].astype(str).str.replace(\"$\", \"\", regex=False).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nranked = df[df[\"City\"].ne(\"\") & df[\"Amount_num\"].notna()].groupby(\"City\", as_index=False)[\"Amount_num\"].sum().sort_values(\n    [\"Amount_num\", \"City\"],\n    ascending=[True, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[10:13][\"City\"].tolist())\n",
+            "subquestion": "In <node_1 answer>, which cities received the 11th through 13th lowest arts grants in 2024?",
+            "answer": "Pampa, Ballinger, Big Lake"
+        },
+        "5": {
+            "source": "datagov/sales-tax-allocation-city/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/sales-tax-allocation-city/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_2_answer = \"Jourdanton, Hearne, Athens\"\nnode_3_answer = \"Ballinger, Winters, Hearne\"\nnode_4_answer = \"Pampa, Ballinger, Big Lake\"\nsets = []\nfor value in [node_2_answer, node_3_answer, node_4_answer]:\n    items = {part.strip() for part in str(value).split(\",\") if part.strip()}\n    sets.append(items)\ntarget_cities = sorted(set.union(*sets))\n\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"Net_num\"] = pd.to_numeric(df[\"Net Payment This Period\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\ndf[\"ReportYear_num\"] = pd.to_numeric(df[\"Report Year\"], errors=\"coerce\")\nfiltered = df[df[\"City\"].isin(target_cities) & df[\"Net_num\"].notna() & df[\"ReportYear_num\"].notna()].copy()\nyearly = filtered.groupby(\"ReportYear_num\", as_index=False)[\"Net_num\"].sum().sort_values(\"ReportYear_num\").reset_index(drop=True)\nyearly[\"delta_prev\"] = yearly[\"Net_num\"].diff()\nranked = yearly[yearly[\"delta_prev\"].notna()].copy().sort_values(\n    [\"delta_prev\", \"ReportYear_num\"],\n    ascending=[False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = str(int(ranked.iloc[0][\"ReportYear_num\"]))\n",
+            "subquestion": "Across all the cities in <node_2 answer>, <node_3 answer>, and <node_4 answer>, in which year did their net payment of sales tax increase the most from the previous year?",
+            "answer": "2022"
+        },
+        "6": {
+            "source": "datagov/provisional-covid-19-death-counts-by-sex-age-and-state/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/provisional-covid-19-death-counts-by-sex-age-and-state/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_5_answer = \"2022\"\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"deaths_num\"] = pd.to_numeric(df[\"Pneumonia and COVID-19 Deaths\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[\n    df[\"Group\"].eq(\"By Year\")\n    & df[\"Year\"].eq(str(node_5_answer).strip())\n    & df[\"Sex\"].eq(\"All Sexes\")\n    & df[\"Age Group\"].eq(\"30-39 years\")\n    & ~df[\"State\"].isin([\"\", \"United States\", \"New York City\"])\n    & df[\"deaths_num\"].notna()\n].copy()\nranked = filtered.sort_values([\"deaths_num\", \"State\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = str(ranked.iloc[1][\"State\"])\n",
+            "subquestion": "In <node_5 answer>, among people aged 30-39, which state had the 2nd highest number of deaths involving both COVID-19 and pneumonia?",
+            "answer": "California"
+        },
+        "7": {
+            "source": "datagov/preterm-and-very-preterm-live-births-0f8c7/files/preterm-and-very-preterm-births-by-county-2010-2018-3.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/preterm-and-very-preterm-live-births-0f8c7/files/preterm-and-very-preterm-births-by-county-2010-2018-3.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nnode_6_answer = \"California\"\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"Year_num\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Percent_num\"] = pd.to_numeric(df[\"Percent\"].astype(str).str.replace(\"%\", \"\", regex=False), errors=\"coerce\")\ntarget_year = int(df[\"Year_num\"].max())\nfiltered = df[\n    df[\"Year_num\"].eq(target_year)\n    & df[\"Birth Type\"].eq(\"Preterm Births\")\n    & df[\"County\"].ne(\"\")\n    & df[\"County\"].ne(node_6_answer)\n    & df[\"Percent_num\"].notna()\n].copy()\nranked = filtered.sort_values([\"Percent_num\", \"County\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[8:10][\"County\"].tolist())\n",
+            "subquestion": "In 2018 <node_6 answer>, which counties ranked 9th and 10th highest by percentage of baby getting born early?",
+            "answer": "Tulare, San Bernardino"
+        },
+        "8": {
+            "source": "wikipedia/Tulare_County,_California/content.txt",
+            "fact": "import re\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'wikipedia/Tulare_County,_California/content.txt'\nbucket = \"lakeqa-yc4103-datalake\"\ntext = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)[\"Body\"].read().decode(\"utf-8\", errors=\"replace\")\nmatch = re.search(r\"As of the 2020(?: United States)? census, the population was ([0-9,]+)\", text)\nanswer = match.group(1).replace(\",\", \"\")\n",
+            "subquestion": "For the first county in <node_7 answer>, what was its 2020 census population?",
+            "answer": "473117"
+        },
+        "9": {
+            "source": "wikipedia/San_Bernardino_County,_California/content.txt",
+            "fact": "import re\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'wikipedia/San_Bernardino_County,_California/content.txt'\nbucket = \"lakeqa-yc4103-datalake\"\ntext = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)[\"Body\"].read().decode(\"utf-8\", errors=\"replace\")\nmatch = re.search(r\"As of the 2020(?: United States)? census, the population was ([0-9,]+)\", text)\nanswer = match.group(1).replace(\",\", \"\")\n",
+            "subquestion": "For the second county in <node_7 answer>, what was its 2020 census population?",
+            "answer": "2181654"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Tulare_County,_California/content.txt",
+        "wikipedia/San_Bernardino_County,_California/content.txt",
+        "datagov/teaching-american-history-2010-grantees-e205d/files/userssharedsdfteachingamericanhistory2010grantees.txt",
+        "datagov/teaching-american-history-2010-grantees-e205d/signed-metadata.txt",
+        "datagov/tca-all-approved-grants-fy22/files/rows.txt",
+        "datagov/tca-all-approved-grants-fy22/signed-metadata.txt",
+        "datagov/tca-all-approved-grants-fy23/files/rows.txt",
+        "datagov/tca-all-approved-grants-fy23/signed-metadata.txt",
+        "datagov/tca-all-approved-grants-fy24/files/rows.txt",
+        "datagov/tca-all-approved-grants-fy24/signed-metadata.txt",
+        "datagov/sales-tax-allocation-city/files/rows.txt",
+        "datagov/sales-tax-allocation-city/signed-metadata.txt",
+        "datagov/sales-tax-allocation-city/files/vfba-b57j.txt",
+        "datagov/provisional-covid-19-death-counts-by-sex-age-and-state/files/rows.txt",
+        "datagov/provisional-covid-19-death-counts-by-sex-age-and-state/signed-metadata.txt",
+        "datagov/provisional-covid-19-death-counts-by-sex-age-and-state/files/9bhg-hcku.txt",
+        "datagov/preterm-and-very-preterm-live-births-0f8c7/files/preterm-and-very-preterm-births-by-county-2010-2018-3.txt",
+        "datagov/preterm-and-very-preterm-live-births-0f8c7/signed-metadata.txt",
+        "datagov/preterm-and-very-preterm-live-births-0f8c7/files/preterm-and-very-preterm-births-by-raceethnicity-2010-2018.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: For each state in the 2010 Teaching American History grantees dataset, sum grant amounts and divide by summed participating teachers.",
+                "When states are ranked by this support ratio from highest to lowest, Texas is 7th.",
+                "Therefore, the state is TX."
+            ],
+            "answer": "TX"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 2: In FY22 Texas arts grants, the 7th through 9th lowest funded cities are Jourdanton, Hearne, and Athens.",
+                "Node 3: In FY23 Texas arts grants, the 10th through 12th lowest funded cities are Ballinger, Winters, and Hearne.",
+                "Node 4: In FY24 Texas arts grants, the 11th through 13th lowest funded cities are Pampa, Ballinger, and Big Lake.",
+                "Taking the union of these answers gives the city set Athens, Ballinger, Big Lake, Hearne, Jourdanton, Pampa, and Winters."
+            ],
+            "answer": "Athens, Ballinger, Big Lake, Hearne, Jourdanton, Pampa, Winters"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In the sales-tax allocation city dataset, sum net payment of sales tax across Athens, Ballinger, Big Lake, Hearne, Jourdanton, Pampa, and Winters within each report year.",
+                "Compute the year-over-year change in that combined total.",
+                "The largest increase from the previous year occurs in 2022.",
+                "Therefore, the report year is 2022."
+            ],
+            "answer": "2022"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: In the COVID-19 sex-age state dataset, use Group = By Year, Year = 2022, Sex = All Sexes, and Age Group = 30-39 years.",
+                "Ranking states by Pneumonia and COVID-19 Deaths from highest to lowest gives Texas first and California second.",
+                "Therefore, the state is California."
+            ],
+            "answer": "California"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: In the California county preterm-birth dataset, use the latest available year, 2018, and Birth Type = Preterm Births.",
+                "Ranking counties by preterm-birth percentage from highest to lowest gives Tulare as 9th and San Bernardino as 10th.",
+                "Therefore, the two counties are Tulare and San Bernardino."
+            ],
+            "answer": "Tulare, San Bernardino"
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                8,
+                9
+            ],
+            "reasoning": [
+                "Node 8: The Wikipedia page for Tulare County, California gives its 2020 census population as 473,117.",
+                "Node 9: The Wikipedia page for San Bernardino County, California gives its 2020 census population as 2,181,654.",
+                "Averaging these two populations gives 1,327,385.5.",
+                "Therefore, the final answer is 1327385.5."
+            ],
+            "answer": "1327385.5"
+        }
+    ]
+}

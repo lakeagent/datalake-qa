@@ -1,0 +1,100 @@
+{
+    "question": "I'm analyzing crime around Van Nuys Airport. After identifying the police area that covers the neighborhood containing the airport, what was the most common crime recorded there in 2020? Tell me the total number of those crime incidents across Los Angeles in 2020. Only report the total number in your response. Your response should be in the format [Answer].",
+    "answer": "29141",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Van_Nuys_Airport/content.txt",
+            "fact": "Van Nuys Airport is a public airport in the Van Nuys neighborhood of the City of Los Angeles.",
+            "subquestion": "Which Los Angeles neighborhood contains Van Nuys Airport?",
+            "answer": "Van Nuys"
+        },
+        "2": {
+            "source": "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmatches = (\n    df.loc[df[\"Area Name\"] == \"Van Nuys\", \"Area ID\"]\n    .dropna()\n    .astype(str)\n    .str.strip()\n    .unique()\n)\n\nanswer = int(sorted(matches, key=lambda x: int(x))[0])",
+            "subquestion": "In LAPD stop-incident records, what police area corresponds to <hop 1 answer>?",
+            "answer": "9"
+        },
+        "3": {
+            "source": "datagov/crime-data-from-2020-to-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-data-from-2020-to-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf_2020_area_9 = df.loc[\n    (pd.to_datetime(df[\"DATE OCC\"], errors=\"coerce\").dt.year == 2020)\n    & (df[\"AREA\"] == 9),\n    [\"Crm Cd\"],\n]\n\ncrime_code_counts = df_2020_area_9[\"Crm Cd\"].value_counts(dropna=True)\nanswer = int(crime_code_counts.idxmax())",
+            "subquestion": "In 2020 crime records for area <hop 2 answer>, which crime code was most common?",
+            "answer": "510"
+        },
+        "4": {
+            "source": "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-data-from-2010-to-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmatches = (\n    df.loc[df[\"Crm Cd\"] == 510, \"Crm Cd Desc\"]\n    .dropna()\n    .drop_duplicates()\n    .tolist()\n)\n\nanswer = matches[0]",
+            "subquestion": "In the 2010-2019 crime records, what crime description corresponds to code <hop 3 answer>?",
+            "answer": "VEHICLE - STOLEN"
+        },
+        "5": {
+            "source": "datagov/crime-data-from-2020-to-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-data-from-2020-to-present/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df.loc[\n    (pd.to_datetime(df[\"DATE OCC\"], errors=\"coerce\").dt.year == 2020)\n    & (df[\"Crm Cd Desc\"] == \"VEHICLE - STOLEN\")\n]\n\nanswer = int(len(filtered))",
+            "subquestion": "In 2020 crime records, how many incidents were recorded with crime description <hop 4 answer>?",
+            "answer": "29141"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Identify the Los Angeles neighborhood that contains Van Nuys Airport from the cited Wikipedia source."
+            ],
+            "answer": "Van Nuys"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter rows where `Area Name` = <hop 1 answer>, collect distinct `Area ID` values, normalize them to integers, and keep the mapped area id."
+            ],
+            "answer": 9
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Filter rows where `DATE OCC` is in 2020 and `AREA` = <hop 2 answer>, count incidents by `Crm Cd`, sort descending, and keep the most common crime code."
+            ],
+            "answer": 510
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Filter rows where `Crm Cd` = <hop 3 answer>, collect distinct `Crm Cd Desc` values, and keep the mapped crime description."
+            ],
+            "answer": "VEHICLE - STOLEN"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Filter rows where `DATE OCC` is in 2020 and `Crm Cd Desc` = <hop 4 answer>, then count incidents."
+            ],
+            "answer": 29141
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Van_Nuys_Airport/content.txt",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/rows.txt",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/signed-metadata.txt",
+        "datagov/lapd-ripa-ab-953-stop-incident-details-from-7-1-2018-to-present/files/5gp9-8nrb.txt",
+        "datagov/crime-data-from-2020-to-present/files/rows.txt",
+        "datagov/crime-data-from-2020-to-present/signed-metadata.txt",
+        "datagov/crime-data-from-2020-to-present/files/2nrs-mtv8.txt",
+        "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+        "datagov/crime-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/crime-data-from-2010-to-2019/files/63jg-8b9z.txt"
+    ]
+}

@@ -1,0 +1,182 @@
+{
+    "question": "Across January 2019-2021, identify the agencies that consistently issued the largest total amount of parking fines. From those, keep only the U.S. national law-enforcement bodies and find which had the highest average number of driving-related violations issued in January from 2019-2021. That agency is operated by a federal agency within a U.S. department. What is the department's name? Return the department name only. Your response should be in the format [Answer].",
+    "answer": "United States Department of the Interior",
+    "nodes": {
+        "1": {
+            "source": "datagov/parking-violations-issued-in-january-2019/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/parking-violations-issued-in-january-2019/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ngeojson = json.loads(obj[\"Body\"].read())\nrows = [feature.get(\"properties\", {}) for feature in geojson[\"features\"]]\ndf = pd.DataFrame(rows)\ndf[\"FINE_AMOUNT\"] = pd.to_numeric(df[\"FINE_AMOUNT\"], errors=\"coerce\")\nanswer = (\n    df.groupby(\"ISSUING_AGENCY_NAME\", dropna=True)[\"FINE_AMOUNT\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(10)\n    .index.tolist()\n)",
+            "subquestion": "Which agencies issued the largest total amount of parking fines in January 2019?",
+            "answer": [
+                "DEPARTMENT OF PUBLIC WORKS",
+                "METROPOLITAN POLICE DPT-DISTRICT 2",
+                "METROPOLITAN POLICE DPT-DISTRICT 1",
+                "METROPOLITAN POLICE DPT-DISTRICT 4",
+                "METROPOLITAN POLICE DPT-DISTRICT 5",
+                "METROPOLITAN POLICE DPT-DISTRICT 7",
+                "D.C. HOUSING AUTHORITY",
+                "METROPOLITAN POLICE DPT-DISTRICT 3",
+                "METROPOLITAN POLICE DPT-DISTRICT 6",
+                "SPECIAL OPERATION DIV & TRAFFIC DIV"
+            ],
+            "limit": 10
+        },
+        "2": {
+            "source": "datagov/parking-violations-issued-in-january-2020/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/parking-violations-issued-in-january-2020/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ngeojson = json.loads(obj[\"Body\"].read())\nrows = [feature.get(\"properties\", {}) for feature in geojson[\"features\"]]\ndf = pd.DataFrame(rows)\ndf[\"FINE_AMOUNT\"] = pd.to_numeric(df[\"FINE_AMOUNT\"], errors=\"coerce\")\nanswer = (\n    df.groupby(\"ISSUING_AGENCY_NAME\", dropna=True)[\"FINE_AMOUNT\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(10)\n    .index.tolist()\n)",
+            "subquestion": "Which agencies issued the largest total amount of parking fines in January 2020?",
+            "answer": [
+                "DEPARTMENT OF PUBLIC WORKS",
+                "METROPOLITAN POLICE DPT-DISTRICT 2",
+                "D.C. HOUSING AUTHORITY",
+                "METROPOLITAN POLICE DPT-DISTRICT 6",
+                "METROPOLITAN POLICE DPT-DISTRICT 7",
+                "METROPOLITAN POLICE DPT-DISTRICT 4",
+                "DDOT",
+                "METROPOLITAN POLICE DPT-DISTRICT 3",
+                "METROPOLITAN POLICE DPT-DISTRICT 1",
+                "METROPOLITAN POLICE DPT-DISTRICT 5"
+            ],
+            "limit": 10
+        },
+        "3": {
+            "source": "datagov/parking-violations-issued-in-january-2021/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/parking-violations-issued-in-january-2021/files/data.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ngeojson = json.loads(obj[\"Body\"].read())\nrows = [feature.get(\"properties\", {}) for feature in geojson[\"features\"]]\ndf = pd.DataFrame(rows)\ndf[\"FINE_AMOUNT\"] = pd.to_numeric(df[\"FINE_AMOUNT\"], errors=\"coerce\")\nanswer = (\n    df.groupby(\"ISSUING_AGENCY_NAME\", dropna=True)[\"FINE_AMOUNT\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(10)\n    .index.tolist()\n)",
+            "subquestion": "Which agencies issued the largest total amount of parking fines in January 2021?",
+            "answer": [
+                "DEPARTMENT OF PUBLIC WORKS",
+                "METROPOLITAN POLICE DPT-DISTRICT 7",
+                "METROPOLITAN POLICE DPT-DISTRICT 3",
+                "METROPOLITAN POLICE DPT-DISTRICT 6",
+                "METROPOLITAN POLICE DPT-DISTRICT 1",
+                "METROPOLITAN POLICE DPT-DISTRICT 2",
+                "METROPOLITAN POLICE DPT-DISTRICT 4",
+                "METROPOLITAN POLICE DPT-DISTRICT 5",
+                "SPECIAL OPERATION DIV & TRAFFIC DIV",
+                "D.C. HOUSING AUTHORITY"
+            ],
+            "limit": 10
+        },
+        "4": {
+            "source": "datagov/moving-violations-issued-in-january-2019/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/moving-violations-issued-in-january-2019/files/data.txt\"\ntarget_agencies = [\"UNITED STATES CAPITOL POLICE\", \"US. SECRET SERVICE UNIFORM DIVISION\", \"UNITED STATES PARK POLICE\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ngeojson = json.loads(obj[\"Body\"].read())\nrows = [feature.get(\"properties\", {}) for feature in geojson[\"features\"]]\ndf = pd.DataFrame(rows)\nanswer = (\n    df[df[\"ISSUING_AGENCY_NAME\"].isin(target_agencies)]\n    .groupby(\"ISSUING_AGENCY_NAME\", dropna=True)\n    .size()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "In January 2019, how many driving-related violations did each agency in <hop 1 answer> issue?",
+            "answer": {
+                "UNITED STATES CAPITOL POLICE": 176,
+                "US. SECRET SERVICE UNIFORM DIVISION": 145,
+                "UNITED STATES PARK POLICE": 103
+            }
+        },
+        "5": {
+            "source": "datagov/moving-violations-issued-in-january-2020/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/moving-violations-issued-in-january-2020/files/data.txt\"\ntarget_agencies = [\"UNITED STATES CAPITOL POLICE\", \"US. SECRET SERVICE UNIFORM DIVISION\", \"UNITED STATES PARK POLICE\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ngeojson = json.loads(obj[\"Body\"].read())\nrows = [feature.get(\"properties\", {}) for feature in geojson[\"features\"]]\ndf = pd.DataFrame(rows)\nanswer = (\n    df[df[\"ISSUING_AGENCY_NAME\"].isin(target_agencies)]\n    .groupby(\"ISSUING_AGENCY_NAME\", dropna=True)\n    .size()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "In January 2020, how many driving-related violations did each agency in <hop 1 answer> issue?",
+            "answer": {
+                "UNITED STATES PARK POLICE": 204,
+                "UNITED STATES CAPITOL POLICE": 139,
+                "US. SECRET SERVICE UNIFORM DIVISION": 118
+            }
+        },
+        "6": {
+            "source": "datagov/moving-violations-issued-in-january-2021/files/data.txt",
+            "fact": "import boto3\nimport io\nimport json\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/moving-violations-issued-in-january-2021/files/data.txt\"\ntarget_agencies = [\"UNITED STATES CAPITOL POLICE\", \"US. SECRET SERVICE UNIFORM DIVISION\", \"UNITED STATES PARK POLICE\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ngeojson = json.loads(obj[\"Body\"].read())\nrows = [feature.get(\"properties\", {}) for feature in geojson[\"features\"]]\ndf = pd.DataFrame(rows)\nanswer = (\n    df[df[\"ISSUING_AGENCY_NAME\"].isin(target_agencies)]\n    .groupby(\"ISSUING_AGENCY_NAME\", dropna=True)\n    .size()\n    .sort_values(ascending=False)\n    .to_dict()\n)",
+            "subquestion": "In January 2021, how many driving-related violations did each agency in <hop 1 answer> issue?",
+            "answer": {
+                "UNITED STATES PARK POLICE": 71,
+                "US. SECRET SERVICE UNIFORM DIVISION": 32,
+                "UNITED STATES CAPITOL POLICE": 30
+            }
+        },
+        "7": {
+            "source": "wikipedia/United_States_Park_Police/content.txt",
+            "fact": "The United States Park Police is an operation of the National Park Service.",
+            "subquestion": "Which federal agency operates <hop 2 answer>?",
+            "answer": "National Park Service"
+        },
+        "8": {
+            "source": "wikipedia/National_Park_Service/content.txt",
+            "fact": "The National Park Service is an agency within the United States Department of the Interior.",
+            "subquestion": "<hop 3 answer> is within which U.S. department?",
+            "answer": "United States Department of the Interior"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/United_States_Park_Police/content.txt",
+        "wikipedia/National_Park_Service/content.txt",
+        "datagov/parking-violations-issued-in-january-2019/files/data.txt",
+        "datagov/parking-violations-issued-in-january-2019/signed-metadata.txt",
+        "datagov/parking-violations-issued-in-january-2019/files/0.arcgis-layer.json",
+        "datagov/parking-violations-issued-in-january-2020/files/data.txt",
+        "datagov/parking-violations-issued-in-january-2020/signed-metadata.txt",
+        "datagov/parking-violations-issued-in-january-2020/files/0.arcgis-layer.json",
+        "datagov/parking-violations-issued-in-january-2021/files/data.txt",
+        "datagov/parking-violations-issued-in-january-2021/signed-metadata.txt",
+        "datagov/parking-violations-issued-in-january-2021/files/0.arcgis-layer.json",
+        "datagov/moving-violations-issued-in-january-2019/files/data.txt",
+        "datagov/moving-violations-issued-in-january-2019/signed-metadata.txt",
+        "datagov/moving-violations-issued-in-january-2019/files/0.arcgis-layer.json",
+        "datagov/moving-violations-issued-in-january-2020/files/data.txt",
+        "datagov/moving-violations-issued-in-january-2020/signed-metadata.txt",
+        "datagov/moving-violations-issued-in-january-2020/files/0.arcgis-layer.json",
+        "datagov/moving-violations-issued-in-january-2021/files/data.txt",
+        "datagov/moving-violations-issued-in-january-2021/signed-metadata.txt",
+        "datagov/moving-violations-issued-in-january-2021/files/0.arcgis-layer.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Parse the GeoJSON features, group by `ISSUING_AGENCY_NAME`, sum `FINE_AMOUNT`, sort descending, and keep the top 20 agencies for January 2019 parking violations.",
+                "Node 2: Parse the GeoJSON features, group by `ISSUING_AGENCY_NAME`, sum `FINE_AMOUNT`, sort descending, and keep the top 20 agencies for January 2020 parking violations.",
+                "Node 3: Parse the GeoJSON features, group by `ISSUING_AGENCY_NAME`, sum `FINE_AMOUNT`, sort descending, and keep the top 20 agencies for January 2021 parking violations.",
+                "Hop result: intersect <node 1 answer>, <node 2 answer>, and <node 3 answer>, then keep the U.S. national law-enforcement bodies = UNITED STATES CAPITOL POLICE, US. SECRET SERVICE UNIFORM DIVISION, UNITED STATES PARK POLICE."
+            ],
+            "answer": [
+                "UNITED STATES CAPITOL POLICE",
+                "US. SECRET SERVICE UNIFORM DIVISION",
+                "UNITED STATES PARK POLICE"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: Parse the GeoJSON features, filter `ISSUING_AGENCY_NAME` to <hop 1 answer>, and count rows for January 2019 moving violations.",
+                "Node 5: Parse the GeoJSON features, filter `ISSUING_AGENCY_NAME` to <hop 1 answer>, and count rows for January 2020 moving violations.",
+                "Node 6: Parse the GeoJSON features, filter `ISSUING_AGENCY_NAME` to <hop 1 answer>, and count rows for January 2021 moving violations.",
+                "Hop result: average moving violations = {UNITED STATES CAPITOL POLICE: (176 + 139 + 30) / 3 = 115.0, US. SECRET SERVICE UNIFORM DIVISION: (145 + 118 + 32) / 3 = 98.33, UNITED STATES PARK POLICE: (103 + 204 + 71) / 3 = 126.0}; highest average = UNITED STATES PARK POLICE."
+            ],
+            "answer": "UNITED STATES PARK POLICE"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: The United States Park Police is an operation of the National Park Service.",
+                "Hop result: National Park Service."
+            ],
+            "answer": "National Park Service"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: The National Park Service is an agency within the United States Department of the Interior.",
+                "Hop result: United States Department of the Interior."
+            ],
+            "answer": "United States Department of the Interior"
+        }
+    ]
+}

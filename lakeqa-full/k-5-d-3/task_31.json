@@ -1,0 +1,137 @@
+{
+    "question": "Start with the Texas education service center region that had the most school districts in the 2021-2022 school year. In the county within that region with the largest number of unique school nutrition sites in 2022-2023, find the city with the most active home-based child care food program sites in 2022-2023, then the ZIP code in that city with the largest number of unique active school nutrition sites in 2021-2022. For that ZIP code, how many more distinct employer names appeared on 2023 filings from employers without workers' compensation coverage than the combined total of distinct child-care facilities reported in 2023 Q4 and unique active school nutrition sites in 2022-2023? Return only the number.",
+    "answer": "6",
+    "nodes": {
+        "1": {
+            "source": "datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['State', 'Region', 'District'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['State', 'Region', 'District'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['State'] = df['State'].astype(str).str.strip()\ndf['Region'] = df['Region'].astype(str).str.strip()\ndf['District'] = df['District'].astype(str).str.strip()\nfiltered = df[\n    df['State'].eq('TX')\n    & df['Region'].ne('')\n    & df['District'].ne('')\n].copy()\nranked = (\n    filtered.groupby('Region', as_index=False)['District']\n    .nunique()\n    .sort_values(['District', 'Region'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'District'] > ranked.loc[1, 'District']\nanswer = str(ranked.loc[0, 'Region'])\n",
+            "subquestion": "Which Texas education service center region had the most school districts in the 2021-2022 school year?",
+            "answer": "10"
+        },
+        "2": {
+            "source": "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2022-2023/files/rows.txt",
+            "fact": "import json\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2022-2023/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_1_answer = '10'\n\nif os.path.exists(local_path):\n    raw_text = open(local_path, 'r', encoding='utf-8').read()\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    raw_text = obj['Body'].read().decode('utf-8')\n\nobj = json.loads(raw_text)\ncols = [col['name'] for col in obj['meta']['view']['columns']][8:]\nrows = [row[8:] for row in obj['data']]\ndf = pd.DataFrame(rows, columns=cols)\n\ndf['ESC'] = df['ESC'].astype(str).str.strip()\ndf['SiteCounty'] = df['SiteCounty'].astype(str).str.strip()\ndf['CEID'] = df['CEID'].astype(str).str.strip()\ndf['SiteID'] = df['SiteID'].astype(str).str.strip()\ndf['site_key'] = df['CEID'] + '|' + df['SiteID']\nfiltered = df[\n    df['ESC'].eq(node_1_answer)\n    & df['SiteCounty'].ne('')\n    & df['CEID'].ne('')\n    & df['SiteID'].ne('')\n].copy()\nranked = (\n    filtered.groupby('SiteCounty', as_index=False)['site_key']\n    .nunique()\n    .sort_values(['site_key', 'SiteCounty'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'site_key'] > ranked.loc[1, 'site_key']\nanswer = str(ranked.loc[0, 'SiteCounty']).title()\n",
+            "subquestion": "Within Texas education service center region <node_1 answer>, which county had the largest number of unique school nutrition sites in 2022-2023?",
+            "answer": "Dallas"
+        },
+        "3": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_2_answer = 'Dallas'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['CEStatus', 'SiteStatus', 'SiteCounty', 'SiteStreetAddressCity', 'SiteID'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['CEStatus', 'SiteStatus', 'SiteCounty', 'SiteStreetAddressCity', 'SiteID'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['CEStatus'] = df['CEStatus'].astype(str).str.strip()\ndf['SiteStatus'] = df['SiteStatus'].astype(str).str.strip()\ndf['SiteCounty'] = df['SiteCounty'].astype(str).str.strip()\ndf['SiteStreetAddressCity'] = df['SiteStreetAddressCity'].astype(str).str.strip()\ndf['SiteID'] = df['SiteID'].astype(str).str.strip()\ndf['city_norm'] = df['SiteStreetAddressCity'].str.upper()\nfiltered = df[\n    df['CEStatus'].eq('ACTIVE')\n    & df['SiteStatus'].eq('ACTIVE')\n    & df['SiteCounty'].str.upper().eq(str(node_2_answer).upper())\n    & df['SiteID'].ne('')\n    & df['city_norm'].ne('')\n].copy()\nranked = (\n    filtered.groupby('city_norm', as_index=False)['SiteID']\n    .nunique()\n    .sort_values(['SiteID', 'city_norm'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'SiteID'] > ranked.loc[1, 'SiteID']\nanswer = str(ranked.loc[0, 'city_norm']).title()\n",
+            "subquestion": "In that county, which city had the most active home-based child care food program sites in 2022-2023?",
+            "answer": "Dallas"
+        },
+        "4": {
+            "source": "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_3_answer = 'Dallas'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['CEStatus', 'SiteStatus', 'SiteStreetAddressCity', 'SiteStreetAddressZipCode', 'CEID', 'SiteID'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['CEStatus', 'SiteStatus', 'SiteStreetAddressCity', 'SiteStreetAddressZipCode', 'CEID', 'SiteID'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['CEStatus'] = df['CEStatus'].astype(str).str.strip()\ndf['SiteStatus'] = df['SiteStatus'].astype(str).str.strip()\ndf['SiteStreetAddressCity'] = df['SiteStreetAddressCity'].astype(str).str.strip()\ndf['SiteStreetAddressZipCode'] = df['SiteStreetAddressZipCode'].astype(str).str.strip()\ndf['CEID'] = df['CEID'].astype(str).str.strip()\ndf['SiteID'] = df['SiteID'].astype(str).str.strip()\ndf['city_norm'] = df['SiteStreetAddressCity'].str.upper()\ndf['zip5'] = df['SiteStreetAddressZipCode'].str.extract(r'(\\d{5})', expand=False)\ndf['site_key'] = df['CEID'] + '|' + df['SiteID']\nfiltered = df[\n    df['CEStatus'].eq('ACTIVE')\n    & df['SiteStatus'].eq('ACTIVE')\n    & df['city_norm'].eq(str(node_3_answer).upper())\n    & df['zip5'].notna()\n    & df['CEID'].ne('')\n    & df['SiteID'].ne('')\n].copy()\nranked = (\n    filtered.groupby('zip5', as_index=False)['site_key']\n    .nunique()\n    .sort_values(['site_key', 'zip5'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'site_key'] > ranked.loc[1, 'site_key']\nanswer = str(ranked.loc[0, 'zip5'])\n",
+            "subquestion": "In that city, which ZIP code had the largest number of unique active school nutrition sites in 2021-2022?",
+            "answer": "75217"
+        },
+        "5": {
+            "source": "datagov/workers-compensation-non-subscriber-employer-information/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/workers-compensation-non-subscriber-employer-information/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_4_answer = '75217'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Filing Date Received', 'Company Name', 'Zip Code'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Filing Date Received', 'Company Name', 'Zip Code'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['Filing Date Received'] = df['Filing Date Received'].astype(str).str.strip()\ndf['Company Name'] = df['Company Name'].astype(str).str.strip()\ndf['zip5'] = df['Zip Code'].astype(str).str.extract(r'(\\d{5})', expand=False)\ndf['filing_year'] = pd.to_datetime(df['Filing Date Received'], errors='coerce').dt.year\nfiltered = df[\n    df['filing_year'].eq(2023)\n    & df['zip5'].eq(node_4_answer)\n    & df['Company Name'].ne('')\n].copy()\nanswer = str(int(filtered['Company Name'].nunique()))\n",
+            "subquestion": "In that ZIP code, how many distinct employer names appeared on filings from employers without workers' compensation coverage in 2023?",
+            "answer": "52"
+        },
+        "6": {
+            "source": "datagov/monthly-child-care-services-data-report-child-care-facilities-2023-q4/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/monthly-child-care-services-data-report-child-care-facilities-2023-q4/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_4_answer = '75217'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['State_ID', 'ZIPCode'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['State_ID', 'ZIPCode'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['State_ID'] = df['State_ID'].astype(str).str.strip()\ndf['zip5'] = df['ZIPCode'].astype(str).str.extract(r'(\\d{5})', expand=False)\nfiltered = df[\n    df['zip5'].eq(node_4_answer)\n    & df['State_ID'].ne('')\n].copy()\nanswer = str(int(filtered['State_ID'].nunique()))\n",
+            "subquestion": "In that ZIP code, how many distinct child-care facilities appeared in the monthly child-care services report in 2023 Q4?",
+            "answer": "20"
+        },
+        "7": {
+            "source": "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2022/files/rows.txt",
+            "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_4_answer = '75217'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['CEStatus', 'SiteStatus', 'SiteStreetAddressZipCode', 'CEID', 'SiteID'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['CEStatus', 'SiteStatus', 'SiteStreetAddressZipCode', 'CEID', 'SiteID'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['CEStatus'] = df['CEStatus'].astype(str).str.strip()\ndf['SiteStatus'] = df['SiteStatus'].astype(str).str.strip()\ndf['SiteStreetAddressZipCode'] = df['SiteStreetAddressZipCode'].astype(str).str.strip()\ndf['CEID'] = df['CEID'].astype(str).str.strip()\ndf['SiteID'] = df['SiteID'].astype(str).str.strip()\ndf['zip5'] = df['SiteStreetAddressZipCode'].str.extract(r'(\\d{5})', expand=False)\ndf['site_key'] = df['CEID'] + '|' + df['SiteID']\nfiltered = df[\n    df['CEStatus'].eq('ACTIVE')\n    & df['SiteStatus'].eq('ACTIVE')\n    & df['zip5'].eq(node_4_answer)\n    & df['CEID'].ne('')\n    & df['SiteID'].ne('')\n].copy()\nanswer = str(int(filtered['site_key'].nunique()))\n",
+            "subquestion": "In that ZIP code, how many unique active school nutrition sites were there in 2022-2023?",
+            "answer": "26"
+        }
+    },
+    "datasets_used": [
+        "datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/files/rows.txt",
+        "datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/signed-metadata.txt",
+        "datagov/superintendent-salary-report-by-district-for-school-year-2021-2022/files/6dh5-cse4.publisher-view.json",
+        "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2022-2023/files/rows.txt",
+        "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2022-2023/signed-metadata.txt",
+        "datagov/school-nutrition-programs-meal-reimbursement-information-program-year-2022-2023/files/t9bs-zxkh.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-site-level-contact-and-progra-2022/files/eyah-a2pn.publisher-view.json",
+        "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/rows.txt",
+        "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/signed-metadata.txt",
+        "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2021/files/shme-pbr8.txt",
+        "datagov/workers-compensation-non-subscriber-employer-information/files/rows.txt",
+        "datagov/workers-compensation-non-subscriber-employer-information/signed-metadata.txt",
+        "datagov/workers-compensation-non-subscriber-employer-information/files/azae-8krr.publisher-view.json",
+        "datagov/monthly-child-care-services-data-report-child-care-facilities-2023-q4/files/rows.txt",
+        "datagov/monthly-child-care-services-data-report-child-care-facilities-2023-q4/signed-metadata.txt",
+        "datagov/monthly-child-care-services-data-report-child-care-facilities-2023-q4/files/ttsw-3c2c.txt",
+        "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2022/files/rows.txt",
+        "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2022/signed-metadata.txt",
+        "datagov/school-nutrition-programs-contact-information-and-site-level-program-participation-pr-2022/files/h87y-vai4.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: In the 2021-2022 Texas superintendent salary report by district, education service center region 10 has the most school districts.",
+                "Region 10 contains 115 districts, ahead of region 07 with 101, so the winner is unique.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "10"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Within Texas education service center region 10, Dallas County has the most distinct school nutrition sites in 2022-2023.",
+                "Dallas has 701 distinct sites, ahead of Collin with 271, so the winner is unique.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Dallas"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: In Dallas County, Dallas has the most active home-based child care food program sites in 2022-2023.",
+                "Dallas has 67 active sites, ahead of Garland with 42, so the winner is unique.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Dallas"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In Dallas, ZIP code 75217 has the largest number of unique active school nutrition sites in 2021-2022.",
+                "ZIP 75217 has 26 unique active sites, ahead of 75211 with 21, so the winner is unique.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "75217"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                5,
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 5: In ZIP code 75217, the 2023 workers' compensation non-subscriber filing data contains 52 distinct employer names.",
+                "Node 6: In ZIP code 75217, the 2023 Q4 monthly child-care services report contains 20 distinct child-care facilities.",
+                "Node 7: In ZIP code 75217, the 2022-2023 school nutrition contact file contains 26 unique active school nutrition sites.",
+                "Subtracting the combined facility and school nutrition site counts from the distinct employer-name count gives 52 - (20 + 26) = 6.",
+                "Hop result: 6"
+            ],
+            "answer": "6"
+        }
+    ]
+}

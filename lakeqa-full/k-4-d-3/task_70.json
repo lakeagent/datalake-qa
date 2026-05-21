@@ -1,0 +1,206 @@
+{
+    "question": "Identify the Chicago library branch that ranked in the top five for total number of items checked out over the year and total visitors, and in the top three for total public-computer logins, every year from 2019 to 2021. For the architect who designed that branch, how many years after he was born did he receive the Driehaus Architecture Prize? Your response should be in the format [Answer].",
+    "answer": 72,
+    "nodes": {
+        "1": {
+            "source": "datagov/libraries-2019-circulation-by-location/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/libraries-2019-circulation-by-location/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"YTD\"] = pd.to_numeric(df[\"YTD\"], errors=\"coerce\")\nanswer = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"LOCATION\", dropna=True)[\"YTD\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)",
+            "subquestion": "Which Chicago library branches were in the top 5 by total number of items checked out over the year in 2019?",
+            "answer": [
+                "HAROLD WASHINGTON LIBRARY CENTER",
+                "Sulzer Regional Library",
+                "Edgewater",
+                "Lincoln Belmont",
+                "Lincoln Park"
+            ]
+        },
+        "2": {
+            "source": "datagov/libraries-2020-circulation-by-location/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/libraries-2020-circulation-by-location/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"YTD\"] = pd.to_numeric(df[\"YTD\"], errors=\"coerce\")\nanswer = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"BRANCH\", dropna=True)[\"YTD\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)",
+            "subquestion": "Which Chicago library branches were in the top 5 by total number of items checked out over the year in 2020?",
+            "answer": [
+                "Harold Washington Library Center",
+                "Sulzer Regional Library",
+                "Lincoln Belmont",
+                "Edgewater",
+                "Northtown"
+            ]
+        },
+        "3": {
+            "source": "datagov/libraries-2021-circulation-by-location/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/libraries-2021-circulation-by-location/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"YTD\"] = pd.to_numeric(df[\"YTD\"], errors=\"coerce\")\nanswer = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"BRANCH\", dropna=True)[\"YTD\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)",
+            "subquestion": "Which Chicago library branches were in the top 5 by total number of items checked out over the year in 2021?",
+            "answer": [
+                "Harold Washington Library Center",
+                "Sulzer Regional Library",
+                "Lincoln Belmont",
+                "Edgewater",
+                "Lincoln Park"
+            ]
+        },
+        "4": {
+            "source": "datagov/libraries-2019-visitors-by-location/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/libraries-2019-visitors-by-location/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"YTD\"] = pd.to_numeric(df[\"YTD\"], errors=\"coerce\")\nanswer = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"LOCATION\", dropna=True)[\"YTD\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)",
+            "subquestion": "Which Chicago library branches with physical addresses were in the top 5 by total visitors in 2019?",
+            "answer": [
+                "Harold Washtington Library Center",
+                "Sulzer Regional Library",
+                "Chinatown",
+                "Woodson Regional Library",
+                "Edgewater"
+            ]
+        },
+        "5": {
+            "source": "datagov/libraries-2020-visitors-by-location/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/libraries-2020-visitors-by-location/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"YTD\"] = pd.to_numeric(df[\"YTD\"], errors=\"coerce\")\nanswer = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"BRANCH\", dropna=True)[\"YTD\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)",
+            "subquestion": "Which Chicago library branches were in the top 5 by total visitors in 2020?",
+            "answer": [
+                "Harold Washtington Library Center",
+                "Sulzer Regional Library",
+                "Edgewater",
+                "Woodson Regional Library",
+                "Rogers Park"
+            ]
+        },
+        "6": {
+            "source": "datagov/libraries-2021-visitors-by-location/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/libraries-2021-visitors-by-location/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"YTD\"] = pd.to_numeric(df[\"YTD\"], errors=\"coerce\")\nanswer = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"BRANCH\", dropna=True)[\"YTD\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)",
+            "subquestion": "Which Chicago library branches were in the top 5 by total visitors in 2021?",
+            "answer": [
+                "Harold Washtington Library Center",
+                "Sulzer Regional Library",
+                "Edgewater",
+                "Chinatown",
+                "Logan Square"
+            ]
+        },
+        "7": {
+            "source": "datagov/libraries-2019-computer-sessions-by-location/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/libraries-2019-computer-sessions-by-location/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"YTD\"] = pd.to_numeric(df[\"YTD\"], errors=\"coerce\")\nanswer = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"LOCATION\", dropna=True)[\"YTD\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(3)\n    .index.tolist()\n)",
+            "subquestion": "Which Chicago library branches were in the top 3 by total public-computer logins in 2019?",
+            "answer": [
+                "HAROLD WASHINGTON LIBRARY CENTER",
+                "Woodson Regional Library",
+                "Sulzer Regional Library"
+            ]
+        },
+        "8": {
+            "source": "datagov/libraries-2020-computer-sessions-by-location/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/libraries-2020-computer-sessions-by-location/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"YTD\"] = pd.to_numeric(df[\"YTD\"], errors=\"coerce\")\nanswer = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"BRANCH\", dropna=True)[\"YTD\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(3)\n    .index.tolist()\n)",
+            "subquestion": "Which Chicago library branches were in the top 3 by total public-computer logins in 2020?",
+            "answer": [
+                "Harold Washington Library Center",
+                "Woodson Regional Library",
+                "Sulzer Regional Library"
+            ]
+        },
+        "9": {
+            "source": "datagov/libraries-2021-computer-sessions-by-location/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/libraries-2021-computer-sessions-by-location/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"YTD\"] = pd.to_numeric(df[\"YTD\"], errors=\"coerce\")\nanswer = (\n    df[df[\"ADDRESS\"].notna()]\n    .groupby(\"BRANCH\", dropna=True)[\"YTD\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(3)\n    .index.tolist()\n)",
+            "subquestion": "Which Chicago library branches were in the top 3 by total public-computer logins in 2021?",
+            "answer": [
+                "Harold Washington Library Center",
+                "Woodson Regional Library",
+                "Sulzer Regional Library"
+            ]
+        },
+        "10": {
+            "source": "wikipedia/Thomas_H._Beeby/content.txt",
+            "fact": "Progressive Architecture cited three of Thomas H. Beeby's public library designs, including the Sulzer Regional Library and the Harold Washington Library Center in Chicago. Thomas H. Beeby was born in 1941 and was awarded the Driehaus Architecture Prize in 2013.",
+            "subquestion": "In what year was the architect who designed <hop 3 answer> born, and in what year did he receive the Driehaus Architecture Prize?",
+            "answer": {
+                "born": 1941,
+                "driehaus_prize": 2013
+            }
+        }
+    },
+    "datasets_used": [
+        "datagov/libraries-2019-circulation-by-location/files/rows.txt",
+        "datagov/libraries-2019-circulation-by-location/signed-metadata.txt",
+        "datagov/libraries-2020-circulation-by-location/files/rows.txt",
+        "datagov/libraries-2020-circulation-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-circulation-by-location/files/rows.txt",
+        "datagov/libraries-2021-circulation-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-circulation-by-location/files/97es-3tbw.txt",
+        "datagov/libraries-2019-visitors-by-location/files/rows.txt",
+        "datagov/libraries-2019-visitors-by-location/signed-metadata.txt",
+        "datagov/libraries-2020-visitors-by-location/files/rows.txt",
+        "datagov/libraries-2020-visitors-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-visitors-by-location/files/rows.txt",
+        "datagov/libraries-2021-visitors-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-visitors-by-location/files/8i46-4b7w.txt",
+        "datagov/libraries-2019-computer-sessions-by-location/files/rows.txt",
+        "datagov/libraries-2019-computer-sessions-by-location/signed-metadata.txt",
+        "datagov/libraries-2020-computer-sessions-by-location/files/rows.txt",
+        "datagov/libraries-2020-computer-sessions-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-computer-sessions-by-location/files/rows.txt",
+        "datagov/libraries-2021-computer-sessions-by-location/signed-metadata.txt",
+        "datagov/libraries-2021-computer-sessions-by-location/files/hcqe-be23.txt",
+        "wikipedia/Thomas_H._Beeby/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Keep rows where `ADDRESS` is not null, group by `LOCATION`, sum `YTD`, sort descending, and keep the top 5 branches for 2019 circulation.",
+                "Node 2: Keep rows where `ADDRESS` is not null, group by `BRANCH`, sum `YTD`, sort descending, and keep the top 5 branches for 2020 circulation.",
+                "Node 3: Keep rows where `ADDRESS` is not null, group by `BRANCH`, sum `YTD`, sort descending, and keep the top 5 branches for 2021 circulation.",
+                "Hop result: the branches present in all three top-5 circulation lists are Sulzer Regional Library, Edgewater, and Lincoln Belmont."
+            ],
+            "answer": [
+                "Sulzer Regional Library",
+                "Edgewater",
+                "Lincoln Belmont"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: Keep rows where `ADDRESS` is not null, group by `LOCATION`, sum `YTD`, sort descending, and keep the top 5 branches for 2019 visitors.",
+                "Node 5: Keep rows where `ADDRESS` is not null, group by `BRANCH`, sum `YTD`, sort descending, and keep the top 5 branches for 2020 visitors.",
+                "Node 6: Keep rows where `ADDRESS` is not null, group by `BRANCH`, sum `YTD`, sort descending, and keep the top 5 branches for 2021 visitors.",
+                "Hop result: intersect <hop 1 answer> with all three top-5 visitor lists to get Sulzer Regional Library and Edgewater."
+            ],
+            "answer": [
+                "Sulzer Regional Library",
+                "Edgewater"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7,
+                8,
+                9
+            ],
+            "reasoning": [
+                "Node 7: Keep rows where `ADDRESS` is not null, group by `LOCATION`, sum `YTD`, sort descending, and keep the top 3 branches for 2019 computer sessions.",
+                "Node 8: Keep rows where `ADDRESS` is not null, group by `BRANCH`, sum `YTD`, sort descending, and keep the top 3 branches for 2020 computer sessions.",
+                "Node 9: Keep rows where `ADDRESS` is not null, group by `BRANCH`, sum `YTD`, sort descending, and keep the top 3 branches for 2021 computer sessions.",
+                "Hop result: intersect <hop 2 answer> with all three top-3 computer-session lists to get Sulzer Regional Library."
+            ],
+            "answer": "Sulzer Regional Library"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: The architect who designed <hop 3 answer> was born in `1941` and received the Driehaus Architecture Prize in `2013`.",
+                "Hop result: `2013 - 1941 = 72`."
+            ],
+            "answer": 72
+        }
+    ]
+}

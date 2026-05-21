@@ -1,0 +1,69 @@
+{
+    "question": "First identify the state that appears in both of these data.gov-derived groups: Hawaii noncandidate committees have made payments to vendors in many states since 2008. If you sort those states by the typical size of the payments they received, which states come in 4th through 8th place? Break ties alphabetically by state name.; and From 1999 through 2018, which states come in 4th through 8th place if you sort them by how much their overdose death rate, adjusted for differences in age, varied over time? Break ties alphabetically by state name.. After identifying that state, what fruit is listed as the state fruit of that state? Your response should be in the format [Answer].",
+    "answer": "Blackberry",
+    "nodes": {
+        "1": {
+            "source": "datagov/expenditures-made-by-hawaii-noncandidate-committees-from-january-1-2008-through-decembe-31/files/ncschb2.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/expenditures-made-by-hawaii-noncandidate-committees-from-january-1-2008-through-decembe-31/files/ncschb2.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_name_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\nstate_metric = (\n    df.dropna(subset=[\"State\", \"Amount\"])\n      .groupby(\"State\", as_index=False)[\"Amount\"]\n      .median()\n)\nstate_metric = state_metric[state_metric[\"State\"].isin(state_name_map)]\nstate_metric[\"state\"] = state_metric[\"State\"].map(state_name_map)\nranked = state_metric.sort_values([\"Amount\", \"state\"], ascending=[False, True], kind=\"mergesort\")\nanswer = ranked.iloc[3:8][\"state\"].tolist()",
+            "subquestion": "Hawaii noncandidate committees have made payments to vendors in many states since 2008. If you sort those states by the typical size of the payments they received, which states come in 4th through 8th place? Break ties alphabetically by state name.",
+            "answer": [
+                "Idaho",
+                "Maine",
+                "Kentucky",
+                "Rhode Island",
+                "Nevada"
+            ]
+        },
+        "2": {
+            "source": "datagov/nchs-drug-poisoning-mortality-by-state-united-states/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nchs-drug-poisoning-mortality-by-state-united-states/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_metric = (\n    df[\n        df[\"State\"].notna()\n        & (df[\"State\"] != \"United States\")\n        & (df[\"State\"] != \"District of Columbia\")\n        & df[\"Age-adjusted Rate\"].notna()\n    ]\n    .groupby(\"State\", as_index=False)[\"Age-adjusted Rate\"]\n    .std(ddof=1)\n)\n\nranked = state_metric.sort_values([\"Age-adjusted Rate\", \"State\"], ascending=[False, True], kind=\"mergesort\")\nanswer = ranked.iloc[3:8][\"State\"].tolist()",
+            "subquestion": "From 1999 through 2018, which states come in 4th through 8th place if you sort them by how much their overdose death rate, adjusted for differences in age, varied over time? Break ties alphabetically by state name.",
+            "answer": [
+                "Delaware",
+                "Pennsylvania",
+                "Kentucky",
+                "Maryland",
+                "Massachusetts"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/List_of_Kentucky_state_symbols/content.txt",
+            "fact": "The List of Kentucky state symbols page lists Fruit: Blackberry.",
+            "subquestion": "What fruit is listed as the state fruit of <hop 1 answer>?",
+            "answer": "Blackberry"
+        }
+    },
+    "datasets_used": [
+        "datagov/expenditures-made-by-hawaii-noncandidate-committees-from-january-1-2008-through-decembe-31/files/ncschb2.txt",
+        "datagov/expenditures-made-by-hawaii-noncandidate-committees-from-january-1-2008-through-decembe-31/signed-metadata.txt",
+        "datagov/nchs-drug-poisoning-mortality-by-state-united-states/files/rows.txt",
+        "datagov/nchs-drug-poisoning-mortality-by-state-united-states/signed-metadata.txt",
+        "wikipedia/List_of_Kentucky_state_symbols/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Group rows by `State`, compute the median `Amount` for each state, map state abbreviations to full state names, sort by median amount descending and state ascending to break ties alphabetically, and take ranks 4 through 8.",
+                "Node 2: Exclude non-state aggregates such as `United States` and `District of Columbia`, group by `State` to compute the sample standard deviation of `Age-adjusted Rate`, sort by standard deviation descending and state ascending to break ties alphabetically, and take ranks 4 through 8.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Kentucky."
+            ],
+            "answer": "Kentucky"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: The List of Kentucky state symbols page identifies Blackberry as the state fruit of the computed state.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Blackberry"
+        }
+    ]
+}

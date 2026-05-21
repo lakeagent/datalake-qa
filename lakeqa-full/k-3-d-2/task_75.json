@@ -1,0 +1,76 @@
+{
+  "question": "Find the birth state of the candidate in the New York election campaign with the most sponsors that sponsored through agents in 2021. As of 2025, how many more U.S. states border that state than border Kentucky? Please return only the number in the format [Answer].",
+  "answer": 1,
+  "nodes": {
+    "1": {
+      "source": "datagov/2021-intermediaries/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/2021-intermediaries/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj[\"Body\"].read()),\n    usecols=[\"ELECTION\", \"CANDFIRST\", \"CANDMI\", \"CANDLAST\", \"EMPNAME\"],\n    dtype=str,\n    low_memory=False,\n)\n\nfiltered = df[df[\"ELECTION\"].fillna(\"\").str.strip().eq(\"2021\")].copy()\nfiltered[\"candidate\"] = filtered[[\"CANDFIRST\", \"CANDMI\", \"CANDLAST\"]].fillna(\"\").apply(\n    lambda row: \" \".join(part.strip() for part in row if str(part).strip()),\n    axis=1,\n)\nfiltered[\"EMPNAME\"] = filtered[\"EMPNAME\"].fillna(\"\").str.strip()\nfiltered = filtered[(filtered[\"candidate\"] != \"\") & (filtered[\"EMPNAME\"] != \"\")]\ncounts = filtered.groupby(\"candidate\")[\"EMPNAME\"].nunique().sort_values(ascending=False)\nanswer = str(counts.index[0])\n",
+      "subquestion": "Which candidate in the New York election campaign has the most sponsors that sponsored through agents in 2021?",
+      "answer": "Brad Lander"
+    },
+    "2": {
+      "source": "wikipedia/Brad_Lander/content.txt",
+      "fact": "Brad Lander was born in St. Louis, Missouri, United States.",
+      "subquestion": "Which state was <hop 1 answer> born in?",
+      "answer": "Missouri"
+    },
+    "3": {
+      "source": "wikipedia/Missouri/content.txt",
+      "fact": "Missouri (see pronunciation) is a state in the Midwestern region of the United States. Ranking 21st in land area, it borders Iowa to the north, Illinois, Kentucky and Tennessee to the east, Arkansas to the south and Oklahoma, Kansas, and Nebraska to the west. With over six million residents, it is the 19th-most populous state of the country. The largest urban areas are St. Louis, Kansas City, Springfield, and Columbia. The capital is Jefferson City.",
+      "subquestion": "As of 2025, how many U.S. states border <hop 2 answer>?",
+      "answer": 8
+    },
+    "4": {
+      "source": "wikipedia/Kentucky/content.txt",
+      "fact": "Kentucky (, ), officially the Commonwealth of Kentucky, is a landlocked state in the Southeastern region of the United States. It borders Illinois, Indiana, and Ohio to the north, West Virginia to the northeast, Virginia to the east, Tennessee to the south, and Missouri to the west.",
+      "subquestion": "As of 2025, how many U.S. states border Kentucky?",
+      "answer": 7
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Brad_Lander/content.txt",
+    "datagov/2021-intermediaries/files/rows.txt",
+    "datagov/2021-intermediaries/signed-metadata.txt",
+    "datagov/2021-intermediaries/files/tcwb-nry3.publisher-view.json",
+    "wikipedia/Missouri/content.txt",
+    "wikipedia/Kentucky/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Count distinct sponsor employer names for each 2021 candidate and select the candidate with the largest count.",
+        "Hop result: Brad Lander."
+      ],
+      "answer": "Brad Lander"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: The page for <hop 1 answer> says he was born in St. Louis, Missouri.",
+        "Hop result: Missouri."
+      ],
+      "answer": "Missouri"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 3: <hop 2 answer> borders eight U.S. states.",
+        "Node 4: Kentucky borders seven U.S. states.",
+        "Compute the difference: 8 - 7 = 1.",
+        "Hop result: 1."
+      ],
+      "answer": 1
+    }
+  ]
+}

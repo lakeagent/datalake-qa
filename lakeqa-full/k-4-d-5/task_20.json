@@ -1,0 +1,147 @@
+{
+    "question": "Define a more valuable area as one with a higher average property market value and gross income per square foot. In Manhattan, Brooklyn, and Queens, which postcodes are respectively the 7th, 8th, and 8th most valuable areas in 2008-09? For all schools in those areas, which school year has the highest number of registered students? Using the starting year of that school year, among all states where registered buses are fewer than trucks and registered cars are greater than trucks, which state has the 5th highest number of registered cars? Among the states bordering that state, how many had fewer than 2,000,000 residents at the 2020 census? Please return only the number in the format [Answer].",
+    "answer": 2,
+    "nodes": {
+        "1": {
+            "source": "datagov/dof-condominium-comparable-rental-income-manhattan-fy-2008-2009/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/dof-condominium-comparable-rental-income-manhattan-fy-2008-2009/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Postcode\"] = df[\"Postcode\"].fillna(\"\").astype(str).str.strip()\ndf[\"MANHATTAN CONDOMINIUM PROPERTY Market Value per SqFt\"] = pd.to_numeric(df[\"MANHATTAN CONDOMINIUM PROPERTY Market Value per SqFt\"], errors=\"coerce\")\ndf[\"MANHATTAN CONDOMINIUM PROPERTY Gross Income per SqFt\"] = pd.to_numeric(df[\"MANHATTAN CONDOMINIUM PROPERTY Gross Income per SqFt\"], errors=\"coerce\")\nagg = df[\n    df[\"Postcode\"].ne(\"\")\n    & df[\"MANHATTAN CONDOMINIUM PROPERTY Market Value per SqFt\"].notna()\n    & df[\"MANHATTAN CONDOMINIUM PROPERTY Gross Income per SqFt\"].notna()\n].groupby(\"Postcode\", as_index=False).agg(\n    avg_market_value_per_sqft=(\"MANHATTAN CONDOMINIUM PROPERTY Market Value per SqFt\", \"mean\"),\n    avg_gross_income_per_sqft=(\"MANHATTAN CONDOMINIUM PROPERTY Gross Income per SqFt\", \"mean\")\n)\nranked = agg.sort_values(\n    [\"avg_market_value_per_sqft\", \"avg_gross_income_per_sqft\", \"Postcode\"],\n    ascending=[False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = str(ranked.iloc[6][\"Postcode\"])\n",
+            "subquestion": "Define a more valuable area as one with a higher average property market value and gross income per square foot. In Manhattan, which postcode is the 7th most valuable area in 2008-09?",
+            "answer": "10023"
+        },
+        "2": {
+            "source": "datagov/dof-condominium-comparable-rental-income-brooklyn-fy-2008-2009/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/dof-condominium-comparable-rental-income-brooklyn-fy-2008-2009/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Postcode\"] = df[\"Postcode\"].fillna(\"\").astype(str).str.strip()\ndf[\"BROOKLYN CONDOMINIUM PROPERTY Market Value per SqFt\"] = pd.to_numeric(df[\"BROOKLYN CONDOMINIUM PROPERTY Market Value per SqFt\"], errors=\"coerce\")\ndf[\"BROOKLYN CONDOMINIUM PROPERTY Gross Income per SqFt\"] = pd.to_numeric(df[\"BROOKLYN CONDOMINIUM PROPERTY Gross Income per SqFt\"], errors=\"coerce\")\nagg = df[\n    df[\"Postcode\"].ne(\"\")\n    & df[\"BROOKLYN CONDOMINIUM PROPERTY Market Value per SqFt\"].notna()\n    & df[\"BROOKLYN CONDOMINIUM PROPERTY Gross Income per SqFt\"].notna()\n].groupby(\"Postcode\", as_index=False).agg(\n    avg_market_value_per_sqft=(\"BROOKLYN CONDOMINIUM PROPERTY Market Value per SqFt\", \"mean\"),\n    avg_gross_income_per_sqft=(\"BROOKLYN CONDOMINIUM PROPERTY Gross Income per SqFt\", \"mean\")\n)\nranked = agg.sort_values(\n    [\"avg_market_value_per_sqft\", \"avg_gross_income_per_sqft\", \"Postcode\"],\n    ascending=[False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = str(ranked.iloc[7][\"Postcode\"])\n",
+            "subquestion": "Define a more valuable area as one with a higher average property market value and gross income per square foot. In Brooklyn, which postcode is the 8th most valuable area in 2008-09?",
+            "answer": "11215"
+        },
+        "3": {
+            "source": "datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ndf[\"Postcode\"] = df[\"Postcode\"].fillna(\"\").astype(str).str.strip()\ndf[\"QUEENS CONDOMINIUM PROPERTY Market Value per SqFt\"] = pd.to_numeric(df[\"QUEENS CONDOMINIUM PROPERTY Market Value per SqFt\"], errors=\"coerce\")\ndf[\"QUEENS CONDOMINIUM PROPERTY Gross Income per SqFt\"] = pd.to_numeric(df[\"QUEENS CONDOMINIUM PROPERTY Gross Income per SqFt\"], errors=\"coerce\")\nagg = df[\n    df[\"Postcode\"].ne(\"\")\n    & df[\"QUEENS CONDOMINIUM PROPERTY Market Value per SqFt\"].notna()\n    & df[\"QUEENS CONDOMINIUM PROPERTY Gross Income per SqFt\"].notna()\n].groupby(\"Postcode\", as_index=False).agg(\n    avg_market_value_per_sqft=(\"QUEENS CONDOMINIUM PROPERTY Market Value per SqFt\", \"mean\"),\n    avg_gross_income_per_sqft=(\"QUEENS CONDOMINIUM PROPERTY Gross Income per SqFt\", \"mean\")\n)\nranked = agg.sort_values(\n    [\"avg_market_value_per_sqft\", \"avg_gross_income_per_sqft\", \"Postcode\"],\n    ascending=[False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = str(ranked.iloc[7][\"Postcode\"])\n",
+            "subquestion": "Define a more valuable area as one with a higher average property market value and gross income per square foot. In Queens, which postcode is the 8th most valuable area in 2008-09?",
+            "answer": "11360"
+        },
+        "4": {
+            "source": "datagov/2010-2016-school-safety-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/2010-2016-school-safety-report/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_1_answer = \"10023, 11215, 11360\"\ntarget_postcodes = {part.strip() for part in str(hop_1_answer).split(\",\") if part.strip()}\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"Register_num\"] = pd.to_numeric(df[\"Register\"], errors=\"coerce\")\nfiltered = df[df[\"Postcode\"].isin(target_postcodes) & df[\"Register_num\"].notna()].copy()\nranked = filtered.groupby(\"School Year\", as_index=False)[\"Register_num\"].sum().sort_values(\n    [\"Register_num\", \"School Year\"],\n    ascending=[False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = str(ranked.iloc[0][\"School Year\"])\n",
+            "subquestion": "For all schools in the areas of the postcodes in <hop 1 answer>, which school year has the highest total registered students from 2010 to 2016?",
+            "answer": "2014-15"
+        },
+        "5": {
+            "source": "datagov/motor-vehicle-registrations-dashboard-data/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/motor-vehicle-registrations-dashboard-data/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_2_answer = \"2014-15\"\nstarting_year = int(str(hop_2_answer).split(\"-\")[0])\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"year_num\"] = pd.to_numeric(df[\"year\"], errors=\"coerce\")\ndf[\"Auto_num\"] = pd.to_numeric(df[\"Auto\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\ndf[\"Bus_num\"] = pd.to_numeric(df[\"Bus\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\ndf[\"Truck_num\"] = pd.to_numeric(df[\"Truck\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[\n    df[\"year_num\"].eq(starting_year)\n    & df[\"Auto_num\"].notna()\n    & df[\"Bus_num\"].notna()\n    & df[\"Truck_num\"].notna()\n    & df[\"Bus_num\"].lt(df[\"Truck_num\"])\n    & df[\"Auto_num\"].gt(df[\"Truck_num\"])\n].copy()\nranked = filtered.sort_values([\"Auto_num\", \"state\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = str(ranked.iloc[4][\"state\"])\n",
+            "subquestion": "Using the starting year of <hop 2 answer>, among all states where registered buses are fewer than trucks and registered cars are greater than trucks, which state has the 5th highest number of registered cars?",
+            "answer": "Maryland"
+        },
+        "6": {
+            "source": "wikipedia/Pennsylvania/content.txt",
+            "fact": "Pennsylvania, officially the Commonwealth of Pennsylvania, is a state spanning the Mid-Atlantic, Northeastern, Appalachian, and Great Lakes regions of the United States. It borders Delaware to its southeast, Maryland to its south, West Virginia to its southwest, Ohio and the Ohio River to its west, the Canadian province of Ontario to its northwest via Lake Erie, New York to its north, and the Delaware River and New Jersey to its east. Pennsylvania's most populous city is Philadelphia. The state capital is Harrisburg. Among all states, Pennsylvania is the fifth-most populous with over 13 million residents as of the 2020 United States census, the ninth-highest by population density, and the 33rd-largest by land area.",
+            "subquestion": "At the 2020 census, did the north-bordering state of <hop 3 answer> have fewer than 2,000,000 residents?",
+            "answer": "no"
+        },
+        "7": {
+            "source": "wikipedia/Delaware/content.txt",
+            "fact": "Delaware ( )Random House Dictionary is a state in the Mid-Atlantic and South Atlantic regions of the United States. It borders Maryland to its south and west, Pennsylvania to its north, New Jersey to its northeast, and the Atlantic Ocean to its east.\nThe United States Census Bureau determined that the population of Delaware was 989,948 on April 1, 2020, an increase from the 2010 census figure of 897,934.",
+            "subquestion": "At the 2020 census, did the east-bordering state of <hop 3 answer> have fewer than 2,000,000 residents?",
+            "answer": "yes"
+        },
+        "8": {
+            "source": "wikipedia/Virginia/content.txt",
+            "fact": "Virginia is located in the Mid-Atlantic and Southeastern regions of the United States. Virginia has a total area of , including  of water, making it the 35th-largest state by area. It is bordered by Maryland and Washington, D.C. to the northeast; by the Atlantic Ocean to the east; by North Carolina to the south; by Tennessee to the southwest; by Kentucky to the west; and by West Virginia to the northwest.\nThe 2020 census found the state resident population was 8,631,393, a 7.9% increase since the 2010 census.",
+            "subquestion": "At the 2020 census, did the south-bordering state of <hop 3 answer> have fewer than 2,000,000 residents?",
+            "answer": "no"
+        },
+        "9": {
+            "source": "wikipedia/West_Virginia/content.txt",
+            "fact": "West Virginia borders Pennsylvania and Maryland in the northeast, Virginia in the southeast, Ohio in the northwest, and Kentucky in the southwest.\nAs of the 2020 United States census, West Virginia's population was 1,793,716, a 3.2% decrease from the 2010 United States census.",
+            "subquestion": "At the 2020 census, did the west-bordering state of <hop 3 answer> have fewer than 2,000,000 residents?",
+            "answer": "yes"
+        },
+        "10": {
+            "source": "wikipedia/Maryland/content.txt",
+            "fact": "Maryland ( ) is a state that falls in both the Mid-Atlantic and Southern region of the United States. It borders the states of Virginia to its south, West Virginia to its west, Pennsylvania to its north, and Delaware to its east, as well as with the Atlantic Ocean to its east, and the national capital and federal district of Washington, D.C. to the southwest.  With a total area of , Maryland is the ninth-smallest state by land area, and its population of 6,177,224 ranks it the 18th-most populous state and the fifth-most densely populated. Maryland's capital city is Annapolis, and the state's most populous city is Baltimore.",
+            "subquestion": "Which U.S. states border <hop 3 answer>?",
+            "answer": [
+                "Virginia",
+                "West Virginia",
+                "Pennsylvania",
+                "Delaware"
+            ]
+        }
+    },
+    "datasets_used": [
+        "datagov/dof-condominium-comparable-rental-income-manhattan-fy-2008-2009/files/rows.txt",
+        "datagov/dof-condominium-comparable-rental-income-manhattan-fy-2008-2009/signed-metadata.txt",
+        "datagov/dof-condominium-comparable-rental-income-brooklyn-fy-2008-2009/files/rows.txt",
+        "datagov/dof-condominium-comparable-rental-income-brooklyn-fy-2008-2009/signed-metadata.txt",
+        "datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/files/rows.txt",
+        "datagov/dof-condominium-comparable-rental-income-queens-fy-2008-2009/signed-metadata.txt",
+        "datagov/2010-2016-school-safety-report/files/rows.txt",
+        "datagov/2010-2016-school-safety-report/signed-metadata.txt",
+        "datagov/2010-2016-school-safety-report/files/qybk-bjjc.publisher-view.json",
+        "datagov/motor-vehicle-registrations-dashboard-data/files/rows.txt",
+        "datagov/motor-vehicle-registrations-dashboard-data/signed-metadata.txt",
+        "wikipedia/Pennsylvania/content.txt",
+        "wikipedia/Delaware/content.txt",
+        "wikipedia/Virginia/content.txt",
+        "wikipedia/West_Virginia/content.txt",
+        "wikipedia/Maryland/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: In the Manhattan condo dataset, aggregate by postcode, rank by average property Market Value per SqFt descending and then average property Gross Income per SqFt descending, and the 7th-ranked postcode is 10023.",
+                "Node 2: In the Brooklyn condo dataset, using the same postcode-level ranking rule, the 8th-ranked postcode is 11215.",
+                "Node 3: In the Queens condo dataset, using the same postcode-level ranking rule, the 8th-ranked postcode is 11360.",
+                "Hop result: 10023, 11215, 11360"
+            ],
+            "answer": "10023, 11215, 11360"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In the school safety report, filter to the postcodes in <hop 1 answer> and sum Register within each School Year.",
+                "The totals are 12341 for 2013-14, 27878 for 2014-15, and 27204 for 2015-16.",
+                "Therefore, the School Year with the highest total Register is 2014-15."
+            ],
+            "answer": "2014-15"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Take the starting year of <hop 2 answer>, which is 2014.",
+                "In the motor-vehicle registrations dashboard data, keep states in 2014 where Bus is less than Truck and Auto is greater than Truck, then rank them by Auto descending.",
+                "The ordered states are California, Florida, New Jersey, Massachusetts, Maryland, Connecticut, Rhode Island, and District of Columbia, so the 5th-highest Auto count belongs to Maryland."
+            ],
+            "answer": "Maryland"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6,
+                7,
+                8,
+                9,
+                10
+            ],
+            "reasoning": [
+                "Node 10 identifies the U.S. states bordering <hop 3 answer>: Virginia, West Virginia, Pennsylvania, and Delaware.",
+                "Nodes 6 through 9 evaluate those bordering states against the 2,000,000-resident threshold at the 2020 census.",
+                "Pennsylvania and Virginia were above the threshold, while Delaware and West Virginia were below it.",
+                "Hop result: 2."
+            ],
+            "answer": 2
+        }
+    ]
+}

@@ -1,0 +1,99 @@
+{
+  "question": "In the school year of 2017-2018, which 10 preschools had the most students enrolled, the widest variety of reported ethnicities, and the closest balance between girls and boys? Which 10 districts had the most students enrolled and the strongest English and Math performance? Which 10 high schools had the most students enrolled and the strongest English and Math performance? Looking across those schools and districts together, which two school years combined the strongest attendance and English proficiency averages? For those two years, how many had an extra leap second added? Please return only the number in the format [Answer].",
+  "answer": 2,
+  "nodes": {
+    "1": {
+      "source": "datagov/2017-2018-diversity-report-pre-kindergarten/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2017-2018-diversity-report-pre-kindergarten/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['enroll_num'] = pd.to_numeric(df['Total Enrollment (Half Day & Full Day)'], errors='coerce')\ndf['female_num'] = pd.to_numeric(df['%Female'].str.replace('%', '', regex=False), errors='coerce')\neth_pct_cols = []\nfor col in ['%Asian', '%Black', '%Hispanic', '%Other', '%White']:\n    df[col + '_num'] = pd.to_numeric(df[col].str.replace('%', '', regex=False), errors='coerce')\n    eth_pct_cols.append(col + '_num')\nranked = df[df['enroll_num'].notna()].copy()\nranked['reported_groups'] = ranked[eth_pct_cols].notna().sum(axis=1)\nranked['gender_gap'] = (ranked['female_num'] - 50).abs()\nranked['enroll_rank'] = ranked['enroll_num'].rank(method='min', ascending=False)\nranked['groups_rank'] = ranked['reported_groups'].rank(method='min', ascending=False)\nranked['gender_rank'] = ranked['gender_gap'].rank(method='min', ascending=True)\nranked['score'] = ranked['enroll_rank'] + ranked['groups_rank'] + ranked['gender_rank']\nranked = ranked.sort_values(['score', 'enroll_rank', 'groups_rank', 'gender_rank', 'School Name'], ascending=[True, True, True, True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[:10]['School Name'].tolist())\n",
+      "subquestion": "In the shcool year of 2017-2018, if we define a well-balanced school as having the most students, the widest variety of ethnicities, and a near-perfect 50/50 gender split. Which 10 preschools perform best?",
+      "answer": "Garden School; Belmont Community Day Care Center; BRONX HOUSE 1; Pre-K Center At Bishop Ford School Site; District 20 Pre-K Center at 21 Bay 11th Street; Ivy Day School; A to Z Center Too, Inc.; Queens Explorers Elementary School; District 29 Pre-K Center at 168-42 Jamaica Avenue; Brooklyn's Daily Discovery Pre-K Center at 2202 60th Street"
+    },
+    "2": {
+      "source": "datagov/2017-2018-diversity-report-k-8-district/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2017-2018-diversity-report-k-8-district/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nranked = df[df['Category'].eq('All Students')].copy()\nfor col in ['Total Enrollment', 'ELA %L3+L4', 'Math %L3+L4']:\n    ranked[col + '_num'] = pd.to_numeric(ranked[col].str.replace('%', '', regex=False), errors='coerce')\nranked = ranked[ranked[['Total Enrollment_num', 'ELA %L3+L4_num', 'Math %L3+L4_num']].notna().all(axis=1)].copy()\nranked['enroll_rank'] = ranked['Total Enrollment_num'].rank(method='min', ascending=False)\nranked['ela_rank'] = ranked['ELA %L3+L4_num'].rank(method='min', ascending=False)\nranked['math_rank'] = ranked['Math %L3+L4_num'].rank(method='min', ascending=False)\nranked['score'] = ranked['enroll_rank'] + ranked['ela_rank'] + ranked['math_rank']\nranked = ranked.sort_values(['score', 'ela_rank', 'math_rank', 'enroll_rank', 'District'], ascending=[True, True, True, True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[:10]['District'].tolist())\n",
+      "subquestion": "In the school year of 2017-2018, which 10 districts had the most students enrolled in and highest passing rates in both English and Math?",
+      "answer": "2; 20; 25; 26; 15; 30; 31; 21; 24; 28"
+    },
+    "3": {
+      "source": "datagov/2017-2018-diversity-report-9-12-school/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2017-2018-diversity-report-9-12-school/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nranked = df[df['Category'].eq('All Students')].copy()\nfor col in ['Total Enrollment', 'ELA %L3+L4', 'Math %L3+L4']:\n    ranked[col + '_num'] = pd.to_numeric(ranked[col].str.replace('%', '', regex=False), errors='coerce')\nranked = ranked[ranked[['Total Enrollment_num', 'ELA %L3+L4_num', 'Math %L3+L4_num']].notna().all(axis=1)].copy()\nranked['enroll_rank'] = ranked['Total Enrollment_num'].rank(method='min', ascending=False)\nranked['ela_rank'] = ranked['ELA %L3+L4_num'].rank(method='min', ascending=False)\nranked['math_rank'] = ranked['Math %L3+L4_num'].rank(method='min', ascending=False)\nranked['score'] = ranked['enroll_rank'] + ranked['ela_rank'] + ranked['math_rank']\nranked = ranked.sort_values(['score', 'ela_rank', 'math_rank', 'enroll_rank', 'DBN'], ascending=[True, True, True, True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join((ranked.iloc[:10]['DBN'] + ' ' + ranked.iloc[:10]['School Name']).tolist())\n",
+      "subquestion": "In the school year of 2017-2018, which 10 high schools had the most students enrolled in and the highest passing rates in both English and Math?",
+      "answer": "13K430 Brooklyn Technical High School; 02M475 Stuyvesant High School; 10X445 The Bronx High School of Science; 31R605 Staten Island Technical High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a; 25Q525 Townsend Harris High School; 03M479 Beacon High School; 22K405 Midwood High School; 14K449 Brooklyn Latin School, The; 24Q299 Bard High School Early College Queens"
+    },
+    "4": {
+      "source": "datagov/school-quality-reports-data/files/rows.txt",
+      "fact": "import io\nimport csv\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/school-quality-reports-data/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = \"Garden School; Belmont Community Day Care Center; BRONX HOUSE 1; Pre-K Center At Bishop Ford School Site; District 20 Pre-K Center at 21 Bay 11th Street; Ivy Day School; A to Z Center Too, Inc.; Queens Explorers Elementary School; District 29 Pre-K Center at 168-42 Jamaica Avenue; Brooklyn's Daily Discovery Pre-K Center at 2202 60th Street\"\nnode_2_answer = '2; 20; 25; 26; 15; 30; 31; 21; 24; 28'\nnode_3_answer = \"13K430 Brooklyn Technical High School; 02M475 Stuyvesant High School; 10X445 The Bronx High School of Science; 31R605 Staten Island Technical High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a; 25Q525 Townsend Harris High School; 03M479 Beacon High School; 22K405 Midwood High School; 14K449 Brooklyn Latin School, The; 24Q299 Bard High School Early College Queens\"\npre_k_names = [part.strip() for part in node_1_answer.split(';') if part.strip()]\ndistricts = [part.strip().zfill(2) for part in node_2_answer.split(';') if part.strip()]\nhs_dbns = sorted(set(re.findall(r\"\\b\\d{2}[A-Z]\\d{3}\\b\", node_3_answer)))\nyear_conds = [f\"s.\\\"School Year\\\" = '{year}'\" for year in ['2015', '2016']]\nmetric_conds = [\n    \"s.\\\"Metric Variable Name\\\" = 'chronic_absent_ems_all'\",\n    \"s.\\\"Metric Variable Name\\\" = 'chronic_absent_hs_all'\",\n    \"s.\\\"Metric Variable Name\\\" = 'prof_pct_ela_all'\"\n]\nentity_conds = []\nfor name in pre_k_names:\n    safe_name = name.replace(\"'\", \"''\")\n    entity_conds.append(f\"s.\\\"School Name\\\" = '{safe_name}'\")\nfor dbn in hs_dbns:\n    entity_conds.append(f\"s.\\\"District, Borough and School Number (DBN)\\\" = '{dbn}'\")\nfor district in districts:\n    entity_conds.append(f\"s.\\\"District, Borough and School Number (DBN)\\\" LIKE '{district}%'\")\nexpr = (\n    'SELECT s.\"School Year\", s.\"Metric Variable Name\", s.\"Metric Value\" '\n    'FROM S3Object s WHERE (' + ' OR '.join(entity_conds) + ') '\n    'AND (' + ' OR '.join(year_conds) + ') '\n    'AND (' + ' OR '.join(metric_conds) + ')'\n)\nresp = boto3.client('s3').select_object_content(\n    Bucket=bucket,\n    Key=source,\n    ExpressionType='SQL',\n    Expression=expr,\n    InputSerialization={'CSV': {'FileHeaderInfo': 'USE'}},\n    OutputSerialization={'CSV': {}}\n)\nchunks = []\nfor event in resp['Payload']:\n    if 'Records' in event:\n        chunks.append(event['Records']['Payload'])\nrows = list(csv.reader(io.StringIO(b''.join(chunks).decode('utf-8', errors='replace'))))\ndf = pd.DataFrame(rows, columns=['School Year', 'Metric Variable Name', 'Metric Value'])\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['Metric Value_num'] = pd.to_numeric(df['Metric Value'], errors='coerce')\ndf = df[df['Metric Value_num'].notna()].copy()\ndf['metric_group'] = df['Metric Variable Name'].map({\n    'chronic_absent_ems_all': 'good_attendance',\n    'chronic_absent_hs_all': 'good_attendance',\n    'prof_pct_ela_all': 'ela_proficiency'\n})\ndf = df[df['metric_group'].notna()].copy()\nranked = df.groupby(['School Year', 'metric_group'], as_index=False)['Metric Value_num'].mean()\nranked = ranked.pivot(index='School Year', columns='metric_group', values='Metric Value_num').reset_index()\nranked['combined'] = ranked['good_attendance'] + ranked['ela_proficiency']\nranked = ranked.sort_values(['combined', 'School Year'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked['School Year'].tolist())\n",
+      "subquestion": "For the schools in <node_1 answer> and <node_3 answer>, and the districts in <node_2 answer>, which two school years had the highest average attendance rates and the highest average English proficiency rates?",
+      "answer": "2016; 2015"
+    },
+    "5": {
+      "source": "wikipedia/2016/content.txt",
+      "fact": "An extra leap second (23:59:60) is added to end of the year. The last time this occurred was in June 2015.",
+      "subquestion": "Was an extra leap second added during the first year in <hop 2 answer>?",
+      "answer": "yes"
+    },
+    "6": {
+      "source": "wikipedia/2015/content.txt",
+      "fact": "An extra leap second (23:59:60) is added to end of June. The last time this occurred was in 2012.",
+      "subquestion": "Was an extra leap second added during the second year in <hop 2 answer>?",
+      "answer": "yes"
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1 ranks pre-K sites by combining larger enrollment, broader reported ethnicity coverage, and a gender split closer to 50/50, then returns the top 10 school names.",
+        "Node 2 restricts the K-8 district table to All Students and ranks districts by larger enrollment plus stronger ELA and Math Level 3/4 performance, returning 10 district codes.",
+        "Node 3 applies the same larger-enrollment plus stronger ELA/Math Level 3/4 rule to the 9-12 school table and returns the top 10 high schools."
+      ],
+      "answer": "Garden School; Belmont Community Day Care Center; BRONX HOUSE 1; Pre-K Center At Bishop Ford School Site; District 20 Pre-K Center at 21 Bay 11th Street; Ivy Day School; A to Z Center Too, Inc.; Queens Explorers Elementary School; District 29 Pre-K Center at 168-42 Jamaica Avenue; Brooklyn's Daily Discovery Pre-K Center at 2202 60th Street; 2; 20; 25; 26; 15; 30; 31; 21; 24; 28; 13K430 Brooklyn Technical High School; 02M475 Stuyvesant High School; 10X445 The Bronx High School of Science; 31R605 Staten Island Technical High School; 03M485 Fiorello H. LaGuardia High School of Music & Art a; 25Q525 Townsend Harris High School; 03M479 Beacon High School; 22K405 Midwood High School; 14K449 Brooklyn Latin School, The; 24Q299 Bard High School Early College Queens"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4 queries the school-quality report rows for the pre-K school names from Node 1, the district prefixes from Node 2, and the high-school DBNs from Node 3.",
+        "It keeps school years 2015 and 2016 and averages two metrics by year: the share of students with 90%+ attendance and the share of students at Level 3 or 4 in ELA.",
+        "When those two averages are added, 2016 ranks first and 2015 ranks second."
+      ],
+      "answer": "2016; 2015"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5 checks the first year in hop 2 and confirms that an extra leap second was added during that year.",
+        "Node 6 checks the second year in hop 2 and confirms that an extra leap second was added during that year.",
+        "Both years had an extra leap second added, so the count is 2."
+      ],
+      "answer": 2
+    }
+  ],
+  "datasets_used": [
+    "datagov/2017-2018-diversity-report-pre-kindergarten/files/rows.txt",
+    "datagov/2017-2018-diversity-report-pre-kindergarten/signed-metadata.txt",
+    "datagov/2017-2018-diversity-report-pre-kindergarten/files/2017_-_2018_Diversity_Report_Pre-Kindergarten_DD.xlsx",
+    "datagov/2017-2018-diversity-report-k-8-district/files/rows.txt",
+    "datagov/2017-2018-diversity-report-k-8-district/signed-metadata.txt",
+    "datagov/2017-2018-diversity-report-k-8-district/files/2017_-_2018_Diversity_Report_K-8_District_DD.xlsx",
+    "datagov/2017-2018-diversity-report-9-12-school/files/rows.txt",
+    "datagov/2017-2018-diversity-report-9-12-school/signed-metadata.txt",
+    "datagov/2017-2018-diversity-report-9-12-school/files/2017_-_2018_Diversity_Report_9-12_School_DD.xlsx",
+    "datagov/school-quality-reports-data/files/rows.txt",
+    "datagov/school-quality-reports-data/signed-metadata.txt",
+    "datagov/school-quality-reports-data/files/dnpx-dfnc.txt",
+    "wikipedia/2016/content.txt",
+    "wikipedia/2015/content.txt"
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "question": "Can you identify the county with the highest number of veterans receiving disability compensation in 2023 in the Mountain state that borders Mexico, shares the Four Corners region, and had between 4,000 and 6,000 VA pension recipients in 2020? In that county's 2019 largest-employer list, how many more employees did the employer named for that state have than the employer named for that county? Return the number only. Your response should be in the format [Answer].",
+  "answer": 10600,
+  "nodes": {
+    "1": {
+      "source": "wikipedia/Mountain_states/content.txt",
+      "fact": "The Mountain states are considered to include: Arizona, Colorado, Idaho, Montana, Nevada, New Mexico, Utah and Wyoming.",
+      "subquestion": "Which US states are Mountain states?",
+      "answer": [
+        "Arizona",
+        "Colorado",
+        "Idaho",
+        "Montana",
+        "Nevada",
+        "New Mexico",
+        "Utah",
+        "Wyoming"
+      ]
+    },
+    "2": {
+      "source": "wikipedia/Mexico–United_States_border/content.txt",
+      "fact": "Four American Sun Belt states border Mexico: California, Arizona, New Mexico and Texas.",
+      "subquestion": "Which US states border Mexico?",
+      "answer": [
+        "California",
+        "Arizona",
+        "New Mexico",
+        "Texas"
+      ]
+    },
+    "3": {
+      "source": "wikipedia/Four_Corners/content.txt",
+      "fact": "The Four Corners is a region of the Southwestern United States consisting of the southwestern corner of Colorado, southeastern corner of Utah, northeastern corner of Arizona, and northwestern corner of New Mexico.",
+      "subquestion": "Which US states share the Four Corners region?",
+      "answer": [
+        "Arizona",
+        "Colorado",
+        "New Mexico",
+        "Utah"
+      ]
+    },
+    "4": {
+      "source": "datagov/fy-2020-pension-recipients-by-state/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/fy-2020-pension-recipients-by-state/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nus_states = {\n    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',\n    'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',\n    'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri',\n    'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York',\n    'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island',\n    'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',\n    'West Virginia', 'Wisconsin', 'Wyoming'\n}\nstate = df['State'].astype(str).str.strip()\nrecipients = pd.to_numeric(df['Total: Pension Recipients'], errors='coerce')\nfiltered = df[\n    state.isin(us_states)\n    & recipients.notna()\n    & (recipients >= 4000)\n    & (recipients <= 6000)\n].copy()\nanswer = filtered['State'].dropna().astype(str).str.strip().drop_duplicates().sort_values().tolist()",
+      "subquestion": "Which US states had between 4,000 and 6,000 VA pension recipients in fiscal year 2020?",
+      "answer": [
+        "Alabama",
+        "Arizona",
+        "Louisiana",
+        "Missouri",
+        "Oregon",
+        "South Carolina",
+        "Tennessee",
+        "Virginia",
+        "Washington"
+      ]
+    },
+    "5": {
+      "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+      "fact": "In FY 2023, Maricopa County, Arizona had 69,974 VA disability compensation recipients, the most of any county in Arizona. Pima County was second with 25,745, and Pinal County was third with 10,403.",
+      "subquestion": "Which county in <hop 1 answer> had the most VA disability compensation recipients in FY 2023?",
+      "answer": "Maricopa County"
+    },
+    "6": {
+      "source": "wikipedia/Maricopa_County,_Arizona/content.txt",
+      "fact": "In 2019, the largest employers in Maricopa County were: # Employer # of employees 1 Banner Health 27,650 2 State of Arizona 23,950 3 Walmart 16,870 4 Frys Food Stores 15,170 5 Wells Fargo 13,790 6 Maricopa County 13,350.",
+      "subquestion": "What were the 2019 employee counts for the employers named for <hop 1 answer> and <hop 2 answer> in <hop 2 answer>'s largest-employer list?",
+      "answer": {
+        "State of Arizona": 23950,
+        "Maricopa County": 13350
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: The Mountain states are considered to include Arizona, Colorado, Idaho, Montana, Nevada, New Mexico, Utah, and Wyoming.",
+        "Node 2: The U.S. states bordering Mexico are California, Arizona, New Mexico, and Texas.",
+        "Node 3: The Four Corners region consists of parts of Colorado, Utah, Arizona, and New Mexico.",
+        "Node 4: The U.S. states with between 4,000 and 6,000 VA pension recipients in FY 2020 were Alabama, Arizona, Louisiana, Missouri, Oregon, South Carolina, Tennessee, Virginia, and Washington.",
+        "Derive hop 1 answer using nodes 1, 2, 3, and 4: intersecting the four state sets leaves Arizona. Hop answer: Arizona."
+      ],
+      "answer": "Arizona"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: In FY 2023, Maricopa County, Arizona had 69,974 VA disability compensation recipients, more than Pima County and Pinal County.",
+        "Derive hop 2 answer from node 5: node 5 asks which county in <hop 1 answer> had the most VA disability compensation recipients in FY 2023. Hop answer: Maricopa County."
+      ],
+      "answer": "Maricopa County"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: In <hop 2 answer>'s 2019 largest-employer list, `State of Arizona` had `23,950` employees and `Maricopa County` had `13,350` employees.",
+        "Derive hop 3 answer from node 6: subtract the county-named employer count from the state-named employer count, `23,950 - 13,350 = 10,600`. Hop answer: 10600."
+      ],
+      "answer": 10600
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/Mountain_states/content.txt",
+    "wikipedia/Mexico–United_States_border/content.txt",
+    "wikipedia/Four_Corners/content.txt",
+    "datagov/fy-2020-pension-recipients-by-state/files/rows.txt",
+    "datagov/fy-2020-pension-recipients-by-state/signed-metadata.txt",
+    "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+    "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt",
+    "wikipedia/Maricopa_County,_Arizona/content.txt"
+  ]
+}

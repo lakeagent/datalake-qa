@@ -1,0 +1,68 @@
+{
+  "question": "Which applicant company appears most often among cancelled or withdrawn construction permits in DC in 2024? In 2024, among building permits in DC where that company appears as the permit owner, which ward appears most often? How many neighborhoods are in that ward? Return only the number in the format [Answer].",
+  "answer": 31,
+  "nodes": {
+    "1": {
+      "source": "datagov/construction-permits-in-2024/files/data.txt",
+      "fact": "import json\nimport os\nfrom collections import Counter\n\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/construction-permits-in-2024/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:\n        text = f.read()\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    text = obj['Body'].read().decode('utf-8', errors='ignore')\nrows = json.loads(text)['features']\n\ncounter = Counter()\nfor feature in rows:\n    row = feature.get('properties', {})\n    if str(row.get('STATUS', '')).strip() != 'Cancel/Withdrawn':\n        continue\n    applicant = str(row.get('APPLICANTCOMPANYNAME', '')).strip()\n    if applicant and applicant.upper() not in {'N/A', 'NA', 'NONE', 'NULL'}:\n        counter[applicant] += 1\n\nanswer = sorted(counter.items(), key=lambda item: (-item[1], item[0]))[0][0]\n",
+      "subquestion": "Which applicant company appears most often among cancelled or withdrawn construction permits in DC in 2024?",
+      "answer": "Potomac Electric Power Company"
+    },
+    "2": {
+      "source": "datagov/building-permits-in-2024/files/data.txt",
+      "fact": "import os\nimport re\nfrom collections import Counter\nfrom html import unescape\n\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/building-permits-in-2024/files/data.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\n\nif os.path.exists(local_path):\n    with open(local_path, 'r', encoding='utf-8', errors='ignore') as f:\n        text = f.read()\nelse:\n    obj = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\n    text = obj['Body'].read().decode('utf-8', errors='ignore')\n\nnode_1_answer = 'Potomac Electric Power Company'\ntarget_owner = node_1_answer.upper()\ncounter = Counter()\nfor block in text.split('<Placemark>')[1:]:\n    row = {}\n    for match in re.finditer(r'<SimpleData name=\"([^\"]+)\">(.*?)</SimpleData>', block, re.S):\n        row[match.group(1)] = unescape(match.group(2)).strip()\n    owner = row.get('OWNER_NAME', '').strip().upper()\n    if owner != target_owner:\n        continue\n    ward = row.get('WARD', '').strip()\n    if ward:\n        counter[ward] += 1\n\nanswer = sorted(counter.items(), key=lambda item: (-item[1], item[0]))[0][0]\n",
+      "subquestion": "In 2024, among building permits in DC where <hop 1 answer> appears as the permit owner, which ward appears most often?",
+      "answer": "7"
+    },
+    "3": {
+      "source": "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+      "fact": "Ward 7\nthumb|170px|Ward 7 (2023–present)\nWard 7 Councilmember: Wendell Felder\nPopulation (2022): 77,456 \n\nBenning\nBenning Heights\nBenning Ridge\nBurrville\nCapitol View\nCentral Northeast\nCivic Betterment\nDeanwood\nDupont Park\nEast Corner\nEast River Heights\nEastland Gardens\nFairfax Village\nFort Davis\nFort Dupont\nFort Stanton\nGreenway\nHill East\nHillbrook\nHillcrest\nKenilworth\nKingman Park\nLincoln Heights\nMarshall Heights\nMayfair\nNaylor Gardens\nNortheast Boundary\nPenn Branch\nRandle Highlands\nRiver Terrace\nTwining",
+      "subquestion": "How many neighborhoods are in Ward <hop 2 answer>?",
+      "answer": 31
+    }
+  },
+  "datasets_used": [
+    "datagov/construction-permits-in-2024/files/data.txt",
+    "datagov/construction-permits-in-2024/signed-metadata.txt",
+    "datagov/construction-permits-in-2024/files/44.arcgis-layer.json",
+    "datagov/building-permits-in-2024/files/data.txt",
+    "datagov/building-permits-in-2024/signed-metadata.txt",
+    "datagov/building-permits-in-2024/files/16.arcgis-layer.json",
+    "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the 2024 DC construction permits data, Potomac Electric Power Company is the most frequent applicant company among records with status Cancel/Withdrawn, with 88 permits.",
+        "Hop result: Potomac Electric Power Company."
+      ],
+      "answer": "Potomac Electric Power Company"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: In the 2024 DC building permits data, among permits whose OWNER_NAME is Potomac Electric Power Company, Ward 7 appears most often, with 7 permits.",
+        "Hop result: 7."
+      ],
+      "answer": "7"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3
+      ],
+      "reasoning": [
+        "Node 3: Count the neighborhood names under Ward 7 in the source: there are 31.",
+        "Hop result: 31."
+      ],
+      "answer": 31
+    }
+  ]
+}

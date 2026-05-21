@@ -1,0 +1,132 @@
+{
+    "question": "Can you tell me the year this city was incorporated? This city is the county seat of the county with the highest number of veterans receiving disability compensation in 2023 within a state. The state it's in is a Mountain state that borders Mexico and is one of the Four Corners states. It also had between 4000 and 6000 veterans receiving pensions in 2020. Your response should be in the format [Answer].",
+    "answer": "1881",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Mountain_states/content.txt",
+            "fact": "The Mountain states are considered to include: Arizona, Colorado, Idaho, Montana, Nevada, New Mexico, Utah and Wyoming.",
+            "subquestion": "Which US states are Mountain states?",
+            "depends_on": [],
+            "answer": [
+                "Arizona",
+                "Colorado",
+                "Idaho",
+                "Montana",
+                "Nevada",
+                "New Mexico",
+                "Utah",
+                "Wyoming"
+            ]
+        },
+        "2": {
+            "source": "wikipedia/Mexico–United_States_border/content.txt",
+            "fact": "Four American Sun Belt states border Mexico: California, Arizona, New Mexico and Texas.",
+            "subquestion": "Which US states border Mexico?",
+            "depends_on": [],
+            "answer": [
+                "California",
+                "Arizona",
+                "New Mexico",
+                "Texas"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Four_Corners/content.txt",
+            "fact": "The Four Corners is a region of the Southwestern United States consisting of the southwestern corner of Colorado, southeastern corner of Utah, northeastern corner of Arizona, and northwestern corner of New Mexico.",
+            "subquestion": "Which US states share the Four Corners region?",
+            "depends_on": [],
+            "answer": [
+                "Arizona",
+                "Colorado",
+                "New Mexico",
+                "Utah"
+            ]
+        },
+        "4": {
+            "source": "datagov/fy-2020-pension-recipients-by-state/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/fy-2020-pension-recipients-by-state/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nus_states = {\n    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',\n    'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',\n    'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri',\n    'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York',\n    'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island',\n    'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',\n    'West Virginia', 'Wisconsin', 'Wyoming'\n}\nstate = df['State'].astype(str).str.strip()\nrecipients = pd.to_numeric(df['Total: Pension Recipients'], errors='coerce')\nfiltered = df[\n    state.isin(us_states)\n    & recipients.notna()\n    & (recipients >= 4000)\n    & (recipients <= 6000)\n].copy()\nanswer = filtered['State'].dropna().astype(str).str.strip().drop_duplicates().sort_values().tolist()",
+            "subquestion": "Which US states had between 4,000 and 6,000 VA pension recipients in fiscal year 2020?",
+            "depends_on": [],
+            "answer": [
+                "Alabama",
+                "Arizona",
+                "Louisiana",
+                "Missouri",
+                "Oregon",
+                "South Carolina",
+                "Tennessee",
+                "Virginia",
+                "Washington"
+            ]
+        },
+        "5": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "In FY 2023, Maricopa County, Arizona had 69,974 VA disability compensation recipients, the most of any county in Arizona. Pima County was second with 25,745, and Pinal County was third with 10,403.",
+            "subquestion": "Which county in <intersection of node_1, node_2, node_3, node_4: Arizona> has the most VA disability compensation recipients in FY 2023?",
+            "depends_on": [
+                "intersection_of_1_2_3_4"
+            ],
+            "answer": "Maricopa County"
+        },
+        "6": {
+            "source": "wikipedia/Phoenix,_Arizona/content.txt",
+            "fact": "Phoenix is the county seat of Maricopa County. The Territorial Legislature passed the Phoenix Charter Bill, incorporating Phoenix and providing a mayor-council government; Governor John C. Fremont signed the bill on February 25, 1881, officially incorporating Phoenix as a city.",
+            "subquestion": "In what year was the county seat of <node_5 answer: Maricopa County> incorporated as a city?",
+            "depends_on": [
+                "node_5"
+            ],
+            "answer": "1881"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: The Mountain states are considered to include: Arizona, Colorado, Idaho, Montana, Nevada, New Mexico, Utah and Wyoming.",
+                "Node 2: Four American Sun Belt states border Mexico: California, Arizona, New Mexico and Texas.",
+                "Node 3: The Four Corners is a region of the Southwestern United States consisting of the southwestern corner of Colorado, southeastern corner of Utah, northeastern corner of Arizona, and northwestern corner of New Mexico.",
+                "Node 4: In FY 2020, the U.S. states with between 4,000 and 6,000 VA pension recipients were Alabama, Arizona, Louisiana, Missouri, Oregon, South Carolina, Tennessee, Virginia, and Washington.",
+                "Derive hop 1 answer using nodes 1, 2, 3, 4: Nodes 1-4 ask four independent state filters (Mountain, Mexico border, Four Corners, and 2020 pension range); intersecting them yields Arizona. Hop answer: Arizona."
+            ],
+            "answer": "Arizona"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In FY 2023, Maricopa County, Arizona had 69,974 VA disability compensation recipients, the most of any county in Arizona. Pima County was second with 25,745, and Pinal County was third with 10,403.",
+                "Derive hop 2 answer from node 5: Node 5 depends on hop 1 and asks which Arizona county had the highest 2023 disability compensation recipient count. Hop answer: Maricopa County."
+            ],
+            "answer": "Maricopa County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Phoenix is the county seat of Maricopa County. The Territorial Legislature passed the Phoenix Charter Bill, incorporating Phoenix and providing a mayor-council government; Governor John C. Fremont signed the bill on February 25, 1881, officially incorporating Phoenix as a city.",
+                "Derive hop 3 answer from node 6: Node 6 depends on hop 2 and asks for the incorporation year of Maricopa County's county-seat city, giving the final answer. Hop answer: 1881."
+            ],
+            "answer": "1881"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Mountain_states/content.txt",
+        "wikipedia/Mexico–United_States_border/content.txt",
+        "wikipedia/Four_Corners/content.txt",
+        "wikipedia/Phoenix,_Arizona/content.txt",
+        "datagov/fy-2020-pension-recipients-by-state/files/rows.txt",
+        "datagov/fy-2020-pension-recipients-by-state/signed-metadata.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt"
+    ]
+}

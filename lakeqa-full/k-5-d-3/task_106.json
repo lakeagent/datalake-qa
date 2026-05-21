@@ -1,0 +1,140 @@
+{
+    "question": "Define a more supportive state as one with statewide healthcare programs that include more enrolled Native Americans, Alaskans, fostered or adopted children. Which states are the top 2 most supportive in 2017, 2nd and 3rd most supportive in 2018, and 2nd and 3rd most supportive in 2019? For the state that appears in all three years, define a more dangerous school as one with a higher combined number of rape and sexual-assault incidents. Which five school codes in that state were the most dangerous in 2017-18? Across those five schools in total, which school year had the 2nd highest number of students per teacher? Using the starting year of that school year, define a county as more developed when it has positive housing net growth and more 5+ unit housing construction. Which counties are the 5th and 6th least developed in that year? Across those counties, how many cities are there? Please return only the number in the format [Answer].",
+    "answer": 5,
+    "nodes": {
+        "1": {
+            "source": "datagov/2017-managed-care-programs-by-state/files/2017-managed-care-programs-by-state.hc9x-7kex.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2017-managed-care-programs-by-state/files/2017-managed-care-programs-by-state.hc9x-7kex.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\nstate_col = \"State\"\nnative_col = \"Populations enrolled: Native American/Alaskan Natives\"\nfoster_col = \"Populations enrolled: Foster Care and Adoption Assistance Children\"\nstatewide = df[df[\"Statewide or region-specific?\"].str.lower().eq(\"statewide\")].copy()\nstatewide[\"support_score\"] = statewide[native_col].str.lower().isin([\"mandatory\", \"voluntary\"]).astype(int) + statewide[foster_col].str.lower().isin([\"mandatory\", \"voluntary\"]).astype(int)\nranked = statewide.groupby(state_col, as_index=False).agg(\n    support_score=(\"support_score\", \"sum\"),\n    statewide_programs=(\"Program type\", \"count\")\n)\nranked = ranked[ranked[\"support_score\"].gt(0)].sort_values(\n    [\"support_score\", \"statewide_programs\", state_col],\n    ascending=[False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[0:2][state_col].tolist())\n",
+            "subquestion": "Define a more supportive state as one with statewide healthcare programs that include more enrolled Native Americans, Alaskans, fostered or adopted children. Which states were the top 2 most supportive in 2017?",
+            "answer": "Rhode Island, Washington"
+        },
+        "2": {
+            "source": "datagov/2018-managed-care-programs-by-state-10247/files/2018-manged-care-programs-by-state_2.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2018-managed-care-programs-by-state-10247/files/2018-manged-care-programs-by-state_2.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nstate_map = dict(item.split(\"=\", 1) for item in \"AL=Alabama|AK=Alaska|AZ=Arizona|AR=Arkansas|CA=California|CO=Colorado|CT=Connecticut|DE=Delaware|DC=District of Columbia|FL=Florida|GA=Georgia|HI=Hawaii|ID=Idaho|IL=Illinois|IN=Indiana|IA=Iowa|KS=Kansas|KY=Kentucky|LA=Louisiana|ME=Maine|MD=Maryland|MA=Massachusetts|MI=Michigan|MN=Minnesota|MS=Mississippi|MO=Missouri|MT=Montana|NE=Nebraska|NV=Nevada|NH=New Hampshire|NJ=New Jersey|NM=New Mexico|NY=New York|NC=North Carolina|ND=North Dakota|OH=Ohio|OK=Oklahoma|OR=Oregon|PA=Pennsylvania|RI=Rhode Island|SC=South Carolina|SD=South Dakota|TN=Tennessee|TX=Texas|UT=Utah|VT=Vermont|VA=Virginia|WA=Washington|WV=West Virginia|WI=Wisconsin|WY=Wyoming\".split(\"|\"))\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\nstate_col = \"state\"\nnative_col = \"Populations enrolled: Native American/Alaskan Natives\"\nfoster_col = \"Populations enrolled: Foster Care and Adoption Assistance Children\"\ndf[\"StateName\"] = df[state_col].map(lambda value: state_map.get(value, value))\nstatewide = df[df[\"Statewide or region-specific?\"].str.lower().eq(\"statewide\")].copy()\nstatewide[\"support_score\"] = statewide[native_col].str.lower().isin([\"mandatory\", \"voluntary\"]).astype(int) + statewide[foster_col].str.lower().isin([\"mandatory\", \"voluntary\"]).astype(int)\nranked = statewide.groupby(\"StateName\", as_index=False).agg(\n    support_score=(\"support_score\", \"sum\"),\n    statewide_programs=(\"Program type\", \"count\")\n)\nranked = ranked[ranked[\"support_score\"].gt(0)].sort_values(\n    [\"support_score\", \"statewide_programs\", \"StateName\"],\n    ascending=[False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[1:3][\"StateName\"].tolist())\n",
+            "subquestion": "Define a more supportive state as one with statewide healthcare programs that include more enrolled Native Americans, Alaskans, fostered or adopted children. Which states were the 2nd and 3rd most supportive in 2018?",
+            "answer": "Texas, Washington"
+        },
+        "3": {
+            "source": "datagov/2019-managed-care-programs-by-state/files/2019_Table9_10_0.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2019-managed-care-programs-by-state/files/2019_Table9_10_0.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nstate_map = dict(item.split(\"=\", 1) for item in \"AL=Alabama|AK=Alaska|AZ=Arizona|AR=Arkansas|CA=California|CO=Colorado|CT=Connecticut|DE=Delaware|DC=District of Columbia|FL=Florida|GA=Georgia|HI=Hawaii|ID=Idaho|IL=Illinois|IN=Indiana|IA=Iowa|KS=Kansas|KY=Kentucky|LA=Louisiana|ME=Maine|MD=Maryland|MA=Massachusetts|MI=Michigan|MN=Minnesota|MS=Mississippi|MO=Missouri|MT=Montana|NE=Nebraska|NV=Nevada|NH=New Hampshire|NJ=New Jersey|NM=New Mexico|NY=New York|NC=North Carolina|ND=North Dakota|OH=Ohio|OK=Oklahoma|OR=Oregon|PA=Pennsylvania|RI=Rhode Island|SC=South Carolina|SD=South Dakota|TN=Tennessee|TX=Texas|UT=Utah|VT=Vermont|VA=Virginia|WA=Washington|WV=West Virginia|WI=Wisconsin|WY=Wyoming\".split(\"|\"))\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\nstate_col = \"State\"\nnative_col = \"Populations enrolled: Native American/Alaskan Natives\"\nfoster_col = \"Populations enrolled: Foster Care and Adoption Assistance Children\"\ndf[\"StateName\"] = df[state_col].map(lambda value: state_map.get(value, value))\nstatewide = df[df[\"Statewide or region-specific?\"].str.lower().eq(\"statewide\")].copy()\nstatewide[\"support_score\"] = statewide[native_col].str.lower().isin([\"mandatory\", \"voluntary\"]).astype(int) + statewide[foster_col].str.lower().isin([\"mandatory\", \"voluntary\"]).astype(int)\nranked = statewide.groupby(\"StateName\", as_index=False).agg(\n    support_score=(\"support_score\", \"sum\"),\n    statewide_programs=(\"Program type\", \"count\")\n)\nranked = ranked[ranked[\"support_score\"].gt(0)].sort_values(\n    [\"support_score\", \"statewide_programs\", \"StateName\"],\n    ascending=[False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[1:3][\"StateName\"].tolist())\n",
+            "subquestion": "Define a more supportive state as one with statewide healthcare programs that include more enrolled Native Americans, Alaskans, fostered or adopted children. Which states were the 2nd and 3rd most supportive in 2019?",
+            "answer": "Washington, Massachusetts"
+        },
+        "4": {
+            "source": "datagov/2017-18-washington-state-crdc-data-harassment-and-violence/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2017-18-washington-state-crdc-data-harassment-and-violence/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_1_answer = \"Washington\"\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\nfor col in [\"IncidentsOfRape\", \"IncidentsOfSexualAssault\"]:\n    df[col + \"_num\"] = pd.to_numeric(df[col].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[\n    df[\"OrganizationLevel\"].eq(\"School\")\n    & df[\"StudentGroup\"].eq(\"AllStudents\")\n    & df[\"SchoolCode\"].ne(\"\")\n].copy()\nfiltered[\"danger_score\"] = filtered[\"IncidentsOfRape_num\"].fillna(0) + filtered[\"IncidentsOfSexualAssault_num\"].fillna(0)\nranked = filtered[filtered[\"danger_score\"].gt(0)].sort_values(\n    [\"danger_score\", \"IncidentsOfSexualAssault_num\", \"IncidentsOfRape_num\", \"SchoolCode\"],\n    ascending=[False, False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[0:5][\"SchoolCode\"].tolist())\n",
+            "subquestion": "For <hop 1 answer>, define a more dangerous school as having a higher combined number of rape and sexual-assault incidents in 2017-18. Which five school codes are the most dangerous?",
+            "answer": "2155, 3387, 2172, 3022, 2951"
+        },
+        "5": {
+            "source": "datagov/report-card-student-teacher-ratio-school-years-2017-18-to-2023-24-61974/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/report-card-student-teacher-ratio-school-years-2017-18-to-2023-24-61974/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_2_answer = \"2155, 3387, 2172, 3022, 2951\"\ntarget_codes = {part.strip() for part in str(hop_2_answer).split(\",\") if part.strip()}\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\ndf[\"StudentTotal_num\"] = pd.to_numeric(df[\"StudentTotal\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\ndf[\"TeacherTotal_num\"] = pd.to_numeric(df[\"TeacherTotal\"].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[\n    df[\"OrganizationLevel\"].eq(\"School\")\n    & df[\"SchoolCode\"].isin(target_codes)\n    & df[\"StudentTotal_num\"].notna()\n    & df[\"TeacherTotal_num\"].gt(0)\n].copy()\nyearly = filtered.groupby(\"SchoolYear\", as_index=False).agg(\n    total_students=(\"StudentTotal_num\", \"sum\"),\n    total_teachers=(\"TeacherTotal_num\", \"sum\"),\n    matched_schools=(\"SchoolCode\", \"nunique\")\n)\nyearly = yearly[yearly[\"matched_schools\"].eq(len(target_codes))].copy()\nyearly[\"combined_ratio\"] = yearly[\"total_students\"] / yearly[\"total_teachers\"]\nranked = yearly.sort_values([\"combined_ratio\", \"SchoolYear\"], ascending=[False, True], kind=\"mergesort\").reset_index(drop=True)\nanswer = str(ranked.iloc[1][\"SchoolYear\"])\n",
+            "subquestion": "For all five schools in <hop 2 answer>, which school year had the 2nd highest total students per teacher?",
+            "answer": "2023-24"
+        },
+        "6": {
+            "source": "datagov/decd-annual-construction-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/decd-annual-construction-report/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nhop_3_answer = \"2023-24\"\nstart_year = str(hop_3_answer).split(\"-\", 1)[0].strip()\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\nfor col in [\"Total Units\", \"5 or More Units\", \"Demolitions\"]:\n    df[col + \"_num\"] = pd.to_numeric(df[col].astype(str).str.replace(\",\", \"\", regex=False), errors=\"coerce\")\nfiltered = df[df[\"Year\"].eq(start_year) & df[\"County\"].ne(\"\")].copy()\ncounty = filtered.groupby(\"County\", as_index=False).agg(\n    total_units=(\"Total Units_num\", \"sum\"),\n    five_plus=(\"5 or More Units_num\", \"sum\"),\n    demolitions=(\"Demolitions_num\", \"sum\")\n)\ncounty[\"net_growth\"] = county[\"total_units\"] - county[\"demolitions\"]\nranked = county[county[\"net_growth\"].gt(0)].sort_values(\n    [\"net_growth\", \"five_plus\", \"County\"],\n    ascending=[True, True, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[4:6][\"County\"].tolist())\n",
+            "subquestion": "Define a more developed county as one with positive housing net growth and more 5+ unit housing construction. In the starting year of <hop 3 answer>, which counties were the 5th and 6th least developed?",
+            "answer": "New London, Hartford"
+        },
+        "7": {
+            "source": "wikipedia/New_London_County,_Connecticut/content.txt",
+            "fact": "Cities\nNew London\nNorwich",
+            "subquestion": "How many cities are in the 5th least-developed county in <hop 4 answer>?",
+            "answer": 2
+        },
+        "8": {
+            "source": "wikipedia/Hartford_County,_Connecticut/content.txt",
+            "fact": "Cities\n\nBristol\nHartford\nNew Britain",
+            "subquestion": "How many cities are in the 6th least-developed county in <hop 4 answer>?",
+            "answer": 3
+        }
+    },
+    "datasets_used": [
+        "wikipedia/New_London_County,_Connecticut/content.txt",
+        "wikipedia/Hartford_County,_Connecticut/content.txt",
+        "datagov/2017-managed-care-programs-by-state/files/2017-managed-care-programs-by-state.hc9x-7kex.txt",
+        "datagov/2017-managed-care-programs-by-state/signed-metadata.txt",
+        "datagov/2017-managed-care-programs-by-state/files/2017-medicaid-managed-care-enrollment-report.pdf",
+        "datagov/2018-managed-care-programs-by-state-10247/files/2018-manged-care-programs-by-state_2.txt",
+        "datagov/2018-managed-care-programs-by-state-10247/files/2018-medicaid-managed-care-enrollment-report.pdf",
+        "datagov/2019-managed-care-programs-by-state/files/2019_Table9_10_0.txt",
+        "datagov/2019-managed-care-programs-by-state/files/2019-medicaid-managed-care-enrollment-report.pdf",
+        "datagov/2017-18-washington-state-crdc-data-harassment-and-violence/files/rows.txt",
+        "datagov/2017-18-washington-state-crdc-data-harassment-and-violence/signed-metadata.txt",
+        "datagov/report-card-student-teacher-ratio-school-years-2017-18-to-2023-24-61974/files/rows.txt",
+        "datagov/report-card-student-teacher-ratio-school-years-2017-18-to-2023-24-61974/signed-metadata.txt",
+        "datagov/report-card-student-teacher-ratio-school-years-2017-18-to-2023-24-61974/files/ReportCardDataNotes_Educator_2026.01.27.xlsx",
+        "datagov/decd-annual-construction-report/files/rows.txt",
+        "datagov/decd-annual-construction-report/signed-metadata.txt",
+        "datagov/decd-annual-construction-report/files/wmfh-25km.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: In 2017, count support points across statewide managed-care programs for Native American/Alaskan Natives and Foster Care and Adoption Assistance Children. Rhode Island ranks 1st and Washington ranks 2nd.",
+                "Node 2: In 2018, using the same definition, Texas ranks 2nd and Washington ranks 3rd.",
+                "Node 3: In 2019, using the same definition, Washington ranks 2nd and Massachusetts ranks 3rd.",
+                "Washington is the only state appearing in all three node answers."
+            ],
+            "answer": "Washington"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: In the 2017-18 Washington harassment and violence data, keep school-level AllStudents rows.",
+                "Compute each school's danger score as IncidentsOfRape plus IncidentsOfSexualAssault.",
+                "The five highest school codes are 2155, 3387, 2172, 3022, and 2951."
+            ],
+            "answer": "2155, 3387, 2172, 3022, 2951"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In the student-teacher ratio report, keep the five school codes from <hop 2 answer> and aggregate by school year.",
+                "For each year, compute the combined ratio as total students divided by total teachers across those five schools.",
+                "The highest combined ratio occurs in 2018-19, and the second-highest occurs in 2023-24."
+            ],
+            "answer": "2023-24"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Use the starting year of <hop 3 answer>, which is 2023, in the DECD annual construction report.",
+                "Exclude the blank statewide total row and keep counties with positive net housing growth, computed as Total Units minus Demolitions.",
+                "Rank counties from weakest to strongest by lower net growth, using fewer 5-or-more-unit constructions as the tie-breaker.",
+                "There are eight valid counties in 2023, so the requested fallback rank is used: the 5th and 6th weakest are New London and Hartford."
+            ],
+            "answer": "New London, Hartford"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7 gives two cities in New London County: New London and Norwich.",
+                "Node 8 gives three cities in Hartford County: Bristol, Hartford, and New Britain.",
+                "Hop result: 2 + 3 = 5."
+            ],
+            "answer": 5
+        }
+    ]
+}

@@ -1,0 +1,204 @@
+{
+    "question": "Among NY counties with at least 65 bridges rated 'Poor' according to the department of transportation, contains at least 50 fire departments, at least 100 bank ATMs, and at least 1.0 MW of operational renewable energy capacity. Of these counties, focus on the county with more violent crimes in 2021. In what year was the land company founded that developed this county's seat? Please return the year only. Your response should be in the format [Answer].",
+    "answer": "1789",
+    "nodes": {
+        "1": {
+            "source": "datagov/bridge-conditions-nys-department-of-transportation/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/bridge-conditions-nys-department-of-transportation/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[df[\"Poor Status\"].eq(\"Y\")]\n    .groupby(\"County\")\n    .size()\n    .reset_index(name=\"poor_bridge_count\")\n)\nresult = result[result[\"poor_bridge_count\"] >= 65].sort_values([\"poor_bridge_count\", \"County\"], ascending=[False, True]).reset_index(drop=True)\nresult[\"County\"] = result[\"County\"] + \" County\"\nanswer = dict(zip(result[\"County\"], result[\"poor_bridge_count\"]))",
+            "subquestion": "Which New York counties have at least 65 bridges with Poor Status = Y, and what is each qualifying county's poor-bridge count?",
+            "answer": {
+                "Ulster County": 84,
+                "Erie County": 82,
+                "Westchester County": 68,
+                "Orange County": 67
+            }
+        },
+        "2": {
+            "source": "datagov/fire-department-directory-for-new-york-state/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/fire-department-directory-for-new-york-state/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.groupby(\"County Name\")\n    .size()\n    .reset_index(name=\"fire_department_count\")\n)\nresult = result[result[\"fire_department_count\"] >= 50].sort_values([\"fire_department_count\", \"County Name\"], ascending=[False, True]).reset_index(drop=True)\nresult[\"County Name\"] = result[\"County Name\"] + \" County\"\nanswer = dict(zip(result[\"County Name\"], result[\"fire_department_count\"]))",
+            "subquestion": "Which New York counties have at least 50 fire departments, and what is each qualifying county's fire department count?",
+            "answer": {
+                "Suffolk County": 108,
+                "Erie County": 91,
+                "Nassau County": 70,
+                "Westchester County": 57,
+                "Onondaga County": 53,
+                "Orange County": 52,
+                "Ulster County": 51,
+                "Oneida County": 50
+            }
+        },
+        "3": {
+            "source": "datagov/bank-owned-atm-locations-in-new-york-state/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/bank-owned-atm-locations-in-new-york-state/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.groupby(\"County\")\n    .size()\n    .reset_index(name=\"bank_atm_count\")\n)\nresult = result[result[\"bank_atm_count\"] >= 100].sort_values([\"bank_atm_count\", \"County\"], ascending=[False, True]).reset_index(drop=True)\nresult[\"County\"] = result[\"County\"] + \" County\"\nanswer = dict(zip(result[\"County\"], result[\"bank_atm_count\"]))",
+            "subquestion": "Which New York counties have at least 100 bank-owned ATM locations, and what is each qualifying county's ATM count?",
+            "answer": {
+                "New York County": 676,
+                "Nassau County": 515,
+                "Suffolk County": 494,
+                "Queens County": 429,
+                "Kings County": 388,
+                "Westchester County": 335,
+                "Erie County": 244,
+                "Monroe County": 232,
+                "Onondaga County": 182,
+                "Bronx County": 158,
+                "Albany County": 148,
+                "Orange County": 128,
+                "Dutchess County": 125,
+                "Richmond County": 115
+            }
+        },
+        "4": {
+            "source": "datagov/large-scale-renewable-projects-reported-by-nyserda-beginning-2004/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/large-scale-renewable-projects-reported-by-nyserda-beginning-2004/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"New Renewable Capacity (MW)\"] = pd.to_numeric(df[\"New Renewable Capacity (MW)\"], errors=\"coerce\")\nresult = (\n    df[df[\"Project Status\"].eq(\"Operational\")]\n    .groupby(\"County/Province\", dropna=False)[\"New Renewable Capacity (MW)\"]\n    .sum()\n    .reset_index(name=\"operational_renewable_capacity_mw\")\n)\nresult = result[result[\"operational_renewable_capacity_mw\"] >= 1.0].sort_values([\"operational_renewable_capacity_mw\", \"County/Province\"], ascending=[False, True]).reset_index(drop=True)\nresult[\"County/Province\"] = result[\"County/Province\"] + \" County\"\nanswer = dict(zip(result[\"County/Province\"], result[\"operational_renewable_capacity_mw\"]))",
+            "subquestion": "Which New York counties have at least 1.0 MW of total New Renewable Capacity (MW) among projects whose Project Status is Operational, and what is each qualifying county's operational renewable capacity?",
+            "answer": {
+                "Steuben County": 286.29,
+                "Chautauqua County": 185.9,
+                "Lewis County": 183.99,
+                "Livingston County": 177.0,
+                "Montgomery County": 130.0,
+                "Broome County": 111.8,
+                "Franklin County": 79.3,
+                "Schoharie County": 50.0,
+                "Washington County": 40.0,
+                "Albany County": 20.0,
+                "Chenango County": 20.0,
+                "Cortland County": 20.0,
+                "Saratoga County": 20.0,
+                "Schenectady County": 19.99,
+                "Erie County": 11.48,
+                "Jefferson County": 7.35,
+                "Westchester County": 2.64,
+                "Sullivan County": 2.18,
+                "Oswego County": 1.32
+            }
+        },
+        "5": {
+            "source": "wikipedia/Erie_County,_New_York/content.txt",
+            "fact": "The county seat is Buffalo, which makes up about 28% of the county's population.",
+            "subquestion": "What is the county seat of Erie County from <hop 1 answer>?",
+            "answer": "Buffalo"
+        },
+        "6": {
+            "source": "wikipedia/Westchester_County,_New_York/content.txt",
+            "fact": "The county seat is the city of White Plains, while the most populous municipality in the county is the city of Yonkers, with 211,569 residents per the 2020 census.",
+            "subquestion": "What is the county seat of Westchester County from <hop 1 answer>?",
+            "answer": "White Plains"
+        },
+        "7": {
+            "source": "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[(df[\"Year\"] == 2021) & (df[\"County\"].isin([\"Erie\", \"Westchester\"]))]\n    [[\"County\", \"Year\", \"Violent Count\"]]\n    .sort_values([\"Violent Count\", \"County\"], ascending=[False, True])\n    .reset_index(drop=True)\n)\nresult[\"County\"] = result[\"County\"] + \" County\"\nanswer = dict(zip(result[\"County\"], result[\"Violent Count\"]))",
+            "subquestion": "Between Erie County and Westchester County from <hop 1 answer>, what are the 2021 Violent Count totals, and which county is higher?",
+            "answer": {
+                "Erie County": 3493,
+                "Westchester County": 1520
+            }
+        },
+        "8": {
+            "source": "wikipedia/Buffalo,_New_York/content.txt",
+            "fact": "The rights to the Massachusetts territories were sold to Robert Morris in 1791. Despite objections from Seneca chief Red Jacket, Morris brokered a deal between fellow chief Cornplanter and the Dutch dummy corporation Holland Land Company. The Holland Land Purchase gave the Senecas three reservations, and the Holland Land Company received",
+            "subquestion": "According to the Wikipedia article for <node 5 answer>, what land company acquired the land that became the seat of <hop 3 answer>?",
+            "answer": "Holland Land Company"
+        },
+        "9": {
+            "source": "wikipedia/Holland_Land_Company/content.txt",
+            "fact": "In 1789, four Dutch firms, Pieter Stadnitski and Son,  Nicolaas and Jacob Van Staphorst, P. & C. Van Eeghen, and Ten Cate & Vollenhoven, joined together and hired Dutch financier Theophile Cazenove as their purchasing agent to engage in land speculation.",
+            "subquestion": "In what year was <hop 4 answer> founded?",
+            "answer": "1789"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Poor Status` = `Y`, group by `County`, count bridges, and keep counties with at least 65 poor bridges.",
+                "Node 2: Group rows by `County Name`, count fire departments, and keep counties with at least 50 fire departments.",
+                "Node 3: Group rows by `County`, count bank-owned ATM locations, and keep counties with at least 100 ATMs.",
+                "Node 4: Filter rows where `Project Status` = `Operational`, sum `New Renewable Capacity (MW)` by `County/Province`, and keep counties with at least 1.0 MW.",
+                "Hop result: intersect the qualifying counties from nodes 1-4."
+            ],
+            "answer": [
+                "Erie County",
+                "Westchester County"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Read the county seat of Erie County from <hop 1 answer>.",
+                "Node 6: Read the county seat of Westchester County from <hop 1 answer>.",
+                "Hop result: map the two qualifying counties to their county seats."
+            ],
+            "answer": {
+                "Erie County": "Buffalo",
+                "Westchester County": "White Plains"
+            }
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Compare 2021 `Violent Count` for Erie County and Westchester County and select the higher value.",
+                "Hop result: Erie County has the higher 2021 violent-crime total."
+            ],
+            "answer": "Erie County"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Use <hop 2 answer> to identify Buffalo as the county seat of <hop 3 answer>, then read the land company that acquired the land which became Buffalo.",
+                "Hop result: the land company is Holland Land Company."
+            ],
+            "answer": "Holland Land Company"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: Read the founding year of <hop 4 answer> from the cited Wikipedia source.",
+                "Hop result: the company was founded in 1789."
+            ],
+            "answer": "1789"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Erie_County,_New_York/content.txt",
+        "wikipedia/Westchester_County,_New_York/content.txt",
+        "wikipedia/Buffalo,_New_York/content.txt",
+        "wikipedia/Holland_Land_Company/content.txt",
+        "datagov/bridge-conditions-nys-department-of-transportation/files/rows.txt",
+        "datagov/bridge-conditions-nys-department-of-transportation/signed-metadata.txt",
+        "datagov/bridge-conditions-nys-department-of-transportation/files/wpyb-cjy8.txt",
+        "datagov/fire-department-directory-for-new-york-state/files/rows.txt",
+        "datagov/fire-department-directory-for-new-york-state/signed-metadata.txt",
+        "datagov/fire-department-directory-for-new-york-state/files/qfsu-zcpv.txt",
+        "datagov/bank-owned-atm-locations-in-new-york-state/files/rows.txt",
+        "datagov/bank-owned-atm-locations-in-new-york-state/signed-metadata.txt",
+        "datagov/bank-owned-atm-locations-in-new-york-state/files/ndex-ad5r.txt",
+        "datagov/large-scale-renewable-projects-reported-by-nyserda-beginning-2004/files/rows.txt",
+        "datagov/large-scale-renewable-projects-reported-by-nyserda-beginning-2004/signed-metadata.txt",
+        "datagov/large-scale-renewable-projects-reported-by-nyserda-beginning-2004/files/dprp-55ye.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/signed-metadata.txt",
+        "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/DCJS_IndexCrimeRatesByCounty_DataDictionary.pdf"
+    ]
+}

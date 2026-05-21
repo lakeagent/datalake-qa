@@ -1,0 +1,155 @@
+{
+    "question": "Among the two most populous Texas counties in 2024, which had the larger increase in the number of veterans receiving disability compensation from 2020 to 2023? What is that county's seat, and which University of Houston System university in that city was founded earliest? Return the university name only. Your response should be in the format [Answer].",
+    "answer": "University of Houston",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/List_of_counties_in_Texas/content.txt",
+            "fact": "As of 2024, Harris County and Dallas County are the two most populous counties in Texas.",
+            "subquestion": "Which two Texas counties had the largest populations in 2024?",
+            "answer": [
+                "Harris County",
+                "Dallas County"
+            ]
+        },
+        "2": {
+            "source": "datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df[\n        (df[\"State\"] == \"Texas\")\n        & (df[\"County Name\"].isin([\"Harris\", \"Dallas\"]))\n    ][[\"County Name\", \"Total: Disability Compensation Recipients\"]]\n    .set_index(\"County Name\")[\"Total: Disability Compensation Recipients\"]\n    .to_dict()\n)",
+            "subquestion": "For <hop 1 answer>, what were the number of veterans receiving disability compensation in 2020?",
+            "answer": {
+                "Harris": 49804,
+                "Dallas": 26317
+            }
+        },
+        "3": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df[\n        (df[\"State\"] == \"Texas\")\n        & (df[\"County Name\"].isin([\"Harris\", \"Dallas\"]))\n    ][[\"County Name\", \"Total: Disability Compensation Recipients\"]]\n    .set_index(\"County Name\")[\"Total: Disability Compensation Recipients\"]\n    .to_dict()\n)",
+            "subquestion": "For <hop 1 answer>, what were the number of veterans receiving disability compensation in 2023?",
+            "answer": {
+                "Harris": 54266,
+                "Dallas": 25704
+            }
+        },
+        "4": {
+            "source": "wikipedia/Harris_County,_Texas/content.txt",
+            "fact": "According to the Wikipedia article for Harris County, Texas, its county seat is Houston.",
+            "subquestion": "What is the county seat of <hop 2 answer>?",
+            "answer": "Houston"
+        },
+        "5": {
+            "source": "wikipedia/Houston/content.txt",
+            "fact": "According to the Wikipedia article for Houston, the University of Houston is the flagship institution of the University of Houston System, and the University of Houston–Clear Lake and University of Houston–Downtown are universities within the University of Houston System.",
+            "subquestion": "Which University of Houston System universities are identified in <hop 3 answer> as being in that city?",
+            "answer": [
+                "University of Houston",
+                "University of Houston–Clear Lake",
+                "University of Houston–Downtown"
+            ]
+        },
+        "6": {
+            "source": "wikipedia/University_of_Houston/content.txt",
+            "fact": "According to the Wikipedia article for the University of Houston, it was established in 1927 as Houston Junior College.",
+            "subquestion": "When was University of Houston established?",
+            "answer": {
+                "University of Houston": 1927
+            }
+        },
+        "7": {
+            "source": "wikipedia/University_of_Houston–Clear_Lake/content.txt",
+            "fact": "According to the Wikipedia article for the University of Houston–Clear Lake, the university was established in 1971.",
+            "subquestion": "When was University of Houston–Clear Lake established?",
+            "answer": {
+                "University of Houston–Clear Lake": 1971
+            }
+        },
+        "8": {
+            "source": "wikipedia/University_of_Houston–Downtown/content.txt",
+            "fact": "According to the Wikipedia article for the University of Houston–Downtown, the University of Houston–Downtown College was established on August 6, 1974.",
+            "subquestion": "When was University of Houston–Downtown established?",
+            "answer": {
+                "University of Houston–Downtown": 1974
+            }
+        }
+    },
+    "datasets_used": [
+        "wikipedia/List_of_counties_in_Texas/content.txt",
+        "wikipedia/Harris_County,_Texas/content.txt",
+        "wikipedia/Houston/content.txt",
+        "wikipedia/University_of_Houston/content.txt",
+        "wikipedia/University_of_Houston–Clear_Lake/content.txt",
+        "wikipedia/University_of_Houston–Downtown/content.txt",
+        "datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2020-disability-compensation-recipients-by-county/signed-metadata.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Retrieve the two Texas counties with the largest 2024 populations.",
+                "Hop result: the two counties are Harris County and Dallas County."
+            ],
+            "answer": [
+                "Harris County",
+                "Dallas County"
+            ]
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 2: Filter FY 2020 rows where `State` = `Texas` and `County Name` is Harris or Dallas, then return the yearly recipient counts.",
+                "Node 3: Filter FY 2023 rows where `State` = `Texas` and `County Name` is Harris or Dallas, then return the yearly recipient counts.",
+                "Hop result: compare the increase from 2020 to 2023 for Harris and Dallas and select Harris County because its increase is larger."
+            ],
+            "answer": "Harris County"
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Retrieve the county seat of <hop 2 answer>.",
+                "Hop result: the county seat is Houston."
+            ],
+            "answer": "Houston"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Retrieve the University of Houston System universities identified in <hop 3 answer>.",
+                "Hop result: the universities are University of Houston, University of Houston–Clear Lake, and University of Houston–Downtown."
+            ],
+            "answer": [
+                "University of Houston",
+                "University of Houston–Clear Lake",
+                "University of Houston–Downtown"
+            ]
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                6,
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 6: Retrieve the founding year of University of Houston from <hop 4 answer>.",
+                "Node 7: Retrieve the founding year of University of Houston–Clear Lake from <hop 4 answer>.",
+                "Node 8: Retrieve the founding year of University of Houston–Downtown from <hop 4 answer>.",
+                "Hop result: compare the founding years and select University of Houston because it was founded earliest."
+            ],
+            "answer": "University of Houston"
+        }
+    ]
+}

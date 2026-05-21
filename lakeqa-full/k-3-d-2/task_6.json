@@ -1,0 +1,95 @@
+{
+    "question": "I'm comparing Veterans pension benefits across cities. Find the South Dakota county that falls in 275-290 veteran disability recipients in 2019 and 295-310 in 2023, then find the counties whose state captials are less populous than that. Comparing the South Dakota's veteran pension recipients in 2023 and those counties' VA pension recipients in 2020, report the maximum. Your response should be in the format [Answer].",
+    "answer": "507",
+    "nodes": {
+        "1": {
+            "source": "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('South Dakota'.lower())].copy()\nfiltered['# Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['# Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['# Total: Disability Compensation Recipients'] >= 275) & (filtered['# Total: Disability Compensation Recipients'] < 290)]\ncounty_names = filtered['County name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which South Dakota counties had 275-290 VA disability compensation recipients in FY 2019?",
+            "answer": [
+                "Hughes County",
+                "Custer County"
+            ]
+        },
+        "2": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('South Dakota'.lower())].copy()\nfiltered['Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['Total: Disability Compensation Recipients'] >= 295) & (filtered['Total: Disability Compensation Recipients'] <= 310)]\ncounty_names = filtered['County Name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which South Dakota counties had 295-310 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Hughes County",
+                "Butte County"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Pierre,_South_Dakota/content.txt",
+            "fact": "Pierre is the county seat of Hughes County, South Dakota, and the second-least populous U.S. state capital, after only Montpelier, Vermont.",
+            "subquestion": "What are the county seat of <intersection of node_1, node_2>, and the only state capital less populous than it?",
+            "answer": [
+                "Pierre (South Dakota)",
+                "Montpelier (Vermont)"
+            ]
+        },
+        "4": {
+            "source": "datagov/fy-2023-pension-recipients-by-state/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-pension-recipients-by-state/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('South Dakota'.lower())]\nanswer = int(pd.to_numeric(filtered[\"Total: Pension Recipients\"], errors=\"coerce\").iloc[0])\n",
+            "subquestion": "How many VA pension recipients did <node_3 answer: Pierre>'s state (South Dakota) have in FY 2023?",
+            "answer": 507
+        },
+        "5": {
+            "source": "datagov/fy-2020-pension-recipients-by-state/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2020-pension-recipients-by-state/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Vermont'.lower())]\nanswer = int(pd.to_numeric(filtered[\"Total: Pension Recipients\"], errors=\"coerce\").iloc[0])\n",
+            "subquestion": "How many VA pension recipients did <node_3 answer: Montpelier>'s state (Vermont) have in FY 2020?",
+            "answer": 321
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Pierre,_South_Dakota/content.txt",
+        "datagov/fy-2019-disability-pension-recipient-by-county/files/rows.txt",
+        "datagov/fy-2019-disability-pension-recipient-by-county/signed-metadata.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt",
+        "datagov/fy-2023-pension-recipients-by-state/files/rows.txt",
+        "datagov/fy-2023-pension-recipients-by-state/signed-metadata.txt",
+        "datagov/fy-2020-pension-recipients-by-state/files/rows.txt",
+        "datagov/fy-2020-pension-recipients-by-state/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `State` is South Dakota, keep records with `# Total: Disability Compensation Recipients` from 275 to less than 290, and return the unique `County name` values.",
+                "Node 2: Filter rows where `State` is South Dakota, keep records with `Total: Disability Compensation Recipients` from 295 to 310 inclusive, and return the unique `County Name` values.",
+                "Hop result: intersection of <node_1 answer> and <node_2 answer> = ['Hughes County']."
+            ],
+            "answer": "Hughes County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Pierre is Hughes County's county seat and the second-least populous U.S. state capital, so the only less populous state capital is Montpelier, Vermont.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "['South Dakota', 'Vermont']"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 4: Filter rows where `State` is <hop 2 answer: South Dakota> and retrieve `Total: Pension Recipients`.",
+                "Node 5: Filter rows where `State` is <hop 2 answer: Vermont> and retrieve `Total: Pension Recipients`.",
+                "Hop result: max(<node_4 answer>, <node_5 answer>) = max(507, 321) = 507."
+            ],
+            "answer": "507"
+        }
+    ]
+}

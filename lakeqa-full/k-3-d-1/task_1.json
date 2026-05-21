@@ -1,0 +1,70 @@
+{
+    "question": "In Los Angeles Police Department report that occurred in 2016, which geo area had the most robbery arrests? For that area, identify the most common crime code and report how many incidents of that code occurred in 2022. Please return only the 2022 count in the format [Answer].",
+    "answer": "1046",
+    "nodes": {
+        "1": {
+            "source": "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/arrest-data-from-2010-to-2019/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj[\"Body\"].read()),\n    usecols=[\"Arrest Date\", \"Area Name\", \"Charge Group Description\"],\n    dtype=str,\n    low_memory=False,\n)\n\nfiltered = df[\n    df[\"Arrest Date\"].astype(str).str.contains(\"2016\", na=False)\n    & df[\"Charge Group Description\"].astype(str).str.lower().str.contains(\"robbery\", na=False)\n].copy()\ncounts = filtered[\"Area Name\"].astype(str).str.strip().replace(\"\", pd.NA).dropna().value_counts()\ntop_area = str(counts.idxmax())\nmax_count = int(counts.loc[top_area])\nanswer = f\"{top_area}, {max_count}\"\n",
+            "subquestion": "In 2016 arrest data, which area has the most Robbery arrests? And what is that maximum number of Robbery arrests?",
+            "answer": "Southwest, 245"
+        },
+        "2": {
+            "source": "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/crime-data-from-2010-to-2019/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj[\"Body\"].read()),\n    usecols=[\"DATE OCC\", \"AREA NAME\", \"Crm Cd Desc\"],\n    dtype=str,\n    low_memory=False,\n)\n\nnode_1_answer = \"Southwest, 245\"\narea_name = str(node_1_answer).split(\",\")[0].strip()\n\nfiltered = df[\n    df[\"DATE OCC\"].astype(str).str.contains(\"2016\", na=False)\n    & df[\"AREA NAME\"].astype(str).str.strip().str.lower().eq(area_name.lower())\n].copy()\ncounts = filtered[\"Crm Cd Desc\"].astype(str).str.strip().replace(\"\", pd.NA).dropna().value_counts()\nanswer = str(counts.idxmax())\n",
+            "subquestion": "In 2016 crime data, within area <node_1 answer>, which crime description is most common?",
+            "answer": "BATTERY - SIMPLE ASSAULT"
+        },
+        "3": {
+            "source": "datagov/crime-data-from-2020-to-present/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/crime-data-from-2020-to-present/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(\n    io.BytesIO(obj[\"Body\"].read()),\n    usecols=[\"DATE OCC\", \"AREA NAME\", \"Crm Cd Desc\"],\n    dtype=str,\n    low_memory=False,\n)\n\nnode_1_answer = \"Southwest, 245\"\nnode_2_answer = \"BATTERY - SIMPLE ASSAULT\"\narea_name = str(node_1_answer).split(\",\")[0].strip()\n\nfiltered = df[\n    df[\"DATE OCC\"].astype(str).str.contains(\"2022\", na=False)\n    & df[\"AREA NAME\"].astype(str).str.strip().str.lower().eq(area_name.lower())\n    & df[\"Crm Cd Desc\"].astype(str).str.strip().eq(str(node_2_answer).strip())\n].copy()\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In 2022 crime data, how many incidents of <node_2 answer> occurred in area <node_1 answer>?",
+            "answer": "1046"
+        }
+    },
+    "datasets_used": [
+        "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+        "datagov/arrest-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/arrest-data-from-2010-to-2019/files/yru6-6re4.publisher-view.json",
+        "datagov/crime-data-from-2010-to-2019/files/rows.txt",
+        "datagov/crime-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/crime-data-from-2010-to-2019/files/63jg-8b9z.txt",
+        "datagov/crime-data-from-2020-to-present/files/rows.txt",
+        "datagov/crime-data-from-2020-to-present/signed-metadata.txt",
+        "datagov/crime-data-from-2020-to-present/files/2nrs-mtv8.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter arrest records where `Arrest Date` contains 2016 and `Charge Group Description` contains robbery, count rows by `Area Name`, and select the area with the highest count.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Southwest, 245"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter crime records where `DATE OCC` contains 2016 and `AREA NAME` matches the upstream area, count rows by `Crm Cd Desc`, and select the most common description.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "BATTERY - SIMPLE ASSAULT"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Filter crime records where `DATE OCC` contains 2022, `AREA NAME` matches the upstream area, and `Crm Cd Desc` equals the upstream crime description, then count the remaining rows.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "1046"
+        }
+    ]
+}

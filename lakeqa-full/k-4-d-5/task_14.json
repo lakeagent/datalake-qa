@@ -1,0 +1,206 @@
+{
+  "question": "Among drugs with 5 to 10 million total annual Medicaid prescriptions across U.S. states in every year from 2018 through 2022, identify the drug with the ninth-highest average prescription count across those five years. In the year that drug was approved for medical use, which causes of death ranked 4th and 5th by age-adjusted death rate? Using the annual occurrence shares for those causes in a typical year in the 2020s, which of the two ranked causes occurs more annually? Your response should be in the format [Answer].",
+  "answer": "Influenza and Pneumonia",
+  "nodes": {
+    "1": {
+      "source": "datagov/state-drug-utilization-data-2018-b2fe5/files/StateDrugUtilizationData2018.txt",
+      "fact": "import pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/state-drug-utilization-data-2018-b2fe5/files/StateDrugUtilizationData2018.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"]\nacc = None\nfor chunk in pd.read_csv(\n    body,\n    usecols=[\"Product Name\", \"Number of Prescriptions\"],\n    dtype={\"Product Name\": \"string\", \"Number of Prescriptions\": \"string\"},\n    chunksize=1000000,\n    low_memory=False,\n):\n    names = chunk[\"Product Name\"].fillna(\"\").str.strip().str.upper()\n    vals = pd.to_numeric(chunk[\"Number of Prescriptions\"].str.replace(\",\", \"\", regex=False), errors=\"coerce\")\n    grp = pd.Series(vals.values, index=names).groupby(level=0, dropna=False).sum(min_count=1)\n    acc = grp if acc is None else acc.add(grp, fill_value=0)\nacc = acc.loc[(acc.index != \"\") & (acc >= 5000000) & (acc <= 10000000)].sort_index()\nanswer = {k: int(v) if float(v).is_integer() else float(v) for k, v in acc.items()}",
+      "subquestion": "Which drugs had between 5,000,000 and 10,000,000 total Medicaid prescriptions across U.S. states in 2018, and what were those totals?",
+      "answer": {
+        "ACETAMINOP": 7414105,
+        "ALPRAZOLAM": 9133057,
+        "AMITRIPTYL": 5232115,
+        "ARIPIPRAZO": 5842176,
+        "BUPRENORPH": 5008835,
+        "BUSPIRONE": 6570260,
+        "CARVEDILOL": 5476593,
+        "CEPHALEXIN": 8302749,
+        "CITALOPRAM": 8017063,
+        "CLINDAMYCI": 6613061
+      },
+      "limit": 10
+    },
+    "2": {
+      "source": "datagov/state-drug-utilization-data-2019/files/StateDrugUtilizationData2019.txt",
+      "fact": "import pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/state-drug-utilization-data-2019/files/StateDrugUtilizationData2019.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"]\nacc = None\nfor chunk in pd.read_csv(\n    body,\n    usecols=[\"Product Name\", \"Number of Prescriptions\"],\n    dtype={\"Product Name\": \"string\", \"Number of Prescriptions\": \"string\"},\n    chunksize=1000000,\n    low_memory=False,\n):\n    names = chunk[\"Product Name\"].fillna(\"\").str.strip().str.upper()\n    vals = pd.to_numeric(chunk[\"Number of Prescriptions\"].str.replace(\",\", \"\", regex=False), errors=\"coerce\")\n    grp = pd.Series(vals.values, index=names).groupby(level=0, dropna=False).sum(min_count=1)\n    acc = grp if acc is None else acc.add(grp, fill_value=0)\nacc = acc.loc[(acc.index != \"\") & (acc >= 5000000) & (acc <= 10000000)].sort_index()\nanswer = {k: int(v) if float(v).is_integer() else float(v) for k, v in acc.items()}",
+      "subquestion": "Which drugs had between 5,000,000 and 10,000,000 total Medicaid prescriptions across U.S. states in 2019, and what were those totals?",
+      "answer": {
+        "ALPRAZOLAM": 7934584,
+        "AMITRIPTYL": 5072673,
+        "ARIPIPRAZO": 6707069,
+        "BUPRENORPH": 6927103,
+        "BUSPIRONE": 6963013,
+        "CARVEDILOL": 5399167,
+        "CEPHALEXIN": 8180606,
+        "CITALOPRAM": 6970176,
+        "CLINDAMYCI": 6503376,
+        "CLONAZEPAM": 8120719
+      },
+      "limit": 10
+    },
+    "3": {
+      "source": "datagov/state-drug-utilization-data-2020-3e746/files/StateDrugUtilizationData2020.txt",
+      "fact": "import pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/state-drug-utilization-data-2020-3e746/files/StateDrugUtilizationData2020.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"]\nacc = None\nfor chunk in pd.read_csv(\n    body,\n    usecols=[\"Product Name\", \"Number of Prescriptions\"],\n    dtype={\"Product Name\": \"string\", \"Number of Prescriptions\": \"string\"},\n    chunksize=1000000,\n    low_memory=False,\n):\n    names = chunk[\"Product Name\"].fillna(\"\").str.strip().str.upper()\n    vals = pd.to_numeric(chunk[\"Number of Prescriptions\"].str.replace(\",\", \"\", regex=False), errors=\"coerce\")\n    grp = pd.Series(vals.values, index=names).groupby(level=0, dropna=False).sum(min_count=1)\n    acc = grp if acc is None else acc.add(grp, fill_value=0)\nacc = acc.loc[(acc.index != \"\") & (acc >= 5000000) & (acc <= 10000000)].sort_index()\nanswer = {k: int(v) if float(v).is_integer() else float(v) for k, v in acc.items()}",
+      "subquestion": "Which drugs had between 5,000,000 and 10,000,000 total Medicaid prescriptions across U.S. states in 2020, and what were those totals?",
+      "answer": {
+        "ALPRAZOLAM": 7857439,
+        "ARIPIPRAZO": 7935761,
+        "AZITHROMYC": 9749242,
+        "BUPRENORPH": 9187146,
+        "BUSPIRONE": 8211972,
+        "CARVEDILOL": 5278160,
+        "CEPHALEXIN": 7183268,
+        "CITALOPRAM": 6534226,
+        "CLINDAMYCI": 6289786,
+        "CLONAZEPAM": 8184145
+      },
+      "limit": 10
+    },
+    "4": {
+      "source": "datagov/state-drug-utilization-data-2021-f9419/files/StateDrugUtilizationData2021.txt",
+      "fact": "import pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/state-drug-utilization-data-2021-f9419/files/StateDrugUtilizationData2021.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"]\nacc = None\nfor chunk in pd.read_csv(\n    body,\n    usecols=[\"Product Name\", \"Number of Prescriptions\"],\n    dtype={\"Product Name\": \"string\", \"Number of Prescriptions\": \"string\"},\n    chunksize=1000000,\n    low_memory=False,\n):\n    names = chunk[\"Product Name\"].fillna(\"\").str.strip().str.upper()\n    vals = pd.to_numeric(chunk[\"Number of Prescriptions\"].str.replace(\",\", \"\", regex=False), errors=\"coerce\")\n    grp = pd.Series(vals.values, index=names).groupby(level=0, dropna=False).sum(min_count=1)\n    acc = grp if acc is None else acc.add(grp, fill_value=0)\nacc = acc.loc[(acc.index != \"\") & (acc >= 5000000) & (acc <= 10000000)].sort_index()\nanswer = {k: int(v) if float(v).is_integer() else float(v) for k, v in acc.items()}",
+      "subquestion": "Which drugs had between 5,000,000 and 10,000,000 total Medicaid prescriptions across U.S. states in 2021, and what were those totals?",
+      "answer": {
+        "ALPRAZOLAM": 7881792,
+        "ARIPIPRAZO": 8697286,
+        "BUPRENORPH": 9827552,
+        "BUSPIRONE": 9341966,
+        "CARVEDILOL": 5184118,
+        "CEPHALEXIN": 7847935,
+        "CITALOPRAM": 6229548,
+        "CLINDAMYCI": 7126931,
+        "CLONAZEPAM": 8270464,
+        "DEXTROAMPH": 7237437
+      },
+      "limit": 10
+    },
+    "5": {
+      "source": "datagov/state-drug-utilization-data-2022/files/StateDrugUtilizationData2022.txt",
+      "fact": "import pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/state-drug-utilization-data-2022/files/StateDrugUtilizationData2022.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"]\nacc = None\nfor chunk in pd.read_csv(\n    body,\n    usecols=[\"Product Name\", \"Number of Prescriptions\"],\n    dtype={\"Product Name\": \"string\", \"Number of Prescriptions\": \"string\"},\n    chunksize=1000000,\n    low_memory=False,\n):\n    names = chunk[\"Product Name\"].fillna(\"\").str.strip().str.upper()\n    vals = pd.to_numeric(chunk[\"Number of Prescriptions\"].str.replace(\",\", \"\", regex=False), errors=\"coerce\")\n    grp = pd.Series(vals.values, index=names).groupby(level=0, dropna=False).sum(min_count=1)\n    acc = grp if acc is None else acc.add(grp, fill_value=0)\nacc = acc.loc[(acc.index != \"\") & (acc >= 5000000) & (acc <= 10000000)].sort_index()\nanswer = {k: int(v) if float(v).is_integer() else float(v) for k, v in acc.items()}",
+      "subquestion": "Which drugs had between 5,000,000 and 10,000,000 total Medicaid prescriptions across U.S. states in 2022, and what were those totals?",
+      "answer": {
+        "ACETAMINOP": 6467768,
+        "ALPRAZOLAM": 7550347,
+        "ARIPIPRAZO": 9245571,
+        "CEPHALEXIN": 8353098,
+        "CITALOPRAM": 5685980,
+        "CLINDAMYCI": 7097389,
+        "CLONAZEPAM": 8066255,
+        "DEXTROAMPH": 6711926,
+        "DICLOFENAC": 7920135,
+        "DIVALPROEX": 5732831
+      },
+      "limit": 10
+    },
+    "6": {
+      "source": "wikipedia/Furosemide/content.txt",
+      "fact": "Furosemide was patented in 1959 and approved for medical use in 1964.",
+      "subquestion": "In what year was the drug identified by <hop 1 answer> approved for medical use?",
+      "answer": 1964
+    },
+    "7": {
+      "source": "datagov/nchs-age-adjusted-death-rates-for-selected-major-causes-of-death/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nchs-age-adjusted-death-rates-for-selected-major-causes-of-death/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nnode_2_answer = \"1964\"\ntarget_year = int(str(node_2_answer).strip())\ntarget_ranks = [4, 5]\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Age Adjusted Death Rate\"] = pd.to_numeric(df[\"Age Adjusted Death Rate\"], errors=\"coerce\")\nranked = (\n    df.loc[df[\"Year\"].eq(target_year)]\n    .sort_values([\"Age Adjusted Death Rate\", \"Cause\"], ascending=[False, True], kind=\"mergesort\")\n    .reset_index(drop=True)\n)\nanswer = \"; \".join(ranked.iloc[rank - 1][\"Cause\"] for rank in target_ranks)\n",
+      "subquestion": "Which causes of death ranked 4th and 5th by age-adjusted death rate in <hop 2 answer>?",
+      "answer": "Accidents; Influenza and Pneumonia"
+    },
+    "8": {
+      "source": "wikipedia/Accident/content.txt",
+      "fact": "Accidents during the course of work, or arising out of it, are called work accidents, occupational accidents, or similar terms. According to the International Labour Organization, approximately 400 million accidents happen on the job each year (5% of the world population), causing more than 300,000 deaths annually (especially in mining and construction) and millions of long-term disabilities (especially back injuries).",
+      "subquestion": "In a typical year in the 2020s, for the first cause named in <hop 3 answer>, what share of the world population experiences it on the job?",
+      "answer": "5%"
+    },
+    "9": {
+      "source": "wikipedia/Influenza/content.txt",
+      "fact": "In a typical year, five to 15 percent of the population contracts influenza. There are 3 to 5 million severe cases annually, with up to 650,000 respiratory-related deaths globally each year.",
+      "subquestion": "In a typical year in the 2020s, for the first disease in the second cause named in <hop 3 answer>, what share of the population contracts it?",
+      "answer": "five to 15 percent"
+    },
+    "10": {
+      "source": "wikipedia/Pneumonia/content.txt",
+      "fact": "Each year, pneumonia affects about 450 million people globally (7% of the population) and results in about 4 million deaths.",
+      "subquestion": "In a typical year in the 2020s, for the second disease in the second cause named in <hop 3 answer>, what share of the population does it affect?",
+      "answer": "7%"
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Furosemide/content.txt",
+    "wikipedia/Accident/content.txt",
+    "wikipedia/Influenza/content.txt",
+    "wikipedia/Pneumonia/content.txt",
+    "datagov/state-drug-utilization-data-2018-b2fe5/files/StateDrugUtilizationData2018.txt",
+    "datagov/state-drug-utilization-data-2018-b2fe5/signed-metadata.txt",
+    "datagov/state-drug-utilization-data-2018-b2fe5/files/state-drug-utilization-data-dictionary.json",
+    "datagov/state-drug-utilization-data-2019/files/StateDrugUtilizationData2019.txt",
+    "datagov/state-drug-utilization-data-2019/signed-metadata.txt",
+    "datagov/state-drug-utilization-data-2019/files/state-drug-utilization-data-dictionary.json",
+    "datagov/state-drug-utilization-data-2020-3e746/files/StateDrugUtilizationData2020.txt",
+    "datagov/state-drug-utilization-data-2020-3e746/signed-metadata.txt",
+    "datagov/state-drug-utilization-data-2020-3e746/files/state-drug-utilization-data-dictionary.json",
+    "datagov/state-drug-utilization-data-2021-f9419/files/StateDrugUtilizationData2021.txt",
+    "datagov/state-drug-utilization-data-2021-f9419/signed-metadata.txt",
+    "datagov/state-drug-utilization-data-2021-f9419/files/state-drug-utilization-data-dictionary.json",
+    "datagov/state-drug-utilization-data-2022/files/StateDrugUtilizationData2022.txt",
+    "datagov/state-drug-utilization-data-2022/signed-metadata.txt",
+    "datagov/state-drug-utilization-data-2022/files/state-drug-utilization-data-dictionary.json",
+    "datagov/nchs-age-adjusted-death-rates-for-selected-major-causes-of-death/files/rows.txt",
+    "datagov/nchs-age-adjusted-death-rates-for-selected-major-causes-of-death/signed-metadata.txt",
+    "datagov/nchs-age-adjusted-death-rates-for-selected-major-causes-of-death/files/6rkc-nb2q.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 1: Normalize `Product Name` by stripping whitespace and uppercasing, sum `Number of Prescriptions`, and keep the 2018 product totals between 5000000 and 10000000.",
+        "Node 2: Normalize `Product Name` by stripping whitespace and uppercasing, sum `Number of Prescriptions`, and keep the 2019 product totals between 5000000 and 10000000.",
+        "Node 3: Normalize `Product Name` by stripping whitespace and uppercasing, sum `Number of Prescriptions`, and keep the 2020 product totals between 5000000 and 10000000.",
+        "Node 4: Normalize `Product Name` by stripping whitespace and uppercasing, sum `Number of Prescriptions`, and keep the 2021 product totals between 5000000 and 10000000.",
+        "Node 5: Normalize `Product Name` by stripping whitespace and uppercasing, sum `Number of Prescriptions`, and keep the 2022 product totals between 5000000 and 10000000.",
+        "Hop result: compute the 2018-2022 average prescription count for each normalized drug name shared across all five yearly mappings, sort descending by average prescription count, and select the 9th-highest drug = FUROSEMIDE."
+      ],
+      "answer": "FUROSEMIDE"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: Furosemide was patented in 1959 and approved for medical use in 1964."
+      ],
+      "answer": "1964"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: Filter rows where `Year` equals 1964, sort by `Age Adjusted Death Rate` descending, and select the 4th and 5th `Cause` values = Accidents; Influenza and Pneumonia."
+      ],
+      "answer": "Accidents; Influenza and Pneumonia"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        8,
+        9,
+        10
+      ],
+      "reasoning": [
+        "Node 8: Approximately 400 million accidents happen on the job each year, equal to 5% of the world population.",
+        "Node 9: In a typical year, five to 15 percent of the population contracts influenza.",
+        "Node 10: Each year, pneumonia affects about 7% of the population.",
+        "Hop result: the first cause has a 5% annual occurrence share, while the second cause includes pneumonia at 7%, so the second ranked cause occurs more annually."
+      ],
+      "answer": "Influenza and Pneumonia"
+    }
+  ]
+}

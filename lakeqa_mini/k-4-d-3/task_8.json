@@ -1,0 +1,152 @@
+{
+    "question": "Can you find out the Manhattan neighborhoods containing the top 7 high schools from 2007-2010 by a comprehensive evaluation of the school. Then, find out which NYC structures are designed by Stanford White and incorporates what one of those neighborhoods are named after. Report in what year is this structure designed. Your response should be in the format [Answer].",
+    "answer": "1891",
+    "nodes": {
+        "1": {
+            "source": "datagov/2007-2008-school-progress-report/files/rows.txt",
+            "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/2007-2008-school-progress-report/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[df[\"PROGRESS REPORT TYPE\"] == \"HS\"].copy()\ndf[\"OVERALL SCORE\"] = pd.to_numeric(df[\"OVERALL SCORE\"], errors=\"coerce\")\ndf = df.sort_values(\"OVERALL SCORE\", ascending=False)\nanswer = df[\"SCHOOL\"].head(7).tolist()",
+            "subquestion": "Which NYC high schools were in the top 7 by the school's comprehensive score in 2007-08?",
+            "answer": [
+                "BROOKLYN INTERNATIONAL HIGH SCHOOL",
+                "GREGORIO LUPERON HIGH SCHOOL FOR SCIENCE AND MATHEMATICS",
+                "HIGH SCHOOL FOR CONTEMPORARY ARTS",
+                "BEDFORD ACADEMY HIGH SCHOOL",
+                "MANHATTAN BRIDGES HIGH SCHOOL",
+                "MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES",
+                "NEW WORLD HIGH SCHOOL"
+            ]
+        },
+        "2": {
+            "source": "datagov/2008-2009-school-progress-report/files/rows.txt",
+            "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/2008-2009-school-progress-report/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[df[\"PROGRESS REPORT TYPE\"] == \"HS\"].copy()\ndf[\"OVERALL SCORE\"] = pd.to_numeric(df[\"OVERALL SCORE\"], errors=\"coerce\")\ndf = df.sort_values(\"OVERALL SCORE\", ascending=False)\nanswer = df[\"SCHOOL\"].head(7).tolist()",
+            "subquestion": "Which NYC high schools were in the top 7 by the school's comprehensive score in 2008-09?",
+            "answer": [
+                "HIGH SCHOOL OF HOSPITALITY MANAGEMENT",
+                "BEDFORD ACADEMY HIGH SCHOOL",
+                "WILLIAMSBURG PREPARATORY SCHOOL",
+                "SOUTH BRONX PREPARATORY: A COLLEGE BOARD SCHOOL",
+                "MARBLE HILL HIGH SCHOOL FOR INTERNATIONAL STUDIES",
+                "HIGH SCHOOL FOR VIOLIN AND DANCE",
+                "ESSEX STREET ACADEMY"
+            ]
+        },
+        "3": {
+            "source": "datagov/2009-2010-school-progress-report/files/rows.txt",
+            "fact": "import boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nfrom io import StringIO\n\nbucket = \"lakeqa-yc4103-datalake\"\nkey = \"datagov/2009-2010-school-progress-report/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nbody = s3.get_object(Bucket=bucket, Key=key)[\"Body\"].read().decode(\"utf-8\")\ndf = pd.read_csv(StringIO(body))\ndf = df[df[\"PROGRESS REPORT TYPE\"] == \"HS\"].copy()\ndf[\"2009-2010 OVERALL SCORE\"] = pd.to_numeric(df[\"2009-2010 OVERALL SCORE\"], errors=\"coerce\")\ndf = df.sort_values(\"2009-2010 OVERALL SCORE\", ascending=False)\nanswer = df[\"SCHOOL\"].head(7).tolist()",
+            "subquestion": "Which NYC high schools were in the top 7 by the school's comprehensive score in 2009-10?",
+            "answer": [
+                "Theatre Arts Production Company School",
+                "Brooklyn International High School at Water's Edge",
+                "Williamsburg Preparatory School",
+                "Marble Hill High School for International Studies",
+                "Williamsburg High School for Architecture and Design",
+                "Manhattan Village Academy",
+                "High School for Violin and Dance"
+            ]
+        },
+        "4": {
+            "source": "wikipedia/Marble_Hill,_Manhattan/content.txt",
+            "fact": "The Marble Hill neighborhood gained its current name in 1891 from the Tuckahoe marble deposits discovered underneath it. Marble Hill High School for International Studies is located in this neighborhood.",
+            "subquestion": "What is the neighborhood containing <hop 1 answer> named after?",
+            "answer": "Tuckahoe marble"
+        },
+        "5": {
+            "source": "wikipedia/Tuckahoe_marble/content.txt",
+            "fact": "NYC structures built with Tuckahoe marble include the Washington Square Arch (1891), Federal Hall National Memorial (1842), Brooklyn Borough Hall (1849), St. Patrick's Cathedral (1858-78), Tweed Courthouse (1861-72), Grace Episcopal Church (1846), and Marble Collegiate Church (1854).",
+            "subquestion": "Which NYC structures were built with <node_4 answer>?",
+            "answer": [
+                "Washington Square Arch",
+                "Federal Hall National Memorial",
+                "Brooklyn Borough Hall",
+                "St. Patrick's Cathedral",
+                "Tweed Courthouse",
+                "Grace Episcopal Church",
+                "Marble Collegiate Church"
+            ]
+        },
+        "6": {
+            "source": "wikipedia/Stanford_White/content.txt",
+            "fact": "Stanford White designed several NYC structures including the Washington Square Arch (1891), the second Madison Square Garden (1890, demolished), the Cable Building (1893), the Villard Houses (1884), the Gould Memorial Library (1900), and Judson Memorial Church (1892).",
+            "subquestion": "Which NYC structures were designed by Stanford White?",
+            "answer": [
+                "Washington Square Arch",
+                "Madison Square Garden (second)",
+                "Cable Building",
+                "Villard Houses",
+                "Gould Memorial Library",
+                "Judson Memorial Church"
+            ]
+        },
+        "7": {
+            "source": "wikipedia/Washington_Square_Arch/content.txt",
+            "fact": "Designed by architect Stanford White in 1891, it commemorates the centennial of George Washington's 1789 inauguration as President of the United States, and forms the southern terminus of Fifth Avenue.",
+            "subquestion": "In what year was <hop 3 answer> designed?",
+            "answer": "1891"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `PROGRESS REPORT TYPE` equals `HS`, sort by `OVERALL SCORE` descending, and keep the top 7 `SCHOOL` values.",
+                "Node 2: Filter rows where `PROGRESS REPORT TYPE` equals `HS`, sort by `OVERALL SCORE` descending, and keep the top 7 `SCHOOL` values.",
+                "Node 3: Filter rows where `PROGRESS REPORT TYPE` equals `HS`, sort by `2009-2010 OVERALL SCORE` descending, and keep the top 7 `SCHOOL` values.",
+                "Hop result: intersect <node_1 answer>, <node_2 answer>, and <node_3 answer> to get Marble Hill High School for International Studies."
+            ],
+            "answer": "Marble Hill High School for International Studies"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Tuckahoe marble is what Marble Hill is named after."
+            ],
+            "answer": "Tuckahoe marble"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 5: Washington Square Arch is among the NYC structures built with <hop 2 answer>.",
+                "Node 6: Washington Square Arch is among the NYC structures designed by Stanford White.",
+                "Hop result: intersect <node_5> and <node_6> -> Washington Square Arch"
+            ],
+            "answer": "Washington Square Arch"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: 1891 is the year <hop 3 answer> was designed."
+            ],
+            "answer": "1891"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Marble_Hill,_Manhattan/content.txt",
+        "wikipedia/Tuckahoe_marble/content.txt",
+        "wikipedia/Stanford_White/content.txt",
+        "wikipedia/Washington_Square_Arch/content.txt",
+        "datagov/2007-2008-school-progress-report/files/rows.txt",
+        "datagov/2007-2008-school-progress-report/signed-metadata.txt",
+        "datagov/2007-2008-school-progress-report/files/School_Progress_Reports_-_All_Schools.xlsx",
+        "datagov/2008-2009-school-progress-report/files/rows.txt",
+        "datagov/2008-2009-school-progress-report/signed-metadata.txt",
+        "datagov/2008-2009-school-progress-report/files/School_Progress_Reports_-_All_Schools.xlsx",
+        "datagov/2009-2010-school-progress-report/files/rows.txt",
+        "datagov/2009-2010-school-progress-report/signed-metadata.txt",
+        "datagov/2009-2010-school-progress-report/files/School_Progress_Reports_-_All_Schools_2009-10.xlsx"
+    ]
+}

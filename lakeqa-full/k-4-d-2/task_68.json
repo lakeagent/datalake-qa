@@ -1,0 +1,131 @@
+{
+  "question": "Among Harris, Hidalgo, Dallas, and Cameron counties in Texas, which two saw the largest percentage decrease in day care home meal reimbursements from 2018-19 to 2020-21? Of those two, which had the higher average child center enrollment across 2018-19 and 2019-20? For that county, what is the county seat? During which war did the namesake of the county seat die in? Your response should be in the format [Answer].",
+  "answer": "Mexican\u2013American War",
+  "nodes": {
+    "1": {
+      "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.loc[\n        (df[\"ProgramYear\"] == \"2018-2019\")\n        & (df[\"SiteCounty\"].isin([\"HARRIS\", \"HIDALGO\", \"DALLAS\", \"CAMERON\"])),\n        [\"SiteCounty\", \"TotalMealReimbursement\"],\n    ]\n    .groupby(\"SiteCounty\", as_index=False)[\"TotalMealReimbursement\"]\n    .sum()\n    .sort_values(\"TotalMealReimbursement\", ascending=False)\n)\n\nanswer = dict(zip(result[\"SiteCounty\"], result[\"TotalMealReimbursement\"]))",
+      "subquestion": "What were the total day care home meal reimbursements in 2018-2019 for Harris, Hidalgo, Dallas, and Cameron counties?",
+      "answer": {
+        "HARRIS": 8757796.13,
+        "DALLAS": 2835278.75,
+        "HIDALGO": 1202699.73,
+        "CAMERON": 392489.51
+      }
+    },
+    "2": {
+      "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.loc[\n        (df[\"ProgramYear\"] == \"2020-2021\")\n        & (df[\"SiteCounty\"].isin([\"HARRIS\", \"HIDALGO\", \"DALLAS\", \"CAMERON\"])),\n        [\"SiteCounty\", \"TotalMealReimbursement\"],\n    ]\n    .groupby(\"SiteCounty\", as_index=False)[\"TotalMealReimbursement\"]\n    .sum()\n    .sort_values(\"TotalMealReimbursement\", ascending=False)\n)\n\nanswer = dict(zip(result[\"SiteCounty\"], result[\"TotalMealReimbursement\"]))",
+      "subquestion": "What were the total day care home meal reimbursements in 2020-2021 for Harris, Hidalgo, Dallas, and Cameron counties?",
+      "answer": {
+        "HARRIS": 7558597.77,
+        "DALLAS": 2393411.26,
+        "HIDALGO": 971063.56,
+        "CAMERON": 330003.06
+      }
+    },
+    "3": {
+      "source": "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.loc[\n        (df[\"ProgramYear\"] == \"2018-2019\")\n        & (df[\"SiteCounty\"].isin([\"HIDALGO\", \"CAMERON\"])),\n        [\"SiteCounty\", \"EnrollmentQty\"],\n    ]\n    .groupby(\"SiteCounty\", as_index=False)[\"EnrollmentQty\"]\n    .sum()\n    .sort_values(\"EnrollmentQty\", ascending=False)\n)\n\nanswer = dict(zip(result[\"SiteCounty\"], result[\"EnrollmentQty\"]))",
+      "subquestion": "What were the total child center enrollments in 2018-2019 for Hidalgo and Cameron counties?",
+      "answer": {
+        "CAMERON": 7620183,
+        "HIDALGO": 1661128
+      }
+    },
+    "4": {
+      "source": "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.loc[\n        (df[\"ProgramYear\"] == \"2019-2020\")\n        & (df[\"SiteCounty\"].isin([\"HIDALGO\", \"CAMERON\"])),\n        [\"SiteCounty\", \"EnrollmentQty\"],\n    ]\n    .groupby(\"SiteCounty\", as_index=False)[\"EnrollmentQty\"]\n    .sum()\n    .sort_values(\"EnrollmentQty\", ascending=False)\n)\n\nanswer = dict(zip(result[\"SiteCounty\"], result[\"EnrollmentQty\"]))",
+      "subquestion": "What were the total child center enrollments in 2019-2020 for Hidalgo and Cameron counties?",
+      "answer": {
+        "HIDALGO": 1477805,
+        "CAMERON": 1076746
+      }
+    },
+    "5": {
+      "source": "wikipedia/Cameron_County,_Texas/content.txt",
+      "fact": "Its county seat is Brownsville.",
+      "subquestion": "What is the county seat of <hop 2 answer>?",
+      "answer": "Brownsville"
+    },
+    "6": {
+      "source": "wikipedia/Brownsville,_Texas/content.txt",
+      "fact": "The city was founded in 1848 by American entrepreneur Charles Stillman after he developed a successful river-boat company nearby. It was named for Fort Brown, itself named after Major Jacob Brown, who fought and died while serving as a U.S. Army soldier during the Mexican\u2013American War (1846\u20131848).",
+      "subquestion": "During which war did the namesake of <hop 3 answer> died in?",
+      "answer": "Mexican-American War"
+    }
+  },
+  "datasets_used": [
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/m3iw-uy6q.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/ymex-tquc.publisher-view.json",
+    "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt",
+    "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/2a57-dx4w.publisher-view.json",
+    "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt",
+    "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/signed-metadata.txt",
+    "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/wjcz-ucbn.txt",
+    "wikipedia/Cameron_County,_Texas/content.txt",
+    "wikipedia/Brownsville,_Texas/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "title": "Compare Reimbursement Decreases",
+      "reasoning": [
+        "Node 1 retrieves total `TotalMealReimbursement` in `ProgramYear == \"2018-2019\"` for `HARRIS`, `HIDALGO`, `DALLAS`, and `CAMERON`.",
+        "Node 2 retrieves total `TotalMealReimbursement` in `ProgramYear == \"2020-2021\"` for the same four counties.",
+        "Hop result: comparing percentage decreases from node 1 to node 2 yields `HIDALGO` and `CAMERON` as the two largest decreases."
+      ],
+      "answer": [
+        "HIDALGO",
+        "CAMERON"
+      ]
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3,
+        4
+      ],
+      "title": "Compare Average Enrollment",
+      "reasoning": [
+        "Node 3 retrieves total `EnrollmentQty` in `ProgramYear == \"2018-2019\"` for the counties from `<hop 1 answer>`.",
+        "Node 4 retrieves total `EnrollmentQty` in `ProgramYear == \"2019-2020\"` for the counties from `<hop 1 answer>`.",
+        "Hop result: averaging the two yearly totals shows `CAMERON` has the higher average child center enrollment."
+      ],
+      "answer": "CAMERON"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "title": "Find The County Seat",
+      "reasoning": [
+        "Node 5 retrieves the county seat of `<hop 2 answer>`.",
+        "Hop result: `Brownsville`."
+      ],
+      "answer": "Brownsville"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "title": "Find The Namesake Soldier's War",
+      "reasoning": [
+        "Node 6 uses the county seat from `<hop 3 answer>` and follows the naming statement to the soldier associated with the fort.",
+        "Hop result: the soldier fought and died in the `Mexican\u2013American War`."
+      ],
+      "answer": "Mexican\u2013American War"
+    }
+  ]
+}

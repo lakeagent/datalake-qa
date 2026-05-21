@@ -1,0 +1,66 @@
+{
+    "question": "For the most populous city in Washington state, identify its county from postsecondary institution records. What common name is used for that county's international airport? Your response should be in the format [Answer].",
+    "answer": "Boeing Field",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Washington_(state)/content.txt",
+            "fact": "Washington state's most populous city is Seattle.",
+            "subquestion": "What is the most populous city in Washington state?",
+            "answer": "Seattle"
+        },
+        "2": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Seattle'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n]\nanswer = filtered[\"NMCNTY\"].dropna().astype(str).str.strip().iloc[0]\n",
+            "subquestion": "In school year 2022-2023, among postsecondary institutions located in the city of <node_1 answer>, what is the county name?",
+            "answer": "King County"
+        },
+        "3": {
+            "source": "wikipedia/Boeing_Field/content.txt",
+            "fact": "King County International Airport, commonly known as Boeing Field, is a public airport owned and operated by King County. The airport is sometimes referred to as KCIA, but it is not the airport identifier. It is also used by cargo airlines and general aviation aircraft.",
+            "subquestion": "What common name is used for <hop 2 answer>'s international airport?",
+            "answer": "Boeing Field"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Washington_(state)/content.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt",
+        "wikipedia/Boeing_Field/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Seattle is the most populous city in Washington state.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Seattle"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter records where `CITY` is <hop 1 answer> and `SCHOOLYEAR` is 2022-2023, then take the first non-null `NMCNTY` value.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "King County"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Identify the common name used for <hop 2 answer>'s international airport.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Boeing Field"
+        }
+    ]
+}

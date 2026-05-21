@@ -1,0 +1,235 @@
+{
+    "question": "Identify the first head of Chicago's department with the highest average overtime between 2018 and 2021. In the city where that person previously served as police chief and founded a criminal justice program at a local university, what county is the city located in? Only report the county name in the format of `X County`. Your response should be in the format [Answer].",
+    "answer": "Sedgwick County",
+    "nodes": {
+        "1": {
+            "source": "datagov/employee-overtime-and-supplemental-earnings-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/employee-overtime-and-supplemental-earnings-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = df.groupby(\"DEPARTMENT NAME\", dropna=False)[\"TOTAL\"].sum().sort_values(ascending=False).to_dict()\nprint(answer)",
+            "subquestion": "What was the total overtime for each Chicago department in 2018, so it can be combined with 2019-2021 to identify the department with the highest 2018-2021 average overtime?",
+            "answer": {
+                "Police": 131675457.86,
+                "Fire": 67991758.7,
+                "Water Management": 25954631.43,
+                "Aviation": 19982790.57,
+                "Streets and Sanitation": 14596221.32,
+                "Emergency Management and Communications": 9791878.49,
+                "Fleet and Facility Management": 7589677.9,
+                "Transportation": 7577869.23,
+                "Buildings": 794904.4199999999,
+                "Library": 526527.72,
+                "Animal Care and Control": 463673.47000000003,
+                "Board of Election Commissioners": 440272.38,
+                "Finance": 234872.76,
+                "City Clerk": 124444.24,
+                "Public Health": 112168.01,
+                "Family and Support Services": 74560.11,
+                "Civilian Office of Police Accountability": 34097.009999999995,
+                "Planning and Development": 16791.87,
+                "Independent Police Review Authority": 13825.31,
+                "Mayor's Office for People with Disabilities": 7422.96,
+                "Innovation and Technology": 6491.95,
+                "Administrative Hearings": 4367.66,
+                "Inspector General": 1257.56,
+                "Law": 1129.55,
+                "Office of the Mayor": 216.4
+            }
+        },
+        "2": {
+            "source": "datagov/employee-overtime-and-supplemental-earnings-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/employee-overtime-and-supplemental-earnings-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = df.groupby(\"DEPARTMENT NAME\", dropna=False)[\"TOTAL\"].sum().sort_values(ascending=False).to_dict()\nprint(answer)",
+            "subquestion": "What was the total overtime for each Chicago department in 2019, so it can be combined with 2018, 2020, and 2021 to identify the department with the highest 2018-2021 average overtime?",
+            "answer": {
+                "CHICAGO POLICE DEPARTMENT": 139560316.72,
+                "CHICAGO FIRE DEPARTMENT": 85821080.71,
+                "DEPARTMENT OF WATER MANAGEMENT": 26551512.45,
+                "DEPARTMENT OF AVIATION": 20806388.39,
+                "DEPARTMENT OF STREETS AND SANITATION": 16229521.65,
+                "OFFICE OF EMERGENCY MANAGEMENT AND COMMUNICATIONS": 11010694.08,
+                "DEPARTMENT OF ASSETS, INFORMATION, AND SERVICES": 10054980.36,
+                "CHICAGO DEPARTMENT OF TRANSPORTATION": 8372582.5200000005,
+                "CHICAGO PUBLIC LIBRARY": 819490.63,
+                "DEPARTMENT OF BUILDINGS": 714318.63,
+                "CHICAGO ANIMAL CARE AND CONTROL": 517835.01,
+                "BOARD OF ELECTION COMMISSIONERS": 415998.4,
+                "DEPARTMENT OF FINANCE": 180046.76,
+                "DEPARTMENT OF PUBLIC HEALTH": 124701.81,
+                "CITY CLERK": 69224.75,
+                "DEPARTMENT OF FAMILY AND SUPPORT SERVICES": 59557.590000000004,
+                "CIVILIAN OFFICE OF POLICE ACCOUNTABILITY": 39111.45,
+                "OFFICE OF INSPECTOR GENERAL": 5443.93,
+                "DEPARTMENT OF PLANNING AND DEVELOPMENT": 3739.49,
+                "DEPARTMENT OF INNOVATION AND TECHNOLOGY": 3259.12,
+                "FINANCE GENERAL": 2902.8500000000004,
+                "CITY COUNCIL": 1695.88,
+                "MAYOR'S OFFICE FOR PEOPLE WITH DISABILITIES": 875.34
+            }
+        },
+        "3": {
+            "source": "datagov/employee-overtime-and-supplemental-earnings-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/employee-overtime-and-supplemental-earnings-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = df.groupby(\"DEPARTMENT NAME\", dropna=False)[\"TOTAL\"].sum().sort_values(ascending=False).to_dict()\nprint(answer)",
+            "subquestion": "What was the total overtime for each Chicago department in 2020, so it can be combined with 2018, 2019, and 2021 to identify the department with the highest 2018-2021 average overtime?",
+            "answer": {
+                "CHICAGO POLICE DEPARTMENT": 177486176.09,
+                "CHICAGO FIRE DEPARTMENT": 95352235.07,
+                "DEPARTMENT OF WATER MANAGEMENT": 26228866.580000002,
+                "DEPARTMENT OF STREETS AND SANITATION": 20562895.38,
+                "DEPARTMENT OF AVIATION": 16450180.14,
+                "OFFICE OF EMERGENCY MANAGEMENT AND COMMUNICATIONS": 10541554.85,
+                "CHICAGO DEPARTMENT OF TRANSPORTATION": 9632321.67,
+                "DEPARTMENT OF ASSETS, INFORMATION, AND SERVICES": 7182352.08,
+                "DEPARTMENT OF PUBLIC HEALTH": 1265163.91,
+                "BOARD OF ELECTION COMMISSIONERS": 721104.36,
+                "DEPARTMENT OF BUILDINGS": 643717.88,
+                "CHICAGO ANIMAL CARE AND CONTROL": 337605.54,
+                "CHICAGO PUBLIC LIBRARY": 292667.06,
+                "CIVILIAN OFFICE OF POLICE ACCOUNTABILITY": 59757.02,
+                "DEPARTMENT OF FINANCE": 46437.2,
+                "CITY CLERK": 30310.92,
+                "MAYOR'S OFFICE FOR PEOPLE WITH DISABILITIES": 19109.86,
+                "DEPARTMENT OF FAMILY AND SUPPORT SERVICES": 17963.9,
+                "DEPARTMENT OF BUSINESS AFFAIRS AND CONSUMER PROTECTION": 10439.95,
+                "FINANCE GENERAL": 9005.78,
+                "OFFICE OF PUBLIC SAFETY ADMINISTRATION": 7915.82,
+                "OFFICE OF INSPECTOR GENERAL": 930.12,
+                "DEPARTMENT OF ADMINISTRATIVE HEARINGS": 499.62
+            }
+        },
+        "4": {
+            "source": "datagov/employee-overtime-and-supplemental-earnings-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/employee-overtime-and-supplemental-earnings-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = df.groupby(\"DEPARTMENT NAME\", dropna=False)[\"TOTAL\"].sum().sort_values(ascending=False).to_dict()\nprint(answer)",
+            "subquestion": "What was the total overtime for each Chicago department in 2021, so it can be combined with 2018-2020 to identify the department with the highest 2018-2021 average overtime?",
+            "answer": {
+                "Chicago Police Department": 134342334.79,
+                "Chicago Fire Department": 82732370.06,
+                "Department of Water Management": 34923570.28,
+                "Department of Aviation": 22881961.63,
+                "Department of Streets and Sanitation": 22622514.6,
+                "Department of Assets, Information, and Services": 11114148.3,
+                "Chicago Department of Transportation": 10080051.62,
+                "Office of Emergency Management and Communications": 8379438.87,
+                "Department of Public Health": 1462381.15,
+                "Office of Public Safety Administration": 850208.86,
+                "Department of Buildings": 580116.88,
+                "Chicago Animal Care and Control": 378040.4,
+                "Chicago Public Library": 355400.96,
+                "Department of Finance": 183989.93,
+                "City Clerk": 67303.82,
+                "Board of Election Commissioners": 58463.48,
+                "Department of Family and Support Services": 41273.16,
+                "Civilian Office of Police Accountability": 20023.52,
+                "Department of Business Affairs and Consumer Protection": 9858.68,
+                "Mayor'S Office For People With Disabilities": 5199.150000000001,
+                "Finance General": 3556.49,
+                "Department of Administrative Hearings": 455.4,
+                "Office of Inspector General": 35.32
+            }
+        },
+        "5": {
+            "source": "wikipedia/Chicago_Police_Department/content.txt",
+            "fact": "Orlando W. Wilson, the first civilian superintendent, was appointed by the mayor in 1960.",
+            "subquestion": "Who was the first civilian superintendent of <hop 1 answer>?",
+            "answer": "O. W. Wilson"
+        },
+        "6": {
+            "source": "wikipedia/O._W._Wilson/content.txt",
+            "fact": "In 1925, Wilson became chief of police of the Fullerton Police Department for two years.  He then spent two years as an investigator with the Pacific Finance Corporation.  In 1928, at age 28, he became chief of police of the Wichita Police Department, where he served until 1939.",
+            "subquestion": "In which cities did <node_5 answer> serve as police chief before becoming head of <hop 1 answer>?",
+            "answer": [
+                "Fullerton",
+                "Wichita"
+            ]
+        },
+        "7": {
+            "source": "wikipedia/Wichita_Police_Department/content.txt",
+            "fact": "A notable figure in the Department’s history was O.W. Wilson, who was considered an innovative police reformer.  Wilson was credited with starting the Criminal Justice Program at Wichita State University, previously called the Municipal University of Wichita in 1937.",
+            "subquestion": "Which city from <hop 3 answer> was the one where <node_5 answer> started a criminal justice program at a local university?",
+            "answer": "Wichita"
+        },
+        "8": {
+            "source": "wikipedia/Wichita,_Kansas/content.txt",
+            "fact": "is the most populous city in the U.S. state of Kansas and the county seat of Sedgwick County.",
+            "subquestion": "What county is <hop 4 answer> located in?",
+            "answer": "Sedgwick County"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Chicago_Police_Department/content.txt",
+        "wikipedia/O._W._Wilson/content.txt",
+        "wikipedia/Wichita_Police_Department/content.txt",
+        "wikipedia/Wichita,_Kansas/content.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2018/files/rows.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2018/signed-metadata.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2019/files/rows.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2019/signed-metadata.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2020/files/rows.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2020/signed-metadata.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2021/files/rows.txt",
+        "datagov/employee-overtime-and-supplemental-earnings-2021/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Group 2018 rows by `DEPARTMENT NAME`, sum `TOTAL`, and return department overtime totals.",
+                "Node 2: Group 2019 rows by `DEPARTMENT NAME`, sum `TOTAL`, and return department overtime totals.",
+                "Node 3: Group 2020 rows by `DEPARTMENT NAME`, sum `TOTAL`, and return department overtime totals.",
+                "Node 4: Group 2021 rows by `DEPARTMENT NAME`, sum `TOTAL`, and return department overtime totals.",
+                "Hop result: the department with the highest average overtime across 2018-2021 is the Chicago Police Department."
+            ],
+            "answer": "Chicago Police Department"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: The first civilian superintendent of <hop 1 answer> was Orlando W. Wilson.",
+                "Hop result: O. W. Wilson."
+            ],
+            "answer": "O. W. Wilson"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Cities where <node_5 answer> served as police chief before becoming head of <hop 1 answer> = Fullerton, Wichita.",
+                "Hop result: Fullerton, Wichita."
+            ],
+            "answer": [
+                "Fullerton",
+                "Wichita"
+            ]
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: The city from <hop 3 answer> where <node_5 answer> started a criminal justice program at a local university = Wichita.",
+                "Hop result: Wichita."
+            ],
+            "answer": "Wichita"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Wichita is located in Sedgwick County.",
+                "Hop result: Sedgwick County."
+            ],
+            "answer": "Sedgwick County"
+        }
+    ]
+}

@@ -1,0 +1,85 @@
+{
+  "question": "In the state with two-digit FIPS code 06, which counties rank in the top three for each of public schools, private schools, and school district offices? Among those counties, how many more incorporated cities does the county with more contain? Your response should be in the format [Answer].",
+  "answer": 70,
+  "nodes": {
+    "1": {
+      "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/public-school-locations-current-23297/files/data-oyCYxF.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\nschool_year = df[\"SCHOOLYEAR\"].astype(str).str.strip()\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\n\nfiltered = df[state_fips.eq(6) & school_year.eq(\"2022-2023\")].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+      "subquestion": "For STFIP='06', which 3 county names have the most public schools? Return the county names separated by '; '.",
+      "answer": "Los Angeles County; San Diego County; Orange County"
+    },
+    "2": {
+      "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\n\nfiltered = df[state_fips.eq(6)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+      "subquestion": "For STFIP='06', which 3 county names have the most private schools? Return the county names separated by '; '.",
+      "answer": "Los Angeles County; Orange County; San Diego County"
+    },
+    "3": {
+      "source": "datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt",
+      "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\ndf = pd.DataFrame([feature.get(\"properties\", {}) for feature in geo.get(\"features\", [])])\n\nstate_fips = pd.to_numeric(df[\"STFIP\"], errors=\"coerce\")\ncounty = df[\"NMCNTY\"].astype(str).str.strip()\n\nfiltered = df[state_fips.eq(6)].copy()\nfiltered[\"NMCNTY\"] = county.loc[filtered.index].replace(\"\", pd.NA)\ncounts = (\n    filtered.dropna(subset=[\"NMCNTY\"])\n    .groupby(\"NMCNTY\", dropna=True)\n    .size()\n    .reset_index(name=\"count\")\n    .sort_values([\"count\", \"NMCNTY\"], ascending=[False, True], kind=\"mergesort\")\n)\nanswer = \"; \".join(counts[\"NMCNTY\"].head(3).tolist())",
+      "subquestion": "For STFIP='06', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+      "answer": "Los Angeles County; San Diego County; San Bernardino County"
+    },
+    "4": {
+      "source": "wikipedia/Los_Angeles_County,_California/content.txt",
+      "fact": "Los Angeles County comprises 88 incorporated cities and 101 unincorporated areas.",
+      "subquestion": "For this county from <hop 1 answer>, how many incorporated cities does it contain?",
+      "answer": {
+        "county": "Los Angeles County",
+        "incorporated_cities": 88
+      }
+    },
+    "5": {
+      "source": "wikipedia/San_Diego_County,_California/content.txt",
+      "fact": "As of the 2020 census, San Diego County includes 18 incorporated cities.",
+      "subquestion": "For this county from <hop 1 answer>, how many incorporated cities does it contain?",
+      "answer": {
+        "county": "San Diego County",
+        "incorporated_cities": 18
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: Using rows where `STFIP='06'`, the three counties with the most public schools are `Los Angeles County`, `San Diego County`, and `Orange County`.",
+        "Node 2: Using rows where `STFIP='06'`, the three counties with the most private schools are `Los Angeles County`, `Orange County`, and `San Diego County`.",
+        "Node 3: Using rows where `STFIP='06'`, the three counties with the most school district offices are `Los Angeles County`, `San Diego County`, and `San Bernardino County`.",
+        "Hop result: intersecting the three top-three sets gives `Los Angeles County` and `San Diego County`."
+      ],
+      "answer": "Los Angeles County and San Diego County"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 4: One county from <hop 1 answer>, `Los Angeles County`, contains `88` incorporated cities.",
+        "Node 5: One county from <hop 1 answer>, `San Diego County`, contains `18` incorporated cities.",
+        "Hop result: the larger count is `88`; `88 - 18 = 70`."
+      ],
+      "answer": 70
+    }
+  ],
+  "datasets_used": [
+    "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+    "datagov/public-school-locations-current-23297/signed-metadata.txt",
+    "datagov/public-school-locations-current-23297/files/0.arcgis-layer.json",
+    "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+    "datagov/private-school-locations-current-f7d96/signed-metadata.txt",
+    "datagov/private-school-locations-current-f7d96/files/0.arcgis-layer.json",
+    "datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt",
+    "datagov/school-district-office-locations-2022-23/signed-metadata.txt",
+    "datagov/school-district-office-locations-2022-23/files/0.arcgis-layer.json",
+    "wikipedia/Los_Angeles_County,_California/content.txt",
+    "wikipedia/San_Diego_County,_California/content.txt"
+  ]
+}

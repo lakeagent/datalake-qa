@@ -1,0 +1,68 @@
+{
+    "question": "Define a more supportive state as one with statewide healthcare programs that include more enrolled Native Americans, Alaskans, fostered or adopted children. Which states are the top 2 most supportive in 2017, 2nd and 3rd most supportive in 2018, and 2nd and 3rd most supportive in 2019? For the state that appears in all three years, how many more incorporated municipalities than counties are there? Please return only the number in the format [Answer].",
+    "answer": 242,
+    "nodes": {
+        "1": {
+            "source": "datagov/2017-managed-care-programs-by-state/files/2017-managed-care-programs-by-state.hc9x-7kex.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2017-managed-care-programs-by-state/files/2017-managed-care-programs-by-state.hc9x-7kex.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\nstate_col = \"State\"\nnative_col = \"Populations enrolled: Native American/Alaskan Natives\"\nfoster_col = \"Populations enrolled: Foster Care and Adoption Assistance Children\"\nstatewide = df[df[\"Statewide or region-specific?\"].str.lower().eq(\"statewide\")].copy()\nstatewide[\"support_score\"] = statewide[native_col].str.lower().isin([\"mandatory\", \"voluntary\"]).astype(int) + statewide[foster_col].str.lower().isin([\"mandatory\", \"voluntary\"]).astype(int)\nranked = statewide.groupby(state_col, as_index=False).agg(\n    support_score=(\"support_score\", \"sum\"),\n    statewide_programs=(\"Program type\", \"count\")\n)\nranked = ranked[ranked[\"support_score\"].gt(0)].sort_values(\n    [\"support_score\", \"statewide_programs\", state_col],\n    ascending=[False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[0:2][state_col].tolist())\n",
+            "subquestion": "Define a more supportive state as one with statewide healthcare programs that include more enrolled Native Americans, Alaskans, fostered or adopted children. Which states were the top 2 most supportive in 2017?",
+            "answer": "Rhode Island, Washington"
+        },
+        "2": {
+            "source": "datagov/2018-managed-care-programs-by-state-10247/files/2018-manged-care-programs-by-state_2.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2018-managed-care-programs-by-state-10247/files/2018-manged-care-programs-by-state_2.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nstate_map = dict(item.split(\"=\", 1) for item in \"AL=Alabama|AK=Alaska|AZ=Arizona|AR=Arkansas|CA=California|CO=Colorado|CT=Connecticut|DE=Delaware|DC=District of Columbia|FL=Florida|GA=Georgia|HI=Hawaii|ID=Idaho|IL=Illinois|IN=Indiana|IA=Iowa|KS=Kansas|KY=Kentucky|LA=Louisiana|ME=Maine|MD=Maryland|MA=Massachusetts|MI=Michigan|MN=Minnesota|MS=Mississippi|MO=Missouri|MT=Montana|NE=Nebraska|NV=Nevada|NH=New Hampshire|NJ=New Jersey|NM=New Mexico|NY=New York|NC=North Carolina|ND=North Dakota|OH=Ohio|OK=Oklahoma|OR=Oregon|PA=Pennsylvania|RI=Rhode Island|SC=South Carolina|SD=South Dakota|TN=Tennessee|TX=Texas|UT=Utah|VT=Vermont|VA=Virginia|WA=Washington|WV=West Virginia|WI=Wisconsin|WY=Wyoming\".split(\"|\"))\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\nstate_col = \"state\"\nnative_col = \"Populations enrolled: Native American/Alaskan Natives\"\nfoster_col = \"Populations enrolled: Foster Care and Adoption Assistance Children\"\ndf[\"StateName\"] = df[state_col].map(lambda value: state_map.get(value, value))\nstatewide = df[df[\"Statewide or region-specific?\"].str.lower().eq(\"statewide\")].copy()\nstatewide[\"support_score\"] = statewide[native_col].str.lower().isin([\"mandatory\", \"voluntary\"]).astype(int) + statewide[foster_col].str.lower().isin([\"mandatory\", \"voluntary\"]).astype(int)\nranked = statewide.groupby(\"StateName\", as_index=False).agg(\n    support_score=(\"support_score\", \"sum\"),\n    statewide_programs=(\"Program type\", \"count\")\n)\nranked = ranked[ranked[\"support_score\"].gt(0)].sort_values(\n    [\"support_score\", \"statewide_programs\", \"StateName\"],\n    ascending=[False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[1:3][\"StateName\"].tolist())\n",
+            "subquestion": "Define a more supportive state as one with statewide healthcare programs that include more enrolled Native Americans, Alaskans, fostered or adopted children. Which states were the 2nd and 3rd most supportive in 2018?",
+            "answer": "Texas, Washington"
+        },
+        "3": {
+            "source": "datagov/2019-managed-care-programs-by-state/files/2019_Table9_10_0.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/2019-managed-care-programs-by-state/files/2019_Table9_10_0.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\nstate_map = dict(item.split(\"=\", 1) for item in \"AL=Alabama|AK=Alaska|AZ=Arizona|AR=Arkansas|CA=California|CO=Colorado|CT=Connecticut|DE=Delaware|DC=District of Columbia|FL=Florida|GA=Georgia|HI=Hawaii|ID=Idaho|IL=Illinois|IN=Indiana|IA=Iowa|KS=Kansas|KY=Kentucky|LA=Louisiana|ME=Maine|MD=Maryland|MA=Massachusetts|MI=Michigan|MN=Minnesota|MS=Mississippi|MO=Missouri|MT=Montana|NE=Nebraska|NV=Nevada|NH=New Hampshire|NJ=New Jersey|NM=New Mexico|NY=New York|NC=North Carolina|ND=North Dakota|OH=Ohio|OK=Oklahoma|OR=Oregon|PA=Pennsylvania|RI=Rhode Island|SC=South Carolina|SD=South Dakota|TN=Tennessee|TX=Texas|UT=Utah|VT=Vermont|VA=Virginia|WA=Washington|WV=West Virginia|WI=Wisconsin|WY=Wyoming\".split(\"|\"))\nfor col in df.columns:\n    df[col] = df[col].fillna(\"\").astype(str).str.strip()\nstate_col = \"State\"\nnative_col = \"Populations enrolled: Native American/Alaskan Natives\"\nfoster_col = \"Populations enrolled: Foster Care and Adoption Assistance Children\"\ndf[\"StateName\"] = df[state_col].map(lambda value: state_map.get(value, value))\nstatewide = df[df[\"Statewide or region-specific?\"].str.lower().eq(\"statewide\")].copy()\nstatewide[\"support_score\"] = statewide[native_col].str.lower().isin([\"mandatory\", \"voluntary\"]).astype(int) + statewide[foster_col].str.lower().isin([\"mandatory\", \"voluntary\"]).astype(int)\nranked = statewide.groupby(\"StateName\", as_index=False).agg(\n    support_score=(\"support_score\", \"sum\"),\n    statewide_programs=(\"Program type\", \"count\")\n)\nranked = ranked[ranked[\"support_score\"].gt(0)].sort_values(\n    [\"support_score\", \"statewide_programs\", \"StateName\"],\n    ascending=[False, False, True],\n    kind=\"mergesort\"\n).reset_index(drop=True)\nanswer = \", \".join(ranked.iloc[1:3][\"StateName\"].tolist())\n",
+            "subquestion": "Define a more supportive state as one with statewide healthcare programs that include more enrolled Native Americans, Alaskans, fostered or adopted children. Which states were the 2nd and 3rd most supportive in 2019?",
+            "answer": "Washington, Massachusetts"
+        },
+        "4": {
+            "source": "wikipedia/Washington_(state)/content.txt",
+            "fact": "There are 39 counties within the state, and 281 incorporated municipalities which are divided into cities and towns.",
+            "subquestion": "As of 2025, how many more incorporated municipalities than counties are in <hop 1 answer>?",
+            "answer": 242
+        }
+    },
+    "datasets_used": [
+        "datagov/2017-managed-care-programs-by-state/files/2017-managed-care-programs-by-state.hc9x-7kex.txt",
+        "datagov/2017-managed-care-programs-by-state/signed-metadata.txt",
+        "datagov/2017-managed-care-programs-by-state/files/2017-medicaid-managed-care-enrollment-report.pdf",
+        "datagov/2018-managed-care-programs-by-state-10247/files/2018-manged-care-programs-by-state_2.txt",
+        "datagov/2018-managed-care-programs-by-state-10247/files/2018-medicaid-managed-care-enrollment-report.pdf",
+        "datagov/2019-managed-care-programs-by-state/files/2019_Table9_10_0.txt",
+        "datagov/2019-managed-care-programs-by-state/files/2019-medicaid-managed-care-enrollment-report.pdf",
+        "wikipedia/Washington_(state)/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: In 2017, count support points across statewide managed-care programs for Native American/Alaskan Natives and Foster Care and Adoption Assistance Children. Rhode Island ranks 1st and Washington ranks 2nd.",
+                "Node 2: In 2018, using the same definition, Texas ranks 2nd and Washington ranks 3rd.",
+                "Node 3: In 2019, using the same definition, Washington ranks 2nd and Massachusetts ranks 3rd.",
+                "Washington is the only state appearing in all three node answers."
+            ],
+            "answer": "Washington"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4 states that Washington has 39 counties and 281 incorporated municipalities.",
+                "Hop result: 281 - 39 = 242."
+            ],
+            "answer": 242
+        }
+    ]
+}

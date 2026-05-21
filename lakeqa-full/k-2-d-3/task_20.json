@@ -1,0 +1,68 @@
+{
+  "question": "Find the charges that occur exactly 2 times in 2022, exactly 4 times in 2023, and between 180 and 235 times in 2024 in Austin. For the charge that appears in all three years, take the first word as the offense category. In jurisdictions, what is the closest offense category with that offense category? Return the term only in the format [Answer].",
+  "answer": "larceny",
+  "nodes": {
+    "1": {
+      "source": "datagov/downtown-austin-community-court-dacc-fy-2022-caseload-information/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/downtown-austin-community-court-dacc-fy-2022-caseload-information/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ncharges = df[\"Charges Description\"].fillna(\"\").astype(str).str.strip()\ncounts = charges[charges.ne(\"\")].value_counts()\nselected = counts[counts.eq(2)].sort_index()\nanswer = \", \".join(selected.index.tolist())\n",
+      "subquestion": "Which charges only occur 2 times in 2022?",
+      "answer": "Alcohol - Minor Driving Under Influence, Criminal Mischief-Destruction Of Prop, Glass Container Prohibited in PRA, Minor Consuming Alcohol, Open Glass Container, Theft C - Less Than $100"
+    },
+    "2": {
+      "source": "datagov/downtown-austin-community-court-dacc-fy-2023-caseload-information/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/downtown-austin-community-court-dacc-fy-2023-caseload-information/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ncharges = df[\"Charges Description\"].fillna(\"\").astype(str).str.strip()\ncounts = charges[charges.ne(\"\")].value_counts()\nselected = counts[counts.eq(4)].sort_index()\nanswer = \", \".join(selected.index.tolist())\n",
+      "subquestion": "Which charges only occur 4 times in 2023?",
+      "answer": "Camping - State Law, Fireworks Ordinance, Minor Consuming Alcohol, Misrepresentation Of Age By Minor, Park Curfew Violation, Possession Of Tobacco, Theft C - Less Than $100"
+    },
+    "3": {
+      "source": "datagov/downtown-austin-community-court-dacc-fy-2024-caseload-information/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/downtown-austin-community-court-dacc-fy-2024-caseload-information/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), dtype=str, low_memory=False)\n\ncharges = df[\"Charges Description\"].fillna(\"\").astype(str).str.strip()\ncounts = charges[charges.ne(\"\")].value_counts()\nselected = counts[(counts >= 180) & (counts <= 235)].sort_index()\nanswer = \", \".join(selected.index.tolist())\n",
+      "subquestion": "Which charges occur between 180 and 235 times in 2024?",
+      "answer": "Possession Of Drug Paraphernalia, Theft C - Less Than $100"
+    },
+    "4": {
+      "source": "wikipedia/Theft/content.txt",
+      "fact": "In some jurisdictions, theft is considered to be synonymous with larceny, while in others, theft is defined more narrowly.",
+      "subquestion": "In jurisdictions, what is the closest offense category with <hop 1 answer>?",
+      "answer": "larceny"
+    }
+  },
+  "datasets_used": [
+    "datagov/downtown-austin-community-court-dacc-fy-2022-caseload-information/files/rows.txt",
+    "datagov/downtown-austin-community-court-dacc-fy-2022-caseload-information/signed-metadata.txt",
+    "datagov/downtown-austin-community-court-dacc-fy-2023-caseload-information/files/rows.txt",
+    "datagov/downtown-austin-community-court-dacc-fy-2023-caseload-information/signed-metadata.txt",
+    "datagov/downtown-austin-community-court-dacc-fy-2024-caseload-information/files/rows.txt",
+    "datagov/downtown-austin-community-court-dacc-fy-2024-caseload-information/signed-metadata.txt",
+    "wikipedia/Theft/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: In FY 2022 DACC data, the Charges Description values with count exactly 2 are the charges in node 1.",
+        "Node 2: In FY 2023 DACC data, the Charges Description values with count exactly 4 are the charges in node 2.",
+        "Node 3: In FY 2024 DACC data, the Charges Description values with counts between 180 and 235 inclusive are the charges in node 3.",
+        "Hop result: the only charge appearing in all three answers is Theft C - Less Than $100."
+      ],
+      "answer": "Theft C - Less Than $100"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: The first word of <hop 1 answer> gives the offense category theft.",
+        "In some jurisdictions, theft is considered synonymous with larceny.",
+        "Hop result: larceny."
+      ],
+      "answer": "larceny"
+    }
+  ]
+}

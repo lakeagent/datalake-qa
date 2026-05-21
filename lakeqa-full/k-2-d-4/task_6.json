@@ -1,0 +1,167 @@
+{
+  "question": "Which Texas counties had between 700 and 4,600 people entering the state prison system in each fiscal year from 2019 to 2022? Among those counties, how many more cities does the county with the most cities have than the county with the fewest? Your response should be in the format [Answer].",
+  "answer": 21,
+  "nodes": {
+    "1": {
+      "source": "datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty = df[\"County\"].astype(str).str.strip()\ncounts = county[county.ne(\"\") & county.ne(\"Nan\")].value_counts()\nanswer = counts[counts.between(700, 4600)].index.tolist()",
+      "subquestion": "Which Texas counties had TDCJ criminal intakes between 700 and 4,600 in FY 2019?",
+      "answer": [
+        "Bexar",
+        "Hidalgo",
+        "Travis",
+        "El Paso",
+        "Montgomery",
+        "McLennan",
+        "Collin",
+        "Smith",
+        "Galveston",
+        "Jefferson",
+        "Taylor",
+        "Nueces",
+        "Brazoria",
+        "Ector",
+        "Johnson",
+        "Bell",
+        "Lubbock",
+        "Denton"
+      ]
+    },
+    "2": {
+      "source": "datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty = df[\"County\"].astype(str).str.strip()\ncounts = county[county.ne(\"\") & county.ne(\"Nan\")].value_counts()\nanswer = counts[counts.between(700, 4600)].index.tolist()",
+      "subquestion": "Which Texas counties had TDCJ criminal intakes between 700 and 4,600 in FY 2020?",
+      "answer": [
+        "Harris",
+        "Tarrant",
+        "Dallas",
+        "Bexar",
+        "Hidalgo",
+        "Travis",
+        "Montgomery",
+        "McLennan",
+        "El Paso"
+      ]
+    },
+    "3": {
+      "source": "datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty = df[\"County\"].astype(str).str.strip()\ncounts = county[county.ne(\"\") & county.ne(\"Nan\")].value_counts()\nanswer = counts[counts.between(700, 4600)].index.tolist()",
+      "subquestion": "Which Texas counties had TDCJ criminal intakes between 700 and 4,600 in FY 2021?",
+      "answer": [
+        "Dallas",
+        "Tarrant",
+        "Bexar",
+        "Hidalgo",
+        "Collin",
+        "Smith",
+        "Montgomery",
+        "El Paso",
+        "Travis"
+      ]
+    },
+    "4": {
+      "source": "datagov/texas-department-of-criminal-justice-receives-fy-2022/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/texas-department-of-criminal-justice-receives-fy-2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\n\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty = df[\"County\"].astype(str).str.strip()\ncounts = county[county.ne(\"\") & county.ne(\"Nan\")].value_counts()\nanswer = counts[counts.between(700, 4600)].index.tolist()",
+      "subquestion": "Which Texas counties had TDCJ criminal intakes between 700 and 4,600 in FY 2022?",
+      "answer": [
+        "Tarrant",
+        "Dallas",
+        "Bexar",
+        "Hidalgo",
+        "Montgomery",
+        "Smith",
+        "Jefferson",
+        "Collin",
+        "McLennan",
+        "El Paso",
+        "Johnson"
+      ]
+    },
+    "5": {
+      "source": "wikipedia/Bexar_County,_Texas/content.txt",
+      "fact": "Bexar County has 8 multiple-county cities, 9 enclave cities, and 8 Bexar County-only cities.",
+      "subquestion": "For this county from <hop 1 answer>, how many cities are there?",
+      "answer": {
+        "county": "Bexar County",
+        "city_count": 25
+      }
+    },
+    "6": {
+      "source": "wikipedia/El_Paso_County,_Texas/content.txt",
+      "fact": "El Paso County has the cities El Paso, Horizon City, San Elizario, and Socorro.",
+      "subquestion": "For this county from <hop 1 answer>, how many cities are there?",
+      "answer": {
+        "county": "El Paso County",
+        "city_count": 4
+      }
+    },
+    "7": {
+      "source": "wikipedia/Hidalgo_County,_Texas/content.txt",
+      "fact": "Hidalgo County has the cities Alamo, Alton, Donna, Edcouch, Edinburg, Elsa, Granjeno, Hidalgo, La Joya, La Villa, McAllen, Mercedes, Mission, Palmhurst, Palmview, Penitas, Pharr, Progreso, Progreso Lakes, San Juan, Sullivan City, and Weslaco.",
+      "subquestion": "For this county from <hop 1 answer>, how many cities are there?",
+      "answer": {
+        "county": "Hidalgo County",
+        "city_count": 22
+      }
+    },
+    "8": {
+      "source": "wikipedia/Montgomery_County,_Texas/content.txt",
+      "fact": "Montgomery County has 2 multiple-county cities and 12 Montgomery County-only cities.",
+      "subquestion": "For this county from <hop 1 answer>, how many cities are there?",
+      "answer": {
+        "county": "Montgomery County",
+        "city_count": 14
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 1: FY 2019 TDCJ intake counts between 700 and 4,600 include Bexar, Hidalgo, Travis, El Paso, Montgomery, and others.",
+        "Node 2: FY 2020 TDCJ intake counts between 700 and 4,600 include Harris, Tarrant, Dallas, Bexar, Hidalgo, Travis, Montgomery, McLennan, and El Paso.",
+        "Node 3: FY 2021 TDCJ intake counts between 700 and 4,600 include Dallas, Tarrant, Bexar, Hidalgo, Collin, Smith, Montgomery, El Paso, and Travis.",
+        "Node 4: FY 2022 TDCJ intake counts between 700 and 4,600 include Tarrant, Dallas, Bexar, Hidalgo, Montgomery, Smith, Jefferson, Collin, McLennan, El Paso, and Johnson.",
+        "Derive hop 1 answer using nodes 1, 2, 3, 4: intersecting the yearly county sets leaves Bexar, El Paso, Hidalgo, and Montgomery. Hop answer: Bexar, El Paso, Hidalgo, Montgomery."
+      ],
+      "answer": "Bexar, El Paso, Hidalgo, Montgomery"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "reasoning": [
+        "Node 5: Bexar County from <hop 1 answer> has `25` cities.",
+        "Node 6: El Paso County from <hop 1 answer> has `4` cities.",
+        "Node 7: Hidalgo County from <hop 1 answer> has `22` cities.",
+        "Node 8: Montgomery County from <hop 1 answer> has `14` cities.",
+        "Derive hop 2 answer using nodes 5, 6, 7, 8: the maximum city count is `25`, the minimum is `4`, and `25 - 4 = 21`. Hop answer: 21."
+      ],
+      "answer": 21
+    }
+  ],
+  "datasets_used": [
+    "wikipedia/El_Paso_County,_Texas/content.txt",
+    "wikipedia/Bexar_County,_Texas/content.txt",
+    "wikipedia/Montgomery_County,_Texas/content.txt",
+    "wikipedia/Hidalgo_County,_Texas/content.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2019/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2020/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2021/signed-metadata.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2022/files/rows.txt",
+    "datagov/texas-department-of-criminal-justice-receives-fy-2022/signed-metadata.txt"
+  ]
+}

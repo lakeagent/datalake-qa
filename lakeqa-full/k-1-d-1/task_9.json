@@ -1,0 +1,30 @@
+{
+    "question": "Which year, from 2008 through 2010, had the highest number of paid passengers on the MTA? Your response should be in the format [Answer].",
+    "answer": "2008",
+    "nodes": {
+        "1": {
+            "source": "datagov/metropolitan-transportation-authority-mta-performance-indicators-per-agency-beginning-2008/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/metropolitan-transportation-authority-mta-performance-indicators-per-agency-beginning-2008/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\n\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=None, engine=\"python\")\n\n\ndf[\"Period Year\"] = pd.to_numeric(df[\"Period Year\"], errors=\"coerce\")\ndf[\"Monthly Actual\"] = pd.to_numeric(df[\"Monthly Actual\"], errors=\"coerce\")\nfiltered = df[\n    df[\"Indicator Name\"].astype(str).str.strip().str.lower().eq(\"total ridership\")\n    & df[\"Period Year\"].between(2008, 2010)\n]\nyearly_totals = filtered.groupby(\"Period Year\", dropna=True)[\"Monthly Actual\"].sum()\nanswer = str(int(yearly_totals.idxmax()))\n",
+            "subquestion": "Which year, from 2008 through 2010, had the highest number of paid passengers on the MTA?",
+            "answer": "2008"
+        }
+    },
+    "datasets_used": [
+        "datagov/metropolitan-transportation-authority-mta-performance-indicators-per-agency-beginning-2008/files/rows.txt",
+        "datagov/metropolitan-transportation-authority-mta-performance-indicators-per-agency-beginning-2008/signed-metadata.txt",
+        "datagov/metropolitan-transportation-authority-mta-performance-indicators-per-agency-beginning-2008/files/cy9b-i9w9.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter to records with `Indicator Name` = Total Ridership, sum `Monthly Actual` by `Period Year` from 2008 to 2010, and select the year with the highest total. The peak year is 2008.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2008"
+        }
+    ]
+}

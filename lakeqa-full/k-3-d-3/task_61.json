@@ -1,0 +1,168 @@
+{
+  "question": "From the top three Texas counties by average state-government spending from 2018 to 2020, identify their county seats. Which of those county seats has the most non-mayor city council members? Return the city name only. Your response should be in the format [Answer].",
+  "answer": "Houston",
+  "nodes": {
+    "1": {
+      "source": "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-state-expenditures-by-county-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[\n        df[\"County\"].notna()\n        & (df[\"County\"] != \"INTEX\")\n    ]\n    .groupby(\"County\", as_index=False)[\"Amount\"]\n    .sum()\n    .sort_values(\"Amount\", ascending=False)\n    .reset_index(drop=True)\n)\nanswer = dict(zip(result[\"County\"], result[\"Amount\"]))",
+      "subquestion": "What was the total state-government spending by Texas county in 2018?",
+      "answer": {
+        "TRAVIS": 29374677347.44,
+        "HARRIS": 28158070491.58,
+        "DALLAS": 21393532327.19,
+        "BEXAR": 14728288130.02,
+        "TARRANT": 9271248309.9,
+        "HIDALGO": 6972525635.8,
+        "FORT BEND": 6492630042.559999,
+        "EL PASO": 5336100417.92,
+        "NUECES": 3565913161.02,
+        "WILLIAMSON": 3183082660.11
+      },
+      "limit": 10
+    },
+    "2": {
+      "source": "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-state-expenditures-by-county-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[\n        df[\"County\"].notna()\n        & (df[\"County\"] != \"INTEX\")\n    ]\n    .groupby(\"County\", as_index=False)[\"Amount\"]\n    .sum()\n    .sort_values(\"Amount\", ascending=False)\n    .reset_index(drop=True)\n)\nanswer = dict(zip(result[\"County\"], result[\"Amount\"]))",
+      "subquestion": "What was the total state-government spending by Texas county in 2019?",
+      "answer": {
+        "TRAVIS": 16338507938.35,
+        "HARRIS": 14986103849.57,
+        "DALLAS": 10578598198.67,
+        "BEXAR": 7513472495.969999,
+        "TARRANT": 4521857907.47,
+        "HIDALGO": 3806412724.5899997,
+        "FORT BEND": 3170751219.59,
+        "EL PASO": 2697075449.58,
+        "NUECES": 1908938199.46,
+        "WILLIAMSON": 1731549869.92
+      },
+      "limit": 10
+    },
+    "3": {
+      "source": "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-state-expenditures-by-county-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df[\n        df[\"County\"].notna()\n        & (df[\"County\"] != \"INTEX\")\n    ]\n    .groupby(\"County\", as_index=False)[\"Amount\"]\n    .sum()\n    .sort_values(\"Amount\", ascending=False)\n    .reset_index(drop=True)\n)\nanswer = dict(zip(result[\"County\"], result[\"Amount\"]))",
+      "subquestion": "What was the total state-government spending by Texas county in 2020?",
+      "answer": {
+        "TRAVIS": 16762053530.27,
+        "HARRIS": 16453460156.29,
+        "DALLAS": 12496129391.79,
+        "BEXAR": 8839835949.14,
+        "TARRANT": 5064124303.04,
+        "HIDALGO": 4146048814.13,
+        "FORT BEND": 3451437618.41,
+        "EL PASO": 3075321686.73,
+        "NUECES": 2219759682.6899996,
+        "WILLIAMSON": 2122362176.09
+      },
+      "limit": 10
+    },
+    "4": {
+      "source": "wikipedia/Travis_County,_Texas/content.txt",
+      "fact": "Travis County is located in Central Texas. Its county seat and most populous city is Austin, the state's capital.",
+      "subquestion": "What is the county seat of Travis County?",
+      "answer": "Austin is the county seat of Travis County"
+    },
+    "5": {
+      "source": "wikipedia/Harris_County,_Texas/content.txt",
+      "fact": "Harris County is a county located in the U.S. state of Texas. Its county seat is Houston.",
+      "subquestion": "What is the county seat of Harris County?",
+      "answer": "Houston is the county seat of Harris County"
+    },
+    "6": {
+      "source": "wikipedia/Dallas_County,_Texas/content.txt",
+      "fact": "Dallas County is a county located in the U.S. state of Texas. Its county seat is Dallas.",
+      "subquestion": "What is the county seat of Dallas County?",
+      "answer": "Dallas is the county seat of Dallas County"
+    },
+    "7": {
+      "source": "wikipedia/Austin,_Texas/content.txt",
+      "fact": "Austin is administered by an 11-member city council (10 council members elected by geographic district plus a mayor elected at large).",
+      "subquestion": "How many non-mayor city council members does the first county seat from <hop 2 answer> have?",
+      "answer": 10
+    },
+    "8": {
+      "source": "wikipedia/Houston/content.txt",
+      "fact": "The city's elected officials are the mayor, city controller and 16 members of the Houston City Council.",
+      "subquestion": "How many non-mayor city council members does the second county seat from <hop 2 answer> have?",
+      "answer": 16
+    },
+    "9": {
+      "source": "wikipedia/Dallas/content.txt",
+      "fact": "The city uses a council-manager government, with Eric Johnson serving as mayor, Kimberly Tolbert serving as city manager, and 14 council members serving as representatives to the 14 council districts in the city.",
+      "subquestion": "How many non-mayor city council members does the third county seat from <hop 2 answer> have?",
+      "answer": 14
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Travis_County,_Texas/content.txt",
+    "wikipedia/Harris_County,_Texas/content.txt",
+    "wikipedia/Dallas_County,_Texas/content.txt",
+    "wikipedia/Austin,_Texas/content.txt",
+    "wikipedia/Houston/content.txt",
+    "wikipedia/Dallas/content.txt",
+    "datagov/texas-state-expenditures-by-county-2018/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2018/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2018/files/f2iw-dtqt.txt",
+    "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2019/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2019/files/2x5x-m677.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+    "datagov/texas-state-expenditures-by-county-2020/signed-metadata.txt",
+    "datagov/texas-state-expenditures-by-county-2020/files/aact-g69n.publisher-view.json"
+  ],
+  "reasoning_hops": [
+    {
+      "hop_id": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: Filter 2018 rows where `County` is present and not `INTEX`, group by `County`, sum `Amount`, and return the yearly county totals.",
+        "Node 2: Filter 2019 rows where `County` is present and not `INTEX`, group by `County`, sum `Amount`, and return the yearly county totals.",
+        "Node 3: Filter 2020 rows where `County` is present and not `INTEX`, group by `County`, sum `Amount`, and return the yearly county totals.",
+        "Hop result: average the three yearly county totals and rank them; the top three counties are Travis, Harris, and Dallas."
+      ],
+      "answer": [
+        "TRAVIS",
+        "HARRIS",
+        "DALLAS"
+      ]
+    },
+    {
+      "hop_id": 2,
+      "node_ids": [
+        4,
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 4: Retrieve the county seat of Travis County from <hop 1 answer>.",
+        "Node 5: Retrieve the county seat of Harris County from <hop 1 answer>.",
+        "Node 6: Retrieve the county seat of Dallas County from <hop 1 answer>.",
+        "Hop result: the county seats are Austin, Houston, and Dallas."
+      ],
+      "answer": {
+        "TRAVIS": "Austin",
+        "HARRIS": "Houston",
+        "DALLAS": "Dallas"
+      }
+    },
+    {
+      "hop_id": 3,
+      "node_ids": [
+        7,
+        8,
+        9
+      ],
+      "reasoning": [
+        "Node 7: Austin has 10 non-mayor city council members.",
+        "Node 8: Houston has 16 non-mayor city council members.",
+        "Node 9: Dallas has 14 non-mayor city council members.",
+        "Hop result: Houston has the most non-mayor city council members."
+      ],
+      "answer": "Houston"
+    }
+  ]
+}

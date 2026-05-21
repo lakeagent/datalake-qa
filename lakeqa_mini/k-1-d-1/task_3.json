@@ -1,0 +1,30 @@
+{
+    "question": "Define a yearly Passenger Instability-Adjusted Load (PIAL) as annual total CTA bus passengers across all routes multiplied by (1 + absolute year-over-year percentage change in that annual total). For years 2006 through 2010, which year has the lowest PIAL? If there is a tie, choose the earlier year. Your response should be in the format [Answer].",
+    "answer": "2006",
+    "nodes": {
+        "1": {
+            "source": "datagov/cta-ridership-bus-routes-monthly-day-type-averages-totals/files/rows.txt",
+            "fact": "import pandas as pd\n\ndf = pd.read_csv(\"datagov/cta-ridership-bus-routes-monthly-day-type-averages-totals/files/rows.txt\", sep=None, engine=\"python\")\ndf[\"Month_Beginning\"] = pd.to_datetime(df[\"Month_Beginning\"], errors=\"coerce\")\ndf[\"MonthTotal\"] = pd.to_numeric(df[\"MonthTotal\"], errors=\"coerce\")\ndf[\"Year\"] = df[\"Month_Beginning\"].dt.year\n\nfiltered = df[df[\"Year\"].between(2005, 2010)].copy()\nyear_totals = filtered.groupby(\"Year\", as_index=False)[\"MonthTotal\"].sum().sort_values(\"Year\")\nyear_totals[\"abs_yoy_change\"] = year_totals[\"MonthTotal\"].pct_change().abs()\nscored = year_totals[year_totals[\"Year\"].between(2006, 2010)].copy()\nscored[\"PIAL\"] = scored[\"MonthTotal\"] * (1 + scored[\"abs_yoy_change\"])\n\nanswer = str(int(scored.sort_values([\"PIAL\", \"Year\"], ascending=[True, True]).iloc[0][\"Year\"]))\n",
+            "subquestion": "Define a yearly Passenger Instability-Adjusted Load (PIAL) as annual total CTA bus passengers across all routes multiplied by (1 + absolute year-over-year percentage change in that annual total). For years 2006 through 2010, which year has the lowest PIAL? If there is a tie, choose the earlier year.",
+            "answer": "2006"
+        }
+    },
+    "datasets_used": [
+        "datagov/cta-ridership-bus-routes-monthly-day-type-averages-totals/files/rows.txt",
+        "datagov/cta-ridership-bus-routes-monthly-day-type-averages-totals/signed-metadata.txt",
+        "datagov/cta-ridership-bus-routes-monthly-day-type-averages-totals/files/ridershipreadme.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Sum `MonthTotal` by `Year` for 2005 through 2010, compute the absolute year-over-year percentage change in the annual totals, calculate PIAL for 2006 through 2010 as annual `MonthTotal` multiplied by 1 plus that change, and select the year with the smallest PIAL, breaking ties by earlier `Year`.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "2006"
+        }
+    ]
+}

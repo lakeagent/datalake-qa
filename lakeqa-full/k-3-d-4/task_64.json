@@ -1,0 +1,177 @@
+{
+  "question": "Consider the Washington counties whose school districts consistently achieved at least 68% English language arts performance for all students and all grades from 2014-15 through 2017-18. Among the Eastern Washington counties in that set, how many distinct counties from another state are adjacent to at least one of those counties? Return the number only. Your response should be in the format [Answer].",
+  "answer": 5,
+  "nodes": {
+    "1": {
+      "source": "datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"OrganizationLevel\"] == \"District\")\n    & (df[\"TestSubject\"] == \"ELA\")\n    & (df[\"StudentGroup\"] == \"All Students\")\n    & (df[\"GradeLevel\"] == \"All Grades\")\n].copy()\n\nfiltered[\"PercentMetStandard_num\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"),\n    errors=\"coerce\",\n)\n\nanswer = (\n    filtered[filtered[\"PercentMetStandard_num\"] >= 68]\n    [[\"DistrictName\", \"County\"]]\n    .drop_duplicates()\n    .assign(answer=lambda x: x[\"DistrictName\"] + \" (\" + x[\"County\"] + \")\")\n    [\"answer\"]\n    .sort_values()\n    .tolist()\n)\nprint(answer)",
+      "subquestion": "Which Washington school districts had at least 68% English language arts performance for all students and all grades in 2014-15?",
+      "answer": [
+        "Blaine School District (Whatcom)",
+        "Camas School District (Clark)",
+        "Carbonado School District (Pierce)",
+        "Chehalis School District (Lewis)",
+        "Colfax School District (Whitman)",
+        "Damman School District (Kittitas)",
+        "Deer Park School District (Spokane)",
+        "Dieringer School District (Pierce)",
+        "Freeman School District (Spokane)",
+        "Griffin School District (Thurston)"
+      ],
+      "limit": 10
+    },
+    "2": {
+      "source": "datagov/report-card-assessment-data-2015-16-school-year/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-assessment-data-2015-16-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"OrganizationLevel\"] == \"District\")\n    & (df[\"TestSubject\"] == \"ELA\")\n    & (df[\"StudentGroup\"] == \"All Students\")\n    & (df[\"GradeLevel\"] == \"All Grades\")\n].copy()\n\nfiltered[\"PercentMetStandard_num\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"),\n    errors=\"coerce\",\n)\n\nanswer = (\n    filtered[filtered[\"PercentMetStandard_num\"] >= 68]\n    [[\"DistrictName\", \"County\"]]\n    .drop_duplicates()\n    .assign(answer=lambda x: x[\"DistrictName\"] + \" (\" + x[\"County\"] + \")\")\n    [\"answer\"]\n    .sort_values()\n    .tolist()\n)\nprint(answer)",
+      "subquestion": "Which Washington school districts had at least 68% English language arts performance for all students and all grades in 2015-16?",
+      "answer": [
+        "Almira School District (Lincoln)",
+        "Anacortes School District (Skagit)",
+        "Bainbridge Island School District (Kitsap)",
+        "Bellevue School District (King)",
+        "Bellingham School District (Whatcom)",
+        "Blaine School District (Whatcom)",
+        "Camas School District (Clark)",
+        "Carbonado School District (Pierce)",
+        "Central Kitsap School District (Kitsap)",
+        "Chehalis School District (Lewis)"
+      ],
+      "limit": 10
+    },
+    "3": {
+      "source": "datagov/report-card-assessment-data-2016-17-school-year/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-assessment-data-2016-17-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"OrganizationLevel\"] == \"District\")\n    & (df[\"TestSubject\"] == \"ELA\")\n    & (df[\"StudentGroup\"] == \"All Students\")\n    & (df[\"GradeLevel\"] == \"All Grades\")\n].copy()\n\nfiltered[\"PercentMetStandard_num\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"),\n    errors=\"coerce\",\n)\n\nanswer = (\n    filtered[filtered[\"PercentMetStandard_num\"] >= 68]\n    [[\"DistrictName\", \"County\"]]\n    .drop_duplicates()\n    .assign(answer=lambda x: x[\"DistrictName\"] + \" (\" + x[\"County\"] + \")\")\n    [\"answer\"]\n    .sort_values()\n    .tolist()\n)\nprint(answer)",
+      "subquestion": "Which Washington school districts had at least 68% English language arts performance for all students and all grades in 2016-17?",
+      "answer": [
+        "Adna School District (Lewis)",
+        "Almira School District (Lincoln)",
+        "Anacortes School District (Skagit)",
+        "Bainbridge Island School District (Kitsap)",
+        "Bellevue School District (King)",
+        "Bickleton School District (Klickitat)",
+        "Camas School District (Clark)",
+        "Carbonado School District (Pierce)",
+        "Central Kitsap School District (Kitsap)",
+        "Centralia School District (Lewis)"
+      ],
+      "limit": 10
+    },
+    "4": {
+      "source": "datagov/report-card-assessment-data-2017-18-school-year/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/report-card-assessment-data-2017-18-school-year/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"OrganizationLevel\"] == \"District\")\n    & (df[\"TestSubject\"] == \"ELA\")\n    & (df[\"StudentGroup\"] == \"All Students\")\n    & (df[\"GradeLevel\"] == \"All Grades\")\n].copy()\n\nfiltered[\"PercentMetStandard_num\"] = pd.to_numeric(\n    filtered[\"PercentMetStandard\"].astype(str).str.rstrip(\"%\"),\n    errors=\"coerce\",\n)\n\nanswer = (\n    filtered[filtered[\"PercentMetStandard_num\"] >= 68]\n    [[\"DistrictName\", \"County\"]]\n    .drop_duplicates()\n    .assign(answer=lambda x: x[\"DistrictName\"] + \" (\" + x[\"County\"] + \")\")\n    [\"answer\"]\n    .sort_values()\n    .tolist()\n)\nprint(answer)",
+      "subquestion": "Which Washington school districts had at least 68% English language arts performance for all students and all grades in 2017-18?",
+      "answer": [
+        "Almira School District (Lincoln)",
+        "Anacortes School District (Skagit)",
+        "Bainbridge Island School District (Kitsap)",
+        "Bellevue School District (King)",
+        "Blaine School District (Whatcom)",
+        "Camas School District (Clark)",
+        "Carbonado School District (Pierce)",
+        "Central Kitsap School District (Kitsap)",
+        "Centralia School District (Lewis)",
+        "Colfax School District (Whitman)"
+      ],
+      "limit": 10
+    },
+    "5": {
+      "source": "wikipedia/Eastern_Washington/content.txt",
+      "fact": "Counties\nEastern Washington is composed of:\n\n Adams\n Asotin\n Benton\n Chelan\n Columbia\n Douglas\n Ferry\n Franklin\n Garfield\n Grant\n Kittitas\n Klickitat\n Lincoln\n Okanogan\n Pend Oreille\n Spokane\n Stevens\n Walla Walla\n Whitman\n Yakima",
+      "subquestion": "Among <hop 1 answer>, which counties are in Eastern Washington?",
+      "answer": [
+        "Whitman",
+        "Spokane"
+      ]
+    },
+    "6": {
+      "source": "wikipedia/Whitman_County,_Washington/content.txt",
+      "fact": "Adjacent counties\n\nSpokane County - north\nBenewah County, Idaho - northeast\nLatah County, Idaho - east\nNez Perce County, Idaho - southeast\nAsotin County -  south/southeast\nGarfield County - south\nColumbia County - south\nFranklin County - southwest\nAdams County - west\nLincoln County - northwest",
+      "subquestion": "As of 2025, which counties from another state are adjacent to Whitman County from <hop 2 answer>?",
+      "answer": [
+        "Benewah County, Idaho",
+        "Latah County, Idaho",
+        "Nez Perce County, Idaho"
+      ]
+    },
+    "7": {
+      "source": "wikipedia/Spokane_County,_Washington/content.txt",
+      "fact": "Adjacent counties\n\n Stevens County – northwest\n Pend Oreille County – north\n Bonner County, Idaho – northeast\n Kootenai County, Idaho – east\n Benewah County, Idaho – southeast\n Whitman County – south\n Lincoln County – west",
+      "subquestion": "As of 2025, which counties from another state are adjacent to Spokane County from <hop 2 answer>?",
+      "answer": [
+        "Bonner County, Idaho",
+        "Kootenai County, Idaho",
+        "Benewah County, Idaho"
+      ]
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Eastern_Washington/content.txt",
+    "wikipedia/Whitman_County,_Washington/content.txt",
+    "wikipedia/Spokane_County,_Washington/content.txt",
+    "datagov/report-card-assessment-data-2014-15-school-year/files/rows.txt",
+    "datagov/report-card-assessment-data-2014-15-school-year/signed-metadata.txt",
+    "datagov/report-card-assessment-data-2014-15-school-year/files/jjrr-uy75.txt",
+    "datagov/report-card-assessment-data-2015-16-school-year/files/rows.txt",
+    "datagov/report-card-assessment-data-2015-16-school-year/signed-metadata.txt",
+    "datagov/report-card-assessment-data-2015-16-school-year/files/6hhp-ynqb.txt",
+    "datagov/report-card-assessment-data-2016-17-school-year/files/rows.txt",
+    "datagov/report-card-assessment-data-2016-17-school-year/signed-metadata.txt",
+    "datagov/report-card-assessment-data-2016-17-school-year/files/5tvk-w2c5.txt",
+    "datagov/report-card-assessment-data-2017-18-school-year/files/rows.txt",
+    "datagov/report-card-assessment-data-2017-18-school-year/signed-metadata.txt",
+    "datagov/report-card-assessment-data-2017-18-school-year/files/spyf-ga46.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `OrganizationLevel` = `District`, `TestSubject` = `ELA`, `StudentGroup` = `All Students`, `GradeLevel` = `All Grades`, convert `PercentMetStandard` to numeric, keep districts with `PercentMetStandard >= 68`, and return distinct `DistrictName` + `County` pairs for 2014-15.",
+        "Node 2: Apply the same district-level ELA filter for 2015-16 and return distinct `DistrictName` + `County` pairs.",
+        "Node 3: Apply the same district-level ELA filter for 2016-17 and return distinct `DistrictName` + `County` pairs.",
+        "Node 4: Apply the same district-level ELA filter for 2017-18 and return distinct `DistrictName` + `County` pairs.",
+        "Hop result: counties represented by qualifying districts in all four years = King, Clark, Pierce, Whitman, Thurston, Spokane."
+      ],
+      "answer": [
+        "King",
+        "Clark",
+        "Pierce",
+        "Whitman",
+        "Thurston",
+        "Spokane"
+      ]
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        "5"
+      ],
+      "reasoning": [
+        "Node 5: The counties from <hop 1 answer> that are in Eastern Washington are `Whitman` and `Spokane`.",
+        "Hop result: Whitman, Spokane."
+      ],
+      "answer": [
+        "Whitman",
+        "Spokane"
+      ]
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        "6",
+        "7"
+      ],
+      "reasoning": [
+        "Node 6: Whitman County is adjacent to Benewah County, Latah County, and Nez Perce County from another state.",
+        "Node 7: Spokane County is adjacent to Bonner County, Kootenai County, and Benewah County from another state.",
+        "Hop result: the distinct adjacent counties from another state are Bonner County, Kootenai County, Benewah County, Latah County, and Nez Perce County, so the count is 5."
+      ],
+      "answer": 5
+    }
+  ]
+}

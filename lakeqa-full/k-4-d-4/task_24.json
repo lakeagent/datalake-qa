@@ -1,0 +1,122 @@
+{
+    "question": "In 1999, which U.S. state has the 3rd highest number of deaths because of Alzheimer's disease? In that state, in home meal programs, which three counties had the highest reimbursement amount in breakfast and lunch in home meal programs in 2024, 2023, and 2022? Across the counties that appear in all three of those answers, in which years did the 3rd to 5th most people pay sales tax through dealer-financed car deals? In Los Angeles and in those years, for people ages 45 through 54, for arrests that have multiple offenses, which kind of charges rank 25th through 27th when sorted from rarest to most common? Finally, in 2024, for people ages 25 through 34, how many arrests happened involving any of those three offenses ? Please return only the number in the format [Answer].",
+    "answer": "24",
+    "nodes": {
+        "1": {
+            "source": "datagov/nchs-leading-causes-of-death-united-states/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/nchs-leading-causes-of-death-united-states/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['Deaths_num'] = pd.to_numeric(df['Deaths'].str.replace(',', '', regex=False), errors='coerce')\nfiltered = df[(df['Year'] == '1999') & (df['Cause Name'] == \"Alzheimer's disease\") & df['Deaths_num'].notna() & ~df['State'].eq('United States')].copy()\nranked = filtered.sort_values(['Deaths_num', 'State'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = str(ranked.iloc[2]['State'])\n",
+            "subquestion": "In 1999, which U.S. state has the 3rd highest number of deaths because of Alzheimer's disease?",
+            "answer": "Texas"
+        },
+        "2": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2024/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2024/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = 'Texas'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfor col in ['BreakfastReimbursement', 'LunchReimbursement']:\n    df[col + '_num'] = pd.to_numeric(df[col].str.replace(',', '', regex=False), errors='coerce').fillna(0)\ngrouped = df.groupby('SiteCounty', as_index=False).agg(BreakfastReimbursement_num=('BreakfastReimbursement_num', 'sum'), LunchReimbursement_num=('LunchReimbursement_num', 'sum'))\ngrouped['daytime_score'] = grouped['BreakfastReimbursement_num'] + grouped['LunchReimbursement_num']\nranked = grouped.sort_values(['daytime_score', 'SiteCounty'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[:3]['SiteCounty'].tolist())\n",
+            "subquestion": "In <node_1 answer>, which three counties had the highest reimbursement amount in breakfast and lunch in home meal programs in 2024?",
+            "answer": "HARRIS; DALLAS; TARRANT"
+        },
+        "3": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2023/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2023/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = 'Texas'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfor col in ['BreakfastReimbursement', 'LunchReimbursement']:\n    df[col + '_num'] = pd.to_numeric(df[col].str.replace(',', '', regex=False), errors='coerce').fillna(0)\ngrouped = df.groupby('SiteCounty', as_index=False).agg(BreakfastReimbursement_num=('BreakfastReimbursement_num', 'sum'), LunchReimbursement_num=('LunchReimbursement_num', 'sum'))\ngrouped['daytime_score'] = grouped['BreakfastReimbursement_num'] + grouped['LunchReimbursement_num']\nranked = grouped.sort_values(['daytime_score', 'SiteCounty'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[:3]['SiteCounty'].tolist())\n",
+            "subquestion": "In <node_1 answer>, in home meal programs, which three counties had the highest reimbursement amount in breakfast and lunch in home meal programs in 2023?",
+            "answer": "HARRIS; TARRANT; DALLAS"
+        },
+        "4": {
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2022/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_1_answer = 'Texas'\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\nfor col in ['BreakfastReimbursement', 'LunchReimbursement']:\n    df[col + '_num'] = pd.to_numeric(df[col].str.replace(',', '', regex=False), errors='coerce').fillna(0)\ngrouped = df.groupby('SiteCounty', as_index=False).agg(BreakfastReimbursement_num=('BreakfastReimbursement_num', 'sum'), LunchReimbursement_num=('LunchReimbursement_num', 'sum'))\ngrouped['daytime_score'] = grouped['BreakfastReimbursement_num'] + grouped['LunchReimbursement_num']\nranked = grouped.sort_values(['daytime_score', 'SiteCounty'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[:3]['SiteCounty'].tolist())\n",
+            "subquestion": "In <node_1 answer>, which three counties had the highest reimbursement amount in breakfast and lunch in home meal programs in 2022?",
+            "answer": "HARRIS; TARRANT; DALLAS"
+        },
+        "5": {
+            "source": "datagov/county-returns/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/county-returns/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_2_answer = 'HARRIS; DALLAS; TARRANT'\nnode_3_answer = 'HARRIS; TARRANT; DALLAS'\nnode_4_answer = 'HARRIS; TARRANT; DALLAS'\ncounties_2 = {part.strip() for part in node_2_answer.split(';') if part.strip()}\ncounties_3 = {part.strip() for part in node_3_answer.split(';') if part.strip()}\ncounties_4 = {part.strip() for part in node_4_answer.split(';') if part.strip()}\ncommon_counties = counties_2 & counties_3 & counties_4\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['Taxpayers_num'] = pd.to_numeric(df['Taxpayers'].str.replace(',', '', regex=False), errors='coerce').fillna(0)\nfiltered = df[df['County Name'].isin(common_counties) & df['Tax Description'].eq('SELLER FINANCED SALES - MOTOR VEHICLE SALES TAX')].copy()\ngrouped = filtered.groupby('Year', as_index=False).agg(Taxpayers_num=('Taxpayers_num', 'sum'))\nranked = grouped.sort_values(['Taxpayers_num', 'Year'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[2:5]['Year'].tolist())\n",
+            "subquestion": "Across the counties that appear in all of <node_2 answer>, <node_3 answer>, and <node_4 answer>, in which years did the 3rd to 5th most people pay sales tax through dealer-financed car deals?",
+            "answer": "2012; 2013; 2015"
+        },
+        "6": {
+            "source": "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+            "fact": "import io\nimport re\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv('.env')\nexcept Exception:\n    pass\n\nsource = 'datagov/arrest-data-from-2010-to-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nnode_5_answer = '2012; 2013; 2015'\nyears = {int(part.strip()) for part in node_5_answer.split(';') if part.strip()}\ndf = pd.read_csv(io.BytesIO(boto3.client('s3').get_object(Bucket=bucket, Key=source)['Body'].read()), dtype=str, low_memory=False)\nfor col in df.columns:\n    df[col] = df[col].fillna('').astype(str).str.strip()\ndf['ArrestYear'] = pd.to_datetime(df['Arrest Date'], errors='coerce').dt.year\ndf['Age_num'] = pd.to_numeric(df['Age'], errors='coerce')\ncompound_pattern = re.compile(r'/|\\bW/\\b|\\bWITH\\b|\\bOR\\b|\\bAND/OR\\b| & ', re.IGNORECASE)\nfiltered = df[df['ArrestYear'].isin(years) & df['Age_num'].between(45, 54) & df['Charge Description'].str.contains(compound_pattern, na=False)].copy()\ncounts = filtered['Charge Description'].value_counts().rename_axis('Charge Description').reset_index(name='count')\nranked = counts.sort_values(['count', 'Charge Description'], ascending=[True, True], kind='mergesort').reset_index(drop=True)\nanswer = '; '.join(ranked.iloc[24:27]['Charge Description'].tolist())\n",
+            "subquestion": "In Los Angeles and in the years of <node_5 answer>, among people ages 45 through 54, for arrests that have multiple offenses, which kind of charges rank 25th through 27th when sorted from rarest to most common?",
+            "answer": "BATTERY ON SCHOOL/PRK/HOSPITAL GROUNDS; BATTERY TRANSPORTATION PERSONNEL/PASSENGR; BENCH WARR/FAIL TO APPEAR ON FEL CHARGE"
+        },
+        "7": {
+            "source": "datagov/arrest-data-from-2020-to-present/files/headers.txt; https://data.lacity.org/resource/amvf-fr72.csv",
+            "fact": "import csv\nimport io\nimport ssl\nimport urllib.parse\nimport urllib.request\n\nnode_6_answer = 'BATTERY ON SCHOOL/PRK/HOSPITAL GROUNDS; BATTERY TRANSPORTATION PERSONNEL/PASSENGR; BENCH WARR/FAIL TO APPEAR ON FEL CHARGE'\ncharges = [part.strip() for part in node_6_answer.split(';') if part.strip()]\nwhere_parts = []\nfor charge in charges:\n    escaped = charge.replace(\"'\", \"''\")\n    where_parts.append(f\"chrg_desc='{escaped}'\")\nwhere = \"date_extract_y(arst_date)=2024 AND age in('25','26','27','28','29','30','31','32','33','34') AND (\" + ' OR '.join(where_parts) + \")\"\nurl = 'https://data.lacity.org/resource/amvf-fr72.csv?' + urllib.parse.urlencode({'$select': 'count(*) as n', '$where': where})\ntext = urllib.request.urlopen(url, context=ssl._create_unverified_context()).read().decode('utf-8', 'replace')\nrows = list(csv.DictReader(io.StringIO(text)))\nanswer = str(int(rows[0]['n']))\n",
+            "subquestion": "In 2024, for people ages 25 through 34, how many arrests happened involving any offenses listed in <node_6 answer>?",
+            "answer": "24"
+        }
+    },
+    "datasets_used": [
+        "datagov/nchs-leading-causes-of-death-united-states/files/rows.txt",
+        "datagov/nchs-leading-causes-of-death-united-states/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2024/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2024/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2024/files/iiq5-dsrs.publisher-view.json",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2023/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2023/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2023/files/2a8t-gchc.publisher-view.json",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2022/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2022/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-home-meal-reimbursement-program-yea-2022/files/vc4s-rb62.publisher-view.json",
+        "datagov/county-returns/files/rows.txt",
+        "datagov/county-returns/signed-metadata.txt",
+        "datagov/county-returns/files/ctj5-pypw.txt",
+        "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
+        "datagov/arrest-data-from-2010-to-2019/signed-metadata.txt",
+        "datagov/arrest-data-from-2010-to-2019/files/yru6-6re4.publisher-view.json",
+        "datagov/arrest-data-from-2020-to-present/files/headers.txt; https://data.lacity.org/resource/amvf-fr72.csv",
+        "datagov/arrest-data-from-2020-to-present/signed-metadata.txt",
+        "datagov/arrest-data-from-2020-to-present/files/rows.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1 identifies Texas as the state with the 3rd highest Alzheimer's disease death count in 1999 after excluding the national total.",
+                "Nodes 2 through 4 stay within Texas and rank counties by combined breakfast and lunch reimbursement in day care home meal support for 2024, 2023, and 2022.",
+                "The counties appearing in all three of those answers are HARRIS, DALLAS, and TARRANT."
+            ],
+            "answer": "HARRIS; DALLAS; TARRANT"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5 keeps those common counties and focuses on seller-financed motor vehicle sales tax filings.",
+                "It sums taxpayers by year and ranks years from fewest taxpayers upward.",
+                "The years ranked 3rd through 5th are 2012, 2013, and 2015."
+            ],
+            "answer": "2012; 2013; 2015"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6 moves to Los Angeles arrest data for the years from Node 5 and the 45-54 age band.",
+                "It restricts to charge descriptions that explicitly combine multiple acts or conditions, then ranks those descriptions from least common upward.",
+                "The 25th through 27th such descriptions are BATTERY ON SCHOOL/PRK/HOSPITAL GROUNDS, BATTERY TRANSPORTATION PERSONNEL/PASSENGR, and BENCH WARR/FAIL TO APPEAR ON FEL CHARGE."
+            ],
+            "answer": "BATTERY ON SCHOOL/PRK/HOSPITAL GROUNDS; BATTERY TRANSPORTATION PERSONNEL/PASSENGR; BENCH WARR/FAIL TO APPEAR ON FEL CHARGE"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7 uses 2024 Los Angeles arrest records for ages 25 through 34 and counts rows whose charge description matches any item from Node 6.",
+                "That total is 24."
+            ],
+            "answer": "24"
+        }
+    ]
+}

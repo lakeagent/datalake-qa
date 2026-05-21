@@ -1,0 +1,155 @@
+{
+    "question": "Identify the Texas county that had the most consistent annual number of state prison releases from 2019 to 2022 (lowest coefficient of variation among the top five by average releases). Identify the NBA champion team based in its county seat, and find which county the team it won its first NBA Finals against is based in? Your response should be in the format [Answer].",
+    "answer": "Manhattan",
+    "nodes": {
+        "1": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty_counts = (\n    df.assign(County=df[\"County\"].astype(str).str.upper())\n      .groupby(\"County\")\n      .size()\n      .to_dict()\n)\n\ntop_five_counties = [\"Harris\", \"Dallas\", \"Tarrant\", \"Bexar\", \"Hidalgo\"]\nanswer = {county: int(county_counts[county.upper()]) for county in top_five_counties}",
+            "subquestion": "What are the FY2019 state prison release counts for every county in the FY2019 TDCJ releases dataset, with County normalized to uppercase, so hop-level reasoning can compute the top five counties by average releases across FY2019-FY2022 and then read this year's counts for those counties?",
+            "answer": {
+                "Harris": 9029,
+                "Dallas": 5355,
+                "Tarrant": 4769,
+                "Bexar": 4545,
+                "Hidalgo": 1861
+            }
+        },
+        "2": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty_counts = (\n    df.assign(County=df[\"County\"].astype(str).str.upper())\n      .groupby(\"County\")\n      .size()\n      .to_dict()\n)\n\ntop_five_counties = [\"Harris\", \"Dallas\", \"Tarrant\", \"Bexar\", \"Hidalgo\"]\nanswer = {county: int(county_counts[county.upper()]) for county in top_five_counties}",
+            "subquestion": "What are the FY2020 state prison release counts for every county in the FY2020 TDCJ releases dataset, with County normalized to uppercase, so hop-level reasoning can compute the top five counties by average releases across FY2019-FY2022 and then read this year's counts for those counties?",
+            "answer": {
+                "Harris": 7059,
+                "Dallas": 4540,
+                "Tarrant": 4450,
+                "Bexar": 3917,
+                "Hidalgo": 1572
+            }
+        },
+        "3": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty_counts = (\n    df.assign(County=df[\"County\"].astype(str).str.upper())\n      .groupby(\"County\")\n      .size()\n      .to_dict()\n)\n\ntop_five_counties = [\"Harris\", \"Dallas\", \"Tarrant\", \"Bexar\", \"Hidalgo\"]\nanswer = {county: int(county_counts[county.upper()]) for county in top_five_counties}",
+            "subquestion": "What are the FY2021 state prison release counts for every county in the FY2021 TDCJ releases dataset, with County normalized to uppercase, so hop-level reasoning can compute the top five counties by average releases across FY2019-FY2022 and then read this year's counts for those counties?",
+            "answer": {
+                "Harris": 5210,
+                "Dallas": 3565,
+                "Tarrant": 3252,
+                "Bexar": 3236,
+                "Hidalgo": 1147
+            }
+        },
+        "4": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2022/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/texas-department-of-criminal-justice-releases-fy-2022/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncounty_counts = (\n    df.assign(County=df[\"County\"].astype(str).str.upper())\n      .groupby(\"County\")\n      .size()\n      .to_dict()\n)\n\ntop_five_counties = [\"Harris\", \"Dallas\", \"Tarrant\", \"Bexar\", \"Hidalgo\"]\nanswer = {county: int(county_counts[county.upper()]) for county in top_five_counties}",
+            "subquestion": "What are the FY2022 state prison release counts for every county in the FY2022 TDCJ releases dataset, with County normalized to uppercase, so hop-level reasoning can compute the top five counties by average releases across FY2019-FY2022 and then read this year's counts for those counties?",
+            "answer": {
+                "Harris": 4988,
+                "Dallas": 3557,
+                "Tarrant": 3231,
+                "Bexar": 2918,
+                "Hidalgo": 1015
+            }
+        },
+        "5": {
+            "source": "wikipedia/Bexar_County,_Texas/content.txt",
+            "fact": "Bexar County (  or  ;  ) is a county in the U.S. state of Texas. It is in South Texas and its county seat is San Antonio.",
+            "subquestion": "What is the county seat of <hop 1 answer>?",
+            "answer": "San Antonio"
+        },
+        "6": {
+            "source": "wikipedia/San_Antonio/content.txt",
+            "fact": "The city also hosts the San Antonio Stock Show & Rodeo and is home to the five-time NBA champion San Antonio Spurs.",
+            "subquestion": "Which NBA champion team is based in <node 5 answer>?",
+            "answer": "San Antonio Spurs"
+        },
+        "7": {
+            "source": "wikipedia/San_Antonio_Spurs/content.txt",
+            "fact": "In the NBA Finals, they faced the New York Knicks, who had made history by becoming the first eighth seed to ever make the NBA Finals. The Spurs won the series 4-1 and the franchise's first NBA Championship in Game 5 at the Knicks' home arena, Madison Square Garden.",
+            "subquestion": "Which team did <node 6 answer> defeat in its first NBA Finals championship?",
+            "answer": "New York Knicks"
+        },
+        "8": {
+            "source": "wikipedia/New_York_Knicks/content.txt",
+            "fact": "The New York Knickerbockers, shortened and more commonly referred to as the New York Knicks, are an American professional basketball team based in the New York City borough of Manhattan.",
+            "subquestion": "In which New York City borough is <node 7 answer> based?",
+            "answer": "Manhattan"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: Read the FY2019 release counts for the five counties with the highest average releases across FY2019-FY2022.",
+                "Node 2: Read the FY2020 release counts for the same five counties.",
+                "Node 3: Read the FY2021 release counts for the same five counties.",
+                "Node 4: Read the FY2022 release counts for the same five counties.",
+                "Hop result: compute each county's coefficient of variation from the four yearly counts and keep the county with the lowest value."
+            ],
+            "answer": "Bexar County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: Read the county seat of <hop 1 answer> from the cited Wikipedia source.",
+                "Hop result: the county seat is San Antonio."
+            ],
+            "answer": "San Antonio"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Read the five-time NBA champion team based in <hop 2 answer>.",
+                "Hop result: the team is the San Antonio Spurs."
+            ],
+            "answer": "San Antonio Spurs"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Read which team <hop 3 answer> defeated in its first NBA championship.",
+                "Hop result: the opponent was the New York Knicks."
+            ],
+            "answer": "New York Knicks"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Read the New York City borough where <hop 4 answer> is based.",
+                "Hop result: the borough is Manhattan."
+            ],
+            "answer": "Manhattan"
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Bexar_County,_Texas/content.txt",
+        "wikipedia/San_Antonio/content.txt",
+        "wikipedia/San_Antonio_Spurs/content.txt",
+        "wikipedia/New_York_Knicks/content.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2021/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2022/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2022/signed-metadata.txt"
+    ]
+}

@@ -1,0 +1,48 @@
+{
+    "question": "Using the 2010 USGS survey of Assateague Island National Seashore, identify the NASA facility where the survey system was developed. Which NASA center operates that facility? Please return only the center name. Your response should be in the format [Answer].",
+    "answer": "Goddard Space Flight Center",
+    "nodes": {
+        "1": {
+            "source": "datagov/eaarl-coastal-topography-assateague-island-national-seashore-maryland-and-virginia-2010/files/USGS.b40f54c8-02fd-4152-8883-b7131059f8af.txt",
+            "fact": "Elevation measurements were collected over Assateague Island National Seashore on March 19 and 24, 2010, using the Experimental Advanced Airborne Research Lidar (EAARL), a pulsed laser ranging system mounted onboard an aircraft. The EAARL, developed originally by the National Aeronautics and Space Administration (NASA) at Wallops Flight Facility in Virginia, measures ground elevation with a vertical resolution of +/-15 centimeters.",
+            "subquestion": "Which NASA facility developed the system used to survey Assateague Island National Seashore in the 2010 USGS survey?",
+            "answer": "Wallops Flight Facility"
+        },
+        "2": {
+            "source": "wikipedia/Wallops_Flight_Facility/content.txt",
+            "fact": "Wallops Flight Facility (WFF) is a rocket launch site on Wallops Island on the Eastern Shore of Virginia, United States. The facility is operated by the Goddard Space Flight Center in Greenbelt, Maryland, and primarily serves to support science and exploration missions for NASA and other federal agencies.",
+            "subquestion": "Which NASA center operates <node_1 answer>?",
+            "answer": "Goddard Space Flight Center"
+        }
+    },
+    "datasets_used": [
+        "datagov/eaarl-coastal-topography-assateague-island-national-seashore-maryland-and-virginia-2010/files/USGS.b40f54c8-02fd-4152-8883-b7131059f8af.txt",
+        "datagov/eaarl-coastal-topography-assateague-island-national-seashore-maryland-and-virginia-2010/signed-metadata.txt",
+        "datagov/eaarl-coastal-topography-assateague-island-national-seashore-maryland-and-virginia-2010/files/metadata.txt",
+        "wikipedia/Wallops_Flight_Facility/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: The 2010 USGS survey text states that the survey used the EAARL system and that EAARL was developed by NASA at Wallops Flight Facility in Virginia.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "Wallops Flight Facility"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: The Wallops Flight Facility page states that the facility is operated by the Goddard Space Flight Center.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "Goddard Space Flight Center"
+        }
+    ]
+}

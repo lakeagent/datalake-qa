@@ -1,0 +1,49 @@
+{
+  "question": "In Maryland, find the county or jurisdiction with the most 2020 jobs in professional, scientific, and technical services. As of 2025, how many sister city agreements does that county or jurisdiction maintain? Write your answer as [ANSWER].",
+  "answer": 5,
+  "nodes": {
+    "1": {
+      "source": "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nobj = client.get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False, usecols=['Jurisdiction', 'Year', 'Professional, scientific, and technical services'])\n\nfiltered = df[df['Year'].astype(str).str.strip().eq('2020')].copy()\nfiltered = filtered[~filtered['Jurisdiction'].astype(str).str.strip().eq('Maryland')].copy()\nfiltered['jobs'] = pd.to_numeric(filtered['Professional, scientific, and technical services'].astype(str).str.replace(',', '', regex=False), errors='coerce')\nranked = filtered[['Jurisdiction', 'jobs']].dropna().sort_values(['jobs', 'Jurisdiction'], ascending=[False, True])\ntop = ranked.iloc[0]\nanswer = f\"{str(top['Jurisdiction']).strip()}, {int(top['jobs'])}\"\n",
+      "subquestion": "In 2020, which Maryland county or jurisdiction had the most jobs in professional, scientific, and technical services, and how many jobs were there?",
+      "answer": "Montgomery County, 107209"
+    },
+    "2": {
+      "source": "wikipedia/Montgomery_County,_Maryland/content.txt",
+      "fact": "Montgomery County maintains sister city agreements with:\n\n Morazán Department, El Salvador\n Gondar, Ethiopia\n Xi'an, China\n Hyderabad, India\n Daejeon, South Korea",
+      "subquestion": "As of 2025, how many sister city agreements does <hop 1 answer> maintain?",
+      "answer": 5
+    }
+  },
+  "datasets_used": [
+    "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/rows.txt",
+    "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/signed-metadata.txt",
+    "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/columns.txt",
+    "datagov/maryland-and-its-jurisdictions-full-and-part-time-jobs-by-naics-2010-2020-historical-and-2/files/i5g8-z4ut.txt",
+    "wikipedia/Montgomery_County,_Maryland/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Among Maryland county-level jurisdictions, Montgomery County has the largest number of 2020 jobs in professional, scientific, and technical services.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "Montgomery County, 107209"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: The county from <hop 1 answer> maintains sister city agreements with Morazán Department, Gondar, Xi'an, Hyderabad, and Daejeon.",
+        "Hop result: counting those agreements gives 5."
+      ],
+      "answer": 5
+    }
+  ]
+}

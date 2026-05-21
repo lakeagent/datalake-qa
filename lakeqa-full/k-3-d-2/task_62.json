@@ -1,0 +1,110 @@
+{
+  "question": "Find the Connecticut counties that satisfy both criteria: (1) more than 200 accidental overdose deaths in 2020, and (2) assignment to a COVID health-service region with a number above 80. Find the largest cities in the counties with the highest and lowest accidental drug death totals in 2020. Which of those two cities has the taller tallest building? Return the city name only. Your response should be in the format [Answer].",
+  "answer": "New Haven",
+  "nodes": {
+    "1": {
+      "source": "datagov/accidental-drug-related-deaths-2012-2018/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/accidental-drug-related-deaths-2012-2018/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Date\"] = pd.to_datetime(df[\"Date\"], errors=\"coerce\")\ndf_2020 = df[df[\"Date\"].dt.year == 2020].copy()\ndf_2020[\"Residence County\"] = df_2020[\"Residence County\"].fillna(\"\").astype(str).str.strip()\n\ncounty_counts = (\n    df_2020.loc[df_2020[\"Residence County\"] != \"\", \"Residence County\"]\n    .value_counts()\n    .rename_axis(\"county\")\n    .reset_index(name=\"accidental_drug_deaths_2020\")\n)\ncounty_counts[\"county\"] = county_counts[\"county\"].str.title() + \" County\"\nfiltered = county_counts[county_counts[\"accidental_drug_deaths_2020\"] > 200].copy()\nanswer = dict(zip(filtered[\"county\"], filtered[\"accidental_drug_deaths_2020\"]))",
+      "subquestion": "Which Connecticut counties had more than 200 accidental overdose deaths in 2020, and what were those totals?",
+      "answer": {
+        "New Haven County": 383,
+        "Hartford County": 335,
+        "Fairfield County": 208
+      }
+    },
+    "2": {
+      "source": "datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[(df[\"state\"] == \"Connecticut\") & (df[\"health_service_area_number\"] > 80)].copy()\nanswer = filtered[\"county_name\"].drop_duplicates().tolist()",
+      "subquestion": "Which Connecticut counties were assigned to a COVID health-service region with a number above 80?",
+      "answer": [
+        "Fairfield County",
+        "New Haven County",
+        "Middlesex County",
+        "Litchfield County"
+      ]
+    },
+    "3": {
+      "source": "wikipedia/New_Haven_County,_Connecticut/content.txt",
+      "fact": "Two of the state's five largest cities, New Haven (3rd) and Waterbury (5th), are part of New Haven County.",
+      "subquestion": "Which city in the higher-accidental-drug-death county from <hop 1 answer> is the largest?",
+      "answer": "New Haven"
+    },
+    "4": {
+      "source": "wikipedia/Fairfield_County,_Connecticut/content.txt",
+      "fact": "the county contains four of the state's seven largest cities—Bridgeport (first), Stamford (second), Norwalk (sixth) and Danbury (seventh)—whose combined population of 433,368 is nearly half the county's total population.",
+      "subquestion": "Which city in the lower-accidental-drug-death county from <hop 1 answer> is the largest?",
+      "answer": "Bridgeport"
+    },
+    "5": {
+      "source": "wikipedia/New_Haven,_Connecticut/content.txt",
+      "fact": "The five tallest buildings in New Haven are: 1. Connecticut Financial Center 383 ft (117m) 26 floors",
+      "subquestion": "What is the height in feet of the tallest building in the first city from <hop 2 answer>?",
+      "answer": 383
+    },
+    "6": {
+      "source": "wikipedia/Bridgeport,_Connecticut/content.txt",
+      "fact": "The tallest building in Bridgeport is currently the Richard Meier-designed 16-story, 248-foot (76 m) Bridgeport Center, which was completed in 1989 and which surpassed the 18-story Park City Plaza, which was completed in 1973.",
+      "subquestion": "What is the height in feet of the tallest building in the second city from <hop 2 answer>?",
+      "answer": 248
+    }
+  },
+  "datasets_used": [
+    "datagov/accidental-drug-related-deaths-2012-2018/files/rows.txt",
+    "datagov/accidental-drug-related-deaths-2012-2018/signed-metadata.txt",
+    "datagov/accidental-drug-related-deaths-2012-2018/files/rybz-nyjw.publisher-view.json",
+    "datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/files/rows.txt",
+    "datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/signed-metadata.txt",
+    "datagov/connecticut-covid-19-community-levels-by-county-as-originally-posted/files/5tw8-bi5h.txt",
+    "wikipedia/New_Haven_County,_Connecticut/content.txt",
+    "wikipedia/Fairfield_County,_Connecticut/content.txt",
+    "wikipedia/New_Haven,_Connecticut/content.txt",
+    "wikipedia/Bridgeport,_Connecticut/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: Parse 2020 `Date`, count rows by `Residence County`, keep counties with `accidental_drug_deaths_2020 > 200`, and return `county -> accidental_drug_deaths_2020`.",
+        "Node 2: Filter rows where `state` = `Connecticut` and `health_service_area_number > 80`, then return distinct `county_name` values.",
+        "Hop result: intersect node 1 counties with node 2 counties, then compare 2020 accidental drug death counts. Higher county = New Haven County; lower county = Fairfield County."
+      ],
+      "answer": {
+        "higher_accidental_drug_death_county": "New Haven County",
+        "lower_accidental_drug_death_county": "Fairfield County"
+      },
+      "hop": 1
+    },
+    {
+      "node_ids": [
+        3,
+        4
+      ],
+      "reasoning": [
+        "Node 3: From the higher-accidental-drug-death county in <hop 1 answer>, select the city ranked 3rd among Connecticut's largest cities.",
+        "Node 4: From the lower-accidental-drug-death county in <hop 1 answer>, select the city ranked 1st among Connecticut's largest cities.",
+        "Hop result: the two comparison cities are New Haven and Bridgeport."
+      ],
+      "answer": [
+        "New Haven",
+        "Bridgeport"
+      ],
+      "hop": 2
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 5: The tallest building in the first city from <hop 2 answer> is 383 feet tall.",
+        "Node 6: The tallest building in the second city from <hop 2 answer> is 248 feet tall.",
+        "Hop result: 383 feet is greater than 248 feet, so the city is `New Haven`."
+      ],
+      "answer": "New Haven"
+    }
+  ]
+}

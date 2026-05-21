@@ -1,0 +1,127 @@
+{
+  "question": "In fiscal year 2022, among the Texas counties that ranked in the top five for confirmed Adult Protective Services victims, validated perpetrators, and service activity, take the county with the lowest repeated investigation rate. For that county, identify its most common confirmed Adult Protective Services allegation type in fiscal year 2022. For that county-reason combination, identify the Adult Protective Services administrative region in fiscal year 2022. Based on its 2020 population, how many ranks apart were the U.S. and Texas population ranks of the city named in that region? Please return only the number in the format [Answer].",
+  "answer": 43,
+  "nodes": {
+    "1": {
+      "source": "datagov/aps-3-4-investigations-victims-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-3-4-investigations-victims-by-county-fy2013-2022/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['County'] = df['County'].astype(str).str.strip()\ndf = df[\n    df['Fiscal Year'].astype(str).str.strip().eq('2022')\n    & df['Confirmed Victim?'].astype(str).str.strip().eq('Confirmed Victim')\n].copy()\ndf['Victims'] = pd.to_numeric(df['Victims'].astype(str).str.replace(',', '', regex=False).str.strip(), errors='coerce')\nranked = (\n    df.groupby('County', as_index=True)['Victims']\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = '; '.join(ranked.index.tolist())\n",
+      "subquestion": "In fiscal year 2022, which five Texas counties had the highest numbers of confirmed Adult Protective Services victims? Return them as a semicolon-separated list in rank order.",
+      "answer": "Harris; Bexar; Dallas; Tarrant; El Paso"
+    },
+    "2": {
+      "source": "datagov/aps-3-5-investigations-perpetrators-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-3-5-investigations-perpetrators-by-county-fy2013-2022/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['County'] = df['County'].astype(str).str.strip()\ndf = df[\n    df['Fiscal Year'].astype(str).str.strip().eq('2022')\n    & df['Confirmed Perpetrators'].astype(str).str.strip().eq('Validated')\n].copy()\ndf['Perpetrators'] = pd.to_numeric(df['Perpetrators'].astype(str).str.replace(',', '', regex=False).str.strip(), errors='coerce')\nranked = (\n    df.groupby('County', as_index=True)['Perpetrators']\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = '; '.join(ranked.index.tolist())\n",
+      "subquestion": "In fiscal year 2022, which five Texas counties had the highest numbers of validated Adult Protective Services perpetrators? Return them as a semicolon-separated list in rank order.",
+      "answer": "Harris; Bexar; Dallas; Tarrant; El Paso"
+    },
+    "3": {
+      "source": "datagov/aps-4-1-services-activity-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-4-1-services-activity-by-county-fy2013-2022/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\ndf['County'] = df['County'].astype(str).str.strip()\ndf = df[df['Fiscal Year'].astype(str).str.strip().eq('2022')].copy()\ndf['Service Stages'] = pd.to_numeric(df['Service Stages'].astype(str).str.replace(',', '', regex=False).str.strip(), errors='coerce')\nranked = (\n    df.groupby('County', as_index=True)['Service Stages']\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n)\nanswer = '; '.join(ranked.index.tolist())\n",
+      "subquestion": "In fiscal year 2022, which five Texas counties recorded the most Adult Protective Services service activity, measured by service stages? Return them as a semicolon-separated list in rank order.",
+      "answer": "Harris; Bexar; Dallas; Tarrant; El Paso"
+    },
+    "4": {
+      "source": "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_1_answer = 'Harris; Bexar; Dallas; Tarrant; El Paso'\nnode_2_answer = 'Harris; Bexar; Dallas; Tarrant; El Paso'\nnode_3_answer = 'Harris; Bexar; Dallas; Tarrant; El Paso'\nintersection = sorted(\n    set(x.strip() for x in node_1_answer.split(';') if x.strip())\n    & set(x.strip() for x in node_2_answer.split(';') if x.strip())\n    & set(x.strip() for x in node_3_answer.split(';') if x.strip())\n)\n\ndf['County'] = df['County'].astype(str).str.strip()\ndf = df[df['Fiscal Year'].astype(str).str.strip().eq('2022')].copy()\ndf = df[df['County'].isin(intersection)].copy()\ndf['Recidivism'] = pd.to_numeric(df['Recidivism'].astype(str).str.strip(), errors='coerce')\nranked = (\n    df.groupby('County', as_index=True)['Recidivism']\n    .mean()\n    .sort_values(ascending=True)\n)\nanswer = str(ranked.index[0])\n",
+      "subquestion": "Among the counties in the shared Adult Protective Services burden intersection from hop 1, which county had the lowest repeated investigation rate in fiscal year 2022?",
+      "answer": "Dallas"
+    },
+    "5": {
+      "source": "datagov/aps-3-2-investigations-allegation-types-by-county-fy2013-fy2022/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-3-2-investigations-allegation-types-by-county-fy2013-fy2022/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_4_answer = 'Dallas'\ndf['County'] = df['County'].astype(str).str.strip()\ndf = df[\n    df['Fiscal Year'].astype(str).str.strip().eq('2022')\n    & df['County'].eq(node_4_answer)\n].copy()\ndf['Confirmed Allegations'] = pd.to_numeric(df['Confirmed Allegations'].astype(str).str.replace(',', '', regex=False).str.strip(), errors='coerce')\nranked = (\n    df.groupby('Allegation Type', as_index=True)['Confirmed Allegations']\n    .sum()\n    .sort_values(ascending=False)\n)\nanswer = str(ranked.index[0])\n",
+      "subquestion": "In fiscal year 2022, in the county identified in hop 2, which confirmed Adult Protective Services allegation type was most common?",
+      "answer": "Physical Neglect"
+    },
+    "6": {
+      "source": "datagov/aps-4-3-services-provided-reasons-by-county-fy2012-2021/files/rows.txt",
+      "fact": "import io\nimport os\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nbucket = 'lakeqa-yc4103-datalake'\nsource = 'datagov/aps-4-3-services-provided-reasons-by-county-fy2012-2021/files/rows.txt'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), dtype=str, low_memory=False)\n\nnode_4_answer = 'Dallas'\nnode_5_answer = 'Physical Neglect'\ndf['County'] = df['County'].astype(str).str.strip()\ndf['Reason'] = df['Reason'].astype(str).str.strip()\ndf['Region'] = df['Region'].astype(str).str.strip()\ndf = df[\n    df['Fiscal Year'].astype(str).str.strip().eq('2022')\n    & df['County'].eq(node_4_answer)\n    & df['Reason'].eq(node_5_answer)\n].copy()\ndf['Clients'] = pd.to_numeric(df['Clients'].astype(str).str.replace(',', '', regex=False).str.strip(), errors='coerce')\nranked = df.sort_values(['Clients', 'Region'], ascending=[False, True]).reset_index(drop=True)\nanswer = str(ranked.loc[0, 'Region'])\n",
+      "subquestion": "For the county from node 4 and the allegation type from node 5, which Adult Protective Services administrative region served that combination in fiscal year 2022?",
+      "answer": "3-Arlington"
+    },
+    "7": {
+      "source": "wikipedia/Arlington,_Texas/content.txt",
+      "fact": "Arlington is a city in Tarrant County, Texas, United States. It is part of the Mid-Cities region of the Dallas–Fort Worth–Arlington metropolitan statistical area, and is a principal city of the metropolis and region. The city had a population of 394,266 in 2020, making it the second-largest city in the county after Fort Worth and the third-largest city in the metropolitan area, after Dallas and Fort Worth. Arlington is the 50th-most populous city in the United States, the seventh-most populous city in the state of Texas, and the largest city in the state that is not a county seat.",
+      "subquestion": "Based on its 2020 population, how many ranks apart were the U.S. and Texas population ranks of the city named in <hop 4 answer>?",
+      "answer": 43
+    }
+  },
+  "datasets_used": [
+    "datagov/aps-3-4-investigations-victims-by-county-fy2013-2022/files/rows.txt",
+    "datagov/aps-3-4-investigations-victims-by-county-fy2013-2022/signed-metadata.txt",
+    "datagov/aps-3-5-investigations-perpetrators-by-county-fy2013-2022/files/rows.txt",
+    "datagov/aps-3-5-investigations-perpetrators-by-county-fy2013-2022/signed-metadata.txt",
+    "datagov/aps-4-1-services-activity-by-county-fy2013-2022/files/rows.txt",
+    "datagov/aps-4-1-services-activity-by-county-fy2013-2022/signed-metadata.txt",
+    "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/files/rows.txt",
+    "datagov/aps-5-2-outcomes-recidivism-by-county-fy2013-2022/signed-metadata.txt",
+    "datagov/aps-3-2-investigations-allegation-types-by-county-fy2013-fy2022/files/rows.txt",
+    "datagov/aps-3-2-investigations-allegation-types-by-county-fy2013-fy2022/signed-metadata.txt",
+    "datagov/aps-4-3-services-provided-reasons-by-county-fy2012-2021/files/rows.txt",
+    "datagov/aps-4-3-services-provided-reasons-by-county-fy2012-2021/signed-metadata.txt",
+    "wikipedia/Arlington,_Texas/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: In fiscal year 2022, the five Texas counties with the most confirmed Adult Protective Services victims are Harris (7,627), Bexar (4,044), Dallas (3,554), Tarrant (3,055), and El Paso (2,232).",
+        "Node 2: In fiscal year 2022, the five Texas counties with the most validated Adult Protective Services perpetrators are Harris (7,876), Bexar (4,233), Dallas (3,643), Tarrant (3,168), and El Paso (2,271).",
+        "Node 3: In fiscal year 2022, the five Texas counties with the most Adult Protective Services service stages are Harris (5,806), Bexar (3,501), Dallas (2,611), Tarrant (2,392), and El Paso (1,613).",
+        "Intersecting the three top-five county lists leaves the same shared high-burden set: Bexar, Dallas, El Paso, Harris, and Tarrant.",
+        "Hop result: Bexar; Dallas; El Paso; Harris; Tarrant"
+      ],
+      "answer": "Bexar; Dallas; El Paso; Harris; Tarrant"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4
+      ],
+      "reasoning": [
+        "Node 4: Among the counties in the shared Adult Protective Services burden intersection from hop 1, the fiscal year 2022 repeated investigation rates are Dallas (0.136), Tarrant (0.138), El Paso (0.146), Bexar (0.151), and Harris (0.151).",
+        "The lowest repeated investigation rate in that intersection belongs to Dallas.",
+        "Hop result: Dallas"
+      ],
+      "answer": "Dallas"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        5
+      ],
+      "reasoning": [
+        "Node 5: In fiscal year 2022, in the county identified in hop 2, confirmed Adult Protective Services allegation counts are led by Physical Neglect (3,332), followed by Medical Neglect (680), Physical Abuse (100), Exploitation (38), and Emotional/Verbal Abuse (35).",
+        "Hop result: Physical Neglect"
+      ],
+      "answer": "Physical Neglect"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: In fiscal year 2022, in the county identified in hop 2, 2,800 clients received Adult Protective Services for Physical Neglect. That county-reason combination was served by Adult Protective Services administrative region 3-Arlington.",
+        "Hop result: 3-Arlington"
+      ],
+      "answer": "3-Arlington"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: The city named in <hop 4 answer> is Arlington. The source says Arlington was the 50th-most populous city in the United States and the seventh-most populous city in Texas based on its 2020 population.",
+        "The rank gap is 50 - 7 = 43.",
+        "Hop result: 43."
+      ],
+      "answer": 43
+    }
+  ]
+}

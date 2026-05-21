@@ -1,0 +1,71 @@
+{
+    "question": "Can you tell me which has the greatest number of incidents in 2022 among (1) the highest number of incidents where an officer applies weapon across NOPD divisions, (2) the count of APD mental-health call-log incidents in the patrol sector with the most searches due to illegal items, and (3) the highest number of incidents where an officer applies weapon across Austin City Council districts? Report the greatest number. Your response should be in the format [Answer].",
+    "answer": "5021",
+    "nodes": {
+        "1": {
+            "source": "datagov/apd-searches-by-type/files/rows.txt",
+            "subquestion": "In 2022, which APD patrol sector had the most searches due to illegal items in plain view?",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/apd-searches-by-type/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nyear = pd.to_numeric(df[\"Occurred Year\"], errors=\"coerce\")\nsearch_basis = df[\"TCOLE Search Based On\"].astype(str).str.strip()\nsector = df[\"Sector\"].astype(str).str.strip()\nfiltered = df[\n    year.eq(2022)\n    & search_basis.eq(\"Contraband/evidence In Plain View\")\n    & sector.ne(\"\")\n    & sector.str.lower().ne(\"unknown\")\n]\nanswer = str(filtered[\"Sector\"].astype(str).str.strip().value_counts().idxmax())\n",
+            "answer": "Edward"
+        },
+        "2": {
+            "source": "datagov/nopd-use-of-force-incidents/files/rows.txt",
+            "subquestion": "In 2022, what is the highest number of incidents where an officer applies weapon across any NOPD divisions?",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/nopd-use-of-force-incidents/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nfiltered = df[df[\"Date Occurred\"].astype(str).str.contains(\"2022\", na=False)]\ncounts = filtered[\"Division level\"].astype(str).str.strip().replace(\"\", pd.NA).dropna().value_counts()\nanswer = str(int(counts.iloc[0]))\n",
+            "answer": "92"
+        },
+        "3": {
+            "source": "datagov/apd-computer-aided-dispatch-incidents/files/rows.txt",
+            "subquestion": "In 2022, how many APD call logs were labeled as mental health incidents in patrol sector <node_1 answer>?",
+            "fact": "import pandas as pd\n\nsource = \"datagov/apd-computer-aided-dispatch-incidents/files/rows.txt\"\nnode_1_answer = \"Edward\"\n\ntotal = 0\nfor chunk in pd.read_csv(\n    local_path,\n    usecols=[\"Response Year\", \"Sector\", \"Mental Health Flag\"],\n    dtype=str,\n    chunksize=500000,\n    low_memory=False,\n):\n    year = pd.to_numeric(chunk[\"Response Year\"], errors=\"coerce\")\n    sector = chunk[\"Sector\"].astype(str).str.strip().str.lower()\n    mental_health = chunk[\"Mental Health Flag\"].astype(str).str.strip()\n    total += int(\n        (\n            year.eq(2022)\n            & sector.eq(node_1_answer.lower())\n            & mental_health.eq(\"Mental Health Incident\")\n        ).sum()\n    )\n\nanswer = str(total)\n",
+            "answer": "5021"
+        },
+        "4": {
+            "source": "datagov/apd-use-of-force/files/rows.txt",
+            "subquestion": "In 2022, what is the highest number of incidents where an officer applies weapon across any Austin City Council district?",
+            "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/apd-use-of-force/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nfiltered = df[df[\"Occurred Date\"].astype(str).str.contains(\"2022\", na=False)]\ncounts = filtered[\"Council District\"].astype(str).str.strip().replace(\"\", pd.NA).dropna().value_counts()\nanswer = str(int(counts.iloc[0]))\n",
+            "answer": "1790"
+        }
+    },
+    "datasets_used": [
+        "datagov/apd-searches-by-type/files/rows.txt",
+        "datagov/apd-searches-by-type/signed-metadata.txt",
+        "datagov/apd-searches-by-type/files/j8ta-6rms.publisher-view.json",
+        "datagov/nopd-use-of-force-incidents/files/rows.txt",
+        "datagov/nopd-use-of-force-incidents/signed-metadata.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/files/rows.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/signed-metadata.txt",
+        "datagov/apd-computer-aided-dispatch-incidents/files/22de-7rzg.publisher-view.json",
+        "datagov/apd-use-of-force/files/rows.txt",
+        "datagov/apd-use-of-force/signed-metadata.txt",
+        "datagov/apd-use-of-force/files/8dc8-gj97.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Occurred Year` is 2022 and `TCOLE Search Based On` is \"Contraband/evidence In Plain View\", exclude blank or unknown `Sector` values, count records by `Sector`, and select the most common sector.",
+                "Hop result: report <node_1 answer> as this hop answer."
+            ],
+            "answer": "Edward"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 2: Filter rows whose `Date Occurred` contains 2022, count records by nonblank `Division level`, and take the largest count.",
+                "Node 3: Count rows where `Response Year` is 2022, `Sector` matches Edward, and `Mental Health Flag` equals \"Mental Health Incident\".",
+                "Node 4: Filter rows whose `Occurred Date` contains 2022, count records by nonblank `Council District`, and take the largest count.",
+                "Hop result: max(<node_2 answer>, <node_3 answer>, <node_4 answer>) = max(92, 5021, 1790) = 5021."
+            ],
+            "answer": "5021"
+        }
+    ]
+}

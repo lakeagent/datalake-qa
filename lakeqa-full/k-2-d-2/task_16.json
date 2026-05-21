@@ -1,0 +1,72 @@
+{
+    "question": "I'm researching a state where the 2023 bag-charge filings had a decentralization score of at least 90, computed as the number of filings with nonzero bag counts multiplied by one minus the largest single filing's share as a fraction of the total bag count. It also had, using county estimates from 2017 through 2021, at least a 16-percentage-point gap between the highest and median county rates of housing cost burden among lower-income households. Which state is it? Respond with [Answer]. After finding that, what nickname did that state earn from its political, cultural, and economic ascendancy? Your response should be in the format [Answer].",
+    "answer": "Empire State",
+    "nodes": {
+        "1": {
+            "source": "datagov/bag-tax/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/bag-tax/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nstate_name_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\", \"MO\": \"Missouri\",\n    \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\", \"NJ\": \"New Jersey\",\n    \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\", \"ND\": \"North Dakota\", \"OH\": \"Ohio\",\n    \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\", \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\",\n    \"SD\": \"South Dakota\", \"TN\": \"Tennessee\", \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\",\n    \"VA\": \"Virginia\", \"WA\": \"Washington\", \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\",\n    \"DC\": \"District of Columbia\"\n}\n\ndf[\"Date From\"] = pd.to_datetime(df[\"Date From\"], errors=\"coerce\")\ndf[\"Bag Count\"] = pd.to_numeric(df[\"Bag Count\"], errors=\"coerce\")\nfiltered = df[df[\"Date From\"].dt.year.eq(2023)].copy()\npositive_filings = filtered[filtered[\"Bag Count\"].gt(0)].copy()\npositive_filings[\"state_name\"] = positive_filings[\"State\"].map(state_name_map)\npositive_filings = positive_filings[positive_filings[\"state_name\"].notna()].copy()\n\nresult = (\n    positive_filings.groupby(\"state_name\", dropna=False)[\"Bag Count\"]\n    .agg(active_filing_count=\"count\", largest_filing_bags=\"max\", annual_bags=\"sum\")\n    .reset_index()\n)\nresult[\"largest_filing_share\"] = result[\"largest_filing_bags\"] / result[\"annual_bags\"]\nresult[\"decentralization_score\"] = result[\"active_filing_count\"] * (1 - result[\"largest_filing_share\"])\nresult = result[result[\"decentralization_score\"] >= 90]\nresult = result[[\"state_name\", \"active_filing_count\", \"largest_filing_share\", \"decentralization_score\"]].sort_values(\"state_name\").reset_index(drop=True)\nanswer = result[\"state_name\"].tolist()",
+            "subquestion": "Which states had 2023 bag-charge filings with a decentralization score of at least 90, computed as the number of filings with nonzero bag counts multiplied by one minus the largest single filing's share as a fraction of the total bag count?",
+            "answer": [
+                "California",
+                "Maryland",
+                "New York",
+                "Ohio"
+            ]
+        },
+        "2": {
+            "source": "datagov/sdoh-measures-for-county-acs-2017-2021/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/sdoh-measures-for-county-acs-2017-2021/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nfiltered = df[\n    (df[\"Measure\"] == \"Housing cost burden among households\")\n    & (df[\"StateDesc\"] != \"United States\")\n].copy()\nfiltered[\"Data_Value\"] = pd.to_numeric(filtered[\"Data_Value\"], errors=\"coerce\")\nfiltered = filtered[filtered[\"Data_Value\"].notna()].copy()\n\nresult = (\n    filtered.groupby([\"StateDesc\", \"StateAbbr\"], dropna=False)[\"Data_Value\"]\n    .agg(\n        county_median_housing_cost_burden=\"median\",\n        county_max_housing_cost_burden=\"max\",\n    )\n    .reset_index()\n)\nresult[\"burden_spread\"] = (\n    result[\"county_max_housing_cost_burden\"] - result[\"county_median_housing_cost_burden\"]\n)\nresult = result[result[\"burden_spread\"] >= 16]\nresult = result[[\n    \"StateDesc\",\n    \"StateAbbr\",\n    \"county_median_housing_cost_burden\",\n    \"county_max_housing_cost_burden\",\n    \"burden_spread\",\n]].sort_values(\"StateDesc\").reset_index(drop=True)\nanswer = result[\"StateDesc\"].tolist()",
+            "subquestion": "Using county estimates from 2017 through 2021, which states had at least a 16-percentage-point gap between the highest and median county rates of housing cost burden among lower-income households?",
+            "answer": [
+                "Georgia",
+                "Louisiana",
+                "New York",
+                "Oklahoma",
+                "Texas",
+                "Virginia",
+                "Wyoming"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/New_York_(state)/content.txt",
+            "fact": "The state built its political, cultural, and economic ascendancy over the next century, earning it the nickname of the \"Empire State\".",
+            "subquestion": "What nickname did <hop 1 answer> earn from its political, cultural, and economic ascendancy?",
+            "answer": "Empire State"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Date From` falls in 2023, keep filings with positive `Bag Count`, normalize `State` to full state names, compute each state's active filing count, largest filing share, and decentralization score, and keep states with decentralization score at least 90.",
+                "Node 2: Filter rows where `Measure` = `Housing cost burden among households` and `StateDesc` != `United States`, convert `Data_Value` to numeric, compute each state's county median and county maximum `Data_Value`, derive `burden_spread = county_max_housing_cost_burden - county_median_housing_cost_burden`, and keep states with burden spread at least 16.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = New York."
+            ],
+            "answer": "New York"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Empire State is the nickname <hop 1 answer> earned from its political, cultural, and economic ascendancy.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Empire State"
+        }
+    ],
+    "datasets_used": [
+        "datagov/bag-tax/files/rows.txt",
+        "datagov/bag-tax/signed-metadata.txt",
+        "datagov/bag-tax/files/xnjh-vgc4.txt",
+        "datagov/sdoh-measures-for-county-acs-2017-2021/files/rows.txt",
+        "datagov/sdoh-measures-for-county-acs-2017-2021/signed-metadata.txt",
+        "datagov/sdoh-measures-for-county-acs-2017-2021/files/i6u4-y3g4.txt",
+        "wikipedia/New_York_(state)/content.txt"
+    ]
+}

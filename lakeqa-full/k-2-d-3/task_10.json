@@ -1,0 +1,104 @@
+{
+  "question": "Among New York counties with violent crime rates over 300 per 100,000 in 2020 and more than 100 youth sent to jail in 2015, compare the 2020 census populations of those counties' seats. How many people separate the largest and smallest city populations? Your response should be in the format [Answer].",
+  "answer": 129729,
+  "nodes": {
+    "1": {
+      "source": "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Year\"] = pd.to_numeric(df[\"Year\"], errors=\"coerce\")\ndf[\"Violent Rate\"] = pd.to_numeric(df[\"Violent Rate\"], errors=\"coerce\")\n\nanswer = (\n    df.loc[(df[\"Year\"] == 2020) & (df[\"Violent Rate\"] > 300), \"County\"]\n    .tolist()\n)",
+      "subquestion": "Which New York counties had a violent crime rate exceeding 300 per 100,000 population in 2020?",
+      "answer": [
+        "Albany",
+        "Bronx",
+        "Broome",
+        "Chautauqua",
+        "Erie",
+        "Greene",
+        "Kings",
+        "Monroe",
+        "New York",
+        "Niagara",
+        "Onondaga",
+        "Queens",
+        "Schenectady"
+      ]
+    },
+    "2": {
+      "source": "datagov/annual-youth-detention-admissions-by-county-beginning-2006/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/annual-youth-detention-admissions-by-county-beginning-2006/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\" Year \"] = pd.to_numeric(df[\" Year \"], errors=\"coerce\")\ndf[\"Secure/Mixed Admissions\"] = pd.to_numeric(df[\"Secure/Mixed Admissions\"], errors=\"coerce\")\n\nanswer = (\n    df.loc[\n        (df[\" Year \"] == 2015)\n        & (df[\"County\"] != \"New York City\")\n        & (df[\"Secure/Mixed Admissions\"] > 100),\n        \"County\"\n    ]\n    .tolist()\n)",
+      "subquestion": "Which New York counties had more than 100 youth sent to jail in 2015?",
+      "answer": [
+        "Erie",
+        "Monroe",
+        "Onondaga",
+        "Westchester"
+      ]
+    },
+    "3": {
+      "source": "wikipedia/Buffalo,_New_York/content.txt",
+      "fact": "Buffalo is the county seat of Erie County and had a population of 278,349 at the 2020 census.",
+      "subquestion": "What 2020 census population is listed for the county seat of Erie County from <hop 1 answer>?",
+      "answer": {
+        "seat": "Buffalo",
+        "population": 278349
+      }
+    },
+    "4": {
+      "source": "wikipedia/Rochester,_New_York/content.txt",
+      "fact": "Rochester is the county seat of Monroe County and had a population of 211,328 at the 2020 census.",
+      "subquestion": "What 2020 census population is listed for the county seat of Monroe County from <hop 1 answer>?",
+      "answer": {
+        "seat": "Rochester",
+        "population": 211328
+      }
+    },
+    "5": {
+      "source": "wikipedia/Syracuse,_New_York/content.txt",
+      "fact": "Syracuse is the county seat of Onondaga County and had a population of 148,620 at the 2020 census.",
+      "subquestion": "What 2020 census population is listed for the county seat of Onondaga County from <hop 1 answer>?",
+      "answer": {
+        "seat": "Syracuse",
+        "population": 148620
+      }
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `Year` equals 2020 and `Violent Rate` is greater than 300, then return `County`.",
+        "Node 2: Filter rows where ` Year ` equals 2015, `County` is not `New York City`, and `Secure/Mixed Admissions` is greater than 100, then return `County`.",
+        "Hop result: intersect the two county lists = Erie, Monroe, Onondaga"
+      ],
+      "answer": "Erie, Monroe, Onondaga"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 3: The county seat of Erie County from <hop 1 answer> had a 2020 census population of `278349`.",
+        "Node 4: The county seat of Monroe County from <hop 1 answer> had a 2020 census population of `211328`.",
+        "Node 5: The county seat of Onondaga County from <hop 1 answer> had a 2020 census population of `148620`.",
+        "Hop result: largest city population minus smallest city population is `278349 - 148620 = 129729`."
+      ],
+      "answer": 129729
+    }
+  ],
+  "datasets_used": [
+    "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+    "datagov/annual-youth-detention-admissions-by-county-beginning-2006/files/rows.txt",
+    "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/signed-metadata.txt",
+    "datagov/annual-youth-detention-admissions-by-county-beginning-2006/signed-metadata.txt",
+    "datagov/annual-youth-detention-admissions-by-county-beginning-2006/files/ybg9-s6bm.publisher-view.json",
+    "wikipedia/Buffalo,_New_York/content.txt",
+    "wikipedia/Rochester,_New_York/content.txt",
+    "wikipedia/Syracuse,_New_York/content.txt"
+  ]
+}

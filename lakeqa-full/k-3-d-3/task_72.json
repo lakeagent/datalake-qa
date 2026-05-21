@@ -1,0 +1,85 @@
+{
+  "question": "From 2010 through 2012, first find the Missouri county with the highest average monthly number of first reports of injury after excluding Saint Louis. In the city from that county with the most active alcohol license records, for the football, baseball, and soccer stadiums serving teams named for that city, what is the difference between the largest and smallest seating capacities? Please return only the number in the format [Answer].",
+  "answer": 57949,
+  "nodes": {
+    "1": {
+      "source": "datagov/missouri-first-reports-of-injury-by-county/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/missouri-first-reports-of-injury-by-county/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\ndef normalize_county(value):\n    value = str(value).strip().upper()\n    value = value.replace('SAINT', 'ST').replace('ST.', 'ST')\n    value = value.replace(' COUNTY', '').replace(' CO.', ' CO')\n    value = ' '.join(value.split())\n    return value\n\nfiltered = df[\n    df['county'].astype(str).str.strip().ne('MISSING')\n    & pd.to_numeric(df['year'], errors='coerce').between(2010, 2012)\n].copy()\nfiltered['county_norm'] = filtered['county'].map(normalize_county)\nfiltered = filtered[~filtered['county_norm'].str.startswith('ST LOUIS')].copy()\nfiltered['count'] = pd.to_numeric(filtered['count'], errors='coerce')\navg_counts = filtered.groupby('county_norm')['count'].mean().sort_values(ascending=False)\nanswer = str(avg_counts.idxmax()).title()\n",
+      "subquestion": "From 2010 through 2012, which Missouri county had the highest average monthly number of first reports of injury after excluding Saint Louis?",
+      "answer": "Jackson"
+    },
+    "2": {
+      "source": "datagov/missouri-active-alcohol-license-data/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\n\nsource = 'datagov/missouri-active-alcohol-license-data/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3').get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\n\nnode_1_answer = 'Jackson'\n\ndef normalize_county(value):\n    value = str(value).strip().upper()\n    value = value.replace('SAINT', 'ST').replace('ST.', 'ST')\n    value = value.replace(' COUNTY', '').replace(' CO.', ' CO')\n    value = ' '.join(value.split())\n    return value\n\ndef normalize_city(value):\n    value = str(value).strip().upper()\n    value = value.replace('SAINT', 'ST').replace('ST.', 'ST')\n    value = ' '.join(value.split())\n    return value\n\nfiltered = df[df['COUNTY'].map(normalize_county).eq(str(node_1_answer).upper())].copy()\nfiltered['city_norm'] = filtered['CITY'].map(normalize_city)\ncity_counts = filtered['city_norm'].value_counts()\nanswer = str(city_counts.idxmax()).title()\n",
+      "subquestion": "Within the county from node 1, which city has the most active alcohol license records?",
+      "answer": "Kansas City"
+    },
+    "3": {
+      "source": "wikipedia/Arrowhead_Stadium/content.txt",
+      "fact": "GEHA Field at Arrowhead Stadium, commonly known as Arrowhead Stadium, is an American football stadium in Kansas City, Missouri, United States. It primarily serves as the home venue of the Kansas City Chiefs of the National Football League (NFL).\n\nIt was built at the same time as neighboring Kauffman Stadium, home of Major League Baseball's Kansas City Royals, which together form the Truman Sports Complex. Arrowhead Stadium has been in use since 1972 NFL season, and is currently the oldest stadium in the AFC. It has a seating capacity of 76,416, making it the 25th-largest stadium in the United States and the fourth-largest NFL stadium. It is also the largest sports facility by capacity in the state of Missouri. A $375 million renovation was completed in 2010.",
+      "subquestion": "What is the seating capacity of the football stadium serving the NFL team named for <hop 2 answer>?",
+      "answer": 76416
+    },
+    "4": {
+      "source": "wikipedia/Kauffman_Stadium/content.txt",
+      "fact": "Kauffman Stadium () (nicknamed \"The K\") is a ballpark located in Kansas City, Missouri, and the home of Major League Baseball's Kansas City Royals. It is next door to Arrowhead Stadium, home of National Football League's Kansas City Chiefs. Both make up the Truman Sports Complex. The stadium is named for Ewing Kauffman, the founder and first owner of the Royals. It opened in 1973 as Royals Stadium and was named for Kauffman 20 years later on July 2, 1993. Since its last major renovation in 2009, its listed seating capacity is 37,903.",
+      "subquestion": "What is the seating capacity of the baseball stadium serving the MLB team named for <hop 2 answer>?",
+      "answer": 37903
+    },
+    "5": {
+      "source": "wikipedia/Children's_Mercy_Park/content.txt",
+      "fact": "Sporting Park is a soccer-specific stadium in Kansas City, Kansas, United States, and is the team home for Sporting Kansas City of Major League Soccer (MLS). The stadium is located near Kansas Speedway, on the far west side of Wyandotte County, Kansas. It opened during the 2011 MLS season on June 9, 2011, with a match against the Chicago Fire. The stadium has a seating capacity of 18,467, which can expand to 25,000 for concerts. Most SKC games attract around 21,000 spectators because of different stadium modes. The stadium is Sporting Kansas City's third home venue; then known as the Kansas City Wizards, the team played in Arrowhead Stadium from 1996 to 2007 and CommunityAmerica Ballpark from 2008 to 2010. In 2013, the stadium hosted the MLS All-Star Game, the United States men's national soccer team, and MLS Cup, and is the only stadium to host all three in the same year.",
+      "subquestion": "What is the seating capacity of the soccer stadium serving the MLS team named for <hop 2 answer>?",
+      "answer": 18467
+    }
+  },
+  "datasets_used": [
+    "datagov/missouri-first-reports-of-injury-by-county/files/rows.txt",
+    "datagov/missouri-first-reports-of-injury-by-county/signed-metadata.txt",
+    "datagov/missouri-active-alcohol-license-data/files/rows.txt",
+    "datagov/missouri-active-alcohol-license-data/signed-metadata.txt",
+    "datagov/missouri-active-alcohol-license-data/files/yyhn-562y.txt",
+    "wikipedia/Arrowhead_Stadium/content.txt",
+    "wikipedia/Kauffman_Stadium/content.txt",
+    "wikipedia/Children's_Mercy_Park/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: Across 2010 through 2012, after excluding the St. Louis naming cluster, Jackson has the highest average monthly first-reported injury count at 1,163.972.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "Jackson"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Within Jackson County, Kansas City has the most alcohol-license records in the Missouri active alcohol license dataset, with 1,147 records.",
+        "Hop result: <node_2 answer>"
+      ],
+      "answer": "Kansas City"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 3: Arrowhead Stadium has a seating capacity of 76,416.",
+        "Node 4: Kauffman Stadium has a seating capacity of 37,903.",
+        "Node 5: Sporting Park has a seating capacity of 18,467.",
+        "Hop result: the largest capacity minus the smallest capacity is 76,416 - 18,467 = 57,949."
+      ],
+      "answer": 57949
+    }
+  ]
+}

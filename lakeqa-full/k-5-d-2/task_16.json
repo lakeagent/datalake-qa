@@ -1,0 +1,98 @@
+{
+    "question": "The Chicago Fire Department is the department meeting the budget criteria. Determine if it became a paid professional force before or after Pittsburgh's fire bureau did, and focus on the city whose department became paid later. For that city, identify its largest airport; in its March 2019 scheduled traffic report, find the destination with the most seats and map it to its city and state. What ZIP code in that destination city/state has the largest land area? Please return the ZIP code only. Your response should be in the format [Answer].",
+    "answer": "30349",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Chicago_Fire_Department/content.txt",
+            "fact": "The Chicago Fire Department (CFD) was organized as a paid department when the volunteer fire department was disestablished on August 2, 1858.",
+            "subquestion": "On what date was the Chicago Fire Department organized as a paid professional department?",
+            "answer": "August 2, 1858"
+        },
+        "2": {
+            "source": "wikipedia/Pittsburgh_Bureau_of_Fire/content.txt",
+            "fact": "The Pittsburgh Bureau of Fire officially transitioned to a fully paid department on May 23, 1870.",
+            "subquestion": "On what date did the Pittsburgh Bureau of Fire officially transition to a fully paid professional department?",
+            "answer": "May 23, 1870"
+        },
+        "3": {
+            "source": "wikipedia/Pittsburgh/content.txt",
+            "fact": "Pittsburgh International Airport is the largest airport in Pittsburgh.",
+            "subquestion": "Which Pittsburgh airport is the primary commercial passenger airport relevant for the downstream March 2019 scheduled traffic report?",
+            "answer": "Pittsburgh International Airport"
+        },
+        "4": {
+            "source": "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.groupby([\"Destination Code\", \"Destination\"], dropna=False, as_index=False)[\"Seats March 2019\"]\n      .sum()\n      .sort_values([\"Seats March 2019\", \"Destination Code\", \"Destination\"], ascending=[False, True, True])\n      .reset_index(drop=True)\n)\n\ntop_row = result.iloc[0]\nanswer = f\"{top_row['Destination']} ({top_row['Destination Code']})\"",
+            "subquestion": "For <hop 3 answer>, which destination had the most scheduled seats in March 2019?",
+            "answer": "Atlanta (ATL)"
+        },
+        "5": {
+            "source": "datagov/airports-5e97a/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/airports-5e97a/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndestination_code = \"ATL\"\nresult = (\n    df.loc[df[\"Loc_Id\"].astype(str) == destination_code, [\"Loc_Id\", \"City\", \"State_Post\", \"Fac_Name\"]]\n      .reset_index(drop=True)\n)\n\nrow = result.iloc[0]\nanswer = f\"{row['City']}, {row['State_Post']}\"",
+            "subquestion": "In the airports dataset, what city and state correspond to <hop 4 answer>?",
+            "answer": "ATLANTA, GA"
+        },
+        "6": {
+            "source": "datagov/boundaries-us-zip-codes/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/boundaries-us-zip-codes/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncity = \"Atlanta\"\nstate = \"GA\"\nresult = (\n    df.loc[(df[\"CITY\"] == city) & (df[\"STATE\"] == state), [\"ZIPCODE\", \"CITY\", \"STATE\", \"SQMI\"]]\n      .sort_values([\"SQMI\", \"ZIPCODE\"], ascending=[False, True])\n      .reset_index(drop=True)\n)\n\nanswer = str(result.iloc[0][\"ZIPCODE\"])",
+            "subquestion": "Among ZIP codes in <hop 5 answer>, which ZIP code has the largest land area (SQMI)?",
+            "answer": "30349"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Chicago_Fire_Department/content.txt",
+        "wikipedia/Pittsburgh_Bureau_of_Fire/content.txt",
+        "wikipedia/Pittsburgh/content.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/signed-metadata.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pit-scheduled-traffic-report-data-dictionary.txt",
+        "datagov/airports-5e97a/files/rows.txt",
+        "datagov/airports-5e97a/signed-metadata.txt",
+        "datagov/airports-5e97a/files/kfcv-nyy3.txt",
+        "datagov/boundaries-us-zip-codes/files/rows.txt",
+        "datagov/boundaries-us-zip-codes/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "question": "Which fire department became a paid professional department later, the Chicago Fire Department or the Pittsburgh Bureau of Fire?",
+            "answer": "Pittsburgh"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "question": "What is the primary commercial passenger airport in Pittsburgh relevant for the downstream March 2019 scheduled traffic report?",
+            "answer": "Pittsburgh International Airport"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "question": "For Pittsburgh International Airport, which destination had the most scheduled seats in March 2019?",
+            "answer": "Atlanta (ATL)"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                5
+            ],
+            "question": "In the airports dataset, what city and state correspond to Atlanta (ATL)?",
+            "answer": "ATLANTA, GA"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                6
+            ],
+            "question": "Among ZIP codes in Atlanta, GA, which ZIP code has the largest land area (SQMI)?",
+            "answer": "30349"
+        }
+    ]
+}

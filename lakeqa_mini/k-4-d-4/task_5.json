@@ -1,0 +1,184 @@
+{
+    "question": "Find the Missouri state agency that ranked third in average spending from 2007 to 2010. In which city is its Southwest district based, and which highway was born there? Between that highway's two terminus cities, which one had the lower average binge drinking prevalence across the 2016 and 2018 releases? Return the city name only. Your response should be in the format [Answer].",
+    "answer": "Los Angeles",
+    "nodes": {
+        "1": {
+            "source": "datagov/2007-state-expenditures/files/rows.txt",
+            "fact": "import json\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2007-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\npayload = json.loads(obj[\"Body\"].read().decode(\"utf-8\"))\ncolumns = [col.get(\"fieldName\") or col.get(\"name\") for col in payload[\"meta\"][\"view\"][\"columns\"]]\ndf = pd.DataFrame(payload[\"data\"], columns=columns)\ndf[\"payments_total\"] = pd.to_numeric(df[\"payments_total\"], errors=\"coerce\")\nanswer = (\n    df[df[\"fiscal_year\"].astype(str) == \"2007\"]\n    .groupby(\"agency_name\")[\"payments_total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .round(2)\n    .to_dict()\n)",
+            "subquestion": "What were the total expenditures by Missouri state agency in FY2007?",
+            "answer": {
+                "SOCIAL SERVICES": 5528171459.84,
+                "ELEMENTARY AND SECONDARY EDUCATION": 4893252163.41,
+                "TRANSPORTATION": 1922237354.88,
+                "HIGHER EDUCATION AND WORKFORCE DEV": 1062578010.95,
+                "MENTAL HEALTH": 759892459.14,
+                "HEALTH AND SENIOR SERVICES": 698796366.98,
+                "REVENUE": 373724618.79,
+                "OFFICE OF ADMINISTRATION": 369596080.22,
+                "CORRECTIONS": 279877976.24,
+                "PUBLIC SAFETY": 247925806.08
+            },
+            "limit": 10
+        },
+        "2": {
+            "source": "datagov/2008-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2008-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf_2008 = df[df[\"Fiscal Year\"] == 2008].copy() if \"Fiscal Year\" in df.columns else df.copy()\ndf_2008[\"Payments Total\"] = pd.to_numeric(df_2008[\"Payments Total\"], errors=\"coerce\")\nanswer = (\n    df_2008.groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .round(2)\n    .to_dict()\n)",
+            "subquestion": "What were the total expenditures by Missouri state agency in FY2008?",
+            "answer": {
+                "SOCIAL SERVICES": 5988522037.62,
+                "ELEMENTARY AND SECONDARY EDUCATION": 5048553721.08,
+                "TRANSPORTATION": 1786534604.37,
+                "HIGHER EDUCATION AND WORKFORCE DEV": 1220312581.65,
+                "MENTAL HEALTH": 813799778.73,
+                "HEALTH AND SENIOR SERVICES": 734833032.4,
+                "OFFICE OF ADMINISTRATION": 466398986.98,
+                "REVENUE": 387774187.98,
+                "PUBLIC SAFETY": 293606432.85,
+                "CORRECTIONS": 279260171.22
+            },
+            "limit": 10
+        },
+        "3": {
+            "source": "datagov/2009-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2009-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf_2009 = df[df[\"Fiscal Year\"] == 2009].copy() if \"Fiscal Year\" in df.columns else df.copy()\ndf_2009[\"Payments Total\"] = pd.to_numeric(df_2009[\"Payments Total\"], errors=\"coerce\")\nanswer = (\n    df_2009.groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .round(2)\n    .to_dict()\n)",
+            "subquestion": "What were the total expenditures by Missouri state agency in FY2009?",
+            "answer": {
+                "SOCIAL SERVICES": 6707806742.86,
+                "ELEMENTARY AND SECONDARY EDUCATION": 5170194688.51,
+                "TRANSPORTATION": 2000940522.19,
+                "HIGHER EDUCATION AND WORKFORCE DEV": 1291298943.33,
+                "MENTAL HEALTH": 877438429.19,
+                "HEALTH AND SENIOR SERVICES": 815631750.83,
+                "OFFICE OF ADMINISTRATION": 497442735.68,
+                "REVENUE": 371129680.47,
+                "PUBLIC SAFETY": 301774658.68,
+                "NATURAL RESOURCES": 292863341.01
+            },
+            "limit": 10
+        },
+        "4": {
+            "source": "datagov/2010-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2010-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf_2010 = df[df[\"Fiscal Year\"] == 2010].copy() if \"Fiscal Year\" in df.columns else df.copy()\ndf_2010[\"Payments Total\"] = pd.to_numeric(df_2010[\"Payments Total\"], errors=\"coerce\")\nanswer = (\n    df_2010.groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .round(2)\n    .to_dict()\n)",
+            "subquestion": "What were the total expenditures by Missouri state agency in FY2010?",
+            "answer": {
+                "SOCIAL SERVICES": 7141666880.32,
+                "ELEMENTARY AND SECONDARY EDUCATION": 5351561573.54,
+                "TRANSPORTATION": 2144139919.08,
+                "HIGHER EDUCATION AND WORKFORCE DEV": 1320888790.61,
+                "MENTAL HEALTH": 921056914.52,
+                "HEALTH AND SENIOR SERVICES": 884344054.25,
+                "OFFICE OF ADMINISTRATION": 439597907.95,
+                "REVENUE": 370228371.58,
+                "PUBLIC SAFETY": 333299335.44,
+                "CORRECTIONS": 268435627.28
+            },
+            "limit": 10
+        },
+        "5": {
+            "source": "wikipedia/Missouri_Department_of_Transportation/content.txt",
+            "fact": "Southwest, based in Springfield",
+            "subquestion": "In which city is the Southwest district of <hop 1 answer> based?",
+            "answer": "Springfield"
+        },
+        "6": {
+            "source": "wikipedia/Springfield,_Missouri/content.txt",
+            "fact": "Officially recognized as the birthplace of Route 66, it was in Springfield on April 30, 1926, that officials first proposed the name of the new Chicago-to-Los Angeles highway.",
+            "subquestion": "What are the terminus cities of the highway that was born in <hop 2 answer>?",
+            "answer": [
+                "Chicago",
+                "Los Angeles"
+            ]
+        },
+        "7": {
+            "source": "datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt",
+            "fact": "import csv\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ntext = obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\").splitlines()\nreader = csv.DictReader(text)\nanswer = {}\nfor row in reader:\n    if (\n        row[\"Short_Question_Text\"] == \"Binge Drinking\"\n        and row[\"GeographicLevel\"] == \"City\"\n        and row[\"DataValueTypeID\"] == \"CrdPrv\"\n        and row[\"CityName\"] in {\"Chicago\", \"Los Angeles\"}\n    ):\n        answer[row[\"CityName\"]] = float(row[\"Data_Value\"])",
+            "subquestion": "For the Route 66 terminus cities from <hop 3 answer>, what was the city-level crude prevalence of binge drinking in the 2016 release?",
+            "answer": {
+                "Chicago": 20.1,
+                "Los Angeles": 15.9
+            }
+        },
+        "8": {
+            "source": "datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt",
+            "fact": "import csv\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ntext = obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\").splitlines()\nreader = csv.DictReader(text)\nanswer = {}\nfor row in reader:\n    if (\n        row[\"Short_Question_Text\"] == \"Binge Drinking\"\n        and row[\"GeographicLevel\"] == \"City\"\n        and row[\"DataValueTypeID\"] == \"CrdPrv\"\n        and row[\"CityName\"] in {\"Chicago\", \"Los Angeles\"}\n    ):\n        answer[row[\"CityName\"]] = float(row[\"Data_Value\"])",
+            "subquestion": "For the Route 66 terminus cities from <hop 3 answer>, what was the city-level crude prevalence of binge drinking in the 2018 release?",
+            "answer": {
+                "Chicago": 21.5,
+                "Los Angeles": 16.7
+            }
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Missouri_Department_of_Transportation/content.txt",
+        "wikipedia/Springfield,_Missouri/content.txt",
+        "datagov/2007-state-expenditures/files/rows.txt",
+        "datagov/2007-state-expenditures/signed-metadata.txt",
+        "datagov/2008-state-expenditures/files/rows.txt",
+        "datagov/2008-state-expenditures/signed-metadata.txt",
+        "datagov/2009-state-expenditures/files/rows.txt",
+        "datagov/2009-state-expenditures/signed-metadata.txt",
+        "datagov/2010-state-expenditures/files/rows.txt",
+        "datagov/2010-state-expenditures/signed-metadata.txt",
+        "datagov/500-cities-local-data-for-better-health-2016-release/files/rows.txt",
+        "datagov/500-cities-local-data-for-better-health-2016-release/signed-metadata.txt",
+        "datagov/500-cities-local-data-for-better-health-2016-release/files/9z78-nsfp.publisher-view.json",
+        "datagov/500-cities-local-data-for-better-health-2018-release/files/rows.txt",
+        "datagov/500-cities-local-data-for-better-health-2018-release/signed-metadata.txt",
+        "datagov/500-cities-local-data-for-better-health-2018-release/files/rja3-32tc.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 1: For FY2007, group rows by `agency_name`, sum `payments_total`, and keep the full `agency_name` -> total expenditure mapping.",
+                "Node 2: For FY2008, group rows by `Agency Name`, sum `Payments Total`, and keep the full `Agency Name` -> total expenditure mapping.",
+                "Node 3: For FY2009, group rows by `Agency Name`, sum `Payments Total`, and keep the full `Agency Name` -> total expenditure mapping.",
+                "Node 4: For FY2010, group rows by `Agency Name`, sum `Payments Total`, and keep the full `Agency Name` -> total expenditure mapping.",
+                "Hop result: compare the cross-year average expenditure for each agency using the full per-year agency totals from nodes 1-4; `TRANSPORTATION` ranks third on that average, corresponding to Missouri Department of Transportation."
+            ],
+            "answer": "Missouri Department of Transportation"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: The Missouri Department of Transportation source states that the Southwest district is based in Springfield."
+            ],
+            "answer": "Springfield"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Springfield is described as the birthplace of Route 66, which the source identifies as the Chicago-to-Los Angeles highway."
+            ],
+            "answer": [
+                "Chicago",
+                "Los Angeles"
+            ]
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                7,
+                8
+            ],
+            "reasoning": [
+                "Node 7: For the cities from <hop 3 answer>, keep `CityName` -> `Data_Value` where `Short_Question_Text` equals `Binge Drinking`, `GeographicLevel` equals `City`, and `DataValueTypeID` equals `CrdPrv` in the 2016 release.",
+                "Node 8: For the cities from <hop 3 answer>, keep `CityName` -> `Data_Value` where `Short_Question_Text` equals `Binge Drinking`, `GeographicLevel` equals `City`, and `DataValueTypeID` equals `CrdPrv` in the 2018 release.",
+                "Hop result: Chicago averages (20.1 + 21.5) / 2 = 20.8, Los Angeles averages (15.9 + 16.7) / 2 = 16.3, so Los Angeles has the lower average binge drinking prevalence."
+            ],
+            "answer": "Los Angeles"
+        }
+    ]
+}

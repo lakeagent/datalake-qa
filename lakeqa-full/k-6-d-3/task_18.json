@@ -1,0 +1,149 @@
+{
+  "question": "In Austin, start with the ZIP code that had the most multifamily properties without a recent audit on file. In that ZIP code, find the council district containing the affordable housing property with the most total units. From that district, take the ZIP codes of the public library branch with the most public computers, the community survey respondents from 2015 through 2019 who most often reported the same ZIP code, and the park with the largest asset size. Among those ZIP codes, which one had the most multifamily water service connections, and which public artwork there had the most recent completion date? Who designed/directed the object that artwork is painted on? Please return only the name in the format [Answer].",
+  "answer": "Stefanie Distefano",
+  "nodes": {
+    "1": {
+      "source": "datagov/2019-multifamily-ecad/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/2019-multifamily-ecad/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Current ECAD Status', 'Zip Code'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Current ECAD Status', 'Zip Code'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['Current ECAD Status'] = df['Current ECAD Status'].astype(str).str.strip()\ndf['zip5'] = df['Zip Code'].astype(str).str.extract(r'(\\d{5})', expand=False)\nfiltered = df[\n    df['Current ECAD Status'].eq('No Recent Audit on file')\n    & df['zip5'].notna()\n].copy()\nranked = (\n    filtered.groupby('zip5', as_index=False)\n    .size()\n    .sort_values(['size', 'zip5'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'size'] > ranked.loc[1, 'size']\nanswer = str(ranked.loc[0, 'zip5'])\n",
+      "subquestion": "Which Austin ZIP code had the most multifamily properties without a recent audit on file?",
+      "answer": "78705"
+    },
+    "2": {
+      "source": "datagov/comprehensive-affordable-housing-directory/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/comprehensive-affordable-housing-directory/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\n\nnode_1_answer = '78705'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(\n        local_path,\n        usecols=['Property Name', 'Zip Code', 'Council District', 'Total Units'],\n        dtype=str,\n        low_memory=False,\n    )\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(\n        io.BytesIO(obj['Body'].read()),\n        usecols=['Property Name', 'Zip Code', 'Council District', 'Total Units'],\n        dtype=str,\n        low_memory=False,\n    )\n\ndf['Property Name'] = df['Property Name'].astype(str).str.strip()\ndf['Zip Code'] = df['Zip Code'].astype(str).str.extract(r'(\\d{5})', expand=False)\ndf['Council District'] = df['Council District'].astype(str).str.strip()\ndf['Total Units'] = pd.to_numeric(df['Total Units'], errors='coerce')\nfiltered = df[\n    df['Zip Code'].eq(node_1_answer)\n    & df['Property Name'].ne('')\n    & df['Council District'].ne('')\n    & df['Total Units'].notna()\n].copy()\nranked = (\n    filtered.sort_values(['Total Units', 'Property Name'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'Total Units'] > ranked.loc[1, 'Total Units']\nanswer = str(ranked.loc[0, 'Council District'])\n",
+      "subquestion": "In the ZIP code from node 1, which council district contained the affordable housing property with the most total units?",
+      "answer": "9"
+    },
+    "3": {
+      "source": "datagov/austin-public-library-locations/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/austin-public-library-locations/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_2_answer = '9'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, usecols=['Name', 'Address', 'District', 'Public Computers Available'], dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), usecols=['Name', 'Address', 'District', 'Public Computers Available'], dtype=str, low_memory=False)\n\ndf['District'] = df['District'].astype(str).str.strip()\ndf['Name'] = df['Name'].astype(str).str.strip()\ndf['Public Computers Available'] = pd.to_numeric(df['Public Computers Available'], errors='coerce')\ndf['zip5'] = df['Address'].astype(str).str.extract(r'(\\d{5})', expand=False)\nfiltered = df[df['District'].eq(node_2_answer) & df['zip5'].notna() & df['Public Computers Available'].notna()].copy()\nranked = filtered.sort_values(['Public Computers Available', 'Name'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nassert ranked.loc[0, 'Public Computers Available'] > ranked.loc[1, 'Public Computers Available']\nanswer = str(ranked.loc[0, 'zip5'])\n",
+      "subquestion": "In the council district from node 2, what ZIP code was the public library branch with the most public computers in?",
+      "answer": "78701"
+    },
+    "4": {
+      "source": "datagov/community-survey/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/community-survey/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_2_answer = '9'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, usecols=['Zip Code', 'Council District'], dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), usecols=['Zip Code', 'Council District'], dtype=str, low_memory=False)\n\ndf['Zip Code'] = df['Zip Code'].astype(str).str.extract(r'(\\d{5})', expand=False)\ndf['Council District'] = df['Council District'].astype(str).str.strip()\nfiltered = df[df['Council District'].eq(node_2_answer) & df['Zip Code'].notna()].copy()\nranked = (\n    filtered.groupby('Zip Code', as_index=False)\n    .size()\n    .sort_values(['size', 'Zip Code'], ascending=[False, True], kind='mergesort')\n    .reset_index(drop=True)\n)\nassert ranked.loc[0, 'size'] > ranked.loc[1, 'size']\nanswer = str(ranked.loc[0, 'Zip Code'])\n",
+      "subquestion": "Which ZIP code appeared most often among respondents to the community survey from 2015 through 2019 in the council district from node 2?",
+      "answer": "78704"
+    },
+    "5": {
+      "source": "datagov/city-of-austin-parks-data/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/city-of-austin-parks-data/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_2_answer = '9'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, usecols=['LOCATION_NAME', 'COUNCIL_DISTRICT', 'ASSET_SIZE', 'ZIPCODE'], dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), usecols=['LOCATION_NAME', 'COUNCIL_DISTRICT', 'ASSET_SIZE', 'ZIPCODE'], dtype=str, low_memory=False)\n\ndf['COUNCIL_DISTRICT'] = df['COUNCIL_DISTRICT'].astype(str).str.strip()\ndf['LOCATION_NAME'] = df['LOCATION_NAME'].astype(str).str.strip()\ndf['ASSET_SIZE'] = pd.to_numeric(df['ASSET_SIZE'], errors='coerce')\ndf['zip5'] = df['ZIPCODE'].astype(str).str.extract(r'(\\d{5})', expand=False)\nfiltered = df[\n    df['COUNCIL_DISTRICT'].eq(node_2_answer)\n    & df['ASSET_SIZE'].notna()\n    & df['zip5'].notna()\n].copy()\nranked = filtered.sort_values(['ASSET_SIZE', 'LOCATION_NAME'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nassert ranked.loc[0, 'ASSET_SIZE'] > ranked.loc[1, 'ASSET_SIZE']\nanswer = str(ranked.loc[0, 'zip5'])\n",
+      "subquestion": "In the council district from node 2, what ZIP code was the park with the largest asset size in?",
+      "answer": "78751"
+    },
+    "6": {
+      "source": "datagov/austin-water-water-service-connection-count-by-zip-code/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/austin-water-water-service-connection-count-by-zip-code/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_3_answer = '78701'\nnode_4_answer = '78704'\nnode_5_answer = '78751'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, usecols=['Postal Code', 'Customer Class', 'Service Connections'], dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), usecols=['Postal Code', 'Customer Class', 'Service Connections'], dtype=str, low_memory=False)\n\ncandidates = {node_3_answer, node_4_answer, node_5_answer}\ndf['zip5'] = df['Postal Code'].astype(str).str.extract(r'(\\d{5})', expand=False)\ndf['Customer Class'] = df['Customer Class'].astype(str).str.strip()\ndf['Service Connections'] = pd.to_numeric(df['Service Connections'], errors='coerce')\nfiltered = df[\n    df['zip5'].isin(candidates)\n    & df['Customer Class'].eq('Multi-Family')\n    & df['Service Connections'].notna()\n].copy()\nranked = filtered.sort_values(['Service Connections', 'zip5'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nassert ranked.loc[0, 'Service Connections'] > ranked.loc[1, 'Service Connections']\nanswer = str(ranked.loc[0, 'zip5'])\n",
+      "subquestion": "Among the ZIP codes that appear in the answers to nodes 3, 4, and 5, which had the most multifamily water service connections?",
+      "answer": "78704"
+    },
+    "7": {
+      "source": "datagov/city-of-austin-public-art-collection/files/rows.txt",
+      "fact": "import io\nimport os\n\nimport boto3\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/city-of-austin-public-art-collection/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nlocal_path = source if os.path.exists(source) else '/tmp/k123_data_cache/' + source\nclient = boto3.client('s3', region_name='us-east-1', config=Config(signature_version=UNSIGNED))\nnode_6_answer = '78704'\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, usecols=['Artwork Title', 'Artwork Date', 'Location Zip Code'], dtype=str, low_memory=False)\nelse:\n    obj = client.get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj['Body'].read()), usecols=['Artwork Title', 'Artwork Date', 'Location Zip Code'], dtype=str, low_memory=False)\n\ndf['Artwork Title'] = df['Artwork Title'].astype(str).str.strip()\ndf['zip5'] = df['Location Zip Code'].astype(str).str.extract(r'(\\d{5})', expand=False)\ndf['Artwork Date'] = pd.to_numeric(df['Artwork Date'], errors='coerce')\nfiltered = df[\n    df['zip5'].eq(node_6_answer)\n    & df['Artwork Title'].ne('')\n    & df['Artwork Date'].notna()\n].copy()\nranked = filtered.sort_values(['Artwork Date', 'Artwork Title'], ascending=[False, True], kind='mergesort').reset_index(drop=True)\nassert ranked.loc[0, 'Artwork Date'] > ranked.loc[1, 'Artwork Date']\nanswer = str(ranked.loc[0, 'Artwork Title'])\n",
+      "subquestion": "In the ZIP code from node 6, which public artwork had the most recent artwork date?",
+      "answer": "Larry Monroe Forever Mosaic"
+    },
+    "8": {
+      "source": "wikipedia/Larry_Monroe_Forever_Bridge/content.txt",
+      "fact": "The Larry Monroe Forever Bridge is a bridge mural and memorial to Austin broadcaster and musical scholar Larry Monroe. The bridge's two low walls are decorated with mosaic tiles relating to Monroe and the music he played on Austin radio for more than 30 years. Artist Stefanie Distefano designed and directed the project. The bridge is located on East Side Drive as it crosses Blunn Creek between Stacy Park and Little Stacy Park in the Travis Heights neighborhood in South Austin, Texas.",
+      "subquestion": "Who designed/directed the object <hop 5 answer> is painted on?",
+      "answer": "Stefanie Distefano"
+    }
+  },
+  "datasets_used": [
+    "datagov/2019-multifamily-ecad/files/rows.txt",
+    "datagov/2019-multifamily-ecad/signed-metadata.txt",
+    "datagov/2019-multifamily-ecad/files/feiy-7jhe.txt",
+    "datagov/comprehensive-affordable-housing-directory/files/rows.txt",
+    "datagov/comprehensive-affordable-housing-directory/signed-metadata.txt",
+    "datagov/austin-public-library-locations/files/rows.txt",
+    "datagov/austin-public-library-locations/signed-metadata.txt",
+    "datagov/austin-public-library-locations/files/tc36-hn4j.publisher-view.json",
+    "datagov/community-survey/files/rows.txt",
+    "datagov/community-survey/signed-metadata.txt",
+    "datagov/city-of-austin-parks-data/files/rows.txt",
+    "datagov/city-of-austin-parks-data/signed-metadata.txt",
+    "datagov/austin-water-water-service-connection-count-by-zip-code/files/rows.txt",
+    "datagov/austin-water-water-service-connection-count-by-zip-code/signed-metadata.txt",
+    "datagov/city-of-austin-public-art-collection/files/rows.txt",
+    "datagov/city-of-austin-public-art-collection/files/uuk6-933w.txt",
+    "wikipedia/Larry_Monroe_Forever_Bridge/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1
+      ],
+      "reasoning": [
+        "Node 1: In the Austin multifamily ECAD file, ZIP code 78705 has the most properties whose current ECAD status is No Recent Audit on file.",
+        "The full-file count is 58 properties in 78705, ahead of 34 in 78704 and 28 in 78758, so the winner is unique.",
+        "Hop result: <node_1 answer>"
+      ],
+      "answer": "78705"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        2
+      ],
+      "reasoning": [
+        "Node 2: Within ZIP code 78705 in the Austin affordable housing directory, The Mark at Austin has the most total units at 962.",
+        "That property is in council district 9, ahead of the next-largest 78705 property, The Standard at Austin, with 911 units.",
+        "Hop result: <node_2 answer>"
+      ],
+      "answer": "9"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 3: In council district 9, the public library branch with the most public computers is in ZIP code 78701.",
+        "Node 4: Across all available community survey years from 2015 through 2019, ZIP code 78704 appears most often among respondents in council district 9.",
+        "Node 5: In council district 9, the park with the largest asset size is in ZIP code 78751.",
+        "Hop result: <node_3 answer>, <node_4 answer>, and <node_5 answer>"
+      ],
+      "answer": "78701; 78704; 78751"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        6
+      ],
+      "reasoning": [
+        "Node 6: Among ZIP codes 78701, 78704, and 78751, ZIP code 78704 has the most multifamily water service connections.",
+        "The counts are 777 in 78704, 316 in 78751, and 112 in 78701, so the winner is unique.",
+        "Hop result: <node_6 answer>"
+      ],
+      "answer": "78704"
+    },
+    {
+      "hop": 5,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: In ZIP code 78704, the most recently installed public artwork is Larry Monroe Forever Mosaic.",
+        "Its artwork date is 2015, ahead of the next-most-recent 78704 artwork, Cyclical Interplay, from 2014.",
+        "Hop result: <node_7 answer>"
+      ],
+      "answer": "Larry Monroe Forever Mosaic"
+    },
+    {
+      "hop": 6,
+      "node_ids": [
+        8
+      ],
+      "reasoning": [
+        "Node 8: Artist Stefanie Distefano designed and directed the Larry Monroe Forever Bridge project.",
+        "Hop result: Stefanie Distefano."
+      ],
+      "answer": "Stefanie Distefano"
+    }
+  ]
+}

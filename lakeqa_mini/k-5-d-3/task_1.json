@@ -1,0 +1,236 @@
+{
+    "question": "I am looking for a specific high school in Manhattan's District 2 that consistently received 'A' grades for comprehensive performance from 2007 to 2010 and is named after a relative of a U.S. president. Then find the U.S. president to whom she was related who served after 1920. What was the 2020 census population of the city where that U.S. president died? Please return the population only. Your response should be in the format [Answer].",
+    "answer": "465",
+    "nodes": {
+        "1": {
+            "source": "datagov/2007-2008-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2007-2008-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[\n        df[\"DBN\"].astype(str).str.startswith(\"02M\")\n        & (df[\"SCHOOL LEVEL*\"] == \"High School\")\n        & (df[\"OVERALL GRADE\"] == \"A\")\n    ][[\"DBN\", \"SCHOOL\"]]\n    .drop_duplicates()\n    .sort_values([\"DBN\", \"SCHOOL\"])\n)\nanswer = (result[\"DBN\"] + \" - \" + result[\"SCHOOL\"]).tolist()",
+            "subquestion": "Which Manhattan District 2 high schools received an A grade for comprehensive performance in 2007-08?",
+            "answer": [
+                "02M288 - FOOD AND FINANCE HIGH SCHOOL",
+                "02M294 - ESSEX STREET ACADEMY",
+                "02M296 - HIGH SCHOOL OF HOSPITALITY MANAGEMENT",
+                "02M298 - PACE HIGH SCHOOL",
+                "02M407 - INSTITUTE FOR COLLABORATIVE EDUCATION",
+                "02M408 - PROFESSIONAL PERFORMING ARTS HIGH SCHOOL",
+                "02M411 - BARUCH COLLEGE CAMPUS HIGH SCHOOL",
+                "02M412 - N.Y.C. LAB SCHOOL FOR COLLABORATIVE STUDIES",
+                "02M413 - SCHOOL OF THE FUTURE HIGH SCHOOL",
+                "02M414 - N.Y.C. MUSEUM SCHOOL",
+                "02M416 - ELEANOR ROOSEVELT HIGH SCHOOL",
+                "02M418 - MILLENNIUM HIGH SCHOOL",
+                "02M439 - MANHATTAN VILLAGE ACADEMY",
+                "02M449 - VANGUARD HIGH SCHOOL",
+                "02M475 - STUYVESANT HIGH SCHOOL",
+                "02M519 - TALENT UNLIMITED HIGH SCHOOL",
+                "02M531 - REPERTORY COMPANY HIGH SCHOOL FOR THEATRE ARTS",
+                "02M542 - MANHATTAN BRIDGES HIGH SCHOOL",
+                "02M543 - NEW DESIGN HIGH SCHOOL",
+                "02M545 - HIGH SCHOOL FOR DUAL LANGUAGE AND ASIAN STUDIES",
+                "02M600 - HIGH SCHOOL OF FASHION INDUSTRIES, THE"
+            ]
+        },
+        "2": {
+            "source": "datagov/2008-2009-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2008-2009-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[\n        df[\"DBN\"].astype(str).str.startswith(\"02M\")\n        & (df[\"SCHOOL LEVEL*\"] == \"High School\")\n        & (df[\"OVERALL GRADE\"] == \"A\")\n    ][[\"DBN\", \"SCHOOL\"]]\n    .drop_duplicates()\n    .sort_values([\"DBN\", \"SCHOOL\"])\n)\nanswer = (result[\"DBN\"] + \" - \" + result[\"SCHOOL\"]).tolist()",
+            "subquestion": "Which Manhattan District 2 high schools received an A grade for comprehensive performance in 2008-09?",
+            "answer": [
+                "02M047 - 47 THE AMERICAN SIGN LANGUAGE AND ENGLISH SECONDARY SCHOOL",
+                "02M288 - FOOD AND FINANCE HIGH SCHOOL",
+                "02M294 - ESSEX STREET ACADEMY",
+                "02M296 - HIGH SCHOOL OF HOSPITALITY MANAGEMENT",
+                "02M298 - PACE HIGH SCHOOL",
+                "02M300 - URBAN ASSEMBLY SCHOOL OF DESIGN AND CONSTRUCTION, THE",
+                "02M303 - FACING HISTORY SCHOOL, THE",
+                "02M308 - LOWER MANHATTAN ARTS ACADEMY",
+                "02M316 - URBAN ASSEMBLY SCHOOL OF BUSINESS FOR YOUNG WOMEN, THE",
+                "02M407 - INSTITUTE FOR COLLABORATIVE EDUCATION",
+                "02M408 - PROFESSIONAL PERFORMING ARTS HIGH SCHOOL",
+                "02M411 - BARUCH COLLEGE CAMPUS HIGH SCHOOL",
+                "02M412 - N.Y.C. LAB SCHOOL FOR COLLABORATIVE STUDIES",
+                "02M413 - SCHOOL OF THE FUTURE HIGH SCHOOL",
+                "02M414 - N.Y.C. MUSEUM SCHOOL",
+                "02M416 - ELEANOR ROOSEVELT HIGH SCHOOL",
+                "02M418 - MILLENNIUM HIGH SCHOOL",
+                "02M439 - MANHATTAN VILLAGE ACADEMY",
+                "02M449 - VANGUARD HIGH SCHOOL",
+                "02M459 - MANHATTAN INTERNATIONAL HIGH SCHOOL",
+                "02M475 - STUYVESANT HIGH SCHOOL",
+                "02M500 - UNITY CENTER FOR URBAN TECHNOLOGIES",
+                "02M519 - TALENT UNLIMITED HIGH SCHOOL",
+                "02M531 - REPERTORY COMPANY HIGH SCHOOL FOR THEATRE ARTS",
+                "02M542 - MANHATTAN BRIDGES HIGH SCHOOL",
+                "02M543 - NEW DESIGN HIGH SCHOOL",
+                "02M545 - HIGH SCHOOL FOR DUAL LANGUAGE AND ASIAN STUDIES",
+                "02M600 - THE HIGH SCHOOL OF FASHION INDUSTRIES"
+            ]
+        },
+        "3": {
+            "source": "datagov/2009-2010-school-progress-report/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2009-2010-school-progress-report/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[\n        df[\"DBN\"].astype(str).str.startswith(\"02M\")\n        & (df[\"SCHOOL LEVEL*\"] == \"High School\")\n        & (df[\"2009-2010 OVERALL GRADE\"] == \"A\")\n    ][[\"DBN\", \"SCHOOL\"]]\n    .drop_duplicates()\n    .sort_values([\"DBN\", \"SCHOOL\"])\n)\nanswer = (result[\"DBN\"] + \" - \" + result[\"SCHOOL\"]).tolist()",
+            "subquestion": "Which Manhattan District 2 high schools received an A grade for comprehensive performance in 2009-10?",
+            "answer": [
+                "02M047 - 47 The American Sign Language and English Secondary School",
+                "02M288 - Food and Finance High School",
+                "02M294 - Essex Street Academy",
+                "02M296 - High School of Hospitality Management",
+                "02M298 - Pace High School",
+                "02M308 - Lower Manhattan Arts Academy",
+                "02M408 - Professional Performing Arts High School",
+                "02M411 - Baruch College Campus High School",
+                "02M412 - N.Y.C. Lab School for Collaborative Studies",
+                "02M413 - School of the Future High School",
+                "02M414 - N.Y.C. Museum School",
+                "02M416 - Eleanor Roosevelt High School",
+                "02M418 - Millennium High School",
+                "02M439 - Manhattan Village Academy",
+                "02M459 - Manhattan International High School",
+                "02M475 - Stuyvesant High School",
+                "02M500 - Unity Center for Urban Technologies",
+                "02M519 - Talent Unlimited High School",
+                "02M531 - Repertory Company High School for Theatre Arts",
+                "02M542 - Manhattan Bridges High School",
+                "02M543 - New Design High School",
+                "02M545 - High School for Dual Language and Asian Studies",
+                "02M551 - New York Harbor School",
+                "02M600 - The High School of Fashion Industries",
+                "02M655 - Life Sciences Secondary School"
+            ]
+        },
+        "4": {
+            "source": "wikipedia/List_of_first_ladies_of_the_United_States/content.txt",
+            "fact": "Portrait of Eleanor RooseveltEleanor RooseveltMarch 4, 1933–April 12, 1945Franklin D. Roosevelt",
+            "subquestion": "Which school from <hop 1 answer> is named after a relative of a U.S. president?",
+            "answer": "Eleanor Roosevelt High School"
+        },
+        "5": {
+            "source": "wikipedia/Eleanor_Roosevelt/content.txt",
+            "fact": "Anna Eleanor Roosevelt ( ; October 11, 1884November 7, 1962) was an American political figure, diplomat, and activist. She was the longest-serving first lady of the United States, during her husband Franklin D. Roosevelt's four terms as president from 1933 to 1945. Through her travels, public engagement, and advocacy, she largely redefined the role. Widowed in 1945, she served as a United States delegate to the United Nations General Assembly from 1945 to 1952, and took a leading role in designing the text and gaining international support for the Universal Declaration of Human Rights. President Harry S. Truman called her the \"First Lady of the World\" in tribute to her human rights achievements.\n\nRoosevelt was a member of the prominent and wealthy Roosevelt and Livingston families and a niece of President Theodore Roosevelt. She had an unhappy childhood, having suffered the deaths of both parents and one of her brothers at a young age.",
+            "subquestion": "Which U.S. Presidents were related to <hop 2 answer>'s namesake?",
+            "answer": [
+                "Theodore Roosevelt",
+                "Franklin D. Roosevelt"
+            ]
+        },
+        "6": {
+            "source": "wikipedia/Theodore_Roosevelt/content.txt",
+            "fact": "Theodore Roosevelt Jr. (October 27, 1858 – January 6, 1919), also known as Teddy or T.R., was the 26th president of the United States, serving from 1901 to 1909.",
+            "subquestion": "From <hop 3 answer>, what years did Theodore Roosevelt serve as U.S. president?",
+            "answer": "1901-1909"
+        },
+        "7": {
+            "source": "wikipedia/Franklin_D._Roosevelt/content.txt",
+            "fact": "Franklin Delano Roosevelt (January 30, 1882April 12, 1945), also known as FDR, was the 32nd president of the United States, serving from 1933 until his death in 1945.",
+            "subquestion": "From <hop 3 answer>, what years did Franklin D. Roosevelt serve as U.S. president?",
+            "answer": "1933-1945"
+        },
+        "8": {
+            "source": "wikipedia/Warm_Springs,_Georgia/content.txt",
+            "fact": "Warm Springs is a city in Meriwether County, Georgia, United States. The population was 465 at the 2020 census.\n\nHistory\nthumb|right|Warm Springs 1935\nthumb|right|Warm Springs 1933\nWarm Springs, originally named \"Bullochville\" (after the Bulloch family, which began after Stephen Bullock moved to Meriwether County in 1806 from Edgecombe County, North Carolina), first came to prominence in the 19th century as a spa town whose attraction was a permanent  natural spring. President Franklin D. Roosevelt first came to Warm Springs in 1924, hoping to find a cure for his polio. Although there was no cure, he did find that the warm water from the spring brought temporary relief, so he bought the resort and 1700 acres (6.9 km2) of land. It became a foundation for his charity, the Georgia Warm Springs Foundation, which later became the Roosevelt Warm Springs Institute for Rehabilitation, a rehabilitation hospital that continues today. Roosevelt learned to swim as a form of exercise to help him regain mobility. He became so fond of the place that he built a home on Pine Mountain nearby, which would become known as the Little White House. Roosevelt had a cottage built in 1932 that became famous as the Little White House, where he vacationed while president, because of his illness. He died there in 1945, and the home is now a public museum.",
+            "subquestion": "What is the population in 2020 in the city where <hop 4 answer> died?",
+            "answer": "465"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/List_of_first_ladies_of_the_United_States/content.txt",
+        "wikipedia/Eleanor_Roosevelt/content.txt",
+        "wikipedia/Theodore_Roosevelt/content.txt",
+        "wikipedia/Franklin_D._Roosevelt/content.txt",
+        "wikipedia/Warm_Springs,_Georgia/content.txt",
+        "datagov/2007-2008-school-progress-report/files/rows.txt",
+        "datagov/2007-2008-school-progress-report/signed-metadata.txt",
+        "datagov/2007-2008-school-progress-report/files/School_Progress_Reports_-_All_Schools.xlsx",
+        "datagov/2008-2009-school-progress-report/files/rows.txt",
+        "datagov/2008-2009-school-progress-report/signed-metadata.txt",
+        "datagov/2008-2009-school-progress-report/files/School_Progress_Reports_-_All_Schools.xlsx",
+        "datagov/2009-2010-school-progress-report/files/rows.txt",
+        "datagov/2009-2010-school-progress-report/signed-metadata.txt",
+        "datagov/2009-2010-school-progress-report/files/School_Progress_Reports_-_All_Schools_2009-10.xlsx"
+    ],
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1 retrieves the Manhattan District 02 high schools with OVERALL GRADE A in 2007-08.",
+                "Node 2 retrieves the Manhattan District 02 high schools with OVERALL GRADE A in 2008-09.",
+                "Node 3 retrieves the Manhattan District 02 high schools with 2009-2010 OVERALL GRADE A in 2009-10.",
+                "Hop result: intersect the three yearly school sets by DBN to keep the schools that consistently received A grades across 2007-08 through 2009-10."
+            ],
+            "answer": [
+                "02M288 - Food and Finance High School",
+                "02M294 - Essex Street Academy",
+                "02M296 - High School of Hospitality Management",
+                "02M298 - Pace High School",
+                "02M408 - Professional Performing Arts High School",
+                "02M411 - Baruch College Campus High School",
+                "02M412 - N.Y.C. Lab School for Collaborative Studies",
+                "02M413 - School of the Future High School",
+                "02M414 - N.Y.C. Museum School",
+                "02M416 - Eleanor Roosevelt High School",
+                "02M418 - Millennium High School",
+                "02M439 - Manhattan Village Academy",
+                "02M475 - Stuyvesant High School",
+                "02M519 - Talent Unlimited High School",
+                "02M531 - Repertory Company High School for Theatre Arts",
+                "02M542 - Manhattan Bridges High School",
+                "02M543 - New Design High School",
+                "02M545 - High School for Dual Language and Asian Studies",
+                "02M600 - The High School of Fashion Industries"
+            ]
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4 matches the surviving schools in <hop 1 answer> against the First Lady roster.",
+                "Hop result: the school is Eleanor Roosevelt High School."
+            ],
+            "answer": "Eleanor Roosevelt High School"
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5 retrieves the U.S. presidents related to the namesake of <hop 2 answer>.",
+                "Hop result: the related presidents are Theodore Roosevelt and Franklin D. Roosevelt."
+            ],
+            "answer": [
+                "Theodore Roosevelt",
+                "Franklin D. Roosevelt"
+            ]
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                6,
+                7
+            ],
+            "reasoning": [
+                "Node 6 retrieves Theodore Roosevelt's presidential years from <hop 3 answer>.",
+                "Node 7 retrieves Franklin D. Roosevelt's presidential years from <hop 3 answer>.",
+                "Hop result: Franklin D. Roosevelt is the related president who served after 1920."
+            ],
+            "answer": "Franklin D. Roosevelt"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8 retrieves the 2020 census population of the city where <hop 4 answer> died.",
+                "Hop result: the population is 465."
+            ],
+            "answer": 465
+        }
+    ]
+}

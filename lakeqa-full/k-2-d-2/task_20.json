@@ -1,0 +1,70 @@
+{
+    "question": "Which state is in both of these groups: the states ranked 6th through 10th by the median total labor force participation rate as of October 2019, and the states ranked 8th through 12th by the sample standard deviation of the number of days transit agencies provided revenue service during the 2022 fiscal year? Respond with [Answer]. After finding that, what is the highest point in that state? Your response should be in the format [Answer].",
+    "answer": "Hoye-Crest",
+    "nodes": {
+        "1": {
+            "source": "datagov/choose-maryland-compare-states-workforce/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/choose-maryland-compare-states-workforce/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nus_states = [\n    \"Alabama\", \"Alaska\", \"Arizona\", \"Arkansas\", \"California\", \"Colorado\", \"Connecticut\",\n    \"Delaware\", \"Florida\", \"Georgia\", \"Hawaii\", \"Idaho\", \"Illinois\", \"Indiana\", \"Iowa\",\n    \"Kansas\", \"Kentucky\", \"Louisiana\", \"Maine\", \"Maryland\", \"Massachusetts\", \"Michigan\",\n    \"Minnesota\", \"Mississippi\", \"Missouri\", \"Montana\", \"Nebraska\", \"Nevada\",\n    \"New Hampshire\", \"New Jersey\", \"New Mexico\", \"New York\", \"North Carolina\",\n    \"North Dakota\", \"Ohio\", \"Oklahoma\", \"Oregon\", \"Pennsylvania\", \"Rhode Island\",\n    \"South Carolina\", \"South Dakota\", \"Tennessee\", \"Texas\", \"Utah\", \"Vermont\", \"Virginia\",\n    \"Washington\", \"West Virginia\", \"Wisconsin\", \"Wyoming\"\n]\n\ndf = df[df[\"State\"].isin(us_states)].copy()\ndf[\"Labor Force Participation Rate, Total (%)\"] = pd.to_numeric(\n    df[\"Labor Force Participation Rate, Total (%)\"], errors=\"coerce\"\n)\n\nresult = (\n    df.groupby(\"State\", dropna=False)[\"Labor Force Participation Rate, Total (%)\"]\n    .median()\n    .reset_index(name=\"median_total_labor_force_participation_rate\")\n    .sort_values(\n        [\"median_total_labor_force_participation_rate\", \"State\"],\n        ascending=[False, True],\n        kind=\"mergesort\",\n    )\n    .reset_index(drop=True)\n)\n\nresult = result.iloc[5:10].reset_index(drop=True)\nanswer = result[\"State\"].tolist()",
+            "subquestion": "Which states are ranked 6th through 10th by the median total labor force participation rate as of October 2019?",
+            "answer": [
+                "Utah",
+                "Alaska",
+                "Maryland",
+                "New Hampshire",
+                "Iowa"
+            ]
+        },
+        "2": {
+            "source": "datagov/service-flat-file/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/service-flat-file/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"Report Year\"] = pd.to_numeric(df[\"Report Year\"], errors=\"coerce\")\ndf = df[df[\"Report Year\"] == 2022].copy()\n\nstate_map = {\n    \"AL\": \"Alabama\", \"AK\": \"Alaska\", \"AZ\": \"Arizona\", \"AR\": \"Arkansas\", \"CA\": \"California\",\n    \"CO\": \"Colorado\", \"CT\": \"Connecticut\", \"DE\": \"Delaware\", \"FL\": \"Florida\", \"GA\": \"Georgia\",\n    \"HI\": \"Hawaii\", \"ID\": \"Idaho\", \"IL\": \"Illinois\", \"IN\": \"Indiana\", \"IA\": \"Iowa\",\n    \"KS\": \"Kansas\", \"KY\": \"Kentucky\", \"LA\": \"Louisiana\", \"ME\": \"Maine\", \"MD\": \"Maryland\",\n    \"MA\": \"Massachusetts\", \"MI\": \"Michigan\", \"MN\": \"Minnesota\", \"MS\": \"Mississippi\",\n    \"MO\": \"Missouri\", \"MT\": \"Montana\", \"NE\": \"Nebraska\", \"NV\": \"Nevada\", \"NH\": \"New Hampshire\",\n    \"NJ\": \"New Jersey\", \"NM\": \"New Mexico\", \"NY\": \"New York\", \"NC\": \"North Carolina\",\n    \"ND\": \"North Dakota\", \"OH\": \"Ohio\", \"OK\": \"Oklahoma\", \"OR\": \"Oregon\", \"PA\": \"Pennsylvania\",\n    \"RI\": \"Rhode Island\", \"SC\": \"South Carolina\", \"SD\": \"South Dakota\", \"TN\": \"Tennessee\",\n    \"TX\": \"Texas\", \"UT\": \"Utah\", \"VT\": \"Vermont\", \"VA\": \"Virginia\", \"WA\": \"Washington\",\n    \"WV\": \"West Virginia\", \"WI\": \"Wisconsin\", \"WY\": \"Wyoming\", \"DC\": \"Washington D.C.\"\n}\n\ndf[\"normalized_state\"] = df[\"State\"].map(state_map)\ndf = df[df[\"normalized_state\"].notna()].copy()\ndf[\"Days Of Service Operated\"] = pd.to_numeric(df[\"Days Of Service Operated\"], errors=\"coerce\")\n\nresult = (\n    df.groupby(\"normalized_state\", dropna=False)[\"Days Of Service Operated\"]\n    .std()\n    .reset_index(name=\"sample_stddev_days_of_service_operated\")\n    .sort_values(\n        [\"sample_stddev_days_of_service_operated\", \"normalized_state\"],\n        ascending=[False, True],\n        kind=\"mergesort\",\n    )\n    .reset_index(drop=True)\n)\n\nresult = result.iloc[7:12].reset_index(drop=True)\nanswer = result[\"normalized_state\"].tolist()",
+            "subquestion": "Which states are ranked 8th through 12th by the sample standard deviation of the number of days transit agencies provided revenue service during the 2022 fiscal year?",
+            "answer": [
+                "Maryland",
+                "Delaware",
+                "Colorado",
+                "New York",
+                "Maine"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Hoye-Crest/content.txt",
+            "fact": "Hoye-Crest is a summit along Backbone Mountain just inside Garrett County, Maryland. It is the highest natural point in Maryland.",
+            "subquestion": "What is the highest point in <hop 1 answer>?",
+            "answer": "Hoye-Crest"
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Keep only U.S. states, convert `Labor Force Participation Rate, Total (%)` to numeric, group by `State` to compute the median total labor force participation rate, sort by median descending and state ascending to break ties alphabetically, and take ranks 6 through 10.",
+                "Node 2: Keep records from report year 2022, map `State` abbreviations to full state names, convert `Days Of Service Operated` to numeric, group by normalized state to compute the sample standard deviation of days of service operated, sort by standard deviation descending and state ascending to break ties alphabetically, and take ranks 8 through 12.",
+                "Hop result: semantic intersection of <node 1 answer> and <node 2 answer> = Maryland."
+            ],
+            "answer": "Maryland"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: The Hoye-Crest page identifies Hoye-Crest as the highest natural point in the computed state.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Hoye-Crest"
+        }
+    ],
+    "datasets_used": [
+        "datagov/choose-maryland-compare-states-workforce/files/rows.txt",
+        "datagov/choose-maryland-compare-states-workforce/signed-metadata.txt",
+        "datagov/service-flat-file/files/rows.txt",
+        "datagov/service-flat-file/signed-metadata.txt",
+        "datagov/service-flat-file/files/wwdp-t4re.publisher-view.json",
+        "wikipedia/Hoye-Crest/content.txt"
+    ]
+}

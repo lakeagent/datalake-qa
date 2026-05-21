@@ -1,0 +1,151 @@
+{
+  "question": "First, identify the Washington, DC wards that consistently ranked in the top four for building permits from 2022 to 2024. Among those candidates, identify the two wards with the highest average crime-incident counts from 2022 to 2024. For each of those two wards, what is the population per neighborhood in 2022. What is the difference between the two values? Rounded to one decimal? Your response should be in the format [Answer].",
+  "answer": 1834.8,
+  "nodes": {
+    "1": {
+      "source": "datagov/building-permits-in-2022/files/data.txt",
+      "fact": "import os\nimport boto3\n\nsource = \"datagov/building-permits-in-2022/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    with open(local_path, \"r\", encoding=\"utf-8\", errors=\"replace\") as f:\n        text = f.read()\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    text = obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\")\nimport re\nfrom collections import Counter\n\nward_pattern = re.compile(r'<SimpleData name=\"WARD\">\\s*([^<]+?)\\s*</SimpleData>', flags=re.I)\ncounter = Counter()\nfor m in ward_pattern.finditer(text):\n    val = m.group(1).strip()\n    if val:\n        try:\n            ward_num = int(float(val))\n            counter[ward_num] += 1\n        except Exception:\n            pass\n\ntop = sorted(counter.items(), key=lambda kv: kv[1], reverse=True)[:4]\nanswer = {f\"Ward {int(w)}\": int(c) for w, c in top}\n",
+      "subquestion": "Which Washington, DC wards were in the top 4 by number of building permits in 2022?",
+      "answer": {
+        "Ward 6": 8371,
+        "Ward 2": 8286,
+        "Ward 4": 6971,
+        "Ward 5": 6580
+      }
+    },
+    "2": {
+      "source": "datagov/building-permits-in-2023/files/data.txt",
+      "fact": "import os\nimport io\nimport json\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/building-permits-in-2023/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    with open(local_path, \"r\", encoding=\"utf-8\", errors=\"replace\") as f:\n        geo = json.load(f)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    geo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nward_vals = pd.to_numeric(df.get(\"WARD\"), errors=\"coerce\").dropna().astype(int)\ncounts = ward_vals.value_counts().head(4)\nanswer = {f\"Ward {int(w)}\": int(c) for w, c in counts.items()}\n",
+      "subquestion": "Which Washington, DC wards were in the top 4 by number of building permits in 2023?",
+      "answer": {
+        "Ward 2": 8392,
+        "Ward 6": 6845,
+        "Ward 4": 6525,
+        "Ward 5": 6072
+      }
+    },
+    "3": {
+      "source": "datagov/building-permits-in-2024/files/data.txt",
+      "fact": "import os\nimport boto3\n\nsource = \"datagov/building-permits-in-2024/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    with open(local_path, \"r\", encoding=\"utf-8\", errors=\"replace\") as f:\n        text = f.read()\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    text = obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\")\nimport re\nfrom collections import Counter\n\nward_pattern = re.compile(r'<SimpleData name=\"WARD\">\\s*([^<]+?)\\s*</SimpleData>', flags=re.I)\ncounter = Counter()\nfor m in ward_pattern.finditer(text):\n    val = m.group(1).strip()\n    if val:\n        try:\n            ward_num = int(float(val))\n            counter[ward_num] += 1\n        except Exception:\n            pass\n\ntop = sorted(counter.items(), key=lambda kv: kv[1], reverse=True)[:4]\nanswer = {f\"Ward {int(w)}\": int(c) for w, c in top}\n",
+      "subquestion": "Which Washington, DC wards were in the top 4 by number of building permits in 2024?",
+      "answer": {
+        "Ward 2": 7897,
+        "Ward 4": 6856,
+        "Ward 6": 6658,
+        "Ward 5": 6213
+      }
+    },
+    "4": {
+      "source": "datagov/crime-incidents-in-2022/files/data.txt",
+      "fact": "import os\nimport io\nimport json\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/crime-incidents-in-2022/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    with open(local_path, \"r\", encoding=\"utf-8\", errors=\"replace\") as f:\n        geo = json.load(f)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    geo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = {'Ward 6': 8371, 'Ward 2': 8286, 'Ward 4': 6971, 'Ward 5': 6580}\nnode_2_answer = {'Ward 2': 8392, 'Ward 6': 6845, 'Ward 4': 6525, 'Ward 5': 6072}\nnode_3_answer = {'Ward 2': 7897, 'Ward 4': 6856, 'Ward 6': 6658, 'Ward 5': 6213}\n\nimport re\n\nward_keys = set(str(k) for d in [node_1_answer, node_2_answer, node_3_answer] for k in d.keys())\nward_nums = set()\nfor k in ward_keys:\n    m = re.search(r'Ward\\s*(\\d+)', str(k), flags=re.I)\n    if m:\n        ward_nums.add(int(m.group(1)))\n\nward_series = pd.to_numeric(df[\"WARD\"], errors=\"coerce\").dropna().astype(int)\ncounts = ward_series[ward_series.isin(ward_nums)].value_counts().to_dict()\nanswer = {f\"Ward {w}\": int(counts.get(w, 0)) for w in sorted(ward_nums)}\n",
+      "subquestion": "For wards in <hop 1 answer>, what were the crime-incident counts in 2022?",
+      "answer": {
+        "Ward 2": 4794,
+        "Ward 4": 2547,
+        "Ward 5": 4497,
+        "Ward 6": 3685
+      }
+    },
+    "5": {
+      "source": "datagov/crime-incidents-in-2023/files/data.txt",
+      "fact": "import os\nimport io\nimport json\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/crime-incidents-in-2023/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    with open(local_path, \"r\", encoding=\"utf-8\", errors=\"replace\") as f:\n        geo = json.load(f)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    geo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = {'Ward 6': 8371, 'Ward 2': 8286, 'Ward 4': 6971, 'Ward 5': 6580}\nnode_2_answer = {'Ward 2': 8392, 'Ward 6': 6845, 'Ward 4': 6525, 'Ward 5': 6072}\nnode_3_answer = {'Ward 2': 7897, 'Ward 4': 6856, 'Ward 6': 6658, 'Ward 5': 6213}\n\nimport re\n\nward_keys = set(str(k) for d in [node_1_answer, node_2_answer, node_3_answer] for k in d.keys())\nward_nums = set()\nfor k in ward_keys:\n    m = re.search(r'Ward\\s*(\\d+)', str(k), flags=re.I)\n    if m:\n        ward_nums.add(int(m.group(1)))\n\nward_series = pd.to_numeric(df[\"WARD\"], errors=\"coerce\").dropna().astype(int)\ncounts = ward_series[ward_series.isin(ward_nums)].value_counts().to_dict()\nanswer = {f\"Ward {w}\": int(counts.get(w, 0)) for w in sorted(ward_nums)}\n",
+      "subquestion": "For wards in <hop 1 answer>, what were the crime-incident counts in 2023?",
+      "answer": {
+        "Ward 2": 5469,
+        "Ward 4": 3135,
+        "Ward 5": 5629,
+        "Ward 6": 4281
+      }
+    },
+    "6": {
+      "source": "datagov/crime-incidents-in-2024/files/data.txt",
+      "fact": "import os\nimport io\nimport json\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/crime-incidents-in-2024/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    with open(local_path, \"r\", encoding=\"utf-8\", errors=\"replace\") as f:\n        geo = json.load(f)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    geo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = {'Ward 6': 8371, 'Ward 2': 8286, 'Ward 4': 6971, 'Ward 5': 6580}\nnode_2_answer = {'Ward 2': 8392, 'Ward 6': 6845, 'Ward 4': 6525, 'Ward 5': 6072}\nnode_3_answer = {'Ward 2': 7897, 'Ward 4': 6856, 'Ward 6': 6658, 'Ward 5': 6213}\n\nimport re\n\nward_keys = set(str(k) for d in [node_1_answer, node_2_answer, node_3_answer] for k in d.keys())\nward_nums = set()\nfor k in ward_keys:\n    m = re.search(r'Ward\\s*(\\d+)', str(k), flags=re.I)\n    if m:\n        ward_nums.add(int(m.group(1)))\n\nward_series = pd.to_numeric(df[\"WARD\"], errors=\"coerce\").dropna().astype(int)\ncounts = ward_series[ward_series.isin(ward_nums)].value_counts().to_dict()\nanswer = {f\"Ward {w}\": int(counts.get(w, 0)) for w in sorted(ward_nums)}\n",
+      "subquestion": "For wards in <hop 1 answer>, what were the crime-incident counts in 2024?",
+      "answer": {
+        "Ward 2": 4420,
+        "Ward 4": 2595,
+        "Ward 5": 4585,
+        "Ward 6": 3549
+      }
+    },
+    "7": {
+      "source": "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt",
+      "fact": "Ward 2\nthumb|170px|Ward 2 (2023–present)\nWard 2 Councilmember: Brooke Pinto\nPopulation (2022): 89,518 \n\nBurleith\nChinatown\nDowntown\nDupont Circle\nFederal Triangle\nFoggy Bottom\nGeorgetown\nSheridan-Kalorama\nLogan Circle\nMount Vernon Square (part of the neighborhood is also in Ward 6)\nPenn Quarter\nShaw (parts of the neighborhood are also in Ward 1)\nSouthwest Federal Center\nU Street Corridor (part of the neighborhood is also in Ward 1)\nWest End\n\nWard 5\nthumb|170px|Ward 5 (2023–present)\nWard 5 Councilmember: Zachary Parker\nPopulation (2022): 86,794 \n\nArboretum\nBloomingdale\nBrentwood\nBrookland\nCarver Langston\nEckington\nEdgewood\nFort Lincoln\nFort Totten\nGateway\nIvy City\nLangdon\nMichigan Park\nNorth Michigan Park\nPleasant Hill\nQueens Chapel\nRiggs Park (part of the neighborhood is also in Ward 4)\nStronghold\nTrinidad\nTruxton Circle\nWoodridge",
+      "subquestion": "For the wards in <hop 2 answer>, what were their 2022 populations and listed-neighborhood counts?",
+      "answer": {
+        "Ward 2": {
+          "population": 89518,
+          "listed_neighborhoods": 15
+        },
+        "Ward 5": {
+          "population": 86794,
+          "listed_neighborhoods": 21
+        }
+      }
+    }
+  },
+  "datasets_used": [
+    "datagov/building-permits-in-2022/files/data.txt",
+    "datagov/building-permits-in-2022/signed-metadata.txt",
+    "datagov/building-permits-in-2022/files/14.arcgis-layer.json",
+    "datagov/building-permits-in-2023/files/data.txt",
+    "datagov/building-permits-in-2023/signed-metadata.txt",
+    "datagov/building-permits-in-2023/files/15.arcgis-layer.json",
+    "datagov/building-permits-in-2024/files/data.txt",
+    "datagov/building-permits-in-2024/signed-metadata.txt",
+    "datagov/building-permits-in-2024/files/16.arcgis-layer.json",
+    "datagov/crime-incidents-in-2022/files/data.txt",
+    "datagov/crime-incidents-in-2022/signed-metadata.txt",
+    "datagov/crime-incidents-in-2022/files/4.arcgis-layer.json",
+    "datagov/crime-incidents-in-2023/files/data.txt",
+    "datagov/crime-incidents-in-2023/signed-metadata.txt",
+    "datagov/crime-incidents-in-2023/files/5.arcgis-layer.json",
+    "datagov/crime-incidents-in-2024/files/data.txt",
+    "datagov/crime-incidents-in-2024/signed-metadata.txt",
+    "datagov/crime-incidents-in-2024/files/6.arcgis-layer.json",
+    "wikipedia/Neighborhoods_in_Washington,_D.C./content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: In 2022, the top 4 wards by number of building permits were Ward 6 (8,371), Ward 2 (8,286), Ward 4 (6,971), and Ward 5 (6,580).",
+        "Node 2: In 2023, the top 4 wards were Ward 2 (8,392), Ward 6 (6,845), Ward 4 (6,525), and Ward 5 (6,072).",
+        "Node 3: In 2024, the top 4 wards were Ward 2 (7,897), Ward 4 (6,856), Ward 6 (6,658), and Ward 5 (6,213).",
+        "Hop result: <node_1 answer> ∩ <node_2 answer> ∩ <node_3 answer> = [\"Ward 2\", \"Ward 4\", \"Ward 5\", \"Ward 6\"]."
+      ],
+      "answer": "Ward 2, Ward 4, Ward 5, Ward 6"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 4: In 2022, crime-incident counts for wards in <hop 1 answer> were Ward 2 (4,794), Ward 5 (4,497), Ward 6 (3,685), and Ward 4 (2,547).",
+        "Node 5: In 2023, the counts were Ward 2 (5,469), Ward 5 (5,629), Ward 6 (4,281), and Ward 4 (3,135).",
+        "Node 6: In 2024, the counts were Ward 2 (4,420), Ward 5 (4,585), Ward 6 (3,549), and Ward 4 (2,595).",
+        "Hop result: using <node_4 answer>, <node_5 answer>, and <node_6 answer>, the two highest average crime-incident counts are Ward 5 and Ward 2."
+      ],
+      "answer": "Ward 5 and Ward 2"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: For wards in <hop 2 answer>, Ward 2 had `Population (2022)` = 89,518 and 15 listed neighborhoods; Ward 5 had `Population (2022)` = 86,794 and 21 listed neighborhoods.",
+        "Hop result: 89,518 / 15 = 5,967.8667 and 86,794 / 21 = 4,133.0476; the difference is 1,834.8 when rounded to one decimal."
+      ],
+      "answer": 1834.8
+    }
+  ]
+}

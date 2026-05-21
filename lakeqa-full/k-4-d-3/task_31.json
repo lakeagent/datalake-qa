@@ -1,0 +1,154 @@
+{
+  "question": "Across 2021-2023, which Missouri state agency stayed in the top five for professional services spending and also had the highest average employee count? What city is its headquarters in? That city is located on the southern side of which river? Return the river name only. Your response should be in the format [Answer].",
+  "answer": "Missouri River",
+  "nodes": {
+    "1": {
+      "source": "datagov/2021-state-expenditures/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2021-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nfiltered = df[df[\"Category Description\"].astype(str).str.strip().str.upper().eq(\"PROFESSIONAL SERVICES\")].copy()\nfiltered[\"Payments Total\"] = pd.to_numeric(filtered[\"Payments Total\"], errors=\"coerce\")\nagency_totals = filtered.groupby(filtered[\"Agency Name\"].astype(str).str.strip().str.upper())[\"Payments Total\"].sum().sort_values(ascending=False)\nanswer = agency_totals.head(5).index.tolist()\n",
+      "subquestion": "Which Missouri state agencies were in the top 5 for professional services spending every year from 2021 to 2023?",
+      "answer": [
+        "SOCIAL SERVICES",
+        "CORRECTIONS",
+        "PUBLIC SAFETY",
+        "TRANSPORTATION",
+        "ELEMENTARY AND SECONDARY EDUCATION"
+      ]
+    },
+    "2": {
+      "source": "datagov/2022-state-expenditures/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2022-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nfiltered = df[df[\"Category Description\"].astype(str).str.strip().str.upper().eq(\"PROFESSIONAL SERVICES\")].copy()\nfiltered[\"Payments Total\"] = pd.to_numeric(filtered[\"Payments Total\"], errors=\"coerce\")\nagency_totals = filtered.groupby(filtered[\"Agency Name\"].astype(str).str.strip().str.upper())[\"Payments Total\"].sum().sort_values(ascending=False)\nanswer = agency_totals.head(5).index.tolist()\n",
+      "subquestion": "Which Missouri state agencies were in the top 5 for professional services spending every year from 2021 to 2023?",
+      "answer": [
+        "SOCIAL SERVICES",
+        "CORRECTIONS",
+        "TRANSPORTATION",
+        "PUBLIC SAFETY",
+        "ELEMENTARY AND SECONDARY EDUCATION"
+      ]
+    },
+    "3": {
+      "source": "datagov/2023-state-expenditures/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2023-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nfiltered = df[df[\"Category Description\"].astype(str).str.strip().str.upper().eq(\"PROFESSIONAL SERVICES\")].copy()\nfiltered[\"Payments Total\"] = pd.to_numeric(filtered[\"Payments Total\"], errors=\"coerce\")\nagency_totals = filtered.groupby(filtered[\"Agency Name\"].astype(str).str.strip().str.upper())[\"Payments Total\"].sum().sort_values(ascending=False)\nanswer = agency_totals.head(5).index.tolist()\n",
+      "subquestion": "Which Missouri state agencies were in the top 5 for professional services spending every year from 2021 to 2023?",
+      "answer": [
+        "CORRECTIONS",
+        "SOCIAL SERVICES",
+        "TRANSPORTATION",
+        "OFFICE OF ADMINISTRATION",
+        "MENTAL HEALTH"
+      ]
+    },
+    "4": {
+      "source": "datagov/2021-state-employee-pay/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2021-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['SOCIAL SERVICES', 'CORRECTIONS', 'PUBLIC SAFETY', 'TRANSPORTATION', 'ELEMENTARY AND SECONDARY EDUCATION']\nnode_2_answer = ['SOCIAL SERVICES', 'CORRECTIONS', 'TRANSPORTATION', 'PUBLIC SAFETY', 'ELEMENTARY AND SECONDARY EDUCATION']\nnode_3_answer = ['CORRECTIONS', 'SOCIAL SERVICES', 'TRANSPORTATION', 'OFFICE OF ADMINISTRATION', 'MENTAL HEALTH']\n\nexpected_is_dict = True\nagencies = set(str(x).strip().upper() for x in node_1_answer) & set(str(x).strip().upper() for x in node_2_answer) & set(str(x).strip().upper() for x in node_3_answer)\nagency_col = df[\"Agency Name\"].astype(str).str.strip().str.upper()\ncounts = agency_col[agency_col.isin(agencies)].value_counts()\n\nif expected_is_dict:\n    answer = {agency: int(counts.get(agency, 0)) for agency in sorted(agencies, key=lambda a: (-int(counts.get(a, 0)), a))}\nelse:\n    answer = sorted(agencies, key=lambda a: (-int(counts.get(a, 0)), a))[0]\n",
+      "subquestion": "What were the employee counts in 2021 for the agencies in <hop 1 answer>?",
+      "answer": {
+        "CORRECTIONS": 12530,
+        "SOCIAL SERVICES": 8362,
+        "TRANSPORTATION": 7170
+      }
+    },
+    "5": {
+      "source": "datagov/2022-state-employee-pay/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2022-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['SOCIAL SERVICES', 'CORRECTIONS', 'PUBLIC SAFETY', 'TRANSPORTATION', 'ELEMENTARY AND SECONDARY EDUCATION']\nnode_2_answer = ['SOCIAL SERVICES', 'CORRECTIONS', 'TRANSPORTATION', 'PUBLIC SAFETY', 'ELEMENTARY AND SECONDARY EDUCATION']\nnode_3_answer = ['CORRECTIONS', 'SOCIAL SERVICES', 'TRANSPORTATION', 'OFFICE OF ADMINISTRATION', 'MENTAL HEALTH']\n\nexpected_is_dict = True\nagencies = set(str(x).strip().upper() for x in node_1_answer) & set(str(x).strip().upper() for x in node_2_answer) & set(str(x).strip().upper() for x in node_3_answer)\nagency_col = df[\"Agency Name\"].astype(str).str.strip().str.upper()\ncounts = agency_col[agency_col.isin(agencies)].value_counts()\n\nif expected_is_dict:\n    answer = {agency: int(counts.get(agency, 0)) for agency in sorted(agencies, key=lambda a: (-int(counts.get(a, 0)), a))}\nelse:\n    answer = sorted(agencies, key=lambda a: (-int(counts.get(a, 0)), a))[0]\n",
+      "subquestion": "What were the employee counts in 2022 for the agencies in <hop 1 answer>?",
+      "answer": {
+        "CORRECTIONS": 12380,
+        "SOCIAL SERVICES": 8723,
+        "TRANSPORTATION": 6917
+      }
+    },
+    "6": {
+      "source": "datagov/2023-state-employee-pay/files/rows.txt",
+      "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\nsource = \"datagov/2023-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else \"/tmp/k123_data_cache/\" + source\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\nnode_1_answer = ['SOCIAL SERVICES', 'CORRECTIONS', 'PUBLIC SAFETY', 'TRANSPORTATION', 'ELEMENTARY AND SECONDARY EDUCATION']\nnode_2_answer = ['SOCIAL SERVICES', 'CORRECTIONS', 'TRANSPORTATION', 'PUBLIC SAFETY', 'ELEMENTARY AND SECONDARY EDUCATION']\nnode_3_answer = ['CORRECTIONS', 'SOCIAL SERVICES', 'TRANSPORTATION', 'OFFICE OF ADMINISTRATION', 'MENTAL HEALTH']\n\nagencies = set(str(x).strip().upper() for x in node_1_answer) & set(str(x).strip().upper() for x in node_2_answer) & set(str(x).strip().upper() for x in node_3_answer)\nagency_col = df[\"Agency Name\"].astype(str).str.strip().str.upper()\ncounts = agency_col[agency_col.isin(agencies)].value_counts()\nanswer = {agency: int(counts.get(agency, 0)) for agency in sorted(agencies, key=lambda a: (-int(counts.get(a, 0)), a))}\n",
+      "subquestion": "What were the employee counts in 2023 for the agencies in <hop 1 answer>?",
+      "answer": {
+        "CORRECTIONS": 13107,
+        "SOCIAL SERVICES": 8932,
+        "TRANSPORTATION": 6956
+      }
+    },
+    "7": {
+      "source": "wikipedia/Missouri_Department_of_Corrections/content.txt",
+      "fact": "The Missouri Department of Corrections is the state law enforcement agency that  operates state prisons in the U.S. state of Missouri. It has its headquarters in Missouri's capital of Jefferson City.",
+      "subquestion": "What city is the headquarters of <hop 2 answer> located in?",
+      "answer": "Jefferson City"
+    },
+    "8": {
+      "source": "wikipedia/Jefferson_City,_Missouri/content.txt",
+      "fact": "Jefferson City is located on the northern edge of the Ozark Plateau on the southern side of the Missouri River in a region known as Mid-Missouri, that is roughly mid-way between the state's two large urban areas of Kansas City to the west and St. Louis in the east (along the west bank of the Mississippi River). It is  south of Columbia, Missouri, and sits at the western edge of the Missouri Rhineland, one of the major wine-producing regions of the Midwest. The city is dominated by the monumental domed Missouri State Capitol, which rises from a bluff overlooking the nearby Missouri River to the north. Lewis and Clark with their Corps of Discovery passed the bluff here on their historic expedition upriver in 1804, eventually journeying westward to the Pacific Northwest region and the Pacific Ocean, before Europeans or Americans established any settlement there.",
+      "subquestion": "Which river is <hop 3 answer> located on the southern side of?",
+      "answer": "Missouri River"
+    }
+  },
+  "datasets_used": [
+    "wikipedia/Missouri_Department_of_Corrections/content.txt",
+    "datagov/2021-state-expenditures/files/rows.txt",
+    "datagov/2021-state-expenditures/signed-metadata.txt",
+    "datagov/2022-state-expenditures/files/rows.txt",
+    "datagov/2022-state-expenditures/signed-metadata.txt",
+    "datagov/2023-state-expenditures/files/rows.txt",
+    "datagov/2023-state-expenditures/signed-metadata.txt",
+    "datagov/2021-state-employee-pay/files/rows.txt",
+    "datagov/2021-state-employee-pay/signed-metadata.txt",
+    "datagov/2022-state-employee-pay/files/rows.txt",
+    "datagov/2022-state-employee-pay/signed-metadata.txt",
+    "datagov/2023-state-employee-pay/files/rows.txt",
+    "datagov/2023-state-employee-pay/signed-metadata.txt",
+    "wikipedia/Jefferson_City,_Missouri/content.txt"
+  ],
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2,
+        3
+      ],
+      "reasoning": [
+        "Node 1: According to Missouri state expenditure data for fiscal year 2021, the top 5 agencies by Professional Services spending were: SOCIAL SERVICES ($218,760,336.88), CORRECTIONS ($168,860,817.63), PUBLIC SAFETY ($99,478,227.23), TRANSPORTATION ($77,432,677.01), and ELEMENTARY AND SECONDARY EDUCATION ($60,049,132.30).",
+        "Node 2: According to Missouri state expenditure data for fiscal year 2022, the top 5 agencies by Professional Services spending were: SOCIAL SERVICES ($231,054,160.78), CORRECTIONS ($187,409,956.85), TRANSPORTATION ($96,697,827.49), PUBLIC SAFETY ($78,309,603.84), and ELEMENTARY AND SECONDARY EDUCATION ($76,114,201.40).",
+        "Node 3: According to Missouri state expenditure data for fiscal year 2023, the top 5 agencies by Professional Services spending were: CORRECTIONS ($255,301,312.93), SOCIAL SERVICES ($244,670,948.01), TRANSPORTATION ($135,596,241.67), OFFICE OF ADMINISTRATION ($114,422,442.83), and MENTAL HEALTH ($100,958,164.21).",
+        "Hop result: <node_1 answer> ∩ <node_2 answer> ∩ <node_3 answer> = [\"CORRECTIONS\", \"SOCIAL SERVICES\", \"TRANSPORTATION\"]."
+      ],
+      "answer": "CORRECTIONS, SOCIAL SERVICES, TRANSPORTATION"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        4,
+        5,
+        6
+      ],
+      "reasoning": [
+        "Node 4: For 2021, employee counts for the agencies in <hop 1 answer> were CORRECTIONS 12,530, SOCIAL SERVICES 8,362, and TRANSPORTATION 7,170.",
+        "Node 5: For 2022, employee counts for the agencies in <hop 1 answer> were CORRECTIONS 12,380, SOCIAL SERVICES 8,723, and TRANSPORTATION 6,917.",
+        "Node 6: For 2023, employee counts for the agencies in <hop 1 answer> were CORRECTIONS 13,107, SOCIAL SERVICES 8,932, and TRANSPORTATION 6,956.",
+        "Hop result: using <node_4 answer>, <node_5 answer>, and <node_6 answer>, the three-year averages are CORRECTIONS 12,672, SOCIAL SERVICES 8,672, and TRANSPORTATION 7,014; the highest is Missouri Department of Corrections."
+      ],
+      "answer": "Missouri Department of Corrections"
+    },
+    {
+      "hop": 3,
+      "node_ids": [
+        7
+      ],
+      "reasoning": [
+        "Node 7: The Missouri Department of Corrections has its headquarters in Missouri's capital of Jefferson City.",
+        "Hop result: report <node_7 answer> as the final answer."
+      ],
+      "answer": "Jefferson City"
+    },
+    {
+      "hop": 4,
+      "node_ids": [
+        8
+      ],
+      "reasoning": [
+        "Node 8: The city from <hop 3 answer> is located on the southern side of the Missouri River.",
+        "Hop result: report <node_8 answer> as the final answer."
+      ],
+      "answer": "Missouri River"
+    }
+  ]
+}

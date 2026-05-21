@@ -1,0 +1,79 @@
+{
+    "question": "I want to investigate Adams Morgan in Washington, D.C. Identify the ward Adams Morgan belongs to, find the most common offense in that ward in 2019, and report the maximum of the incidents for that offense over the next two years?. Your response should be in the format [Answer].",
+    "answer": "1702",
+    "nodes": {
+        "1": {
+            "source": "wikipedia/Adams_Morgan/content.txt",
+            "fact": "The Adams Morgan article states that Adams Morgan is a part of Ward 1.",
+            "subquestion": "Adams Morgan is part of which Washington, D.C. ward?",
+            "answer": "1"
+        },
+        "2": {
+            "source": "datagov/crime-incidents-in-2019/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2019/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = '1'\n\n\nward_value = str(node_1_answer).strip()\nfiltered = df[df[\"WARD\"].astype(str).str.strip().eq(ward_value)]\ncounts = filtered[\"OFFENSE\"].astype(str).str.strip().value_counts()\nanswer = str(counts.index[0])\n",
+            "subquestion": "In 2019 Washington, D.C. crime-incidents data, within Ward <node_1 answer>, which offense is most common?",
+            "answer": "THEFT/OTHER"
+        },
+        "3": {
+            "source": "datagov/crime-incidents-in-2020/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2020/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = '1'\nnode_2_answer = 'THEFT/OTHER'\n\n\nward_value = str(node_1_answer).strip()\noffense_value = str(node_2_answer).strip()\nfiltered = df[\n    df[\"WARD\"].astype(str).str.strip().eq(ward_value)\n    & df[\"OFFENSE\"].astype(str).str.strip().eq(offense_value)\n]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In 2020 Washington, D.C. crime-incidents data, how many incidents with offense <node_2 answer> occurred in Ward <node_1 answer>?",
+            "answer": "1587"
+        },
+        "4": {
+            "source": "datagov/crime-incidents-in-2021/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/crime-incidents-in-2021/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = '1'\nnode_2_answer = 'THEFT/OTHER'\n\n\nward_value = str(node_1_answer).strip()\noffense_value = str(node_2_answer).strip()\nfiltered = df[\n    df[\"WARD\"].astype(str).str.strip().eq(ward_value)\n    & df[\"OFFENSE\"].astype(str).str.strip().eq(offense_value)\n]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In 2021 Washington, D.C. crime-incidents data, how many incidents with offense <node_2 answer> occurred in Ward <node_1 answer>?",
+            "answer": "1702"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Adams_Morgan/content.txt",
+        "datagov/crime-incidents-in-2019/files/data.txt",
+        "datagov/crime-incidents-in-2019/signed-metadata.txt",
+        "datagov/crime-incidents-in-2019/files/1.arcgis-layer.json",
+        "datagov/crime-incidents-in-2020/files/data.txt",
+        "datagov/crime-incidents-in-2020/signed-metadata.txt",
+        "datagov/crime-incidents-in-2020/files/2.arcgis-layer.json",
+        "datagov/crime-incidents-in-2021/files/data.txt",
+        "datagov/crime-incidents-in-2021/signed-metadata.txt",
+        "datagov/crime-incidents-in-2021/files/3.arcgis-layer.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1
+            ],
+            "reasoning": [
+                "Node 1: 1 is the ward that Adams Morgan is part of.",
+                "Hop result: <node_1 answer>"
+            ],
+            "answer": "1"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                2
+            ],
+            "reasoning": [
+                "Node 2: Filter 2019 records where `WARD` equals <hop 1 answer>, count rows by `OFFENSE`, and select the most frequent offense.",
+                "Hop result: <node_2 answer>"
+            ],
+            "answer": "THEFT/OTHER"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: Filter 2020 records where `WARD` equals the <hop 1 answer> and `OFFENSE` equals the <hop 2 answer>, then count the matching incidents.",
+                "Node 4: Filter 2021 records where `WARD` equals the <hop 1 answer> and `OFFENSE` equals the <hop 2 answer>, then count the matching incidents.",
+                "Hop result: max(<node_3 answer>, <node_4 answer>) = max(1587, 1702) = 1702."
+            ],
+            "answer": "1702"
+        }
+    ]
+}

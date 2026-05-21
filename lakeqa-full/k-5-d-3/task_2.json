@@ -1,0 +1,165 @@
+{
+    "question": "I am looking for a Missouri state agency that consistently ranked in the top 5 for average employee salary between 2018 and 2020. This agency's very first officeholder also served as U.S. Attorney General. Identify the person who served in that same agency, was a U.S. Senator, and was a U.S. Attorney General. What was the 2018 population of that person's birthplace? Your response should be in the format [Answer].",
+    "answer": "2705988",
+    "nodes": {
+        "1": {
+            "source": "datagov/2018-state-employee-pay/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2018-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.groupby(\"Agency Name\", dropna=False)[\"YTD Gross Pay\"]\n    .mean()\n    .sort_values(ascending=False)\n)\nanswer = result.index.tolist()",
+            "subquestion": "Which Missouri state agencies had the highest average employee salary in 2018?",
+            "answer": [
+                "OFFICE OF ATTORNEY GENERAL",
+                "OFFICE OF STATE AUDITOR",
+                "LEGISLATURE",
+                "OFFICE OF ADMINISTRATION",
+                "ECONOMIC DEVELOPMENT"
+            ],
+            "limit": 5
+        },
+        "2": {
+            "source": "datagov/2019-state-employee-pay/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2019-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nagency_avg_pay = (\n    df.groupby(\"Agency Name\", dropna=False)[\"YTD Gross Pay\"]\n    .mean()\n    .sort_values(ascending=False)\n)\nanswer = agency_avg_pay.head(5).index.tolist()",
+            "subquestion": "Which Missouri state agencies had the highest average employee salary in 2019?",
+            "answer": [
+                "OFFICE OF GOVERNOR",
+                "OFFICE OF ATTORNEY GENERAL",
+                "JUDICIARY",
+                "OFFICE OF STATE AUDITOR",
+                "OFFICE OF ADMINISTRATION"
+            ],
+            "limit": 5
+        },
+        "3": {
+            "source": "datagov/2020-state-employee-pay/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2020-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nagency_avg_pay = (\n    df.groupby(\"Agency Name\", dropna=False)[\"YTD Gross Pay\"]\n    .mean()\n    .sort_values(ascending=False)\n)\nanswer = agency_avg_pay.head(5).index.tolist()",
+            "subquestion": "Which Missouri state agencies had the highest average employee salary in 2020?",
+            "answer": [
+                "OFFICE OF STATE AUDITOR",
+                "OFFICE OF GOVERNOR",
+                "OFFICE OF LIEUTENANT GOVERNOR",
+                "OFFICE OF ATTORNEY GENERAL",
+                "JUDICIARY"
+            ],
+            "limit": 5
+        },
+        "4": {
+            "source": "wikipedia/State_Auditor_of_Missouri/content.txt",
+            "fact": "The list of State Auditors of Missouri shows William Christy as the first auditor, serving from 1820-1821.",
+            "subquestion": "Who was the first State Auditor of Missouri?",
+            "answer": "William Christy"
+        },
+        "5": {
+            "source": "wikipedia/List_of_attorneys_general_of_Missouri/content.txt",
+            "fact": "The list of Missouri attorneys general begins with Edward Bates, whose term starts in 1820.",
+            "subquestion": "Who was the first Missouri Attorney General listed?",
+            "answer": "Edward Bates"
+        },
+        "6": {
+            "source": "wikipedia/Edward_Bates/content.txt",
+            "fact": "Edward Bates served as the U.S. Attorney General under President Abraham Lincoln.",
+            "subquestion": "Which office in <hop 1 answer> had <node 5 answer> as its first officeholder and thus matches the U.S. Attorney General condition?",
+            "answer": "OFFICE OF ATTORNEY GENERAL"
+        },
+        "7": {
+            "source": "wikipedia/Missouri_Attorney_General/content.txt",
+            "fact": "In the 'Notable attorneys general from Missouri' list, John Ashcroft is listed as Attorney General of the United States and United States Senator, while Edward Bates is listed as Attorney General of the United States and other listed U.S. Senators are not listed as U.S. Attorneys General. This makes John Ashcroft the only Missouri Attorney General listed with both roles.",
+            "subquestion": "From the <hop 2 answer> notable list, which Missouri Attorney General is listed as both a U.S. Attorney General and a U.S. Senator?",
+            "answer": "John Ashcroft"
+        },
+        "8": {
+            "source": "wikipedia/John_Ashcroft/content.txt",
+            "fact": "John David Ashcroft was born in Chicago, Illinois.",
+            "subquestion": "Where was <hop 3 answer> born?",
+            "answer": "Chicago"
+        },
+        "9": {
+            "source": "datagov/chicago-population-counts/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/chicago-population-counts/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = df[\n    (df[\"Geography Type\"] == \"Citywide\")\n    & (df[\"Year\"] == 2018)\n    & (df[\"Geography\"] == \"Chicago\")\n][\"Population - Total\"]\nanswer = result.iloc[0]",
+            "subquestion": "What was the 2018 population of <hop 4 answer>?",
+            "answer": 2705988
+        }
+    },
+    "datasets_used": [
+        "wikipedia/State_Auditor_of_Missouri/content.txt",
+        "wikipedia/List_of_attorneys_general_of_Missouri/content.txt",
+        "wikipedia/Edward_Bates/content.txt",
+        "wikipedia/Missouri_Attorney_General/content.txt",
+        "wikipedia/John_Ashcroft/content.txt",
+        "datagov/2018-state-employee-pay/files/rows.txt",
+        "datagov/2018-state-employee-pay/signed-metadata.txt",
+        "datagov/2019-state-employee-pay/files/rows.txt",
+        "datagov/2019-state-employee-pay/signed-metadata.txt",
+        "datagov/2020-state-employee-pay/files/rows.txt",
+        "datagov/2020-state-employee-pay/signed-metadata.txt",
+        "datagov/chicago-population-counts/files/rows.txt",
+        "datagov/chicago-population-counts/signed-metadata.txt",
+        "datagov/chicago-population-counts/files/85cm-7uqa.publisher-view.json"
+    ],
+    "reasoning_hops": [
+        {
+            "hop_id": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Group 2018 rows by `Agency Name`, compute mean `YTD Gross Pay`, sort descending, and keep the top five agencies.",
+                "Node 2: Group 2019 rows by `Agency Name`, compute mean `YTD Gross Pay`, sort descending, and keep the top five agencies.",
+                "Node 3: Group 2020 rows by `Agency Name`, compute mean `YTD Gross Pay`, sort descending, and keep the top five agencies.",
+                "Hop result: intersect the three yearly top-five agency sets to keep the agencies that remained in the top five across 2018 through 2020."
+            ],
+            "answer": [
+                "OFFICE OF ATTORNEY GENERAL",
+                "OFFICE OF STATE AUDITOR"
+            ]
+        },
+        {
+            "hop_id": 2,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: Retrieve the first State Auditor of Missouri.",
+                "Node 5: Retrieve the first Missouri Attorney General.",
+                "Node 6: Use <node 5 answer> and the surviving agencies from <hop 1 answer> to select the agency whose first officeholder also served as U.S. Attorney General.",
+                "Hop result: the matching agency is the Office of Attorney General."
+            ],
+            "answer": "OFFICE OF ATTORNEY GENERAL"
+        },
+        {
+            "hop_id": 3,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: From the notable list for <hop 2 answer>, retrieve the person listed as both a U.S. Attorney General and a U.S. Senator.",
+                "Hop result: the person is John Ashcroft."
+            ],
+            "answer": "John Ashcroft"
+        },
+        {
+            "hop_id": 4,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Retrieve the birthplace city of <hop 3 answer>.",
+                "Hop result: the birthplace is Chicago."
+            ],
+            "answer": "Chicago"
+        },
+        {
+            "hop_id": 5,
+            "node_ids": [
+                9
+            ],
+            "reasoning": [
+                "Node 9: Filter rows where `Geography Type` = `Citywide`, `Year` = 2018, and `Geography` = <hop 4 answer>, then return `Population - Total`.",
+                "Hop result: the 2018 population is 2705988."
+            ],
+            "answer": 2705988
+        }
+    ]
+}

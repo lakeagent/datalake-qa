@@ -1,0 +1,84 @@
+{
+    "question": "Identify the Idaho county that had at least 100 and fewer than 120 VA disability compensation recipients in FY 2023 and whose Idaho license plate code uses the county-name letter 'L'. Find the explorer after whom that county is named. What was the name of the Newfoundland dog purchased by that explorer in 1803 for the expedition? Your response should be in the format [Answer].",
+    "answer": "Seaman",
+    "nodes": {
+        "1": {
+            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nfiltered = df[df[\"State\"].astype(str).str.strip().str.lower().eq('Idaho'.lower())].copy()\nfiltered['Total: Disability Compensation Recipients'] = pd.to_numeric(filtered['Total: Disability Compensation Recipients'], errors=\"coerce\")\nfiltered = filtered[(filtered['Total: Disability Compensation Recipients'] >= 100) & (filtered['Total: Disability Compensation Recipients'] < 120)]\ncounty_names = filtered['County Name'].dropna().astype(str).str.strip()\ncounty_names = county_names.apply(lambda x: x if x.lower().endswith(\"county\") else x + \" County\")\nanswer = sorted(county_names.unique().tolist())\n",
+            "subquestion": "Which Idaho counties had at least 100 and fewer than 120 VA disability compensation recipients in FY 2023?",
+            "answer": [
+                "Caribou County",
+                "Power County",
+                "Lewis County",
+                "Custer County"
+            ]
+        },
+        "2": {
+            "source": "wikipedia/List_of_counties_in_Idaho/content.txt",
+            "fact": "Since 1945, each county has used a code on its license plates that features the first letter of the county's name. Where the names of two or more counties start with the same letter, in each of these counties the letter is preceded by a number indicating that county's order in the alphabetical list. For instance, the four counties beginning with 'L' in alphabetical order are Latah, Lemhi, Lewis and Lincoln; the codes for these counties are thus 1L, 2L, 3L and 4L respectively.",
+            "subquestion": "Which Idaho counties have license plate codes using the county-name letter 'L'?",
+            "answer": [
+                "Latah County",
+                "Lemhi County",
+                "Lewis County",
+                "Lincoln County"
+            ]
+        },
+        "3": {
+            "source": "wikipedia/Lewis_County,_Idaho/content.txt",
+            "fact": "It was named after the explorer Meriwether Lewis, who along with William Clark led the Corps of Discovery expedition through the region in 1805-1806.",
+            "subquestion": "After which explorer is <hop 1 answer> named?",
+            "answer": "Meriwether Lewis"
+        },
+        "4": {
+            "source": "wikipedia/Seaman_(dog)/content.txt",
+            "fact": "Seaman, a Newfoundland dog, was a member of the Lewis and Clark Expedition, the first trip from the Mississippi River to the Pacific coast and back. He was the only animal to complete the entire three-year trip. Seaman was purchased in 1803 specifically for the expedition by Captain Meriwether Lewis, while he was in Pittsburgh, Pennsylvania, awaiting completion of the boats for the voyage.",
+            "subquestion": "What was the name of the Newfoundland dog purchased by <hop 2 answer> in 1803 for the expedition?",
+            "answer": "Seaman"
+        }
+    },
+    "datasets_used": [
+        "wikipedia/List_of_counties_in_Idaho/content.txt",
+        "wikipedia/Lewis_County,_Idaho/content.txt",
+        "wikipedia/Seaman_(dog)/content.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
+        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `State` is Idaho, keep counties with `Total: Disability Compensation Recipients` at least 100 and fewer than 120, normalize `County Name`, and take the unique counties.",
+                "Node 2: Latah County, Lemhi County, Lewis County, and Lincoln County are Idaho counties whose license plate codes begin with L.",
+                "Hop result: intersection of <node_1 answer> and <node_2 answer> = ['Lewis County']."
+            ],
+            "answer": "Lewis County"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3
+            ],
+            "reasoning": [
+                "Node 3: Meriwether Lewis is the explorer after whom <hop 1 answer> was named.",
+                "Hop result: <node_3 answer>"
+            ],
+            "answer": "Meriwether Lewis"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Seaman was the Newfoundland dog purchased by <hop 2 answer> in 1803 specifically for the expedition.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "Seaman"
+        }
+    ]
+}

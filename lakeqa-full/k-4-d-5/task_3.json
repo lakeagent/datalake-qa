@@ -1,0 +1,213 @@
+{
+    "question": "Among drugs with 5 to 10 million total annual Medicaid prescriptions across U.S. states, identify the one with the highest average prescription count from 2018 through 2022. Next, determine the top 3 leading causes of death in the year this drug first entered medical use. One of these three conditions has a different most significant risk factor than the other two. Who first described this condition? Only report the name. Your response should be in the format [Answer].",
+    "answer": "Hippocrates",
+    "nodes": {
+        "1": {
+            "source": "datagov/state-drug-utilization-data-2018-b2fe5/files/StateDrugUtilizationData2018.txt",
+            "fact": "import pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/state-drug-utilization-data-2018-b2fe5/files/StateDrugUtilizationData2018.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"]\nacc = None\nfor chunk in pd.read_csv(\n    body,\n    usecols=[\"Product Name\", \"Number of Prescriptions\"],\n    dtype={\"Product Name\": \"string\", \"Number of Prescriptions\": \"string\"},\n    chunksize=1000000,\n    low_memory=False,\n):\n    names = chunk[\"Product Name\"].fillna(\"\").str.strip().str.upper()\n    vals = pd.to_numeric(chunk[\"Number of Prescriptions\"].str.replace(\",\", \"\", regex=False), errors=\"coerce\")\n    grp = pd.Series(vals.values, index=names).groupby(level=0, dropna=False).sum(min_count=1)\n    acc = grp if acc is None else acc.add(grp, fill_value=0)\nacc = acc.loc[(acc.index != \"\") & (acc >= 5000000) & (acc <= 10000000)].sort_index()\nanswer = {k: int(v) if float(v).is_integer() else float(v) for k, v in acc.items()}",
+            "subquestion": "Which drugs had between 5,000,000 and 10,000,000 total Medicaid prescriptions across U.S. states in 2018, and what were those totals?",
+            "answer": {
+                "ACETAMINOP": 7414105,
+                "ALPRAZOLAM": 9133057,
+                "AMITRIPTYL": 5232115,
+                "ARIPIPRAZO": 5842176,
+                "BUPRENORPH": 5008835,
+                "BUSPIRONE": 6570260,
+                "CARVEDILOL": 5476593,
+                "CEPHALEXIN": 8302749,
+                "CITALOPRAM": 8017063,
+                "CLINDAMYCI": 6613061
+            },
+            "limit": 10
+        },
+        "2": {
+            "source": "datagov/state-drug-utilization-data-2019/files/StateDrugUtilizationData2019.txt",
+            "fact": "import pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/state-drug-utilization-data-2019/files/StateDrugUtilizationData2019.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"]\nacc = None\nfor chunk in pd.read_csv(\n    body,\n    usecols=[\"Product Name\", \"Number of Prescriptions\"],\n    dtype={\"Product Name\": \"string\", \"Number of Prescriptions\": \"string\"},\n    chunksize=1000000,\n    low_memory=False,\n):\n    names = chunk[\"Product Name\"].fillna(\"\").str.strip().str.upper()\n    vals = pd.to_numeric(chunk[\"Number of Prescriptions\"].str.replace(\",\", \"\", regex=False), errors=\"coerce\")\n    grp = pd.Series(vals.values, index=names).groupby(level=0, dropna=False).sum(min_count=1)\n    acc = grp if acc is None else acc.add(grp, fill_value=0)\nacc = acc.loc[(acc.index != \"\") & (acc >= 5000000) & (acc <= 10000000)].sort_index()\nanswer = {k: int(v) if float(v).is_integer() else float(v) for k, v in acc.items()}",
+            "subquestion": "Which drugs had between 5,000,000 and 10,000,000 total Medicaid prescriptions across U.S. states in 2019, and what were those totals?",
+            "answer": {
+                "ALPRAZOLAM": 7934584,
+                "AMITRIPTYL": 5072673,
+                "ARIPIPRAZO": 6707069,
+                "BUPRENORPH": 6927103,
+                "BUSPIRONE": 6963013,
+                "CARVEDILOL": 5399167,
+                "CEPHALEXIN": 8180606,
+                "CITALOPRAM": 6970176,
+                "CLINDAMYCI": 6503376,
+                "CLONAZEPAM": 8120719
+            },
+            "limit": 10
+        },
+        "3": {
+            "source": "datagov/state-drug-utilization-data-2020-3e746/files/StateDrugUtilizationData2020.txt",
+            "fact": "import pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/state-drug-utilization-data-2020-3e746/files/StateDrugUtilizationData2020.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"]\nacc = None\nfor chunk in pd.read_csv(\n    body,\n    usecols=[\"Product Name\", \"Number of Prescriptions\"],\n    dtype={\"Product Name\": \"string\", \"Number of Prescriptions\": \"string\"},\n    chunksize=1000000,\n    low_memory=False,\n):\n    names = chunk[\"Product Name\"].fillna(\"\").str.strip().str.upper()\n    vals = pd.to_numeric(chunk[\"Number of Prescriptions\"].str.replace(\",\", \"\", regex=False), errors=\"coerce\")\n    grp = pd.Series(vals.values, index=names).groupby(level=0, dropna=False).sum(min_count=1)\n    acc = grp if acc is None else acc.add(grp, fill_value=0)\nacc = acc.loc[(acc.index != \"\") & (acc >= 5000000) & (acc <= 10000000)].sort_index()\nanswer = {k: int(v) if float(v).is_integer() else float(v) for k, v in acc.items()}",
+            "subquestion": "Which drugs had between 5,000,000 and 10,000,000 total Medicaid prescriptions across U.S. states in 2020, and what were those totals?",
+            "answer": {
+                "ALPRAZOLAM": 7857439,
+                "ARIPIPRAZO": 7935761,
+                "AZITHROMYC": 9749242,
+                "BUPRENORPH": 9187146,
+                "BUSPIRONE": 8211972,
+                "CARVEDILOL": 5278160,
+                "CEPHALEXIN": 7183268,
+                "CITALOPRAM": 6534226,
+                "CLINDAMYCI": 6289786,
+                "CLONAZEPAM": 8184145
+            },
+            "limit": 10
+        },
+        "4": {
+            "source": "datagov/state-drug-utilization-data-2021-f9419/files/StateDrugUtilizationData2021.txt",
+            "fact": "import pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/state-drug-utilization-data-2021-f9419/files/StateDrugUtilizationData2021.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"]\nacc = None\nfor chunk in pd.read_csv(\n    body,\n    usecols=[\"Product Name\", \"Number of Prescriptions\"],\n    dtype={\"Product Name\": \"string\", \"Number of Prescriptions\": \"string\"},\n    chunksize=1000000,\n    low_memory=False,\n):\n    names = chunk[\"Product Name\"].fillna(\"\").str.strip().str.upper()\n    vals = pd.to_numeric(chunk[\"Number of Prescriptions\"].str.replace(\",\", \"\", regex=False), errors=\"coerce\")\n    grp = pd.Series(vals.values, index=names).groupby(level=0, dropna=False).sum(min_count=1)\n    acc = grp if acc is None else acc.add(grp, fill_value=0)\nacc = acc.loc[(acc.index != \"\") & (acc >= 5000000) & (acc <= 10000000)].sort_index()\nanswer = {k: int(v) if float(v).is_integer() else float(v) for k, v in acc.items()}",
+            "subquestion": "Which drugs had between 5,000,000 and 10,000,000 total Medicaid prescriptions across U.S. states in 2021, and what were those totals?",
+            "answer": {
+                "ALPRAZOLAM": 7881792,
+                "ARIPIPRAZO": 8697286,
+                "BUPRENORPH": 9827552,
+                "BUSPIRONE": 9341966,
+                "CARVEDILOL": 5184118,
+                "CEPHALEXIN": 7847935,
+                "CITALOPRAM": 6229548,
+                "CLINDAMYCI": 7126931,
+                "CLONAZEPAM": 8270464,
+                "DEXTROAMPH": 7237437
+            },
+            "limit": 10
+        },
+        "5": {
+            "source": "datagov/state-drug-utilization-data-2022/files/StateDrugUtilizationData2022.txt",
+            "fact": "import pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/state-drug-utilization-data-2022/files/StateDrugUtilizationData2022.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nbody = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)[\"Body\"]\nacc = None\nfor chunk in pd.read_csv(\n    body,\n    usecols=[\"Product Name\", \"Number of Prescriptions\"],\n    dtype={\"Product Name\": \"string\", \"Number of Prescriptions\": \"string\"},\n    chunksize=1000000,\n    low_memory=False,\n):\n    names = chunk[\"Product Name\"].fillna(\"\").str.strip().str.upper()\n    vals = pd.to_numeric(chunk[\"Number of Prescriptions\"].str.replace(\",\", \"\", regex=False), errors=\"coerce\")\n    grp = pd.Series(vals.values, index=names).groupby(level=0, dropna=False).sum(min_count=1)\n    acc = grp if acc is None else acc.add(grp, fill_value=0)\nacc = acc.loc[(acc.index != \"\") & (acc >= 5000000) & (acc <= 10000000)].sort_index()\nanswer = {k: int(v) if float(v).is_integer() else float(v) for k, v in acc.items()}",
+            "subquestion": "Which drugs had between 5,000,000 and 10,000,000 total Medicaid prescriptions across U.S. states in 2022, and what were those totals?",
+            "answer": {
+                "ACETAMINOP": 6467768,
+                "ALPRAZOLAM": 7550347,
+                "ARIPIPRAZO": 9245571,
+                "CEPHALEXIN": 8353098,
+                "CITALOPRAM": 5685980,
+                "CLINDAMYCI": 7097389,
+                "CLONAZEPAM": 8066255,
+                "DEXTROAMPH": 6711926,
+                "DICLOFENAC": 7920135,
+                "DIVALPROEX": 5732831
+            },
+            "limit": 10
+        },
+        "6": {
+            "source": "wikipedia/Triamcinolone/content.txt",
+            "fact": "Triamcinolone was patented in 1956 and came into medical use in 1958.",
+            "subquestion": "In what year did <hop 1 answer> first come into medical use?",
+            "answer": "1958"
+        },
+        "7": {
+            "source": "datagov/nchs-age-adjusted-death-rates-for-selected-major-causes-of-death/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/nchs-age-adjusted-death-rates-for-selected-major-causes-of-death/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df.loc[df[\"Year\"] == 1958]\n    .sort_values(\"Age Adjusted Death Rate\", ascending=False)[\"Cause\"]\n    .head(3)\n    .tolist()\n)\nanswer = result",
+            "subquestion": "What were the top 3 leading causes of death in <hop 2 answer>?",
+            "answer": [
+                "Heart Disease",
+                "Cancer",
+                "Stroke"
+            ]
+        },
+        "8": {
+            "source": "wikipedia/Cardiovascular_disease/content.txt",
+            "fact": "Age is the most important risk factor in developing cardiovascular or heart diseases, with approximately a tripling of risk with each decade of life.",
+            "subquestion": "What was the most significant risk factor for Heart Disease?",
+            "answer": "Age"
+        },
+        "9": {
+            "source": "wikipedia/Cancer/content.txt",
+            "fact": "The most significant risk factor for developing cancer is age. Although it is possible for cancer to strike at any age, most patients with invasive cancer are over 65.",
+            "subquestion": "What was the most significant risk factor for Cancer?",
+            "answer": "Age"
+        },
+        "10": {
+            "source": "wikipedia/Stroke/content.txt",
+            "fact": "The most significant risk factor for stroke is high blood pressure. Hippocrates (460 to 370 BC) was first to describe the phenomenon of sudden paralysis associated with stroke.",
+            "subquestion": "What was the most significant risk factor for Stroke, and who first described this condition?",
+            "answer": {
+                "risk_factor": "High blood pressure",
+                "first_described_by": "Hippocrates"
+            }
+        }
+    },
+    "datasets_used": [
+        "wikipedia/Triamcinolone/content.txt",
+        "wikipedia/Cardiovascular_disease/content.txt",
+        "wikipedia/Cancer/content.txt",
+        "wikipedia/Stroke/content.txt",
+        "datagov/state-drug-utilization-data-2018-b2fe5/files/StateDrugUtilizationData2018.txt",
+        "datagov/state-drug-utilization-data-2018-b2fe5/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2018-b2fe5/files/state-drug-utilization-data-dictionary.json",
+        "datagov/state-drug-utilization-data-2019/files/StateDrugUtilizationData2019.txt",
+        "datagov/state-drug-utilization-data-2019/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2019/files/state-drug-utilization-data-dictionary.json",
+        "datagov/state-drug-utilization-data-2020-3e746/files/StateDrugUtilizationData2020.txt",
+        "datagov/state-drug-utilization-data-2020-3e746/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2020-3e746/files/state-drug-utilization-data-dictionary.json",
+        "datagov/state-drug-utilization-data-2021-f9419/files/StateDrugUtilizationData2021.txt",
+        "datagov/state-drug-utilization-data-2021-f9419/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2021-f9419/files/state-drug-utilization-data-dictionary.json",
+        "datagov/state-drug-utilization-data-2022/files/StateDrugUtilizationData2022.txt",
+        "datagov/state-drug-utilization-data-2022/signed-metadata.txt",
+        "datagov/state-drug-utilization-data-2022/files/state-drug-utilization-data-dictionary.json",
+        "datagov/nchs-age-adjusted-death-rates-for-selected-major-causes-of-death/files/rows.txt",
+        "datagov/nchs-age-adjusted-death-rates-for-selected-major-causes-of-death/signed-metadata.txt",
+        "datagov/nchs-age-adjusted-death-rates-for-selected-major-causes-of-death/files/6rkc-nb2q.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "reasoning": [
+                "Node 1: Normalize `Product Name` by stripping whitespace and uppercasing, sum `Number of Prescriptions`, and keep the 2018 product totals between 5000000 and 10000000.",
+                "Node 2: Normalize `Product Name` by stripping whitespace and uppercasing, sum `Number of Prescriptions`, and keep the 2019 product totals between 5000000 and 10000000.",
+                "Node 3: Normalize `Product Name` by stripping whitespace and uppercasing, sum `Number of Prescriptions`, and keep the 2020 product totals between 5000000 and 10000000.",
+                "Node 4: Normalize `Product Name` by stripping whitespace and uppercasing, sum `Number of Prescriptions`, and keep the 2021 product totals between 5000000 and 10000000.",
+                "Node 5: Normalize `Product Name` by stripping whitespace and uppercasing, sum `Number of Prescriptions`, and keep the 2022 product totals between 5000000 and 10000000.",
+                "Hop result: compute the 2018-2022 average prescription count for each normalized drug name shared across all five yearly mappings and select the highest average = TRIAMCINOL."
+            ],
+            "answer": "TRIAMCINOL"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Triamcinolone was patented in 1956 and came into medical use in 1958."
+            ],
+            "answer": "1958"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: Filter rows where `Year` equals 1958, sort by `Age Adjusted Death Rate` descending, and keep the top 3 `Cause` values."
+            ],
+            "answer": "Heart Disease; Cancer; Stroke"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                8,
+                9,
+                10
+            ],
+            "reasoning": [
+                "Node 8: Age is the most important risk factor in developing cardiovascular or heart diseases.",
+                "Node 9: The most significant risk factor for developing cancer is age.",
+                "Node 10: The most significant risk factor for stroke is high blood pressure. Hippocrates was first to describe the phenomenon associated with stroke.",
+                "Hop result: Heart Disease and Cancer share Age as the most significant risk factor, while Stroke has a different risk factor, so the condition is Stroke and the person is Hippocrates."
+            ],
+            "answer": "Hippocrates"
+        }
+    ]
+}

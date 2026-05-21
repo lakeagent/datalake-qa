@@ -1,0 +1,149 @@
+{
+    "question": "Start by finding the Chicago city department with a budget of $400 million to $700 million in 2018 and $600 million to $700 million in 2019. Determine whether this department became a paid professional force before or after Pittsburgh's fire bureau did, and focus on the city whose department became paid later. For that city, identify its main commercial passenger airport. Then find the destination that had the largest number of passengers that could be carried on scheduled flights there in March 2019. What is the ZIP code in that destination city and state with the largest land area? Please return the ZIP code only. Your response should be in the format [Answer].",
+    "answer": "30349",
+    "nodes": {
+        "1": {
+            "source": "datagov/budget-2018-budget-ordinance-appropriations/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/budget-2018-budget-ordinance-appropriations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\namount_col = \"2018 ORDINANCE (AMOUNT $)\"\nresult = (\n    df.groupby(\"DEPARTMENT DESCRIPTION\", dropna=False)[amount_col]\n    .sum()\n    .loc[lambda s: (s >= 400000000) & (s <= 700000000)]\n    .sort_values(ascending=False)\n)\nanswer = result.round().astype(int).to_dict()\nprint(answer)",
+            "subquestion": "Which Chicago city departments had budgets between $400 million and $700 million in 2018?",
+            "answer": {
+                "CFD": 642620615,
+                "CDOT": 459129158
+            }
+        },
+        "2": {
+            "source": "datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\namount_col = \"2019 ORDINANCE (AMOUNT $)\"\nresult = (\n    df.groupby(\"DEPARTMENT DESCRIPTION\", dropna=False)[amount_col]\n    .sum()\n    .loc[lambda s: (s >= 600000000) & (s <= 700000000)]\n    .sort_values(ascending=False)\n)\nanswer = result.round().astype(int).to_dict()\nprint(answer)",
+            "subquestion": "Which Chicago city departments had budgets between $600 million and $700 million in 2019?",
+            "answer": {
+                "CFD": 652282316,
+                "DFSS": 633571744
+            }
+        },
+        "3": {
+            "source": "wikipedia/Chicago_Fire_Department/content.txt",
+            "fact": "The volunteer fire department was disestablished on August 2, 1858, when the city council passed the ordinance organizing the paid City of Chicago Fire Department.",
+            "subquestion": "On what date did the Chicago Fire Department become a paid professional force?",
+            "answer": "August 2, 1858"
+        },
+        "4": {
+            "source": "wikipedia/Pittsburgh_Bureau_of_Fire/content.txt",
+            "fact": "The Bureau started out as a volunteer fire department and officially transitioned to a fully paid department on May 23, 1870.",
+            "subquestion": "On what date did Pittsburgh's fire bureau become a paid professional force?",
+            "answer": "May 23, 1870"
+        },
+        "5": {
+            "source": "wikipedia/Pittsburgh/content.txt",
+            "fact": "Pittsburgh International Airport provides commercial passenger service from over 15 airlines to the Pittsburgh metropolitan area. Arnold Palmer Regional Airport also provides limited commercial passenger service and is east of Pittsburgh.",
+            "subquestion": "In <hop 2 answer>, which airport is the area's main commercial passenger airport?",
+            "answer": "Pittsburgh International Airport"
+        },
+        "6": {
+            "source": "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = (\n    df.groupby([\"Destination Code\", \"Destination\"], dropna=False)[\"Seats March 2019\"]\n    .sum()\n    .sort_values(ascending=False)\n    .reset_index()\n)\nrow = result.iloc[0]\nanswer = str(row[\"Destination Code\"])",
+            "subquestion": "For <hop 3 answer>, which destination airport had the largest number of passengers that could be carried on scheduled flights to that destination in March 2019?",
+            "answer": "ATL"
+        },
+        "7": {
+            "source": "datagov/airports-5e97a/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/airports-5e97a/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nresult = df.loc[df[\"Loc_Id\"] == \"ATL\", [\"Loc_Id\", \"City\", \"State_Post\", \"Fac_Name\"]].copy()\nrow = result.iloc[0]\nanswer = f\"{str(row['City']).title()}, {row['State_Post']}\"",
+            "subquestion": "What city and state correspond to <hop 4 answer>?",
+            "answer": "Atlanta, GA"
+        },
+        "8": {
+            "source": "datagov/boundaries-us-zip-codes/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/boundaries-us-zip-codes/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ndf[\"SQMI\"] = pd.to_numeric(df[\"SQMI\"], errors=\"coerce\")\nresult = (\n    df.loc[(df[\"CITY\"] == \"Atlanta\") & (df[\"STATE\"] == \"GA\"), [\"ZIPCODE\", \"CITY\", \"STATE\", \"SQMI\"]]\n    .sort_values([\"SQMI\", \"ZIPCODE\"], ascending=[False, True])\n)\nanswer = result.iloc[0][\"ZIPCODE\"]\nprint(answer)",
+            "subquestion": "Which ZIP code in <hop 5 answer> has the largest land area?",
+            "answer": 30349
+        }
+    },
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2
+            ],
+            "reasoning": [
+                "Node 1: Group 2018 Chicago budget rows by `DEPARTMENT DESCRIPTION`, sum `2018 ORDINANCE (AMOUNT $)`, and keep departments with totals from 400,000,000 to 700,000,000.",
+                "Node 2: Group 2019 Chicago budget rows by `DEPARTMENT DESCRIPTION`, sum `2019 ORDINANCE (AMOUNT $)`, and keep departments with totals from 600,000,000 to 700,000,000.",
+                "Hop result: intersect the two department sets; the shared department is CFD."
+            ],
+            "answer": "CFD"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                3,
+                4
+            ],
+            "reasoning": [
+                "Node 3: The Chicago Fire Department was organized as a paid department on August 2, 1858.",
+                "Node 4: The Pittsburgh Bureau of Fire transitioned to a fully paid department on May 23, 1870.",
+                "Hop result: compare the two dates; Pittsburgh became paid later."
+            ],
+            "answer": "Pittsburgh"
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                5
+            ],
+            "reasoning": [
+                "Node 5: In <hop 2 answer>, Pittsburgh International Airport is the airport with broad commercial passenger service, contrasted with Arnold Palmer Regional Airport's limited service.",
+                "Hop result: <node 5 answer>"
+            ],
+            "answer": "Pittsburgh International Airport"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                6
+            ],
+            "reasoning": [
+                "Node 6: Group the March 2019 traffic report by `Destination Code` and `Destination`, sum `Seats March 2019`, and select the top destination for <hop 3 answer>.",
+                "Hop result: the top destination airport code is ATL."
+            ],
+            "answer": "ATL"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                7
+            ],
+            "reasoning": [
+                "Node 7: In the airport metadata, `Loc_Id` = ATL corresponds to Atlanta, GA.",
+                "Hop result: <node 7 answer>"
+            ],
+            "answer": "Atlanta, GA"
+        },
+        {
+            "hop": 6,
+            "node_ids": [
+                8
+            ],
+            "reasoning": [
+                "Node 8: Filter ZIP boundary rows where `CITY` = Atlanta and `STATE` = GA, rank them by `SQMI`, and select the largest land-area ZIP code.",
+                "Hop result: <node 8 answer>"
+            ],
+            "answer": 30349
+        }
+    ],
+    "datasets_used": [
+        "wikipedia/Chicago_Fire_Department/content.txt",
+        "wikipedia/Pittsburgh_Bureau_of_Fire/content.txt",
+        "wikipedia/Pittsburgh/content.txt",
+        "datagov/budget-2018-budget-ordinance-appropriations/files/rows.txt",
+        "datagov/budget-2018-budget-ordinance-appropriations/signed-metadata.txt",
+        "datagov/budget-2019-budget-ordinance-appropriations/files/rows.txt",
+        "datagov/budget-2019-budget-ordinance-appropriations/signed-metadata.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pittsburgh-international-traffic-report-march-2019.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/signed-metadata.txt",
+        "datagov/pittsburgh-international-airport-scheduled-passenger-traffic/files/pit-scheduled-traffic-report-data-dictionary.txt",
+        "datagov/airports-5e97a/files/rows.txt",
+        "datagov/airports-5e97a/signed-metadata.txt",
+        "datagov/airports-5e97a/files/kfcv-nyy3.txt",
+        "datagov/boundaries-us-zip-codes/files/rows.txt",
+        "datagov/boundaries-us-zip-codes/signed-metadata.txt"
+    ]
+}

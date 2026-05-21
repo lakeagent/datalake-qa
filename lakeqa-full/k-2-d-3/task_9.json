@@ -1,0 +1,84 @@
+{
+  "question": "In 2015, identify the New York counties with population over 900,000, firearm rate under 35 per 100,000, and total state payments for homeowners' school taxes over $100 million. What is the difference in square miles between the largest and smallest counties? Your response should be in the format [Answer].",
+  "answer": 1920,
+  "nodes": {
+    "1": {
+      "source": "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = df.loc[\n    (df[\"Year\"] == 2015)\n    & (df[\"Population\"] > 900000)\n    & (df[\"Firearm Rate\"] < 35),\n    \"County\"\n].tolist()\nprint(answer)",
+      "subquestion": "Which NY counties had population greater than 900,000 AND firearm rate less than 35 per 100,000 in 2015?",
+      "answer": [
+        "Nassau County",
+        "Suffolk County",
+        "Westchester County"
+      ]
+    },
+    "2": {
+      "source": "datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/files/rows.txt",
+      "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nnode_1_counties = [\"Nassau\", \"Suffolk\", \"Westchester\"]\n\nanswer = df.loc[\n    (df[\"Levy Year\"] == 2015)\n    & (df[\"County\"].isin(node_1_counties))\n    & (df[\"Total Amount of Reimbursement \"] > 100000000),\n    \"County\"\n].tolist()\nprint(answer)",
+      "subquestion": "Which of <hop 1 answer> had total state payments for homeowners' school taxes greater than $100 million in 2015?",
+      "answer": [
+        "Nassau County",
+        "Suffolk County",
+        "Westchester County"
+      ]
+    },
+    "3": {
+      "source": "wikipedia/Nassau_County,_New_York/content.txt",
+      "fact": "Nassau County has a total area of 453 square miles.",
+      "subquestion": "What total area is listed for Nassau County from <hop 1 answer>?",
+      "answer": 453
+    },
+    "4": {
+      "source": "wikipedia/Suffolk_County,_New_York/content.txt",
+      "fact": "Suffolk County has a total area of 2,373 square miles.",
+      "subquestion": "What total area is listed for Suffolk County from <hop 1 answer>?",
+      "answer": 2373
+    },
+    "5": {
+      "source": "wikipedia/Westchester_County,_New_York/content.txt",
+      "fact": "Westchester County has a total area of 490 square miles.",
+      "subquestion": "What total area is listed for Westchester County from <hop 1 answer>?",
+      "answer": 490
+    }
+  },
+  "reasoning_hops": [
+    {
+      "hop": 1,
+      "node_ids": [
+        1,
+        2
+      ],
+      "reasoning": [
+        "Node 1: Filter rows where `Year` equals 2015, `Population` is greater than 900000, and `Firearm Rate` is less than 35, then return `County`.",
+        "Node 2: Filter rows where `Levy Year` equals 2015, `County` is in {Nassau, Suffolk, Westchester}, and `Total Amount of Reimbursement ` is greater than 100000000, then return `County`.",
+        "Hop result: intersect the two county lists = Nassau County, Suffolk County, Westchester County"
+      ],
+      "answer": "Nassau County, Suffolk County, Westchester County"
+    },
+    {
+      "hop": 2,
+      "node_ids": [
+        3,
+        4,
+        5
+      ],
+      "reasoning": [
+        "Node 3: Nassau County from <hop 1 answer> has a listed total area of `453` square miles.",
+        "Node 4: Suffolk County from <hop 1 answer> has a listed total area of `2373` square miles.",
+        "Node 5: Westchester County from <hop 1 answer> has a listed total area of `490` square miles.",
+        "Hop result: largest area minus smallest area is `2373 - 453 = 1920`."
+      ],
+      "answer": 1920
+    }
+  ],
+  "datasets_used": [
+    "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/files/rows.txt",
+    "datagov/index-violent-property-and-firearm-rates-by-county-beginning-1990/signed-metadata.txt",
+    "datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/files/rows.txt",
+    "datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/signed-metadata.txt",
+    "datagov/nys-school-tax-relief-star-reimbursement-by-county-beginning-levy-year-1998/files/vdat-cgbe.txt",
+    "wikipedia/Nassau_County,_New_York/content.txt",
+    "wikipedia/Suffolk_County,_New_York/content.txt",
+    "wikipedia/Westchester_County,_New_York/content.txt"
+  ]
+}
