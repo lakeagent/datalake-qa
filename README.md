@@ -14,11 +14,8 @@ find the right public sources, inspect tables or documents, carry constraints
 across multiple hops, compute intermediate results, and decide when it has
 enough evidence to answer.
 
-The benchmark is designed to stress both **search intensity** and **reasoning
-intensity**. A task may require combining information from public datasets,
-metadata files, and reference documents. This makes success depend not only on
-reasoning after retrieval, but also on whether the agent can find and inspect
-the correct evidence in the first place.
+The benchmark is designed to stress both **search** and **reasoning**. A task may require combining information from public datasets,
+metadata files, and reference documents. This makes success depend not only on reasoning after retrieval, but also on whether the agent can find and inspect the correct evidence in the first place.
 
 <p align="center">
   <img src="figures/lakeqa_fig1.png" alt="LakeQA emphasizes both search intensity and reasoning intensity." width="720">
