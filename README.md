@@ -19,6 +19,30 @@ metadata files, and reference documents. This makes success depend not only on r
 
 ![LakeQA emphasizes both search intensity and reasoning intensity.](figures/lakeqa_fig1.png)
 
+## Running Evaluation
+
+The evaluation runner lives under `evaluation/`. This example runs the five
+`lakeqa_mini/k-4-d-5` tasks with `gpt-5.2`, medium reasoning effort, and a
+`gpt-5-mini` LLM judge for final-answer grading:
+
+```bash
+cd /Users/jerryliu/LakeQA
+source evaluation/venv/bin/activate
+
+python -m evaluation.run_eval \
+  --task-dir lakeqa_mini/k-4-d-5 \
+  --models gpt-5.2 \
+  --parallel 1 \
+  --max-turns 25 \
+  --reasoning-effort medium \
+  --llm-judge \
+  --judge-model gpt-5-mini
+```
+
+The main outputs are written under `results/`, including the per-model eval CSV
+and the per-task cost summary. The judge fields are prefixed with
+`llm_judge_`, and judge cost is reported separately from agent cost.
+
 ## Downloading Task Data From S3
 
 The task data is stored in the S3 bucket:
