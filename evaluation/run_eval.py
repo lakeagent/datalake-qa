@@ -102,12 +102,12 @@ def run_evaluation(
         return {}
 
     task_dir_name = os.path.basename(task_dir)
+    config = AgentConfig(max_turns=max_turns, verbose=verbose, reasoning_effort=reasoning_effort)
     print(f"\nEvaluating {len(task_files)} tasks from {task_dir_name}")
     print(f"Models: {', '.join(models)}")
-    print(f"Timeout: 600s per task")
+    print(f"Timeout: {config.timeout_seconds}s per task")
     print("=" * 60)
 
-    config = AgentConfig(max_turns=max_turns, verbose=verbose, reasoning_effort=reasoning_effort)
     all_results = {}
 
     tasks_by_id = {}
@@ -155,6 +155,8 @@ def run_evaluation(
                             "avg_f1_score": 0,
                             "avg_tool_calls": 0,
                             "avg_tokens": 0,
+                            "avg_cached_input_tokens": 0,
+                            "avg_cache_write_input_tokens": 0,
                             "avg_time": 0,
                         },
                         "results": [],
@@ -180,6 +182,8 @@ def run_evaluation(
                 "avg_f1_score": avg_f1,
                 "avg_tool_calls": sum(r.get("tool_calls", 0) for r in results) / total if total else 0,
                 "avg_tokens": sum(r.get("tokens", 0) for r in results) / total if total else 0,
+                "avg_cached_input_tokens": sum(r.get("cached_input_tokens", 0) for r in results) / total if total else 0,
+                "avg_cache_write_input_tokens": sum(r.get("cache_write_input_tokens", 0) for r in results) / total if total else 0,
                 "avg_time": sum(r.get("time", 0) for r in results) / total if total else 0,
                 "total_cost": total_cost,
                 "avg_cost": total_cost / total if total else 0,
@@ -208,9 +212,14 @@ def run_evaluation(
             "datasets_discovered",
             "runtime_seconds",
             "input_tokens",
+            "cached_input_tokens",
+            "cache_write_input_tokens",
             "output_tokens",
             "total_tokens",
+            "agent_cost_usd",
             "cost_usd",
+            "cost_source",
+            "cost_note",
         ]
         existing_rows = {}
         if os.path.exists(csv_path):
@@ -234,9 +243,14 @@ def run_evaluation(
                 "datasets_discovered": json.dumps(r.get("datasets_discovered", [])),
                 "runtime_seconds": r.get("time", 0),
                 "input_tokens": r.get("input_tokens", 0),
+                "cached_input_tokens": r.get("cached_input_tokens", 0),
+                "cache_write_input_tokens": r.get("cache_write_input_tokens", 0),
                 "output_tokens": r.get("output_tokens", 0),
                 "total_tokens": r.get("tokens", 0),
+                "agent_cost_usd": r.get("agent_cost_usd", r.get("cost", 0)),
                 "cost_usd": r.get("cost", 0),
+                "cost_source": r.get("cost_source", ""),
+                "cost_note": r.get("cost_note", ""),
             }
 
         with open(csv_path, "w", newline="") as f:
@@ -266,6 +280,78 @@ def print_comparison_table(results: dict):
             print(f"{model:<25} {s['exact_match_rate']*100:>5.1f}%    {s['avg_f1_score']:>6.3f}    {s['avg_tool_calls']:>6.1f}     {s['avg_time']:>6.1f}s    {cost_str:>10}")
 
     print("=" * 90)
+
+
+def write_task_cost_summary(results: dict, task_dir_name: str) -> str:
+    """Write one cross-model per-task cost report for the evaluated task dir."""
+    os.makedirs("results", exist_ok=True)
+    safe_task_dir = task_dir_name.replace("/", "_")
+    output_path = os.path.join("results", f"{safe_task_dir}_task_cost_summary.csv")
+    fieldnames = [
+        "task_dir",
+        "model",
+        "task_id",
+        "success",
+        "exact_match",
+        "f1_score",
+        "runtime_seconds",
+        "tool_calls",
+        "input_tokens",
+        "cached_input_tokens",
+        "cache_write_input_tokens",
+        "output_tokens",
+        "total_tokens",
+        "agent_cost_usd",
+        "cost_source",
+        "cost_note",
+    ]
+
+    rows = []
+    for model, data in results.items():
+        if "error" in data:
+            continue
+        for row in data.get("results", []):
+            task_id = row.get("task_id", "")
+            rows.append({
+                "task_dir": task_dir_name,
+                "model": model,
+                "task_id": task_id,
+                "success": row.get("success", False),
+                "exact_match": row.get("exact_match", ""),
+                "f1_score": row.get("f1_score", ""),
+                "runtime_seconds": row.get("time", 0),
+                "tool_calls": row.get("tool_calls", 0),
+                "input_tokens": row.get("input_tokens", 0),
+                "cached_input_tokens": row.get("cached_input_tokens", 0),
+                "cache_write_input_tokens": row.get("cache_write_input_tokens", 0),
+                "output_tokens": row.get("output_tokens", 0),
+                "total_tokens": row.get("tokens", 0),
+                "agent_cost_usd": row.get("agent_cost_usd", row.get("cost", 0)),
+                "cost_source": row.get("cost_source", ""),
+                "cost_note": row.get("cost_note", ""),
+            })
+
+    with open(output_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    print(f"Per-task agent cost summary: {output_path}")
+    if 0 < len(rows) <= 25:
+        print("\nPER-TASK AGENT COSTS")
+        print(f"{'Model':<25} {'Task':<18} {'Cost':<12} {'Tokens':<10} {'CacheRead':<10}")
+        print("-" * 80)
+        for row in rows:
+            task_name = os.path.basename(str(row["task_id"]))
+            print(
+                f"{row['model']:<25} {task_name:<18} "
+                f"${float(row['agent_cost_usd'] or 0):<11.6f} "
+                f"{int(row['total_tokens'] or 0):<10} "
+                f"{int(row['cached_input_tokens'] or 0):<10}"
+            )
+        print("-" * 80)
+
+    return output_path
 
 
 def main():
@@ -304,6 +390,7 @@ def main():
             )
             all_summaries[os.path.basename(task_dir)] = results
             print_comparison_table(results)
+            write_task_cost_summary(results, os.path.basename(task_dir))
 
     elif args.task_dir:
         results = run_evaluation(
@@ -316,6 +403,7 @@ def main():
             parallel=args.parallel,
         )
         print_comparison_table(results)
+        write_task_cost_summary(results, os.path.basename(args.task_dir.rstrip("/")))
 
     else:
         parser.print_help()

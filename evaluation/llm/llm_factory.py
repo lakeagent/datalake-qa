@@ -38,6 +38,39 @@ except ImportError:
 load_dotenv()
 
 
+def _get_attr_or_item(value: Any, name: str, default: Any = None) -> Any:
+    if value is None:
+        return default
+    if isinstance(value, dict):
+        return value.get(name, default)
+    return getattr(value, name, default)
+
+
+def _openai_usage_dict(usage: Any) -> Dict[str, int]:
+    prompt_details = _get_attr_or_item(usage, "prompt_tokens_details", None)
+    cached_tokens = _get_attr_or_item(prompt_details, "cached_tokens", 0) or 0
+    return {
+        "input_tokens": _get_attr_or_item(usage, "prompt_tokens", 0) or 0,
+        "cached_input_tokens": cached_tokens,
+        "output_tokens": _get_attr_or_item(usage, "completion_tokens", 0) or 0,
+    }
+
+
+def _bedrock_usage_dict(usage: Dict[str, Any]) -> Dict[str, int]:
+    return {
+        "input_tokens": usage.get("inputTokens", usage.get("input_tokens", 0)) or 0,
+        "cached_input_tokens": usage.get(
+            "cacheReadInputTokensCount",
+            usage.get("cache_read_input_tokens", 0),
+        ) or 0,
+        "output_tokens": usage.get("outputTokens", usage.get("output_tokens", 0)) or 0,
+        "cache_write_input_tokens": usage.get(
+            "cacheWriteInputTokensCount",
+            usage.get("cache_creation_input_tokens", 0),
+        ) or 0,
+    }
+
+
 def _extract_json_metadata(content: str) -> Dict[str, Any]:
     metadata: Dict[str, Any] = {}
     text = content or ""
@@ -220,10 +253,7 @@ class OpenAILLM(BaseLLM):
             content=response.choices[0].message.content or "",
             finish_reason=response.choices[0].finish_reason,
             model=response.model,
-            usage={
-                "input_tokens": response.usage.prompt_tokens,
-                "output_tokens": response.usage.completion_tokens,
-            },
+            usage=_openai_usage_dict(response.usage),
             raw_response=response,
         )
 
@@ -253,6 +283,8 @@ class OpenAILLM(BaseLLM):
         }
         if self._supports_temperature:
             kwargs["temperature"] = temperature
+        if self._supports_reasoning:
+            kwargs["reasoning_effort"] = self._reasoning_effort
 
         response = self.client.chat.completions.create(**kwargs)
 
@@ -272,10 +304,7 @@ class OpenAILLM(BaseLLM):
             tool_calls=tool_calls,
             finish_reason=response.choices[0].finish_reason,
             model=response.model,
-            usage={
-                "input_tokens": response.usage.prompt_tokens,
-                "output_tokens": response.usage.completion_tokens,
-            },
+            usage=_openai_usage_dict(response.usage),
             raw_response=response,
             metadata={},
         )
@@ -306,10 +335,7 @@ class OpenAILLM(BaseLLM):
             content=content,
             finish_reason=response.choices[0].finish_reason,
             model=response.model,
-            usage={
-                "input_tokens": response.usage.prompt_tokens,
-                "output_tokens": response.usage.completion_tokens,
-            },
+            usage=_openai_usage_dict(response.usage),
             raw_response=response,
             metadata={},
         )
@@ -435,10 +461,7 @@ class OpenAICompatibleLLM(BaseLLM):
             content=response.choices[0].message.content or "",
             finish_reason=response.choices[0].finish_reason,
             model=response.model,
-            usage={
-                "input_tokens": getattr(response.usage, 'prompt_tokens', 0) or 0,
-                "output_tokens": getattr(response.usage, 'completion_tokens', 0) or 0,
-            },
+            usage=_openai_usage_dict(response.usage),
             raw_response=response,
         )
 
@@ -492,10 +515,7 @@ class OpenAICompatibleLLM(BaseLLM):
             tool_calls=tool_calls,
             finish_reason=response.choices[0].finish_reason,
             model=response.model,
-            usage={
-                "input_tokens": getattr(response.usage, 'prompt_tokens', 0) or 0,
-                "output_tokens": getattr(response.usage, 'completion_tokens', 0) or 0,
-            },
+            usage=_openai_usage_dict(response.usage),
             raw_response=response,
         )
 
@@ -522,10 +542,7 @@ class OpenAICompatibleLLM(BaseLLM):
             content=content,
             finish_reason=response.choices[0].finish_reason,
             model=response.model,
-            usage={
-                "input_tokens": getattr(response.usage, 'prompt_tokens', 0) or 0,
-                "output_tokens": getattr(response.usage, 'completion_tokens', 0) or 0,
-            },
+            usage=_openai_usage_dict(response.usage),
             raw_response=response,
         )
         if expect_json:
@@ -619,10 +636,7 @@ class BedrockLLM(BaseLLM):
             content=content,
             finish_reason=result.get("stop_reason", "stop"),
             model=self.model,
-            usage={
-                "input_tokens": result.get("usage", {}).get("input_tokens", 0),
-                "output_tokens": result.get("usage", {}).get("output_tokens", 0),
-            },
+            usage=_bedrock_usage_dict(result.get("usage", {})),
             raw_response=result,
         )
 
@@ -696,10 +710,7 @@ class BedrockLLM(BaseLLM):
             tool_calls=tool_calls,
             finish_reason=result.get("stop_reason", "stop"),
             model=self.model,
-            usage={
-                "input_tokens": result.get("usage", {}).get("input_tokens", 0),
-                "output_tokens": result.get("usage", {}).get("output_tokens", 0),
-            },
+            usage=_bedrock_usage_dict(result.get("usage", {})),
             raw_response=result,
             metadata={},
         )
@@ -744,10 +755,7 @@ class BedrockLLM(BaseLLM):
             content=content,
             finish_reason=result.get("stop_reason", "stop"),
             model=self.model,
-            usage={
-                "input_tokens": result.get("usage", {}).get("input_tokens", 0),
-                "output_tokens": result.get("usage", {}).get("output_tokens", 0),
-            },
+            usage=_bedrock_usage_dict(result.get("usage", {})),
             raw_response=result,
             metadata={},
         )
@@ -882,10 +890,7 @@ class BedrockConverseLLM(BaseLLM):
             content=content,
             finish_reason=response.get("stopReason", "stop"),
             model=self.model,
-            usage={
-                "input_tokens": usage.get("inputTokens", 0),
-                "output_tokens": usage.get("outputTokens", 0),
-            },
+            usage=_bedrock_usage_dict(usage),
             raw_response=response,
         )
 
@@ -959,10 +964,7 @@ class BedrockConverseLLM(BaseLLM):
             tool_calls=tool_calls,
             finish_reason=response.get("stopReason", "stop"),
             model=self.model,
-            usage={
-                "input_tokens": usage.get("inputTokens", 0),
-                "output_tokens": usage.get("outputTokens", 0),
-            },
+            usage=_bedrock_usage_dict(usage),
             raw_response=response,
         )
 
@@ -1005,10 +1007,7 @@ class BedrockConverseLLM(BaseLLM):
             content=content,
             finish_reason=response.get("stopReason", "stop"),
             model=self.model,
-            usage={
-                "input_tokens": usage.get("inputTokens", 0),
-                "output_tokens": usage.get("outputTokens", 0),
-            },
+            usage=_bedrock_usage_dict(usage),
             raw_response=response,
         )
         if expect_json:
@@ -1319,10 +1318,7 @@ Available tools:
             tool_calls=tool_calls,
             finish_reason=response.get("stopReason", "stop"),
             model=self.model,
-            usage={
-                "input_tokens": usage.get("inputTokens", 0),
-                "output_tokens": usage.get("outputTokens", 0),
-            },
+            usage=_bedrock_usage_dict(usage),
             raw_response=response,
             metadata={"prompt_based_tools": True},
         )
@@ -1339,8 +1335,8 @@ class LLMFactory:
     # Update these values based on current provider pricing
     MODEL_PRICING = {
         # OpenAI (example pricing - update with actual values)
-        "gpt-5.2": {"input": 1.75, "output": 14.00},
-        "gpt-5-mini": {"input": 0.25, "output": 2.00},
+        "gpt-5.2": {"input": 1.75, "cached_input": 0.175, "output": 14.00},
+        "gpt-5-mini": {"input": 0.25, "cached_input": 0.025, "output": 2.00},
 
         # AWS Bedrock Claude models
         "bedrock/claude-opus-4.5": {"input": 5.00, "output": 25.00},
@@ -1496,6 +1492,8 @@ class LLMFactory:
         model: str,
         input_tokens: int,
         output_tokens: int,
+        cached_input_tokens: int = 0,
+        cache_write_input_tokens: int = 0,
     ) -> float:
         """
         Calculate the cost for a given number of tokens.
@@ -1508,15 +1506,67 @@ class LLMFactory:
         Returns:
             Cost in USD
         """
+        return cls.calculate_cost_breakdown(
+            model,
+            input_tokens,
+            output_tokens,
+            cached_input_tokens=cached_input_tokens,
+            cache_write_input_tokens=cache_write_input_tokens,
+        )["cost_usd"]
+
+    @classmethod
+    def calculate_cost_breakdown(
+        cls,
+        model: str,
+        input_tokens: int,
+        output_tokens: int,
+        cached_input_tokens: int = 0,
+        cache_write_input_tokens: int = 0,
+    ) -> Dict[str, Any]:
         pricing = cls.MODEL_PRICING.get(model)
         if not pricing:
-            # Return 0 if pricing not configured for this model
-            return 0.0
+            return {
+                "cost_usd": 0.0,
+                "source": "missing_model_pricing",
+                "note": "No configured per-token pricing for this model.",
+                "input_tokens": input_tokens,
+                "cached_input_tokens": cached_input_tokens,
+                "cache_write_input_tokens": cache_write_input_tokens,
+                "uncached_input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "input_rate_per_1m": None,
+                "cached_input_rate_per_1m": None,
+                "cache_write_input_rate_per_1m": None,
+                "output_rate_per_1m": None,
+            }
 
         # Pricing is per 1M tokens
-        input_cost = (input_tokens / 1_000_000) * pricing["input"]
+        cached_tokens = min(max(cached_input_tokens, 0), max(input_tokens, 0))
+        cache_write_tokens = min(max(cache_write_input_tokens, 0), max(input_tokens - cached_tokens, 0))
+        uncached_input_tokens = max(input_tokens - cached_tokens - cache_write_tokens, 0)
+        cached_input_rate = pricing.get("cached_input", pricing["input"])
+        cache_write_input_rate = pricing.get("cache_write_input", pricing["input"])
+        input_cost = (uncached_input_tokens / 1_000_000) * pricing["input"]
+        cached_input_cost = (cached_tokens / 1_000_000) * cached_input_rate
+        cache_write_input_cost = (cache_write_tokens / 1_000_000) * cache_write_input_rate
         output_cost = (output_tokens / 1_000_000) * pricing["output"]
-        return input_cost + output_cost
+        return {
+            "cost_usd": input_cost + cached_input_cost + cache_write_input_cost + output_cost,
+            "source": "configured_token_rates",
+            "note": (
+                "Per-task provider billing cost is not returned by model APIs; "
+                "this is computed from reported token usage and configured rates."
+            ),
+            "input_tokens": input_tokens,
+            "cached_input_tokens": cached_tokens,
+            "cache_write_input_tokens": cache_write_tokens,
+            "uncached_input_tokens": uncached_input_tokens,
+            "output_tokens": output_tokens,
+            "input_rate_per_1m": pricing["input"],
+            "cached_input_rate_per_1m": cached_input_rate,
+            "cache_write_input_rate_per_1m": cache_write_input_rate,
+            "output_rate_per_1m": pricing["output"],
+        }
 
     @classmethod
     def get_pricing(cls, model: str) -> Optional[Dict[str, float]]:

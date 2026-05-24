@@ -21,6 +21,8 @@ import os
 import re
 import tempfile
 import shutil
+import multiprocessing
+import queue
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 from dataclasses import dataclass, field
@@ -28,8 +30,6 @@ from pathlib import Path
 
 from .llm.llm_factory import LLMFactory, LLMResponse, ToolCall
 from .tools import agent_tools
-import concurrent.futures
-from functools import partial
 
 
 def _parse_tool_call_from_text(content: str) -> Optional[ToolCall]:
@@ -387,14 +387,6 @@ def _normalize_dataset_path(dataset_path: str) -> str:
     return parts[0] if parts else ""
 
 
-def _truncate_output(text: str, max_chars: int = 15000) -> str:
-    """Truncate output to avoid triggering content filters on large data dumps."""
-    if not text or len(text) <= max_chars:
-        return text
-    half = max_chars // 2
-    return f"{text[:half]}\n\n... [TRUNCATED {len(text) - max_chars} chars - use code to analyze full data] ...\n\n{text[-half:]}"
-
-
 def _create_isolated_sandbox(task_id: str) -> Path:
     """Create an isolated sandbox directory for a task."""
     sandbox_base = Path(__file__).resolve().parent.parent / ".sandbox_isolated"
@@ -424,6 +416,7 @@ def _run_task_worker(
     log_dir: str,
     run_id: str,
     batch_name: Optional[str],
+    sandbox_path_str: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Worker function to run a single task in isolation.
@@ -445,8 +438,11 @@ def _run_task_worker(
     """
     from .metrics import compute_exact_match, compute_f1_score, normalize_text
     
-    # Create isolated sandbox for this task and pin the sandbox used by agent_tools
-    sandbox_path = _create_isolated_sandbox(str(task_index))
+    # Create isolated sandbox for this task and pin the sandbox used by agent_tools.
+    # BatchRunner may pass a parent-created sandbox so it can clean up after a
+    # hard process kill on timeout.
+    sandbox_path = Path(sandbox_path_str) if sandbox_path_str else _create_isolated_sandbox(str(task_index))
+    sandbox_path.mkdir(parents=True, exist_ok=True)
     agent_tools.set_sandbox_dir(sandbox_path)
 
     # Set up per-process logger (shared across tasks in this process)
@@ -478,8 +474,14 @@ def _run_task_worker(
             "tool_calls": result.tool_calls_made,
             "tokens": result.total_tokens,
             "input_tokens": result.input_tokens,
+            "cached_input_tokens": result.cached_input_tokens,
+            "cache_write_input_tokens": result.cache_write_input_tokens,
             "output_tokens": result.output_tokens,
+            "agent_cost_usd": result.total_cost,
             "cost": result.total_cost,
+            "cost_source": result.cost_source,
+            "cost_note": result.cost_note,
+            "cost_breakdown": result.cost_breakdown,
             "time": result.elapsed_time,
             "success": result.success,
             "error": result.error,
@@ -541,6 +543,67 @@ def _run_task_worker(
         _cleanup_isolated_sandbox(sandbox_path)
 
 
+def _run_task_worker_process(
+    result_queue: "multiprocessing.Queue",
+    task: Dict[str, Any],
+    task_index: int,
+    model: str,
+    config: "AgentConfig",
+    log_dir: str,
+    run_id: str,
+    batch_name: Optional[str],
+    sandbox_path_str: str,
+) -> None:
+    try:
+        result = _run_task_worker(
+            task,
+            task_index,
+            model,
+            config,
+            log_dir,
+            run_id,
+            batch_name,
+            sandbox_path_str=sandbox_path_str,
+        )
+        result_queue.put((task_index, result, None))
+    except BaseException as e:
+        result_queue.put((task_index, None, f"{type(e).__name__}: {str(e)}"))
+
+
+def _timeout_result(
+    task: Dict[str, Any],
+    task_index: int,
+    model: str,
+    timeout_seconds: int,
+) -> Dict[str, Any]:
+    return {
+        "task_id": task.get("id", task_index),
+        "model": model,
+        "question": task.get("question", ""),
+        "ground_truth": task.get("answer", ""),
+        "predicted_answer": "",
+        "reasoning": "",
+        "sources_used": [],
+        "datasets_used": [],
+        "datasets_executed": [],
+        "datasets_discovered": [],
+        "tool_calls": 0,
+        "tokens": 0,
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 0,
+        "agent_cost_usd": 0.0,
+        "cost": 0.0,
+        "cost_source": "timeout",
+        "cost_note": "Task process was killed at the configured wall-clock timeout.",
+        "cost_breakdown": {},
+        "time": float(timeout_seconds),
+        "success": False,
+        "error": f"Timeout: task exceeded {timeout_seconds} seconds and was killed",
+    }
+
+
 @dataclass
 class AgentResult:
     """Result from an agent run."""
@@ -554,8 +617,13 @@ class AgentResult:
     tool_calls_made: int = 0
     total_tokens: int = 0
     input_tokens: int = 0
+    cached_input_tokens: int = 0
+    cache_write_input_tokens: int = 0
     output_tokens: int = 0
     total_cost: float = 0.0
+    cost_source: str = ""
+    cost_note: str = ""
+    cost_breakdown: Dict[str, Any] = field(default_factory=dict)
     elapsed_time: float = 0.0
     success: bool = True
     error: Optional[str] = None
@@ -678,20 +746,28 @@ class AgentRunner:
         """Internal method that runs the main agent loop."""
         total_tokens = 0
         input_tokens = 0
+        cached_input_tokens = 0
+        cache_write_input_tokens = 0
         output_tokens = 0
         tool_calls_made = 0
 
-        # Build system prompt
-        system_prompt = f"""{self.config.system_prompt or DEFAULT_SYSTEM_PROMPT}
-
-QUESTION TO ANSWER:
-{question}
-
-Use the available tools to find and analyze data, then call submit_answer with your final answer."""
+        # Keep this task-independent so OpenAI prefix caching can reuse the
+        # stable instruction/tool prefix across benchmark tasks.
+        system_prompt = self.config.system_prompt or DEFAULT_SYSTEM_PROMPT
 
         # Conversation messages
         messages = [
-            {"role": "user", "content": "Please answer the question using the available tools. Start by searching for relevant datasets."}
+            {
+                "role": "user",
+                "content": (
+                    "QUESTION TO ANSWER:\n"
+                    f"{question}\n\n"
+                    "Please answer the question using the available tools. "
+                    "Start by searching for relevant datasets. Use the available "
+                    "tools to find and analyze data, then call submit_answer with "
+                    "your final answer."
+                ),
+            }
         ]
 
         for turn in range(self.config.max_turns):
@@ -699,7 +775,13 @@ Use the available tools to find and analyze data, then call submit_answer with y
             elapsed = time.time() - start_time
             if elapsed > self.config.timeout_seconds:
                 logger.warning(f"TIMEOUT after {elapsed:.1f}s")
-                cost = LLMFactory.calculate_cost(self.model, input_tokens, output_tokens)
+                cost_info = LLMFactory.calculate_cost_breakdown(
+                    self.model,
+                    input_tokens,
+                    output_tokens,
+                    cached_input_tokens=cached_input_tokens,
+                    cache_write_input_tokens=cache_write_input_tokens,
+                )
                 return AgentResult(
                     answer="",
                     datasets_used=sorted(self._datasets_used),
@@ -709,8 +791,13 @@ Use the available tools to find and analyze data, then call submit_answer with y
                     tool_calls_made=tool_calls_made,
                     total_tokens=total_tokens,
                     input_tokens=input_tokens,
+                    cached_input_tokens=cached_input_tokens,
+                    cache_write_input_tokens=cache_write_input_tokens,
                     output_tokens=output_tokens,
-                    total_cost=cost,
+                    total_cost=cost_info["cost_usd"],
+                    cost_source=cost_info["source"],
+                    cost_note=cost_info["note"],
+                    cost_breakdown=cost_info,
                     elapsed_time=elapsed,
                     success=False,
                     error=f"Timeout: task exceeded {self.config.timeout_seconds} seconds",
@@ -730,6 +817,8 @@ Use the available tools to find and analyze data, then call submit_answer with y
                 )
 
                 input_tokens += response.usage.get("input_tokens", 0)
+                cached_input_tokens += response.usage.get("cached_input_tokens", 0)
+                cache_write_input_tokens += response.usage.get("cache_write_input_tokens", 0)
                 output_tokens += response.usage.get("output_tokens", 0)
                 total_tokens = input_tokens + output_tokens
 
@@ -842,7 +931,13 @@ Use the available tools to find and analyze data, then call submit_answer with y
                 # Check if answer was submitted
                 if self._submitted_answer:
                     logger.info(f"ANSWER SUBMITTED: {self._submitted_answer.get('answer', '')}")
-                    cost = LLMFactory.calculate_cost(self.model, input_tokens, output_tokens)
+                    cost_info = LLMFactory.calculate_cost_breakdown(
+                        self.model,
+                        input_tokens,
+                        output_tokens,
+                        cached_input_tokens=cached_input_tokens,
+                        cache_write_input_tokens=cache_write_input_tokens,
+                    )
                     return AgentResult(
                         answer=self._submitted_answer.get("answer", ""),
                         reasoning=self._submitted_answer.get("reasoning", ""),
@@ -854,8 +949,13 @@ Use the available tools to find and analyze data, then call submit_answer with y
                         tool_calls_made=tool_calls_made,
                         total_tokens=total_tokens,
                         input_tokens=input_tokens,
+                        cached_input_tokens=cached_input_tokens,
+                        cache_write_input_tokens=cache_write_input_tokens,
                         output_tokens=output_tokens,
-                        total_cost=cost,
+                        total_cost=cost_info["cost_usd"],
+                        cost_source=cost_info["source"],
+                        cost_note=cost_info["note"],
+                        cost_breakdown=cost_info,
                         elapsed_time=time.time() - start_time,
                         success=True,
                     )
@@ -871,7 +971,13 @@ Use the available tools to find and analyze data, then call submit_answer with y
 
         # Max turns reached
         logger.warning(f"MAX TURNS ({self.config.max_turns}) reached without answer")
-        cost = LLMFactory.calculate_cost(self.model, input_tokens, output_tokens)
+        cost_info = LLMFactory.calculate_cost_breakdown(
+            self.model,
+            input_tokens,
+            output_tokens,
+            cached_input_tokens=cached_input_tokens,
+            cache_write_input_tokens=cache_write_input_tokens,
+        )
         return AgentResult(
             answer="",
             datasets_used=sorted(self._datasets_used),
@@ -881,8 +987,13 @@ Use the available tools to find and analyze data, then call submit_answer with y
             tool_calls_made=tool_calls_made,
             total_tokens=total_tokens,
             input_tokens=input_tokens,
+            cached_input_tokens=cached_input_tokens,
+            cache_write_input_tokens=cache_write_input_tokens,
             output_tokens=output_tokens,
-            total_cost=cost,
+            total_cost=cost_info["cost_usd"],
+            cost_source=cost_info["source"],
+            cost_note=cost_info["note"],
+            cost_breakdown=cost_info,
             elapsed_time=time.time() - start_time,
             success=False,
             error="Max turns reached without submitting an answer",
@@ -937,52 +1048,114 @@ class BatchRunner:
             print(f"\nRunning {len(tasks)} tasks in parallel with {num_workers} workers...")
 
         results = []
-        
-        # Use ProcessPoolExecutor for true parallelism
-        with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
-            # Submit all tasks
-            future_to_index = {
-                executor.submit(
-                    _run_task_worker,
-                    task,
-                    i,
+        active: Dict[int, Dict[str, Any]] = {}
+        result_queue = multiprocessing.Queue()
+        next_task_index = 0
+        completed = 0
+
+        def launch_task(task_index: int) -> None:
+            sandbox_path = _create_isolated_sandbox(str(task_index))
+            process = multiprocessing.Process(
+                target=_run_task_worker_process,
+                args=(
+                    result_queue,
+                    tasks[task_index],
+                    task_index,
                     self.model,
                     self.config,
                     log_dir,
                     run_id,
                     batch_label,
-                ): i
-                for i, task in enumerate(tasks)
+                    str(sandbox_path),
+                ),
+            )
+            process.start()
+            active[task_index] = {
+                "process": process,
+                "start_time": time.time(),
+                "sandbox_path": sandbox_path,
             }
-            
-            # Process results as they complete
-            completed = 0
-            for future in concurrent.futures.as_completed(future_to_index):
-                task_index = future_to_index[future]
-                try:
-                    result = future.result()
-                    results.append((task_index, result))
-                    completed += 1
-                    
-                    if verbose:
-                        print(f"✓ Task {task_index + 1}/{len(tasks)} completed")
-                        if result.get("success") and "exact_match" in result:
-                            match_status = "✓" if result["exact_match"] == 1.0 else "✗"
-                            print(f"  {match_status} Match: {result.get('exact_match', 0):.2f} | F1: {result.get('f1_score', 0):.3f}")
-                
-                except Exception as e:
-                    results.append((task_index, {
-                        "task_id": tasks[task_index].get("id", task_index),
-                        "model": self.model,
-                        "question": tasks[task_index].get("question", ""),
-                        "ground_truth": tasks[task_index].get("answer", ""),
-                        "predicted_answer": "",
-                        "success": False,
-                        "error": f"Worker error: {str(e)}",
-                    }))
-                    if verbose:
-                        print(f"✗ Task {task_index + 1}/{len(tasks)} failed: {str(e)}")
-        
+
+        def record_result(task_index: int, result: Dict[str, Any]) -> None:
+            nonlocal completed
+            results.append((task_index, result))
+            completed += 1
+            if verbose:
+                if result.get("success"):
+                    print(f"✓ Task {task_index + 1}/{len(tasks)} completed")
+                    if "exact_match" in result:
+                        match_status = "✓" if result["exact_match"] == 1.0 else "✗"
+                        print(f"  {match_status} Match: {result.get('exact_match', 0):.2f} | F1: {result.get('f1_score', 0):.3f}")
+                else:
+                    print(f"✗ Task {task_index + 1}/{len(tasks)} failed: {result.get('error', '')}")
+
+        try:
+            while completed < len(tasks):
+                while next_task_index < len(tasks) and len(active) < num_workers:
+                    launch_task(next_task_index)
+                    next_task_index += 1
+
+                while True:
+                    try:
+                        task_index, result, error = result_queue.get_nowait()
+                    except queue.Empty:
+                        break
+
+                    info = active.pop(task_index, None)
+                    if info is None:
+                        continue
+                    process = info["process"]
+                    process.join(timeout=1)
+                    _cleanup_isolated_sandbox(info["sandbox_path"])
+
+                    if error:
+                        result = {
+                            "task_id": tasks[task_index].get("id", task_index),
+                            "model": self.model,
+                            "question": tasks[task_index].get("question", ""),
+                            "ground_truth": tasks[task_index].get("answer", ""),
+                            "predicted_answer": "",
+                            "success": False,
+                            "error": f"Worker error: {error}",
+                        }
+                    record_result(task_index, result)
+
+                now = time.time()
+                for task_index, info in list(active.items()):
+                    if now - info["start_time"] < self.config.timeout_seconds:
+                        continue
+
+                    process = info["process"]
+                    process.kill()
+                    process.join(timeout=1)
+                    if process.is_alive():
+                        process.terminate()
+                        process.join(timeout=1)
+                    _cleanup_isolated_sandbox(info["sandbox_path"])
+                    active.pop(task_index, None)
+                    result = _timeout_result(
+                        tasks[task_index],
+                        task_index,
+                        self.model,
+                        self.config.timeout_seconds,
+                    )
+                    record_result(task_index, result)
+
+                if completed < len(tasks):
+                    time.sleep(0.2)
+        finally:
+            for task_index, info in list(active.items()):
+                process = info["process"]
+                if process.is_alive():
+                    process.terminate()
+                    process.join(timeout=3)
+                    if process.is_alive():
+                        process.kill()
+                        process.join(timeout=3)
+                _cleanup_isolated_sandbox(info["sandbox_path"])
+            result_queue.close()
+            result_queue.join_thread()
+
         # Sort results by original index
         results.sort(key=lambda x: x[0])
         return [r[1] for r in results]

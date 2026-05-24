@@ -1,6 +1,6 @@
 # LakeQA
 
-LakeQA contains benchmark tasks under `tasks_mini/` and evaluation code under
+LakeQA contains benchmark tasks under `lakeqa_mini/` and `lakeqa_full/`; and evaluation code under
 `evaluation/`. Each task JSON lists the data files it needs in the
 `datasets_used` field.
 
@@ -39,10 +39,10 @@ environment requires credentials, omit `--no-sign-request` and run
 
 ### Example Task
 
-Use `tasks_mini/k-1-d-1/task_1.json` as a small example:
+Use `lakeqa_mini/k-1-d-1/task_1.json` as a small example:
 
 ```bash
-jq '.datasets_used' tasks_mini/k-1-d-1/task_1.json
+jq '.datasets_used' lakeqa_mini/k-1-d-1/task_1.json
 ```
 
 That task includes keys such as:
@@ -66,7 +66,7 @@ aws s3 cp --no-sign-request \
 Download every file listed by a task:
 
 ```bash
-TASK=tasks_mini/k-1-d-1/task_1.json
+TASK=lakeqa_mini/k-1-d-1/task_1.json
 BUCKET=lakeqa-yc4103-datalake
 
 jq -r '.datasets_used[]' "$TASK" | while read -r key; do
@@ -81,5 +81,5 @@ the same relative paths as `datasets_used`.
 To use another task, change only `TASK`, for example:
 
 ```bash
-TASK=tasks_mini/k-3-d-1/task_1.json
+TASK=lakeqa_mini/k-3-d-1/task_1.json
 ```
