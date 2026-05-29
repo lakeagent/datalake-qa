@@ -1,155 +1,176 @@
 {
-    "question": "Among the two most populous Texas counties in 2024, which had the larger increase in the number of veterans receiving disability compensation from 2020 to 2023? What is that county's seat, and which University of Houston System university in that city was founded earliest? Return the university name only. Your response should be in the format [Answer].",
-    "answer": "University of Houston",
+    "question": "Across 2021-2023, which Missouri state agency stayed in the top five for professional services spending and also had the highest average employee count? In its headquarters city, a historically Black university was founded. Who founded that university? Return the name only. Your response should be in the format [Answer].",
+    "answer": "James Milton Turner",
     "nodes": {
         "1": {
-            "source": "wikipedia/List_of_counties_in_Texas/content.txt",
-            "fact": "As of 2024, Harris County and Dallas County are the two most populous counties in Texas.",
-            "subquestion": "Which two Texas counties had the largest populations in 2024?",
+            "source": "datagov/2021-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2021-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[df[\"Category Description\"] == \"PROFESSIONAL SERVICES\"]\n    .groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .reset_index()\n)\nanswer = result.head(5)[\"Agency Name\"].tolist()",
+            "subquestion": "What were the top 5 Missouri state agencies by total professional services spending in fiscal year 2021?",
             "answer": [
-                "Harris County",
-                "Dallas County"
+                "SOCIAL SERVICES",
+                "CORRECTIONS",
+                "PUBLIC SAFETY",
+                "TRANSPORTATION",
+                "ELEMENTARY AND SECONDARY EDUCATION"
             ]
         },
         "2": {
-            "source": "datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt",
-            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df[\n        (df[\"State\"] == \"Texas\")\n        & (df[\"County Name\"].isin([\"Harris\", \"Dallas\"]))\n    ][[\"County Name\", \"Total: Disability Compensation Recipients\"]]\n    .set_index(\"County Name\")[\"Total: Disability Compensation Recipients\"]\n    .to_dict()\n)",
-            "subquestion": "For <hop 1 answer>, what were the number of veterans receiving disability compensation in 2020?",
-            "answer": {
-                "Harris": 49804,
-                "Dallas": 26317
-            }
-        },
-        "3": {
-            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
-            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df[\n        (df[\"State\"] == \"Texas\")\n        & (df[\"County Name\"].isin([\"Harris\", \"Dallas\"]))\n    ][[\"County Name\", \"Total: Disability Compensation Recipients\"]]\n    .set_index(\"County Name\")[\"Total: Disability Compensation Recipients\"]\n    .to_dict()\n)",
-            "subquestion": "For <hop 1 answer>, what were the number of veterans receiving disability compensation in 2023?",
-            "answer": {
-                "Harris": 54266,
-                "Dallas": 25704
-            }
-        },
-        "4": {
-            "source": "wikipedia/Harris_County,_Texas/content.txt",
-            "fact": "According to the Wikipedia article for Harris County, Texas, its county seat is Houston.",
-            "subquestion": "What is the county seat of <hop 2 answer>?",
-            "answer": "Houston"
-        },
-        "5": {
-            "source": "wikipedia/Houston/content.txt",
-            "fact": "According to the Wikipedia article for Houston, the University of Houston is the flagship institution of the University of Houston System, and the University of Houston–Clear Lake and University of Houston–Downtown are universities within the University of Houston System.",
-            "subquestion": "Which University of Houston System universities are identified in <hop 3 answer> as being in that city?",
+            "source": "datagov/2022-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2022-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[df[\"Category Description\"] == \"PROFESSIONAL SERVICES\"]\n    .groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .reset_index()\n)\nanswer = result.head(5)[\"Agency Name\"].tolist()",
+            "subquestion": "What were the top 5 Missouri state agencies by total professional services spending in fiscal year 2022?",
             "answer": [
-                "University of Houston",
-                "University of Houston–Clear Lake",
-                "University of Houston–Downtown"
+                "SOCIAL SERVICES",
+                "CORRECTIONS",
+                "TRANSPORTATION",
+                "PUBLIC SAFETY",
+                "ELEMENTARY AND SECONDARY EDUCATION"
             ]
         },
-        "6": {
-            "source": "wikipedia/University_of_Houston/content.txt",
-            "fact": "According to the Wikipedia article for the University of Houston, it was established in 1927 as Houston Junior College.",
-            "subquestion": "When was University of Houston established?",
+        "3": {
+            "source": "datagov/2023-state-expenditures/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2023-state-expenditures/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nresult = (\n    df[df[\"Category Description\"] == \"PROFESSIONAL SERVICES\"]\n    .groupby(\"Agency Name\", dropna=False)[\"Payments Total\"]\n    .sum()\n    .sort_values(ascending=False)\n    .reset_index()\n)\nanswer = result.head(5)[\"Agency Name\"].tolist()",
+            "subquestion": "What were the top 5 Missouri state agencies by total professional services spending in fiscal year 2023?",
+            "answer": [
+                "CORRECTIONS",
+                "SOCIAL SERVICES",
+                "TRANSPORTATION",
+                "OFFICE OF ADMINISTRATION",
+                "MENTAL HEALTH"
+            ]
+        },
+        "4": {
+            "source": "datagov/2021-state-employee-pay/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2021-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nagencies = [\"CORRECTIONS\", \"SOCIAL SERVICES\", \"TRANSPORTATION\"]\nresult = (\n    df[df[\"Agency Name\"].isin(agencies)]\n    .groupby(\"Agency Name\", dropna=False)\n    .size()\n    .sort_values(ascending=False)\n)\nanswer = result.to_dict()",
+            "subquestion": "For calendar year 2021, how many employee records were there for each of the candidate agencies CORRECTIONS, SOCIAL SERVICES, and TRANSPORTATION?",
             "answer": {
-                "University of Houston": 1927
+                "CORRECTIONS": 12530,
+                "SOCIAL SERVICES": 8362,
+                "TRANSPORTATION": 7170
+            }
+        },
+        "5": {
+            "source": "datagov/2022-state-employee-pay/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\nsource = \"datagov/2022-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nagencies = [\"CORRECTIONS\", \"SOCIAL SERVICES\", \"TRANSPORTATION\"]\nresult = (\n    df[df[\"Agency Name\"].isin(agencies)]\n    .groupby(\"Agency Name\", dropna=False)\n    .size()\n    .sort_values(ascending=False)\n)\nanswer = result.to_dict()",
+            "subquestion": "For calendar year 2022, how many employee records were there for each of the candidate agencies CORRECTIONS, SOCIAL SERVICES, and TRANSPORTATION?",
+            "answer": {
+                "CORRECTIONS": 12380,
+                "SOCIAL SERVICES": 8723,
+                "TRANSPORTATION": 6917
+            }
+        },
+        "6": {
+            "source": "datagov/2023-state-employee-pay/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/2023-state-employee-pay/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nanswer = (\n    df[df[\"Agency Name\"].isin([\"CORRECTIONS\", \"SOCIAL SERVICES\", \"TRANSPORTATION\"])]\n    .groupby(\"Agency Name\")\n    .size()\n    .to_dict()\n)",
+            "subquestion": "For calendar year 2023, how many employee records were there for each of the candidate agencies CORRECTIONS, SOCIAL SERVICES, and TRANSPORTATION?",
+            "answer": {
+                "CORRECTIONS": 13107,
+                "SOCIAL SERVICES": 8932,
+                "TRANSPORTATION": 6956
             }
         },
         "7": {
-            "source": "wikipedia/University_of_Houston–Clear_Lake/content.txt",
-            "fact": "According to the Wikipedia article for the University of Houston–Clear Lake, the university was established in 1971.",
-            "subquestion": "When was University of Houston–Clear Lake established?",
-            "answer": {
-                "University of Houston–Clear Lake": 1971
-            }
+            "source": "wikipedia/Missouri_Department_of_Corrections/content.txt",
+            "fact": "The Missouri Department of Corrections has its headquarters in Missouri's capital of Jefferson City.",
+            "subquestion": "What city is the headquarters of <hop 2 answer>?",
+            "answer": "Jefferson City"
         },
         "8": {
-            "source": "wikipedia/University_of_Houston–Downtown/content.txt",
-            "fact": "According to the Wikipedia article for the University of Houston–Downtown, the University of Houston–Downtown College was established on August 6, 1974.",
-            "subquestion": "When was University of Houston–Downtown established?",
-            "answer": {
-                "University of Houston–Downtown": 1974
-            }
+            "source": "wikipedia/Jefferson_City,_Missouri/content.txt",
+            "fact": "Jefferson City is home to Lincoln University, a public historically Black university founded in 1866.",
+            "subquestion": "What historically Black university is located in <hop 3 answer>?",
+            "answer": "Lincoln University"
+        },
+        "9": {
+            "source": "wikipedia/Lincoln_University_(Missouri)/content.txt",
+            "fact": "Lincoln University was founded in 1866. The 62nd Colored Infantry regiment raised $6,300 to set up a Black school, headed by a white abolitionist officer, Richard Foster, and founded by James Milton Turner.",
+            "subquestion": "Who founded <hop 4 answer>?",
+            "answer": "James Milton Turner"
         }
     },
     "datasets_used": [
-        "wikipedia/List_of_counties_in_Texas/content.txt",
-        "wikipedia/Harris_County,_Texas/content.txt",
-        "wikipedia/Houston/content.txt",
-        "wikipedia/University_of_Houston/content.txt",
-        "wikipedia/University_of_Houston–Clear_Lake/content.txt",
-        "wikipedia/University_of_Houston–Downtown/content.txt",
-        "datagov/fy-2020-disability-compensation-recipients-by-county/files/rows.txt",
-        "datagov/fy-2020-disability-compensation-recipients-by-county/signed-metadata.txt",
-        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
-        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt"
+        "wikipedia/Missouri_Department_of_Corrections/content.txt",
+        "wikipedia/Jefferson_City,_Missouri/content.txt",
+        "wikipedia/Lincoln_University_(Missouri)/content.txt",
+        "datagov/2021-state-expenditures/files/rows.txt",
+        "datagov/2021-state-expenditures/signed-metadata.txt",
+        "datagov/2022-state-expenditures/files/rows.txt",
+        "datagov/2022-state-expenditures/signed-metadata.txt",
+        "datagov/2023-state-expenditures/files/rows.txt",
+        "datagov/2023-state-expenditures/signed-metadata.txt",
+        "datagov/2021-state-employee-pay/files/rows.txt",
+        "datagov/2021-state-employee-pay/signed-metadata.txt",
+        "datagov/2022-state-employee-pay/files/rows.txt",
+        "datagov/2022-state-employee-pay/signed-metadata.txt",
+        "datagov/2023-state-employee-pay/files/rows.txt",
+        "datagov/2023-state-employee-pay/signed-metadata.txt"
     ],
     "reasoning_hops": [
         {
             "hop_id": 1,
             "node_ids": [
-                1
+                1,
+                2,
+                3
             ],
             "reasoning": [
-                "Node 1: Retrieve the two Texas counties with the largest 2024 populations.",
-                "Hop result: the two counties are Harris County and Dallas County."
+                "Node 1: Filter 2021 rows where `Category Description` = `PROFESSIONAL SERVICES`, group by `Agency Name`, sum `Payments To Vendors`, sort descending, and keep the top five agencies.",
+                "Node 2: Filter 2022 rows where `Category Description` = `PROFESSIONAL SERVICES`, group by `Agency Name`, sum `Payments To Vendors`, sort descending, and keep the top five agencies.",
+                "Node 3: Filter 2023 rows where `Category Description` = `PROFESSIONAL SERVICES`, group by `Agency Name`, sum `Payments To Vendors`, sort descending, and keep the top five agencies.",
+                "Hop result: intersect the three yearly top-five agency sets to keep the agencies that stayed in the top five across 2021 through 2023: CORRECTIONS, SOCIAL SERVICES, and TRANSPORTATION."
             ],
             "answer": [
-                "Harris County",
-                "Dallas County"
+                "CORRECTIONS",
+                "SOCIAL SERVICES",
+                "TRANSPORTATION"
             ]
         },
         {
             "hop_id": 2,
             "node_ids": [
-                2,
-                3
+                4,
+                5,
+                6
             ],
             "reasoning": [
-                "Node 2: Filter FY 2020 rows where `State` = `Texas` and `County Name` is Harris or Dallas, then return the yearly recipient counts.",
-                "Node 3: Filter FY 2023 rows where `State` = `Texas` and `County Name` is Harris or Dallas, then return the yearly recipient counts.",
-                "Hop result: compare the increase from 2020 to 2023 for Harris and Dallas and select Harris County because its increase is larger."
+                "Node 4: Filter 2021 employee-pay rows where `Agency Name` is CORRECTIONS, SOCIAL SERVICES, or TRANSPORTATION, group by `Agency Name`, count rows, and return the yearly employee counts.",
+                "Node 5: Filter 2022 employee-pay rows where `Agency Name` is CORRECTIONS, SOCIAL SERVICES, or TRANSPORTATION, group by `Agency Name`, count rows, and return the yearly employee counts.",
+                "Node 6: Filter 2023 employee-pay rows where `Agency Name` is CORRECTIONS, SOCIAL SERVICES, or TRANSPORTATION, group by `Agency Name`, count rows, and return the yearly employee counts.",
+                "Hop result: average the three yearly employee counts and select CORRECTIONS because it has the highest overall average."
             ],
-            "answer": "Harris County"
+            "answer": "CORRECTIONS"
         },
         {
             "hop_id": 3,
             "node_ids": [
-                4
+                7
             ],
             "reasoning": [
-                "Node 4: Retrieve the county seat of <hop 2 answer>.",
-                "Hop result: the county seat is Houston."
+                "Node 7: Retrieve the headquarters city of <hop 2 answer>.",
+                "Hop result: the headquarters city is Jefferson City."
             ],
-            "answer": "Houston"
+            "answer": "Jefferson City"
         },
         {
             "hop_id": 4,
             "node_ids": [
-                5
+                8
             ],
             "reasoning": [
-                "Node 5: Retrieve the University of Houston System universities identified in <hop 3 answer>.",
-                "Hop result: the universities are University of Houston, University of Houston–Clear Lake, and University of Houston–Downtown."
+                "Node 8: Retrieve the historically Black university located in <hop 3 answer>.",
+                "Hop result: the university is Lincoln University."
             ],
-            "answer": [
-                "University of Houston",
-                "University of Houston–Clear Lake",
-                "University of Houston–Downtown"
-            ]
+            "answer": "Lincoln University"
         },
         {
             "hop_id": 5,
             "node_ids": [
-                6,
-                7,
-                8
+                9
             ],
             "reasoning": [
-                "Node 6: Retrieve the founding year of University of Houston from <hop 4 answer>.",
-                "Node 7: Retrieve the founding year of University of Houston–Clear Lake from <hop 4 answer>.",
-                "Node 8: Retrieve the founding year of University of Houston–Downtown from <hop 4 answer>.",
-                "Hop result: compare the founding years and select University of Houston because it was founded earliest."
+                "Node 9: Retrieve the founder of <hop 4 answer>.",
+                "Hop result: the founder is James Milton Turner."
             ],
-            "answer": "University of Houston"
+            "answer": "James Milton Turner"
         }
     ]
 }

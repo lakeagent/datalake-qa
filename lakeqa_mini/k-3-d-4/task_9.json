@@ -1,81 +1,94 @@
 {
-    "question": "Can you tell me the year this city was incorporated? This city is the county seat of the county with the highest number of veterans receiving disability compensation in 2023 within a state. The state it's in is a Mountain state that borders Mexico and is one of the Four Corners states. It also had between 4000 and 6000 veterans receiving pensions in 2020. Your response should be in the format [Answer].",
-    "answer": "1881",
+    "question": "Across years 2015-16 through 2018-19, which Texas counties are consistently in the top five for total lunch serves in the Seamless Summer Option program? Among those counties, identify the two with the largest percentage decreases in day care home meal reimbursements from 2018-19 to 2020-21. For those two counties, compute the average child center enrollment across 2018-19 and 2019-20 and report the smaller average enrollment value. Return the number only. Your response should be in the format [Answer].",
+    "answer": "1569466.5",
     "nodes": {
         "1": {
-            "source": "wikipedia/Mountain_states/content.txt",
-            "fact": "The Mountain states are considered to include: Arizona, Colorado, Idaho, Montana, Nevada, New Mexico, Utah and Wyoming.",
-            "subquestion": "Which US states are Mountain states?",
-            "depends_on": [],
+            "source": "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2015-2016'\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nlunch_total = pd.to_numeric(df['LunchTotal'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'LunchTotal': lunch_total})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.ne('') & county.ne('Nan')].copy()\nranked = filtered.groupby('SiteCounty', as_index=False)['LunchTotal'].sum().sort_values(['LunchTotal', 'SiteCounty'], ascending=[False, True])\nanswer = ranked['SiteCounty'].head(5).tolist()",
+            "subquestion": "Which Texas counties were in the top five for SSO LunchTotal in 2015-2016?",
             "answer": [
-                "Arizona",
-                "Colorado",
-                "Idaho",
-                "Montana",
-                "Nevada",
-                "New Mexico",
-                "Utah",
-                "Wyoming"
+                "Harris",
+                "Hidalgo",
+                "Dallas",
+                "Cameron",
+                "El Paso"
             ]
         },
         "2": {
-            "source": "wikipedia/Mexico–United_States_border/content.txt",
-            "fact": "Four American Sun Belt states border Mexico: California, Arizona, New Mexico and Texas.",
-            "subquestion": "Which US states border Mexico?",
-            "depends_on": [],
+            "source": "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2016-2017'\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nlunch_total = pd.to_numeric(df['LunchTotal'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'LunchTotal': lunch_total})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.ne('') & county.ne('Nan')].copy()\nranked = filtered.groupby('SiteCounty', as_index=False)['LunchTotal'].sum().sort_values(['LunchTotal', 'SiteCounty'], ascending=[False, True])\nanswer = ranked['SiteCounty'].head(5).tolist()",
+            "subquestion": "Which Texas counties were in the top five for SSO LunchTotal in 2016-2017?",
             "answer": [
-                "California",
-                "Arizona",
-                "New Mexico",
-                "Texas"
+                "Hidalgo",
+                "Harris",
+                "Dallas",
+                "Cameron",
+                "Bexar"
             ]
         },
         "3": {
-            "source": "wikipedia/Four_Corners/content.txt",
-            "fact": "The Four Corners is a region of the Southwestern United States consisting of the southwestern corner of Colorado, southeastern corner of Utah, northeastern corner of Arizona, and northwestern corner of New Mexico.",
-            "subquestion": "Which US states share the Four Corners region?",
-            "depends_on": [],
+            "source": "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2017-2018'\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nlunch_total = pd.to_numeric(df['LunchTotal'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'LunchTotal': lunch_total})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.ne('') & county.ne('Nan')].copy()\nranked = filtered.groupby('SiteCounty', as_index=False)['LunchTotal'].sum().sort_values(['LunchTotal', 'SiteCounty'], ascending=[False, True])\nanswer = ranked['SiteCounty'].head(5).tolist()",
+            "subquestion": "Which Texas counties were in the top five for SSO LunchTotal in 2017-2018?",
             "answer": [
-                "Arizona",
-                "Colorado",
-                "New Mexico",
-                "Utah"
+                "Hidalgo",
+                "Harris",
+                "Dallas",
+                "Cameron",
+                "Bexar"
             ]
         },
         "4": {
-            "source": "datagov/fy-2020-pension-recipients-by-state/files/rows.txt",
-            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/fy-2020-pension-recipients-by-state/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nus_states = {\n    'Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware',\n    'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky',\n    'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri',\n    'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York',\n    'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island',\n    'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington',\n    'West Virginia', 'Wisconsin', 'Wyoming'\n}\nstate = df['State'].astype(str).str.strip()\nrecipients = pd.to_numeric(df['Total: Pension Recipients'], errors='coerce')\nfiltered = df[\n    state.isin(us_states)\n    & recipients.notna()\n    & (recipients >= 4000)\n    & (recipients <= 6000)\n].copy()\nanswer = filtered['State'].dropna().astype(str).str.strip().drop_duplicates().sort_values().tolist()",
-            "subquestion": "Which US states had between 4,000 and 6,000 VA pension recipients in fiscal year 2020?",
-            "depends_on": [],
+            "source": "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2018-2019'\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nlunch_total = pd.to_numeric(df['LunchTotal'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'LunchTotal': lunch_total})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.ne('') & county.ne('Nan')].copy()\nranked = filtered.groupby('SiteCounty', as_index=False)['LunchTotal'].sum().sort_values(['LunchTotal', 'SiteCounty'], ascending=[False, True])\nanswer = ranked['SiteCounty'].head(5).tolist()",
+            "subquestion": "Which Texas counties were in the top five for SSO LunchTotal in 2018-2019?",
             "answer": [
-                "Alabama",
-                "Arizona",
-                "Louisiana",
-                "Missouri",
-                "Oregon",
-                "South Carolina",
-                "Tennessee",
-                "Virginia",
-                "Washington"
+                "Hidalgo",
+                "Harris",
+                "Dallas",
+                "Bexar",
+                "Cameron"
             ]
         },
         "5": {
-            "source": "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
-            "fact": "In FY 2023, Maricopa County, Arizona had 69,974 VA disability compensation recipients, the most of any county in Arizona. Pima County was second with 25,745, and Pinal County was third with 10,403.",
-            "subquestion": "Which county in <intersection of node_1, node_2, node_3, node_4: Arizona> has the most VA disability compensation recipients in FY 2023?",
-            "depends_on": [
-                "intersection_of_1_2_3_4"
-            ],
-            "answer": "Maricopa County"
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2018-2019'\nordered_targets = ['Harris', 'Dallas', 'Hidalgo', 'Cameron']\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nreimbursement = pd.to_numeric(df['TotalMealReimbursement'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'TotalMealReimbursement': reimbursement})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.isin(ordered_targets)].copy()\ntotals = filtered.groupby('SiteCounty')['TotalMealReimbursement'].sum()\nanswer = {name: round(float(totals.get(name, 0.0)), 4) for name in ordered_targets}",
+            "subquestion": "For <hop 1 answer: Harris, Hidalgo, Dallas, Cameron>, what were the CACFP day care home meal reimbursements in 2018-2019?",
+            "answer": {
+                "Harris": 8757796.13,
+                "Dallas": 2835278.75,
+                "Hidalgo": 1202699.73,
+                "Cameron": 392489.51
+            }
         },
         "6": {
-            "source": "wikipedia/Phoenix,_Arizona/content.txt",
-            "fact": "Phoenix is the county seat of Maricopa County. The Territorial Legislature passed the Phoenix Charter Bill, incorporating Phoenix and providing a mayor-council government; Governor John C. Fremont signed the bill on February 25, 1881, officially incorporating Phoenix as a city.",
-            "subquestion": "In what year was the county seat of <node_5 answer: Maricopa County> incorporated as a city?",
-            "depends_on": [
-                "node_5"
-            ],
-            "answer": "1881"
+            "source": "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2020-2021'\nordered_targets = ['Harris', 'Dallas', 'Hidalgo', 'Cameron']\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nreimbursement = pd.to_numeric(df['TotalMealReimbursement'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'TotalMealReimbursement': reimbursement})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.isin(ordered_targets)].copy()\ntotals = filtered.groupby('SiteCounty')['TotalMealReimbursement'].sum()\nanswer = {name: round(float(totals.get(name, 0.0)), 4) for name in ordered_targets}",
+            "subquestion": "For <hop 1 answer: Harris, Hidalgo, Dallas, Cameron>, what were the CACFP day care home meal reimbursements in 2020-2021?",
+            "answer": {
+                "Harris": 7558597.77,
+                "Dallas": 2393411.26,
+                "Hidalgo": 971063.56,
+                "Cameron": 330003.06
+            }
+        },
+        "7": {
+            "source": "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2018-2019'\nordered_targets = ['Cameron', 'Hidalgo']\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nenrollment = pd.to_numeric(df['EnrollmentQty'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'EnrollmentQty': enrollment})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.isin(ordered_targets)].copy()\ntotals = filtered.groupby('SiteCounty')['EnrollmentQty'].sum()\nanswer = {name: int(totals.get(name, 0)) for name in ordered_targets}",
+            "subquestion": "For <hop 2 answer: Hidalgo and Cameron>, what were the CACFP child-center EnrollmentQty totals in 2018-2019?",
+            "answer": {
+                "Cameron": 7620183,
+                "Hidalgo": 1661128
+            }
+        },
+        "8": {
+            "source": "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt",
+            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nprogram_year = '2019-2020'\nordered_targets = ['Cameron', 'Hidalgo']\ncounty = df['SiteCounty'].astype(str).str.strip().str.title()\nenrollment = pd.to_numeric(df['EnrollmentQty'], errors='coerce')\nfiltered = pd.DataFrame({'SiteCounty': county, 'EnrollmentQty': enrollment})[df['ProgramYear'].astype(str).str.strip().eq(program_year) & county.isin(ordered_targets)].copy()\ntotals = filtered.groupby('SiteCounty')['EnrollmentQty'].sum()\nanswer = {name: int(totals.get(name, 0)) for name in ordered_targets}",
+            "subquestion": "For <hop 2 answer: Hidalgo and Cameron>, what were the CACFP child-center EnrollmentQty totals in 2019-2020?",
+            "answer": {
+                "Cameron": 1076746,
+                "Hidalgo": 1477805
+            }
         }
     },
     "reasoning_hops": [
@@ -88,45 +101,65 @@
                 4
             ],
             "reasoning": [
-                "Node 1: The Mountain states are considered to include: Arizona, Colorado, Idaho, Montana, Nevada, New Mexico, Utah and Wyoming.",
-                "Node 2: Four American Sun Belt states border Mexico: California, Arizona, New Mexico and Texas.",
-                "Node 3: The Four Corners is a region of the Southwestern United States consisting of the southwestern corner of Colorado, southeastern corner of Utah, northeastern corner of Arizona, and northwestern corner of New Mexico.",
-                "Node 4: In FY 2020, the U.S. states with between 4,000 and 6,000 VA pension recipients were Alabama, Arizona, Louisiana, Missouri, Oregon, South Carolina, Tennessee, Virginia, and Washington.",
-                "Derive hop 1 answer using nodes 1, 2, 3, 4: Nodes 1-4 ask four independent state filters (Mountain, Mexico border, Four Corners, and 2020 pension range); intersecting them yields Arizona. Hop answer: Arizona."
+                "Node 1: In the 2015-2016 SSO meal count program period dataset, the top five counties by LunchTotal were Harris (675,945), Hidalgo (651,134), Dallas (341,323), Cameron (325,806), and El Paso (262,063).",
+                "Node 2: In the 2016-2017 SSO meal count program period dataset, the top five counties by LunchTotal were Hidalgo (716,795), Harris (614,713), Dallas (376,028), Cameron (309,590), and Bexar (278,760).",
+                "Node 3: In the 2017-2018 SSO meal count program period dataset, the top five counties by LunchTotal were Hidalgo (667,415), Harris (480,251), Dallas (362,790), Cameron (258,875), and Bexar (235,800).",
+                "Node 4: In the 2018-2019 SSO meal count program period dataset, the top five counties by LunchTotal were Hidalgo (668,927), Harris (525,238), Dallas (348,923), Bexar (284,028), and Cameron (260,791).",
+                "Derive hop 1 answer using nodes 1, 2, 3, 4: Nodes 1-4 ask for top-five SSO lunch counties across four program years; intersecting these yearly sets yields Harris, Hidalgo, Dallas, and Cameron. Hop answer: Harris, Hidalgo, Dallas, Cameron."
             ],
-            "answer": "Arizona"
+            "answer": "Harris, Hidalgo, Dallas, Cameron"
         },
         {
             "hop": 2,
             "node_ids": [
-                5
+                5,
+                6
             ],
             "reasoning": [
-                "Node 5: In FY 2023, Maricopa County, Arizona had 69,974 VA disability compensation recipients, the most of any county in Arizona. Pima County was second with 25,745, and Pinal County was third with 10,403.",
-                "Derive hop 2 answer from node 5: Node 5 depends on hop 1 and asks which Arizona county had the highest 2023 disability compensation recipient count. Hop answer: Maricopa County."
+                "Node 5: In the CACFP day care homes meal reimbursement dataset for ProgramYear 2018-2019, total reimbursements for Harris, Dallas, Hidalgo, and Cameron counties were: Harris $8,757,796.13; Dallas $2,835,278.75; Hidalgo $1,202,699.73; Cameron $392,489.51.",
+                "Node 6: In the CACFP day care homes meal reimbursement dataset for ProgramYear 2020-2021, total reimbursements for Harris, Dallas, Hidalgo, and Cameron counties were: Harris $7,558,597.77; Dallas $2,393,411.26; Hidalgo $971,063.56; Cameron $330,003.06.",
+                "Derive hop 2 answer using nodes 5, 6: Nodes 5-6 provide day-care-home reimbursements in 2018-2019 and 2020-2021 for hop 1 counties; percentage-drop comparison keeps Hidalgo and Cameron as the two largest decreases. Hop answer: Hidalgo and Cameron."
             ],
-            "answer": "Maricopa County"
+            "answer": "Hidalgo and Cameron"
         },
         {
             "hop": 3,
             "node_ids": [
-                6
+                7,
+                8
             ],
             "reasoning": [
-                "Node 6: Phoenix is the county seat of Maricopa County. The Territorial Legislature passed the Phoenix Charter Bill, incorporating Phoenix and providing a mayor-council government; Governor John C. Fremont signed the bill on February 25, 1881, officially incorporating Phoenix as a city.",
-                "Derive hop 3 answer from node 6: Node 6 depends on hop 2 and asks for the incorporation year of Maricopa County's county-seat city, giving the final answer. Hop answer: 1881."
+                "Node 7: In the CACFP child centers dataset for ProgramYear 2018-2019, total EnrollmentQty was Cameron 7,620,183 and Hidalgo 1,661,128.",
+                "Node 8: In the CACFP child centers dataset for ProgramYear 2019-2020, total EnrollmentQty was Cameron 1,076,746 and Hidalgo 1,477,805.",
+                "Derive hop 3 answer using nodes 7, 8: Nodes 7-8 give EnrollmentQty totals for 2018-2019 and 2019-2020 for Hidalgo and Cameron; computing each county's two-year average and taking the smaller value gives the final numeric answer. Hop answer: 1569466.5."
             ],
-            "answer": "1881"
+            "answer": "1569466.5"
         }
     ],
     "datasets_used": [
-        "wikipedia/Mountain_states/content.txt",
-        "wikipedia/Mexico–United_States_border/content.txt",
-        "wikipedia/Four_Corners/content.txt",
-        "wikipedia/Phoenix,_Arizona/content.txt",
-        "datagov/fy-2020-pension-recipients-by-state/files/rows.txt",
-        "datagov/fy-2020-pension-recipients-by-state/signed-metadata.txt",
-        "datagov/fy-2023-disability-compensation-recipients-by-county/files/rows.txt",
-        "datagov/fy-2023-disability-compensation-recipients-by-county/signed-metadata.txt"
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/files/rows.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/signed-metadata.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2016/files/u7tr-bbu3.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/files/rows.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/signed-metadata.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2017/files/sjdu-n9ry.publisher-view.json",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/files/rows.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/signed-metadata.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2018/files/rw2u-mey4.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/files/rows.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/signed-metadata.txt",
+        "datagov/summer-meal-programs-seamless-summer-option-sso-meal-count-information-program-period-2019/files/ckuq-8u2b.publisher-view.json",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/m3iw-uy6q.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/rows.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2020/files/ymex-tquc.publisher-view.json",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/rows.txt",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2018/files/2a57-dx4w.publisher-view.json",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/rows.txt",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/signed-metadata.txt",
+        "datagov/child-and-adult-care-food-program-cacfp-child-centers-meal-reimbursement-program-year-2019/files/wjcz-ucbn.txt"
     ]
 }

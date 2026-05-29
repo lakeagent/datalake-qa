@@ -1,199 +1,137 @@
 {
-    "question": "In Chicago elementary schools that are public school, find which school (1) received the top performance rating in 2011-12, (2) showed above-average growth in the 2012-13, and (3) classified as moderately organized under the My Voice, My School measure, and (4) showed above-average or far-above-average student growth in 2017-2018, based on progress report cards. This school is also located in a community area with a per capita income above $50K. In what year was the MLB team founded that plays in the stadium located within that same community area? Please return the year only. Your response should be in the format [Answer].",
-    "answer": "1876",
+    "question": "Using school district office records for Mountain View in Santa Clara County, determine the two-digit state FIPS code. In that state, find the counties that rank in the top three for public schools, private schools, and school district offices; among their intersection, select the county with the most postsecondary institutions. For that county, compute the total number of public schools, private schools, district offices, and postsecondary institutions. Only report the integer total. Your response should be in the format [Answer].",
+    "answer": "3619",
     "nodes": {
         "1": {
-            "source": "datagov/chicago-public-schools-progress-report-cards-2011-2012/files/rows.txt",
-            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/chicago-public-schools-progress-report-cards-2011-2012/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmask = (\n    (df[\"Elementary, Middle, or High School\"] == \"ES\")\n    & (df[\"CPS Performance Policy Level\"] == \"Level 1\")\n)\n\nanswer = dict(\n    zip(\n        df.loc[mask, \"Name of School\"],\n        df.loc[mask, \"School ID\"].astype(\"Int64\").astype(str)\n    )\n)\nprint(answer)",
-            "subquestion": "Which CPS public elementary schools in the 2011-2012 progress report cards had CPS Performance Policy Level \"Level 1\"?",
-            "answer": {
-                "Eliza Chappell Elementary School": "609852",
-                "Lenart Elementary Regional Gifted Center": "610298",
-                "Abraham Lincoln Elementary School": "610038",
-                "Christopher Columbus Elementary School": "609863",
-                "Frank W Gunsaulus Elementary Scholastic Academy": "609958",
-                "Durkin Park Elementary School": "610352",
-                "Edison Park Elementary School": "610523",
-                "Pilsen Elementary Community Academy": "610013",
-                "John Calhoun North Elementary School": "610243",
-                "Alexander Graham Bell Elementary School": "609799"
-            },
-            "limit": 10
+            "source": "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(io.BytesIO(obj[\"Body\"].read()), encoding=\"utf-8\"))\ndf = pd.DataFrame([feature[\"properties\"] for feature in data[\"features\"]])\nanswer = df.loc[(df[\"CITY\"] == \"Mountain View\") & (df[\"NMCNTY\"] == \"Santa Clara County\"), \"STFIP\"].drop_duplicates().iloc[0]\n",
+            "subquestion": "In the school district office listings, entries with CITY equal to Mountain View and NMCNTY equal to Santa Clara County share what two-digit state FIPS code (STFIP)?",
+            "answer": "06"
         },
         "2": {
-            "source": "datagov/chicago-public-schools-elementary-school-progress-report-card-2012-2013/files/rows.txt",
-            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/chicago-public-schools-elementary-school-progress-report-card-2012-2013/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmask = df[\"Growth Overall Level\"] == \"Above Average\"\n\nanswer = dict(\n    zip(\n        df.loc[mask, \"School Short Name\"],\n        df.loc[mask, \"School ID\"].astype(\"Int64\").astype(str)\n    )\n)\nprint(answer)",
-            "subquestion": "Which schools in the 2012-2013 CPS elementary progress report card had Growth Overall Level \"Above Average\"?",
-            "answer": {
-                "Clissold": "609861",
-                "Greene": "609952",
-                "Thorp, O": "610201",
-                "Nash": "610092",
-                "Addams": "609772",
-                "Dixon": "609887",
-                "Mays": "610290",
-                "Irving": "610121",
-                "Armstrong, G": "609779",
-                "Lasalle Ii": "610520"
-            },
-            "limit": 10
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/public-school-locations-current-23297/files/data-oyCYxF.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(io.BytesIO(obj[\"Body\"].read()), encoding=\"utf-8\"))\ndf = pd.DataFrame([feature[\"properties\"] for feature in data[\"features\"]])\ncounts = (\n    df[df[\"STFIP\"] == \"06\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .sort_values(ascending=False)\n    .head(3)\n    .index.tolist()\n)\nanswer = \"; \".join(counts)\n",
+            "subquestion": "For STFIP equal to <node 1 answer>, which 3 county names have the most public schools? Return the county names separated by;.",
+            "answer": "Los Angeles County; San Diego County; Orange County"
         },
         "3": {
-            "source": "datagov/chicago-public-schools-elementary-school-progress-report-2013-2014/files/rows.txt",
-            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/chicago-public-schools-elementary-school-progress-report-2013-2014/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmask = df[\"My Voice, My School Overall Rating\"] == \"MODERATELY ORGANIZED\"\n\nanswer = dict(\n    zip(\n        df.loc[mask, \"Name of School\"],\n        df.loc[mask, \"School ID\"].astype(\"Int64\").astype(str)\n    )\n)\nprint(answer)",
-            "subquestion": "Which schools in the 2013-2014 CPS progress report source had My Voice, My School Overall Rating \"MODERATELY ORGANIZED\"?",
-            "answer": {
-                "STEM Magnet Academy": "610548",
-                "Edgar Allan Poe Elementary Classical School": "610132",
-                "Mildred I Lavizzo Elementary School": "610208",
-                "UNO Charter - Sandra Cisneros": "400101",
-                "Arthur R Ashe Elementary School": "610268",
-                "Lyman A Budlong Elementary School": "609817",
-                "Federico Garcia Lorca Elementary School": "610541",
-                "Frederic Chopin Elementary School": "609854",
-                "Jacob Beidler Elementary School": "609797",
-                "Amos Alonzo Stagg Elementary School": "610339"
-            },
-            "limit": 10
+            "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(io.BytesIO(obj[\"Body\"].read()), encoding=\"utf-8\"))\ndf = pd.DataFrame([feature[\"properties\"] for feature in data[\"features\"]])\ncounts = (\n    df[df[\"STFIP\"] == \"06\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .sort_values(ascending=False)\n    .head(3)\n    .index.tolist()\n)\nanswer = \"; \".join(counts)\n",
+            "subquestion": "For STFIP equal to <node 1 answer>, which 3 county names have the most private schools? Return the county names separated by;.",
+            "answer": "Los Angeles County; Orange County; San Diego County"
         },
         "4": {
-            "source": "datagov/chicago-public-schools-school-progress-reports-sy1718/files/rows.txt",
-            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/chicago-public-schools-school-progress-reports-sy1718/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nmask = df[\"Student_Growth_Rating\"].isin([\"ABOVE AVERAGE\", \"FAR ABOVE AVERAGE\"])\n\nanswer = dict(\n    zip(\n        df.loc[mask, \"Short_Name\"],\n        df.loc[mask, \"School_ID\"].astype(\"Int64\").astype(str)\n    )\n)\nprint(answer)",
-            "subquestion": "Which schools showed above-average or far-above-average student growth in 2017-18?",
-            "answer": {
-                "BRUNSON": "609830",
-                "KELLER": "610084",
-                "LAVIZZO": "610208",
-                "DIRKSEN": "609874",
-                "ASHE": "610268",
-                "CALMECA": "610353",
-                "MURRAY": "610090",
-                "CLINTON": "609859",
-                "CURTIS": "609900",
-                "NIGHTINGALE": "610096"
-            },
-            "limit": 10
+            "source": "datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(io.BytesIO(obj[\"Body\"].read()), encoding=\"utf-8\"))\ndf = pd.DataFrame([feature[\"properties\"] for feature in data[\"features\"]])\ncounts = (\n    df[df[\"STFIP\"] == \"06\"]\n    .groupby(\"NMCNTY\")\n    .size()\n    .sort_values(ascending=False)\n    .head(3)\n    .index.tolist()\n)\nanswer = \"; \".join(counts)\n",
+            "subquestion": "For STFIP equal to <node 1 answer>, which 3 county names have the most school district offices? Return the county names separated by;.",
+            "answer": "Los Angeles County; San Diego County; San Bernardino County"
         },
         "5": {
-            "source": "datagov/chicago-public-schools-school-locations-sy1516/files/rows.txt",
-            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/chicago-public-schools-school-locations-sy1516/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\nschool_ids = [609857, 609974, 610132, 610145]\nmask = df[\"School_ID\"].isin(school_ids)\n\nanswer = dict(\n    zip(\n        df.loc[mask, \"Short_Name\"],\n        df.loc[mask, \"COMMAREA\"]\n    )\n)\nprint(answer)",
-            "subquestion": "In which community areas are the schools from <hop 1 answer> located, according to CPS School Locations SY2015-16?",
-            "answer": {
-                "CLEVELAND": "IRVING PARK",
-                "HAWTHORNE": "LAKE VIEW",
-                "POE": "PULLMAN",
-                "REINBERG": "PORTAGE PARK"
-            }
+            "source": "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(io.BytesIO(obj[\"Body\"].read()), encoding=\"utf-8\"))\ndf = pd.DataFrame([feature[\"properties\"] for feature in data[\"features\"]])\ncandidates = [county.strip() for county in \"Los Angeles County; San Diego County\".split(\"; \")]\nanswer = (\n    df[(df[\"STFIP\"] == \"06\") & (df[\"NMCNTY\"].isin(candidates))]\n    .groupby(\"NMCNTY\")\n    .size()\n    .sort_values(ascending=False)\n    .index[0]\n)\n",
+            "subquestion": "Among <hop 2 answer>, which single county has the most postsecondary institutions in STFIP equal to <node 1 answer>? Answer with the county name including the word County.",
+            "answer": "Los Angeles County"
         },
         "6": {
-            "source": "datagov/census-data-selected-socioeconomic-indicators-in-chicago-2008-2012/files/rows.txt",
-            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/census-data-selected-socioeconomic-indicators-in-chicago-2008-2012/files/rows.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\n\ncommunity_areas = [\"Irving Park\", \"Lake View\", \"Pullman\", \"Portage Park\"]\nmask = (\n    df[\"COMMUNITY AREA NAME\"].isin(community_areas)\n    & (df[\"PER CAPITA INCOME \"] > 50000)\n)\n\nanswer = dict(\n    zip(\n        df.loc[mask, \"COMMUNITY AREA NAME\"],\n        df.loc[mask, \"PER CAPITA INCOME \"].map(lambda x: f\"${x:,.0f}\")\n    )\n)\nprint(answer)",
-            "subquestion": "Among the community areas from <node_5 answer>, which have per capita income above $50,000 in the 2008-2012 Chicago census dataset?",
-            "answer": {
-                "Lake View": "$60,058"
-            }
+            "source": "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/public-school-locations-current-23297/files/data-oyCYxF.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(io.BytesIO(obj[\"Body\"].read()), encoding=\"utf-8\"))\ndf = pd.DataFrame([feature[\"properties\"] for feature in data[\"features\"]])\nanswer = df[(df[\"STFIP\"] == \"06\") & (df[\"NMCNTY\"] == \"Los Angeles County\")].shape[0]\n",
+            "subquestion": "How many public schools have NMCNTY equal to <hop 3 answer> and STFIP equal to <node 1 answer>?",
+            "answer": 2249
         },
         "7": {
-            "source": "wikipedia/Wrigley_Field/content.txt",
-            "fact": "Wrigley Field () is a ballpark on the North Side of Chicago, Illinois, United States. It is the home ballpark of Major League Baseball's Chicago Cubs, one of the city's two MLB franchises. It first opened in 1914 as Weeghman Park for Charles Weeghman's Chicago Whales of the Federal League, which folded after the 1915 baseball season. The Cubs played their first home game at the park on April 20, 1916. Chewing gum magnate William Wrigley Jr. of the Wrigley Company acquired the Cubs in 1921. It was named Cubs Park from 1920 to 1926, before changing its name to Wrigley Field in 1927. The stadium currently seats 41,649 people.\n\nIn the North Side community area of Lakeview in the Wrigleyville neighborhood, Wrigley Field",
-            "subquestion": "Which MLB team plays at the stadium located in <hop 3 answer>?",
-            "answer": "Chicago Cubs"
+            "source": "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(io.BytesIO(obj[\"Body\"].read()), encoding=\"utf-8\"))\ndf = pd.DataFrame([feature[\"properties\"] for feature in data[\"features\"]])\nanswer = df[(df[\"STFIP\"] == \"06\") & (df[\"NMCNTY\"] == \"Los Angeles County\")].shape[0]\n",
+            "subquestion": "How many private schools have NMCNTY equal to <hop 3 answer> and STFIP equal to <node 1 answer>?",
+            "answer": 745
         },
         "8": {
-            "source": "wikipedia/Chicago_Cubs/content.txt",
-            "fact": "Category:1876 establishments in Illinois\nCategory:Baseball teams established in 1876",
-            "subquestion": "In what year was <hop 3 answer> established?",
-            "answer": "1876"
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(io.BytesIO(obj[\"Body\"].read()), encoding=\"utf-8\"))\ndf = pd.DataFrame([feature[\"properties\"] for feature in data[\"features\"]])\nanswer = df[(df[\"STFIP\"] == \"06\") & (df[\"NMCNTY\"] == \"Los Angeles County\")].shape[0]\n",
+            "subquestion": "How many school district offices have NMCNTY equal to <hop 3 answer> and STFIP equal to <node 1 answer>?",
+            "answer": 419
+        },
+        "9": {
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import io\nimport json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = 'datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndata = json.load(io.TextIOWrapper(io.BytesIO(obj[\"Body\"].read()), encoding=\"utf-8\"))\ndf = pd.DataFrame([feature[\"properties\"] for feature in data[\"features\"]])\nanswer = df[(df[\"STFIP\"] == \"06\") & (df[\"NMCNTY\"] == \"Los Angeles County\")].shape[0]\n",
+            "subquestion": "How many postsecondary institutions have NMCNTY equal to <hop 3 answer> and STFIP equal to <node 1 answer>?",
+            "answer": 206
         }
     },
     "datasets_used": [
-        "wikipedia/Wrigley_Field/content.txt",
-        "wikipedia/Chicago_Cubs/content.txt",
-        "datagov/chicago-public-schools-progress-report-cards-2011-2012/files/rows.txt",
-        "datagov/chicago-public-schools-progress-report-cards-2011-2012/signed-metadata.txt",
-        "datagov/chicago-public-schools-progress-report-cards-2011-2012/files/9xs2-f89t.publisher-view.json",
-        "datagov/chicago-public-schools-elementary-school-progress-report-card-2012-2013/files/rows.txt",
-        "datagov/chicago-public-schools-elementary-school-progress-report-card-2012-2013/signed-metadata.txt",
-        "datagov/chicago-public-schools-elementary-school-progress-report-card-2012-2013/files/b5gj-d4r4.publisher-view.json",
-        "datagov/chicago-public-schools-elementary-school-progress-report-2013-2014/files/rows.txt",
-        "datagov/chicago-public-schools-elementary-school-progress-report-2013-2014/signed-metadata.txt",
-        "datagov/chicago-public-schools-elementary-school-progress-report-2013-2014/files/tj8h-mnuv.publisher-view.json",
-        "datagov/chicago-public-schools-school-progress-reports-sy1718/files/rows.txt",
-        "datagov/chicago-public-schools-school-progress-reports-sy1718/signed-metadata.txt",
-        "datagov/chicago-public-schools-school-locations-sy1516/files/rows.txt",
-        "datagov/chicago-public-schools-school-locations-sy1516/signed-metadata.txt",
-        "datagov/census-data-selected-socioeconomic-indicators-in-chicago-2008-2012/files/rows.txt",
-        "datagov/census-data-selected-socioeconomic-indicators-in-chicago-2008-2012/signed-metadata.txt",
-        "datagov/census-data-selected-socioeconomic-indicators-in-chicago-2008-2012/files/kn9c-c2s2.publisher-view.json"
+        "datagov/school-district-office-locations-current-d848f/files/nces::school-district-office-locations-current-1.txt",
+        "datagov/school-district-office-locations-current-d848f/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-d848f/files/0.arcgis-layer.json",
+        "datagov/public-school-locations-current-23297/files/data-oyCYxF.txt",
+        "datagov/public-school-locations-current-23297/signed-metadata.txt",
+        "datagov/public-school-locations-current-23297/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-current-f7d96/files/data-FGgJBu.txt",
+        "datagov/private-school-locations-current-f7d96/signed-metadata.txt",
+        "datagov/private-school-locations-current-f7d96/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2022-23/files/data-8V0eVK.txt",
+        "datagov/school-district-office-locations-2022-23/signed-metadata.txt",
+        "datagov/school-district-office-locations-2022-23/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+        "datagov/postsecondary-school-locations-2022-23/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2022-23/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt"
     ],
     "reasoning_hops": [
         {
             "hop": 1,
             "node_ids": [
-                1,
+                1
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `CITY` equals `Mountain View` and `NMCNTY` equals `Santa Clara County`, then extract the shared `STFIP` value."
+            ],
+            "answer": "06"
+        },
+        {
+            "hop": 2,
+            "node_ids": [
                 2,
                 3,
                 4
             ],
             "reasoning": [
-                "Node 1: Filter rows where `Elementary, Middle, or High School` equals `ES` and `CPS Performance Policy Level` equals `Level 1`, then keep `Name of School` -> `School ID`.",
-                "Node 2: Filter rows where `Growth Overall Level` equals `Above Average`, then keep `School Short Name` -> `School ID`.",
-                "Node 3: Filter rows where `My Voice, My School Overall Rating` equals `MODERATELY ORGANIZED`, then keep `Name of School` -> `School ID`.",
-                "Node 4: Filter rows where `Student_Growth_Rating` is in {`ABOVE AVERAGE`, `FAR ABOVE AVERAGE`}, then keep `Short_Name` -> `School_ID`.",
-                "Hop result: semantically intersect the school-ID sets from nodes 1-4 = {Grover Cleveland Elementary School: 609857, Hawthorne Elementary Scholastic Academy: 609974, Edgar Allan Poe Elementary Classical School: 610132, Peter A Reinberg Elementary School: 610145}."
+                "Node 2: Filter rows where `STFIP` equals <hop 1 answer>, group by `NMCNTY`, count public-school rows, sort descending, and keep the top 3 counties.",
+                "Node 3: Filter rows where `STFIP` equals <hop 1 answer>, group by `NMCNTY`, count private-school rows, sort descending, and keep the top 3 counties.",
+                "Node 4: Filter rows where `STFIP` equals <hop 1 answer>, group by `NMCNTY`, count school-district-office rows, sort descending, and keep the top 3 counties.",
+                "Hop result: semantic intersection of <node 2 answer>, <node 3 answer>, and <node 4 answer> = Los Angeles County; San Diego County."
             ],
-            "answer": {
-                "Grover Cleveland Elementary School": "609857",
-                "Hawthorne Elementary Scholastic Academy": "609974",
-                "Edgar Allan Poe Elementary Classical School": "610132",
-                "Peter A Reinberg Elementary School": "610145"
-            }
-        },
-        {
-            "hop": 2,
-            "node_ids": [
-                5
-            ],
-            "reasoning": [
-                "Node 5: Filter rows where `School_ID` is one of the school IDs from <hop 1 answer>, then keep `Short_Name` -> `COMMAREA`."
-            ],
-            "answer": {
-                "CLEVELAND": "IRVING PARK",
-                "HAWTHORNE": "LAKE VIEW",
-                "POE": "PULLMAN",
-                "REINBERG": "PORTAGE PARK"
-            }
+            "answer": "Los Angeles County; San Diego County"
         },
         {
             "hop": 3,
             "node_ids": [
-                6
+                5
             ],
             "reasoning": [
-                "Node 6: Among the community areas from <hop 2 answer>, filter rows where `PER CAPITA INCOME ` is greater than 50000, then keep `COMMUNITY AREA NAME` -> formatted `PER CAPITA INCOME `.",
-                "Hop result: only `Lake View` qualifies, so the corresponding school from hop 1 is Hawthorne Elementary Scholastic Academy."
+                "Node 5: Filter rows where `STFIP` equals <hop 1 answer> and `NMCNTY` is in <hop 2 answer>, group by `NMCNTY`, count postsecondary-institution rows, and select the county with the highest count."
             ],
-            "answer": "Lake View"
+            "answer": "Los Angeles County"
         },
         {
             "hop": 4,
             "node_ids": [
-                7
+                6,
+                7,
+                8,
+                9
             ],
             "reasoning": [
-                "Node 7: Wrigley Field is in the North Side community area of Lakeview and is the home ballpark of Major League Baseball's Chicago Cubs."
+                "Node 6: Count rows where `STFIP` equals <hop 1 answer> and `NMCNTY` equals <hop 3 answer> in the public-school table.",
+                "Node 7: Count rows where `STFIP` equals <hop 1 answer> and `NMCNTY` equals <hop 3 answer> in the private-school table.",
+                "Node 8: Count rows where `STFIP` equals <hop 1 answer> and `NMCNTY` equals <hop 3 answer> in the school-district-office table.",
+                "Node 9: Count rows where `STFIP` equals <hop 1 answer> and `NMCNTY` equals <hop 3 answer> in the postsecondary-school table.",
+                "Hop result: 2249 + 745 + 419 + 206 = 3619."
             ],
-            "answer": "Chicago Cubs"
-        },
-        {
-            "hop": 5,
-            "node_ids": [
-                8
-            ],
-            "reasoning": [
-                "Node 8: `Category:Baseball teams established in 1876` supports the establishment year of <hop 4 answer>."
-            ],
-            "answer": "1876"
+            "answer": "3619"
         }
     ]
 }

@@ -1,32 +1,41 @@
 {
-    "question": "Using the 2010 USGS survey of Assateague Island National Seashore, identify the NASA facility where the survey system was developed. Then find which county that facility is located in. Finally, report the largest town in that county. Only report the town. Your response should be in the format [Answer].",
-    "answer": "Chincoteague",
+    "question": "For Michigan's capital city, identify its CBSA code from postsecondary institution records, then count the school district administrative offices in that city and CBSA in school year 2022-2023. What was the name of the renovation proposal at the minor-league baseball stadium in that city that included that many million dollars in both public bonds and private investments? Your response should be in the format [Answer].",
+    "answer": "The Outfield",
     "nodes": {
         "1": {
-            "source": "datagov/eaarl-coastal-topography-assateague-island-national-seashore-maryland-and-virginia-2010/files/USGS.b40f54c8-02fd-4152-8883-b7131059f8af.txt",
-            "fact": "Elevation measurements were collected over Assateague Island National Seashore on March 19 and 24, 2010, using the Experimental Advanced Airborne Research Lidar (EAARL), a pulsed laser ranging system mounted onboard an aircraft. The EAARL, developed originally by the National Aeronautics and Space Administration (NASA) at Wallops Flight Facility in Virginia, measures ground elevation with a vertical resolution of +/-15 centimeters.",
-            "subquestion": "Which NASA facility developed the system used to survey Assateague Island National Seashore in the 2010 USGS survey?",
-            "answer": "Wallops Flight Facility"
+            "source": "wikipedia/Michigan/content.txt",
+            "fact": "The state capital of Michigan is Lansing.",
+            "subquestion": "What is the capital city of Michigan?",
+            "answer": "Lansing"
         },
         "2": {
-            "source": "wikipedia/Wallops_Flight_Facility/content.txt",
-            "fact": "Wallops Flight Facility is a NASA rocket launch site on Wallops Island on the Eastern Shore of Virginia, located in Accomack County.",
-            "subquestion": "In which Virginia county is <node_1 answer> located?",
-            "answer": "Accomack County"
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Lansing'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n]\nanswer = filtered[\"CBSA\"].dropna().astype(str).str.strip().iloc[0]\n",
+            "subquestion": "In school year 2022-2023, among postsecondary institutions located in the city of <node_1 answer>, what is the CBSA code?",
+            "answer": "29620"
         },
         "3": {
-            "source": "wikipedia/Accomack_County,_Virginia/content.txt",
-            "fact": "Accomack County is a county on the Eastern Shore of Virginia. The town of Accomac serves as the county seat, while Chincoteague is the largest town in the county.",
-            "subquestion": "What is the largest town in <node_2 answer>?",
-            "answer": "Chincoteague"
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nsource = \"datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nobj = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj[\"Body\"].read().decode(\"utf-8\", errors=\"replace\"))\n\ndf = pd.DataFrame([feat.get(\"properties\", {}) for feat in geo.get(\"features\", [])])\nnode_1_answer = 'Lansing'\nnode_2_answer = '29620'\n\n\ncity_value = str(node_1_answer).strip().lower()\nfiltered = df[\n    df[\"CITY\"].astype(str).str.strip().str.lower().eq(city_value)\n    & df[\"SCHOOLYEAR\"].astype(str).str.strip().eq('2022-2023')\n].copy()\nfiltered = filtered[filtered[\"CBSA\"].astype(str).str.strip().eq(str(node_2_answer).strip())]\nanswer = str(int(len(filtered)))\n",
+            "subquestion": "In school year 2022-2023, how many school district offices are located in the city of <node_1 answer> in CBSA <node_2 answer>?",
+            "answer": "11"
+        },
+        "4": {
+            "source": "wikipedia/Jackson_Field_(Lansing)/content.txt",
+            "fact": "On March 12, 2014, a $22 million renovation proposal for the stadium was announced named \"The Outfield.\" It would include $11 million in public bonds for renovation of the actual stadium structure, and $11 million in additional private investments which would include 80 apartments, a year-round bar and grill, and a new scoreboard.",
+            "subquestion": "What was the name of the renovation proposal at the minor-league baseball stadium in <hop 1 answer> that included <hop 3 answer> million dollars in both public bonds and private investments?",
+            "answer": "The Outfield"
         }
     },
     "datasets_used": [
-        "wikipedia/Wallops_Flight_Facility/content.txt",
-        "wikipedia/Accomack_County,_Virginia/content.txt",
-        "datagov/eaarl-coastal-topography-assateague-island-national-seashore-maryland-and-virginia-2010/files/USGS.b40f54c8-02fd-4152-8883-b7131059f8af.txt",
-        "datagov/eaarl-coastal-topography-assateague-island-national-seashore-maryland-and-virginia-2010/signed-metadata.txt",
-        "datagov/eaarl-coastal-topography-assateague-island-national-seashore-maryland-and-virginia-2010/files/metadata.txt"
+        "wikipedia/Michigan/content.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "wikipedia/Jackson_Field_(Lansing)/content.txt"
     ],
     "reasoning_hops": [
         {
@@ -35,10 +44,10 @@
                 1
             ],
             "reasoning": [
-                "Node 1: The 2010 USGS survey text states that the survey used the EAARL system and that EAARL was developed by NASA at Wallops Flight Facility in Virginia.",
-                "Hop result: Wallops Flight Facility."
+                "Node 1: Lansing is the state capital of Michigan.",
+                "Hop result: <node_1 answer>"
             ],
-            "answer": "Wallops Flight Facility"
+            "answer": "Lansing"
         },
         {
             "hop": 2,
@@ -46,10 +55,10 @@
                 2
             ],
             "reasoning": [
-                "Node 2: Wallops Flight Facility is located in Accomack County, Virginia.",
-                "Hop result: Accomack County."
+                "Node 2: Filter rows where `CITY` is <hop 1 answer> and `SCHOOLYEAR` is 2022-2023, then return the first non-null `CBSA` value.",
+                "Hop result: <node_2 answer>"
             ],
-            "answer": "Accomack County"
+            "answer": "29620"
         },
         {
             "hop": 3,
@@ -57,10 +66,21 @@
                 3
             ],
             "reasoning": [
-                "Node 3: Chincoteague is the largest town in Accomack County.",
-                "Hop result: Chincoteague."
+                "Node 3: Filter rows where `CITY` is <hop 1 answer>, `SCHOOLYEAR` is 2022-2023, and `CBSA` is <hop 2 answer>, then count the remaining records.",
+                "Hop result: <node_3 answer>"
             ],
-            "answer": "Chincoteague"
+            "answer": "11"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                4
+            ],
+            "reasoning": [
+                "Node 4: Use <hop 3 answer> as the million-dollar amount in both public bonds and private investment to identify the named renovation proposal at the minor-league baseball stadium in <hop 1 answer>.",
+                "Hop result: <node_4 answer>"
+            ],
+            "answer": "The Outfield"
         }
     ]
 }

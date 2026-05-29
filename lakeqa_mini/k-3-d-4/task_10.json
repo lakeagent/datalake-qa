@@ -1,66 +1,54 @@
 {
-    "question": "Find the New England state had between 200 and 400 veteran pension recipients in both 2020 and 2021, and between 150 and 300 in 2023. What year was its capital city chartered? Only report the year in your answer. Your response should be in the format [Answer].",
-    "answer": "1781",
+    "question": "In New Jersey, find the counties that rank in the top three for public schools, private schools, and school district offices. Among their intersection, select the county with the most postsecondary institutions, and compute (public schools + postsecondary institutions) - (private schools + district offices). Only report the integer result. Your response should be in the format [Answer].",
+    "answer": "132",
     "nodes": {
         "1": {
-            "source": "datagov/fy-2020-pension-recipients-by-state/files/rows.txt",
-            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/fy-2020-pension-recipients-by-state/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nstate = df['State'].astype(str).str.strip()\nrecipients = pd.to_numeric(df['Total: Pension Recipients'], errors='coerce')\nus_states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']\nanswer = sorted(state[state.isin(us_states) & recipients.between(200, 400, inclusive='both')].dropna().drop_duplicates().tolist())",
-            "subquestion": "Which U.S. states had between 200 and 400 VA pension recipients in FY 2020?",
-            "answer": [
-                "Alaska",
-                "Delaware",
-                "North Dakota",
-                "Vermont",
-                "Wyoming"
-            ]
+            "source": "datagov/public-school-locations-2021-22-5a116/files/data.txt",
+            "fact": "import xml.etree.ElementTree as ET\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/public-school-locations-2021-22-5a116/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nraw = s3.get_object(Bucket=bucket, Key=source)[\"Body\"].read()\nroot = ET.fromstring(raw)\nns = {\"k\": \"http://www.opengis.net/kml/2.2\"}\nrows = []\nfor placemark in root.findall('.//k:Placemark', ns):\n    row = {}\n    schema_data = placemark.find('k:ExtendedData/k:SchemaData', ns)\n    if schema_data is not None:\n        for item in schema_data.findall('k:SimpleData', ns):\n            row[item.attrib.get('name')] = item.text\n    if row:\n        rows.append(row)\n\ndf = pd.DataFrame(rows)\nstate = df['STATE'].astype(str).str.strip()\ncounty = df['NMCNTY'].astype(str).str.strip().replace('', pd.NA)\nschool_year = df['SCHOOLYEAR'].astype(str).str.strip()\nfiltered = df[state.eq('NJ') & school_year.eq('2021-2022')].copy()\nfiltered['NMCNTY'] = county.loc[filtered.index]\ncounts = (\n    filtered.dropna(subset=['NMCNTY'])\n    .groupby('NMCNTY', dropna=True)\n    .size()\n    .reset_index(name='count')\n    .sort_values(['count', 'NMCNTY'], ascending=[False, True], kind='mergesort')\n)\nanswer = '; '.join(counts['NMCNTY'].head(3).tolist())",
+            "subquestion": "For STFIP='34', which 3 county names have the most public schools? Return the county names separated by '; '.",
+            "answer": "Bergen County; Essex County; Middlesex County"
         },
         "2": {
-            "source": "datagov/fy-2021-pension-recipients-by-state-1266e/files/rows.txt",
-            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/fy-2021-pension-recipients-by-state-1266e/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nstate = df['State'].astype(str).str.strip()\nrecipients = pd.to_numeric(df['Total: Pension Recipients'], errors='coerce')\nus_states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']\nanswer = sorted(state[state.isin(us_states) & recipients.between(200, 400, inclusive='both')].dropna().drop_duplicates().tolist())",
-            "subquestion": "Which U.S. states had between 200 and 400 VA pension recipients in FY 2021?",
-            "answer": [
-                "Alaska",
-                "Delaware",
-                "North Dakota",
-                "Vermont",
-                "Wyoming"
-            ]
+            "source": "datagov/private-school-locations-2019-20-ee873/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/private-school-locations-2019-20-ee873/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj['Body'].read().decode('utf-8', errors='replace'))\ndf = pd.DataFrame([feature.get('properties', {}) for feature in geo.get('features', [])])\n\nstate = df['STATE'].astype(str).str.strip()\ncounty = df['NMCNTY'].astype(str).str.strip().replace('', pd.NA)\nfiltered = df[state.eq('NJ')].copy()\nfiltered['NMCNTY'] = county.loc[filtered.index]\ncounts = (\n    filtered.dropna(subset=['NMCNTY'])\n    .groupby('NMCNTY', dropna=True)\n    .size()\n    .reset_index(name='count')\n    .sort_values(['count', 'NMCNTY'], ascending=[False, True], kind='mergesort')\n)\nanswer = '; '.join(counts['NMCNTY'].head(3).tolist())",
+            "subquestion": "For STFIP='34', which 3 county names have the most private schools? Return the county names separated by '; '.",
+            "answer": "Bergen County; Middlesex County; Essex County"
         },
         "3": {
-            "source": "datagov/fy-2023-pension-recipients-by-state/files/rows.txt",
-            "fact": "import io\nimport pandas as pd\nimport boto3\nfrom botocore import UNSIGNED\nfrom botocore.client import Config\n\nsource = 'datagov/fy-2023-pension-recipients-by-state/files/rows.txt'\nbucket = 'lakeqa-yc4103-datalake'\nobj = boto3.client('s3', config=Config(signature_version=UNSIGNED)).get_object(Bucket=bucket, Key=source)\ndf = pd.read_csv(io.BytesIO(obj['Body'].read()), low_memory=False)\nstate = df['State'].astype(str).str.strip()\nrecipients = pd.to_numeric(df['Total: Pension Recipients'], errors='coerce')\nus_states = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming']\nanswer = sorted(state[state.isin(us_states) & recipients.between(150, 300, inclusive='both')].dropna().drop_duplicates().tolist())",
-            "subquestion": "Which U.S. states had between 150 and 300 VA pension recipients in FY 2023?",
-            "answer": [
-                "Alaska",
-                "Delaware",
-                "Vermont",
-                "Wyoming"
-            ]
+            "source": "datagov/school-district-office-locations-2021-22-d5dd7/files/data-TEK2ZS.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/school-district-office-locations-2021-22-d5dd7/files/data-TEK2ZS.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj['Body'].read().decode('utf-8', errors='replace'))\ndf = pd.DataFrame([feature.get('properties', {}) for feature in geo.get('features', [])])\n\nstate = df['STATE'].astype(str).str.strip()\ncounty = df['NMCNTY'].astype(str).str.strip().replace('', pd.NA)\nfiltered = df[state.eq('NJ')].copy()\nfiltered['NMCNTY'] = county.loc[filtered.index]\ncounts = (\n    filtered.dropna(subset=['NMCNTY'])\n    .groupby('NMCNTY', dropna=True)\n    .size()\n    .reset_index(name='count')\n    .sort_values(['count', 'NMCNTY'], ascending=[False, True], kind='mergesort')\n)\nanswer = '; '.join(counts['NMCNTY'].head(3).tolist())",
+            "subquestion": "For STFIP='34', which 3 county names have the most school district offices? Return the county names separated by '; '.",
+            "answer": "Bergen County; Monmouth County; Camden County"
         },
         "4": {
-            "source": "wikipedia/New_England/content.txt",
-            "fact": "New England is a region consisting of six states in the Northeastern United States: Connecticut, Maine, Massachusetts, New Hampshire, Rhode Island, and Vermont.",
-            "subquestion": "Which U.S. states are located in New England?",
-            "answer": [
-                "Connecticut",
-                "Maine",
-                "Massachusetts",
-                "New Hampshire",
-                "Rhode Island",
-                "Vermont"
-            ]
+            "source": "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nnode_1_answer = \"Bergen County; Essex County; Middlesex County\"\nnode_2_answer = \"Bergen County; Middlesex County; Essex County\"\nnode_3_answer = \"Bergen County; Monmouth County; Camden County\"\n\ns3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj['Body'].read().decode('utf-8', errors='replace'))\ndf = pd.DataFrame([feature.get('properties', {}) for feature in geo.get('features', [])])\n\ndef parse_counties(value):\n    return {part.strip() for part in str(value).split(';') if part.strip()}\n\ncandidate_counties = parse_counties(node_1_answer) & parse_counties(node_2_answer) & parse_counties(node_3_answer)\nstate = df['STATE'].astype(str).str.strip()\ncounty = df['NMCNTY'].astype(str).str.strip()\nfiltered = df[state.eq('NJ')].copy()\nfiltered['NMCNTY'] = county.loc[filtered.index]\nfiltered = filtered[filtered['NMCNTY'].isin(candidate_counties)]\ncounts = (\n    filtered.groupby('NMCNTY', dropna=True)\n    .size()\n    .reset_index(name='count')\n    .sort_values(['count', 'NMCNTY'], ascending=[False, True], kind='mergesort')\n)\nanswer = str(counts.iloc[0]['NMCNTY']) if not counts.empty else ''",
+            "subquestion": "Let A be the set of counties in <node_1 answer>, B be the set of counties in <node_2 answer>, and C be the set of counties in <node_3 answer>. Consider the intersection of A, B, and C. Among those counties, which single county has the most postsecondary institutions in STFIP='34'? Answer with the county name including the word 'County'.",
+            "answer": "Bergen County"
         },
         "5": {
-            "source": "wikipedia/Vermont/content.txt",
-            "fact": "Vermont is a landlocked state in the New England region. The state's capital of Montpelier is the least populous U.S. state capital. Vermont was admitted to the Union in 1791 as the 14th state.",
-            "subquestion": "What is the capital of <intersection of node_1, node_2, node_3, node_4>?",
-            "answer": "Montpelier"
+            "source": "datagov/public-school-locations-2021-22-5a116/files/data.txt",
+            "fact": "import xml.etree.ElementTree as ET\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/public-school-locations-2021-22-5a116/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nnode_4_answer = 'Bergen County'\ns3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))\nraw = s3.get_object(Bucket=bucket, Key=source)['Body'].read()\nroot = ET.fromstring(raw)\nns = {'k': 'http://www.opengis.net/kml/2.2'}\nrows = []\nfor placemark in root.findall('.//k:Placemark', ns):\n    row = {}\n    schema_data = placemark.find('k:ExtendedData/k:SchemaData', ns)\n    if schema_data is not None:\n        for item in schema_data.findall('k:SimpleData', ns):\n            row[item.attrib.get('name')] = item.text\n    if row:\n        rows.append(row)\n\ndf = pd.DataFrame(rows)\nstate = df['STATE'].astype(str).str.strip()\ncounty = df['NMCNTY'].astype(str).str.strip().str.lower()\nschool_year = df['SCHOOLYEAR'].astype(str).str.strip()\nfiltered = df[state.eq('NJ') & school_year.eq('2021-2022') & county.eq(str(node_4_answer).strip().lower())]\nanswer = str(int(len(filtered)))",
+            "subquestion": "How many public schools have NMCNTY='<node_4 answer>' and STFIP='34'?",
+            "answer": "288"
         },
         "6": {
-            "source": "wikipedia/Montpelier,_Vermont/content.txt",
-            "fact": "Montpelier was originally chartered on August 14, 1781. It was named after Montpellier, a city in the south of France. The first permanent settlement began in May 1787, and Montpelier was selected as state capital in 1805.",
-            "subquestion": "In what year was <node_5 answer> chartered?",
-            "answer": "1781"
+            "source": "datagov/private-school-locations-2019-20-ee873/files/data.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/private-school-locations-2019-20-ee873/files/data.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nnode_4_answer = 'Bergen County'\ns3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj['Body'].read().decode('utf-8', errors='replace'))\ndf = pd.DataFrame([feature.get('properties', {}) for feature in geo.get('features', [])])\n\nstate = df['STATE'].astype(str).str.strip()\ncounty = df['NMCNTY'].astype(str).str.strip().str.lower()\nfiltered = df[state.eq('NJ') & county.eq(str(node_4_answer).strip().lower())]\nanswer = str(int(len(filtered)))",
+            "subquestion": "How many private schools have NMCNTY='<node_4 answer>' and STFIP='34'?",
+            "answer": "91"
+        },
+        "7": {
+            "source": "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nnode_4_answer = 'Bergen County'\ns3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj['Body'].read().decode('utf-8', errors='replace'))\ndf = pd.DataFrame([feature.get('properties', {}) for feature in geo.get('features', [])])\n\nstate = df['STATE'].astype(str).str.strip()\ncounty = df['NMCNTY'].astype(str).str.strip().str.lower()\nfiltered = df[state.eq('NJ') & county.eq(str(node_4_answer).strip().lower())]\nanswer = str(int(len(filtered)))",
+            "subquestion": "How many school district offices have NMCNTY='<node_4 answer>' and STFIP='34'?",
+            "answer": "81"
+        },
+        "8": {
+            "source": "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+            "fact": "import json\nimport pandas as pd\nimport boto3\nfrom botocore.config import Config\nfrom botocore import UNSIGNED\n\nsource = \"datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt\"\nbucket = \"lakeqa-yc4103-datalake\"\nnode_4_answer = 'Bergen County'\ns3 = boto3.client('s3', config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket, Key=source)\ngeo = json.loads(obj['Body'].read().decode('utf-8', errors='replace'))\ndf = pd.DataFrame([feature.get('properties', {}) for feature in geo.get('features', [])])\n\nstate = df['STATE'].astype(str).str.strip()\ncounty = df['NMCNTY'].astype(str).str.strip().str.lower()\nfiltered = df[state.eq('NJ') & county.eq(str(node_4_answer).strip().lower())]\nanswer = str(int(len(filtered)))",
+            "subquestion": "How many postsecondary institutions have NMCNTY='<node_4 answer>' and STFIP='34'?",
+            "answer": "16"
         }
     },
     "reasoning_hops": [
@@ -69,50 +57,63 @@
             "node_ids": [
                 1,
                 2,
-                3,
-                4
+                3
             ],
             "reasoning": [
-                "Node 1: In FY 2020, five U.S. states had between 200 and 400 VA pension recipients: Alaska (278), Delaware (375), North Dakota (400), Vermont (321), and Wyoming (304).",
-                "Node 2: In FY 2021, five U.S. states had between 200 and 400 VA pension recipients: Alaska (249), Delaware (331), North Dakota (367), Vermont (280), and Wyoming (277).",
-                "Node 3: In FY 2023, four U.S. states had between 150 and 300 VA pension recipients: Alaska (182), Delaware (251), Vermont (215), and Wyoming (238).",
-                "Node 4: New England is a region consisting of six states in the Northeastern United States: Connecticut, Maine, Massachusetts, New Hampshire, Rhode Island, and Vermont.",
-                "Derive hop 1 answer using nodes 1, 2, 3, 4: Nodes 1-4 ask for state sets under three pension-range constraints plus the New England constraint; intersecting these sets isolates Vermont. Hop answer: Vermont."
+                "Node 1: For STFIP=34, the 3 counties with the most public schools are: Bergen County (288); Essex County (250); Middlesex County (208). The next county is Monmouth County (186), so the cut is unique.",
+                "Node 2: For STFIP=34, the 3 counties with the most private schools are: Bergen County (91); Middlesex County (59); Essex County (58). The next county is Ocean County (57), so the cut is unique.",
+                "Node 3: For STFIP=34, the 3 counties with the most school district offices are: Bergen County (81); Monmouth County (61); Camden County (50). The next county is Burlington County (44), so the cut is unique.",
+                "Derive hop 1 answer using nodes 1, 2, and 3: produce the three top-county sets (public, private, district offices) for STFIP 34. Hop answer: Candidate county intersection inputs."
             ],
-            "answer": "Vermont"
+            "answer": "Candidate county intersection inputs"
         },
         {
             "hop": 2,
             "node_ids": [
-                5
+                4
             ],
             "reasoning": [
-                "Node 5: Vermont is a landlocked state in the New England region. The state's capital of Montpelier is the least populous U.S. state capital. Vermont was admitted to the Union in 1791 as the 14th state.",
-                "Derive hop 2 answer from node 5: Node 5 depends on hop 1 and asks for the capital city of Vermont. Hop answer: Montpelier."
+                "Node 4: Using the intersection of A, B, and C, the candidate counties are: Bergen County. Postsecondary counts within that set are: Bergen County (16). Bergen County is strictly highest.",
+                "Derive hop 2 answer from node 4: intersect the hop 1 sets and select the county with the most postsecondary institutions. Hop answer: Bergen County."
             ],
-            "answer": "Montpelier"
+            "answer": "Bergen County"
         },
         {
             "hop": 3,
             "node_ids": [
-                6
+                5,
+                6,
+                7,
+                8
             ],
             "reasoning": [
-                "Node 6: Montpelier was originally chartered on August 14, 1781. It was named after Montpellier, a city in the south of France. The first permanent settlement began in May 1787, and Montpelier was selected as state capital in 1805.",
-                "Derive hop 3 answer from node 6: Node 6 depends on hop 2 and asks for Montpelier's charter year, which is the final value requested. Hop answer: 1781."
+                "Node 5: For STFIP=34 and NMCNTY='Bergen County', the public school count is 288.",
+                "Node 6: For STFIP=34 and NMCNTY='Bergen County', the private school count is 91.",
+                "Node 7: For STFIP=34 and NMCNTY='Bergen County', the school district office count is 81.",
+                "Node 8: For STFIP=34 and NMCNTY='Bergen County', the postsecondary institution count is 16.",
+                "Derive hop 3 answer using nodes 5, 6, 7, and 8: compute public minus private minus district-office counts for the selected county. Hop answer: 132."
             ],
-            "answer": "1781"
+            "answer": "132"
         }
     ],
     "datasets_used": [
-        "wikipedia/New_England/content.txt",
-        "wikipedia/Vermont/content.txt",
-        "wikipedia/Montpelier,_Vermont/content.txt",
-        "datagov/fy-2020-pension-recipients-by-state/files/rows.txt",
-        "datagov/fy-2020-pension-recipients-by-state/signed-metadata.txt",
-        "datagov/fy-2021-pension-recipients-by-state-1266e/files/rows.txt",
-        "datagov/fy-2021-pension-recipients-by-state-1266e/signed-metadata.txt",
-        "datagov/fy-2023-pension-recipients-by-state/files/rows.txt",
-        "datagov/fy-2023-pension-recipients-by-state/signed-metadata.txt"
+        "datagov/public-school-locations-2021-22-5a116/files/data.txt",
+        "datagov/public-school-locations-2021-22-5a116/signed-metadata.txt",
+        "datagov/public-school-locations-2021-22-5a116/files/0.arcgis-layer.json",
+        "datagov/private-school-locations-2019-20-ee873/files/data.txt",
+        "datagov/private-school-locations-2019-20-ee873/signed-metadata.txt",
+        "datagov/private-school-locations-2019-20-ee873/files/0.arcgis-layer.json",
+        "datagov/school-district-office-locations-2021-22-d5dd7/files/data-TEK2ZS.txt",
+        "datagov/school-district-office-locations-2021-22-d5dd7/signed-metadata.txt",
+        "datagov/school-district-office-locations-2021-22-d5dd7/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_-3631565628879840217.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-current-5a74c/files/Postsecondary_School_Locations_Current_2759246932691603707.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/data-ghDEVP.txt",
+        "datagov/school-district-office-locations-current-c8f9d/signed-metadata.txt",
+        "datagov/school-district-office-locations-current-c8f9d/files/0.arcgis-layer.json",
+        "datagov/postsecondary-school-locations-2022-23/files/data-sh56Ar.txt",
+        "datagov/postsecondary-school-locations-2022-23/signed-metadata.txt",
+        "datagov/postsecondary-school-locations-2022-23/files/0.arcgis-layer.json"
     ]
 }
