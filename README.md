@@ -1,5 +1,9 @@
 # LakeQA
 
+This repository contains the benchmark tasks and evaluation code for the ICML
+2026 paper [LakeQA: An Exploratory QA Benchmark over a Million-Scale Data
+Lake](https://arxiv.org/abs/2606.10460).
+
 LakeQA contains benchmark tasks under `lakeqa_mini/` and `lakeqa_full/`; and evaluation code under
 `evaluation/`. Each task JSON lists the data files it needs in the
 `datasets_used` field.
@@ -18,6 +22,19 @@ The benchmark is designed to stress both **search** and **reasoning**. A task ma
 metadata files, and reference documents. This makes success depend not only on reasoning after retrieval, but also on whether the agent can find and inspect the correct evidence in the first place.
 
 ![LakeQA emphasizes both search intensity and reasoning intensity.](figures/lakeqa_fig1.png)
+
+## Citation
+
+If you use LakeQA, please cite the ICML 2026 paper:
+
+```bibtex
+@inproceedings{wang2026lakeqa,
+  title     = {LakeQA: An Exploratory QA Benchmark over a Million-Scale Data Lake},
+  author    = {Haonan Wang and Jiaxiang Liu and Yurong Liu and Austin Senna Wijaya and Tianle Zhou and Eden Wu and Yijia Chen and Wanting You and Reya Vir and Daniela Pinto Veizaga and Grace Fan and Yusen Zhang and Juliana Freire and Eugene Wu},
+  booktitle = {Proceedings of the International Conference on Machine Learning (ICML)},
+  year      = {2026}
+}
+```
 
 ## Running Evaluation
 
