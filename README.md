@@ -124,3 +124,7 @@ To use another task, change only `TASK`, for example:
 ```bash
 TASK=lakeqa_mini/k-3-d-1/task_1.json
 ```
+
+## License
+
+LakeQA is released under the [MIT License](LICENSE).
