@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000986",
     "question": "Among the five Texas counties with the highest average annual number of state prison releases from 2019 to 2022, identify the one with the most consistent annual releases based on coefficient of variation. Its county seat has an NBA champion team based in it. Now, find the county that hosts the team defeated by this champion in its first NBA championship. In 2020, what was the absolute difference between the number of firearm crimes and hate crimes reported in that county? Only report that number in your answer. Your response should be in the format [Answer].",
     "answer": "816",
     "nodes": {

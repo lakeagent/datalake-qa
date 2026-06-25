@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000175",
     "question": "In the 2014-15 school year of Washington, which top 5 schools had the largest low-income students amount that are expected to take Biology graduation test, which top 5 schools had the most low-income students who are left schools after 7 years, and which top 5 schools had the most low-income students enrolled? For the school districts represented by the schools that appear in at least two of those three answers, what is the difference between the largest and smallest listed student enrollments? Please return only the number in the format [Answer].",
     "answer": 3245,
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000118",
     "question": "First identify the state that appears in both of these data.gov-derived groups: In 2017, which states had at least 7 Medicaid managed care arrangements, with at least 4 of them requiring enrollee experience survey results as part of quality oversight; and For the 2021 measures about mental health and substance use care, which states were on average at least 4 points better than the middle reported value once each measure is interpreted so better performance always produces a positive difference. After identifying that state, what drink is listed as the state drink of that state? Your response should be in the format [Answer].",
     "answer": "Coffee Milk",
     "nodes": {

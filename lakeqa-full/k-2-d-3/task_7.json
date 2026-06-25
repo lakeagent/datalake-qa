@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000170",
   "question": "In New Jersey, which county ranks in the top three for public schools, private schools, and school district offices? For that county, how much higher was its median household income than New Jersey's in the 2017-2021 American Community Survey? Your response should be in the format [Answer].",
   "answer": 19794,
   "nodes": {

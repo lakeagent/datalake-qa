@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000227",
     "question": "Can you find the Montana county that has between 2500 and 2700 veterans receiving disability benefits in 2023 and borders Canada. For counties adjacent to this county, which one has between 200 and 240 veterans receiving disability benefits in that same year and a license plate code between 27 and 35. Finally, report the county seat. Your response should be in the format [Answer].",
     "answer": "Deer Lodge",
     "nodes": {

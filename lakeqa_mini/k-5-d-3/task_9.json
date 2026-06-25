@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000812",
     "question": "Identify the Chicago library branch that ranked in the top five for total number of items checked out over the year and total visitors, and in the top three for total public-computer logins, every year from 2019 to 2021. What community area number corresponds to the neighborhood where this branch is located? Return the number only. Your response should be in the format [Answer].",
     "answer": "4",
     "nodes": {

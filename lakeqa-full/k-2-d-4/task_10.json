@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000195",
   "question": "In 2023, which U.S. state had the 5th highest diesel fuel tax rate? Among the U.S. states bordering that state, how many are in New England? Please return only the number in the format [Answer].",
   "answer": 2,
   "nodes": {

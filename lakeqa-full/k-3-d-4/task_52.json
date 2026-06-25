@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000428",
   "question": "Can you find the NYC elementary schools that appear in the top 5 by the schools' learning environment in at least three years from 2006-2010 and are located in Bedford? How many children of the person that school was named after attended the ceremony honoring that person at the school? Please return only the number in the format [Answer].",
   "answer": 7,
   "nodes": {

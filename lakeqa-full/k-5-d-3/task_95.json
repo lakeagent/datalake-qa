@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000893",
   "question": "Harry Mitchell served as mayor of a city. For that city, determine the year with the highest dissatisfied rate for the city's website, the year with the 6th highest yearly dissatisfied rate for the security in parks, and the year with the third highest dissatisfied rate for the city's online services such as registration or payment. Including all those years in total, identify the U.S. state with the third highest total healthcare service utilization rate per 1,000 beneficiaries excluding usage in December in these years. Then, in 2022 Q1, find the U.S. state ranked immediately below that state on the age-adjusted cancer mortality rate for the 3-month period. How many more counties does the latter state have than the former state? Please return only the number in the format [Answer].",
   "answer": 30,
   "nodes": {

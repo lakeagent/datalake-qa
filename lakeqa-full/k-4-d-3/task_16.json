@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000564",
     "question": "In 2017, which state had the 5th lowest death rate for chronic lower respiratory diseases? In that state, which five fiscal years received the largest total money to private colleges based on their graduation numbers? Among those years, which three fiscal years had the largest total planned budget for capital building projects? In the first, second, and third years of those three years, which agencies had 5th through 7th, 3rd through 5th, and 4th through 6th largest budget for new upgrades and system improvements in New York State? Finally, across all distinct agencies appearing in those three answers, what was the average budget in 2020-2021 for new upgrades and system improvements? Please return only the number in the format [Answer].",
     "answer": "39478000",
     "nodes": {

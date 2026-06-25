@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000336",
     "question": "Which three years had the most Texas award recipients seriously injured in the line of duty with last name Phipps? For each of those years A, B, and C, define a state's most important drug as the drug with the highest reimbursed amount per unit among drugs with at least 1,000 prescriptions, and define dependence as the share of all reimbursed amount tied to that most important drug. Which states ranked 6th through 8th in A, 36th through 38th in B, and 21st through 23rd in C? For the state appearing in all three answers, how many feet longer is its capitol building's north-to-south length than its east-to-west length? Please return only the number in the format [Answer].",
     "answer": 117,
     "nodes": {

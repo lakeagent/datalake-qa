@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000920",
     "question": "Find the state where Khan Lab School is located in. In that state, find the counties that rank in the top three for public schools, private schools, and school district offices; among their intersection, what is the smallest of the postsecondary institution counts? Only report the number. Your response should be in the format [Answer].",
     "answer": "71",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000032",
     "question": "I'm researching a state where the 2019 child protective services response rate was at least 70 per 1,000 children and grew by at least 20% from 2015 to 2019, and also where the average bundled-service residential electricity rate was at least $0.20 per kWh with an average residential-to-commercial rate gap of at least $0.03 per kWh in 2018. Which state is it? Respond with [Answer].",
     "answer": "Alaska",
     "nodes": {

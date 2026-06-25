@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000844",
     "question": "In 2023, which U.S. state had the 5th highest diesel fuel tax rate? Then, in 2020-2021, 2021-2022, and 2022-2023, which districts have the 3th to 7th highest attendance rate for high needs students? Define a district as supportive if it has a high attendance rate for disabled students and a high overall attendance rate. Among the districts that appear in all three answers, which district is most supportive under such definition in the school year of 2021-2022? Then, rank districts in the whole states by the number of public schools, and for the district that ranks 5 more places than that most supportive district, which town has the most schools offering grade 12? Finally, in that town, what was the population in the 2020 census? Please return only the number in the format [Answer].",
     "answer": "16426",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000736",
   "question": "Among drugs with 5 to 10 million total annual Medicaid prescriptions across U.S. states in every year from 2018 through 2022, identify the drug with the fourth-highest average prescription count across those five years. In the year that drug was approved for medical use in the United States, which cause of death ranked 3rd by age-adjusted death rate? What is the most significant risk factor for that cause of death? Your response should be in the format [Answer].",
   "answer": "High blood pressure",
   "nodes": {

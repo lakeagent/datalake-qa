@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000937",
   "question": "In Chicago public elementary schools, find the schools that (1) received the top performance rating in 2011-12, (2) showed above-average growth in 2012-13, (3) were classified as moderately organized under the My Voice, My School measure in 2013-14, and (4) showed above-average or far-above-average student growth in 2017-18. Among the community areas containing those schools, keep the one with per capita income above $50,000 for 2008-2012. Then identify the MLB team that plays in the ballpark located in that community area. As of 2025, how many teams are in that team's Major League Baseball division? Please return only the number in the format [Answer].",
   "answer": 5,
   "nodes": {

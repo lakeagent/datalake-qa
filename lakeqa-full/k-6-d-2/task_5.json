@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000961",
     "question": "Identify a specific California county seat based on a set of health and housing statistics. I'm looking for a county that had an area median income of at least $142,800 in 2022 and $147,900 in 2023. It also needs to have had average food benefits redeemed by families in the nutrition program for women, infants, and children of at least $570 in 2018 and $700 in 2020, at least 19 patients per 100,000 adults in 2015 who experienced surgery-related serious bleeding or blood collection problems, and a mapped area of at least 3 billion square meters. Once you identify the county that matches all these figures, tell me in what year the bay on the southern shore of its county seat was discovered. Only report the year. Your response should be in the format [Answer].",
     "answer": "1769",
     "nodes": {

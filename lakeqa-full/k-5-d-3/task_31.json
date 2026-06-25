@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000829",
     "question": "Start with the Texas education service center region that had the most school districts in the 2021-2022 school year. In the county within that region with the largest number of unique school nutrition sites in 2022-2023, find the city with the most active home-based child care food program sites in 2022-2023, then the ZIP code in that city with the largest number of unique active school nutrition sites in 2021-2022. For that ZIP code, how many more distinct employer names appeared on 2023 filings from employers without workers' compensation coverage than the combined total of distinct child-care facilities reported in 2023 Q4 and unique active school nutrition sites in 2022-2023? Return only the number.",
     "answer": "6",
     "nodes": {

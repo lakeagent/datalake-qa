@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000969",
     "question": "I am researching several U.S. agencies. First, identify the federal police agency that consistently ranked in the top 20 for January parking fines from 2019 to 2021. Among these agencies, identify the agency that is a national law-enforcement body and had the highest average number of moving violations in those same months. The agency belongs to a federal agency that is within a specific U.S. Department. Who is the head of that department, and which university did this person graduate from? Return the university name only. Your response should be in the format [Answer].",
     "answer": "North Dakota State University",
     "nodes": {

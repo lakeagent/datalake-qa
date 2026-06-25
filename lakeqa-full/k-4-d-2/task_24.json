@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000493",
     "question": "Identify the first civilian superintendent of the Chicago Police Department. In the city where that person previously served as police chief and founded a criminal justice program at a local university, find the county the city is located in and report the absolute change in the number of veterans receiving disability benefits between 2020 and 2023. Only report the numeric change as a whole number. Your response should be in the format [Answer].",
     "answer": "830",
     "nodes": {

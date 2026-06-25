@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000741",
   "question": "Identify the two Texas counties that are in the top 5 in the number of home-based day care sites participating in the federal meal-reimbursement program for children and adults from 2018-2022, while also having less than 14.5% of reported adult-protection victims involved in repeat investigations in 2022. Both counties are named after figures from the Texas Revolution; identify those two namesakes. Which of those two namesakes held the higher military rank? Return the person name only. Your response should be in the format [Answer].",
   "answer": "Edward H. Tarrant",
   "nodes": {

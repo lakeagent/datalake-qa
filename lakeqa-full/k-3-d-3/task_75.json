@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000375",
   "question": "Find the charges that occur exactly 2 times in 2022, exactly 4 times in 2023, and between 180 and 235 times in 2024 in Austin. For the charge that appears in all three years, take the first word as offense, and find the year with the third most defendants in Cook County of Illinois. Which city hosted the Summer Olympics held in that year? Return the city name only in the format [Answer].",
   "answer": "London",
   "nodes": {

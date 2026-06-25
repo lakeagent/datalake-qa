@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000193",
   "question": "In the state with two-digit FIPS code 19, which counties rank in the top three for public schools, private schools, and school district offices? For those counties, subtract the combined 2020 census population of their county seats from the combined 2020 census population of the counties. Your response should be in the format [Answer].",
   "answer": 370857,
   "nodes": {

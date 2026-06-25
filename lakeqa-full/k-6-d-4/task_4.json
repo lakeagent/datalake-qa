@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000989",
     "question": "I am looking for the Texas county whose county seat lies on a river that flows into a specific bay. To identify the county, start with those that had average CACFP adult day care meal reimbursements of at least $50,000 from 2016 to 2019, and select the five with the largest percent decreases over that period. From those five, keep only the counties that recorded at least one abuse/neglect-related child fatality and at least three non-abuse/neglect child fatality investigations between FY2018 and FY2022. Finally, among the remaining candidates, identify the single county that appeared in both the top two for 2021 model-based drug poisoning death rates and the bottom two for 2016 age-adjusted death-rate categories. What is the name of the bay? Your response should be in the format [Answer].",
     "answer": "San Antonio Bay",
     "nodes": {

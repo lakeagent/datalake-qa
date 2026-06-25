@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000563",
     "question": "Which three years have the most people getting awarded in Texas for seriously injured in their duties and with a last name called Philips? For each of those years A, B, and C, define a state's most important drug as the drug with the highest reimbursed amount per unit among drugs with at least 1,000 prescriptions, and define dependence as the share of all reimbursed amount tied to that most important drug. Which states ranked 6th through 8th in A year, 36th through 38th in B year, and 21st through 23rd in C year? For the state appearing in all three answers, which counties had the 2nd to 6th lowest net growth in taxable sales in Q4 from 2022 to 2023? Among those counties, which county had the second-lowest ratio of number of people who are actually served with healthcare services/ number of people who are eligable of healthcare service at the end of 2023? Finally, what was that county's 2010 census population? Please return only the number in the format [Answer].",
     "answer": "16303",
     "nodes": {

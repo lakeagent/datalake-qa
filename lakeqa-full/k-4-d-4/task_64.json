@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000719",
   "question": "Consider the Eastern Washington counties that border Idaho and had a 2020 population under 300,000, after first identifying the Washington counties whose school districts consistently achieved at least 68% English language arts performance for all students and all grades from 2014-15 through 2017-18. Which county meets those conditions? As of 2025, what was the 2024 estimated population of its most populous city? Return the number only. Your response should be in the format [Answer].",
   "answer": 33543,
   "nodes": {

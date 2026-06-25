@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA001001",
     "question": "In which city, county, and state is the organization that is co-founded by Luis von Ahn headquartered? In that state, identify the county that ranks in the top four statewide for the number of public schools, private schools, and school district offices. Among the counties that meet these criteria, which one has the most colleges? For that leading county, what is the result if you sum the number of public schools and district offices, and then subtract the total count of colleges and private schools? Give the final answer as an integer.",
     "answer": "221",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000030",
     "question": "Which state appears in both of these groups: the states ranked 11th through 15th by the average cost per visit for medical social services provided by home health agencies in 2020, and the states ranked 7th through 11th by the share of Medicaid-enrolled women ages 50 to 64 who received a mammogram to screen for breast cancer in 2022? Break ties alphabetically by state name. Respond with [Answer].",
     "answer": "Utah",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000473",
     "question": "I am analyzing the LAPD division that covers Echo Park and Silver Lake. After identifying the most common arrest charge in that area named after this division in 2019, I want to find which LAPD area had the highest number of arrests for that charge. What is the ratio of the most frequent crime reported in 2021 for that area to the total number of public schools in Los Angeles? Round that to the nearest number. Your response should be in the format [Answer].",
     "answer": "3",
     "nodes": {

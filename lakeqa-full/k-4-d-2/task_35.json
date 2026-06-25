@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000504",
     "question": "In school year 2022-2023, identify the capital city of California. Use postsecondary institution records in that city to identify its county, then subtract the number of district administrative offices from the number of public schools in that city and county. What is that difference per 1,000 FY2017 average daily passengers at that city's Amtrak station? Round your answer to one decimal. Your response should be in the format [Answer].",
     "answer": "59.8",
     "nodes": {

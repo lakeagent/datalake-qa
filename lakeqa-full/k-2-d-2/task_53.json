@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000134",
     "question": "First identify the state that appears in both of these data.gov-derived groups: Which states fall 4th through 8th when you look for where diabetes-care copays varied the most from one 2024 health insurance plan to another? Break any ties alphabetically.; and Which states fall 6th through 10th when you compare the typical electricity prices businesses paid in different ZIP codes served by investor-owned utilities in 2016? Break any ties alphabetically.. After identifying that state, where did the first settlement of non-indigenous people there occur in 1827? Your response should be in the format [Answer].",
     "answer": "Fort Leavenworth",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000761",
     "question": "Find the New York counties, excluding NYC boroughs, with average total Medicaid-paid amounts for adult mental health claims between $75 million and $95 million across 2017 and 2018. According to the NY Utility Energy Registry, which of these counties had the lower average total natural gas consumption across 2017 and 2018? That county was named after an English county. Tell me the medieval name of the county town of that English county. Your response should be in the format [Answer].",
     "answer": "Gippeswic",
     "nodes": {

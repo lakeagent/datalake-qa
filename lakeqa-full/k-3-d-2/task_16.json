@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000241",
     "question": "For the most populous city in Washington state, what is the number of public schools in its county in school year 2022-2023 minus the number of private schools in that county in school year 2021-2022? Your response should be in the format [Answer].",
     "answer": "57",
     "nodes": {

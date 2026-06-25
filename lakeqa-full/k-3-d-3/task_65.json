@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000365",
   "question": "In fiscal year 2022, among the Texas counties that ranked in the top five for confirmed Adult Protective Services victims, validated perpetrators, and service activity, take the county with the lowest repeated investigation rate. As of 2025, how many county-owned nature preserves were acquired through that county's Open Space Program? Please return only the number in the format [Answer].",
   "answer": 21,
   "nodes": {

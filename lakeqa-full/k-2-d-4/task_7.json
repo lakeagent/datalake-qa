@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000192",
   "question": "Which Washington counties had Low-Income student enrollment percentage between 32-40% in every school year from 2018-19 through 2021-22? Among those counties, how many years apart were the earliest and latest county formations? Your response should be in the format [Answer].",
   "answer": 21,
   "nodes": {

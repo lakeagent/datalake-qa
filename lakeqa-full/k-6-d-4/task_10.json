@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000995",
   "question": "Consider the engineering firm founded after 1914 that has no current NY State construction manager projects, yet consistently ranked in the top 20 Washington State contractors by contract count annually from 2017 to 2020. Which Native American interpreter helped negotiate the land cession that led to the founding of the city where that firm is based? How many daughters did that interpreter and his wife have? Please return only the number in the format [Answer].",
   "answer": 3,
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000435",
   "question": "Find the Missouri state agency that ranked third in average spending from 2007 to 2010. In which city is its Southwest district based? As of 2025, how many counties are in the metropolitan area anchored by that city? Return only the number in the format [Answer].",
   "answer": 5,
   "nodes": {

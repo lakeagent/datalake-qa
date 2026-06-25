@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000078",
   "question": "Which candidate in the New York election campaign had the most sponsors that sponsored through agents in 2021? How many years did that candidate serve on the New York City Council? Please return only the number in the format [Answer].",
   "answer": 12,
   "nodes": {

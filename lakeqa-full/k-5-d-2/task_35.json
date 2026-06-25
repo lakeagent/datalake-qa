@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000792",
   "question": "Among Harris, Hidalgo, Dallas, and Cameron counties in Texas, which two saw the largest percentage decrease in day care home meal reimbursements from 2018-19 to 2020-21? Of those two, which had the higher average child center enrollment across 2018-19 and 2019-20? For that county, what is the county seat? In the county seat's mosquito-distribution, which species has the higher total count across all observations: `Aedes aegypti` or `Aedes albopictus`? As of 2022, how many viruses were associated with that species by the Walter Reed Biosystematics Units? Return the number only. Your response should be in the format [Answer].",
   "answer": 54,
   "nodes": {

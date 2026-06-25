@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000088",
     "question": "I'm looking for a state that appears on both of these lists: first, the states in 7th through 11th place, with ties broken alphabetically, when Providence property owners are grouped by home state and compared by how much their 2009 property-tax bills varied; second, the states in 6th through 10th place, again with ties broken alphabetically, when institutions seeking exemption from Oregon's foreclosure-mediation process in 2018 are grouped by state and compared by the middle number of foreclosures they had reported for the previous year. After finding the state that appears on both lists, how many Medicaid or CHIP beneficiaries there were there in the children category in the last month of 2022? Respond with [Answer].",
     "answer": 1043751,
     "nodes": {

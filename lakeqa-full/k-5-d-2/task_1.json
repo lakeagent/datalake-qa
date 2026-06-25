@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000758",
     "question": "Find the Texas counties that appear in both of these groups: (1) counties with at least 10% of residents ages 18 to 64 living with disabilities and at least 23% of residents age 65 or older in 2023, and (2) counties in the Abilene adult-protection region with 150 or more completed adult-protection investigations in 2023. Of those counties, pick the one with the fewest completed investigations into possible child abuse or neglect in 2023. A leader of that county's Regulators died in that county's seat. What is the county seat of the county where this leader was born? Please return the county seat name only. Your response should be in the format [Answer].",
     "answer": "Dadeville",
     "nodes": {

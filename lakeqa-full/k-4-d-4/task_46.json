@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000701",
   "question": "Which Washington county had the lowest 2020 census population among those counties that had Low-Income student enrollment percentage between 32-40% in every school year from 2018-19 through 2021-22, had district-average Math proficiency above 40% in the 2021-22 school year, and were not the most populous county in Washington? For that county, how many years after its county seat was incorporated was its most populous city incorporated? Your response should be in the format [Answer].",
   "answer": 15,
   "nodes": {

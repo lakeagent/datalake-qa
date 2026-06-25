@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000205",
     "question": "In Los Angeles Police Department report that occurred in 2016, which geo area had the most robbery arrests? For that area, identify the most common crime code and report how many incidents of that code occurred in 2022. Please return only the 2022 count in the format [Answer].",
     "answer": "1046",
     "nodes": {

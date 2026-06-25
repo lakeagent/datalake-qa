@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000340",
   "question": "In 2017, which U.S. state had the 3rd lowest death rate for unintentional injuries? In that state, since 2010, which years did their offices have the 3rd to 12th highest unpaid expenditure on food and beverages? Among the years in that answer, which three years had the most traffic crashes in LA? Across the Los Angeles Lakers seasons that began in those three years, how many regular-season wins did the team have in total? Please return only the number in the format [Answer].",
   "answer": 124,
   "nodes": {

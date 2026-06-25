@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000196",
     "question": "In the 2014-15 school year of Washington, which top 5 schools had the largest low-income students amount that are expected to take Biology graduation test, which top 5 schools had the most low-income students who are left schools after 7 years, and which top 5 schools had the most low-income students enrolled? Among the schools that appear in at least two of those three answers, how many school districts operate more than one of those schools? Please return only the number in the format [Answer].",
     "answer": 2,
     "nodes": {

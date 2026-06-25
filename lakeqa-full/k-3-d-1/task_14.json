@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000218",
   "question": "Which applicant company appears most often among cancelled or withdrawn construction permits in DC in 2024? In 2024, among building permits in DC where that company appears as the permit owner, which ward appears most often? In 2022, among building permits in that ward, which permit subtype appears most often? Return only the permit subtype in the format [Answer].",
   "answer": "ELECTRICAL",
   "nodes": {

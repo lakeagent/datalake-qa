@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000265",
     "question": "Among DC wards, first identify the top two wards by average 2019-2020 counts of crimes involving homicide, assault with dangerous weapon, robbery, or sex abuse. Among those two wards, identify the ward with the higher average 311 service-request count across 2019 and 2020. What was the 2022 population of that ward? Your response should be in the format [Answer].",
     "answer": "77,456",
     "nodes": {

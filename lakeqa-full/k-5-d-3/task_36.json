@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000834",
     "question": "Find the birth state of the candidate in the New York election campaign with the most sponsors that sponsored through agents in 2021. Rank that state by total expenditure across all categories in 2021 in the U.S., then find the state with the same rank by total amenities across all categories in 2021 among all states in the U.S. For that state, what is the sum of the median for the \"Adolescent Well-Care Visits\" indicator in 2014, 2015, and 2016? Please return only the summed value in the format [Answer].",
     "answer": "134.1",
     "nodes": {

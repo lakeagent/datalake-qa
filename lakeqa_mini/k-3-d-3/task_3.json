@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000304",
   "question": "Can you find me the NYC elementary school in District 2 that ranked in the top 3 by performance category score over each school year from 2010-13. For the neighborhood this elementary school is located in, who is it named after? Only report the year when this person is born. Your response should be in the format [Answer].",
   "answer": "1835",
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000123",
     "question": "First identify the state that appears in both of these data.gov-derived groups: Which states were home to sponsors behind independently funded political advertising and related election-season messages in Washington when no more than 10 sponsors from the state used at least 25 different vendors; and In February 2011, which states had average household electricity prices across ZIP codes for bundled service that were at least $0.025 per kWh higher than the corresponding average business prices. After identifying that state, what dog is listed among the official symbols of that state? Your response should be in the format [Answer].",
     "answer": "American Foxhound",
     "nodes": {

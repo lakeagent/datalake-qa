@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000843",
     "question": "Find the charges that occur exactly 2 times in 2022, exactly 4 times in 2023, and between 180 and 235 times in 2024 in Austin. For the charges that appear in all years, take the first word as offense, find the year with the third most defendants in Cook County of Illinois? In that year, which U.S. state has the third highest death rate for heart disease? Find the city in that state that has the fifth most companies receiving payment from the government for workers' training? Finally, in that city, what was the 2010 census population? Please return only the number in the format [Answer].",
     "answer": "9539",
     "nodes": {

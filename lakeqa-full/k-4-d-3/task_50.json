@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000598",
   "question": "Find the New York counties outside of NYC having over 90 youth sent to jail in 2015, a total jail census under 750 in 2021, and over 65,500 homeowner school-tax relief exemptions in 2022. Within them, identify the county seat of the county with the higher 2021 violent-crime count. How many stories does the seat of municipal government in that city have? Your response should be in the format [Answer].",
   "answer": 32,
   "nodes": {

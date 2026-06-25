@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000714",
   "question": "Among Texas counties in the top five for average capital outlay spending from 2018 to 2021, consider those that are not among the original 23 Texas counties. Which of those had the highest average criminal releases in 2019-20? As of 2025, how many Fortune 500 companies are located within that county's county seat? Return the number only. Your response should be in the format [Answer].",
   "answer": 11,
   "nodes": {

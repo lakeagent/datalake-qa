@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000541",
   "question": "Among DC wards 7 and 8, identify which ward had the higher average 311 service requests from 2019 through 2020. Who represents that ward on the DC Council? This council member earned a graduate degree from which university? As of 2025, how many undergraduate and graduate schools does that university have? Return the number only. Your response should be in the format [Answer].",
   "answer": 11,
   "nodes": {

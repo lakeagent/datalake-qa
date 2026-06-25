@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000427",
   "question": "Can you find the NYC elementary schools that appear in the top 5 by the schools' learning environment in at least three years from 2006-2010 and are located in Bedford? For how many decades was the actor whom that school was named after among the top box-office draws? Please return only the number in the format [Answer].",
   "answer": 3,
   "nodes": {

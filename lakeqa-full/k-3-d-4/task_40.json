@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000416",
   "question": "Among NY counties with at least 65 bridges rated 'Poor', at least 50 fire departments, at least 100 bank ATMs, and at least 1.0 MW of operational renewable energy capacity, identify the counties that meet all criteria and their county seats. As of 2020, among those county-seat cities, how many are also the most populous municipality in their county? Your response should be in the format [Answer].",
   "answer": 1,
   "nodes": {

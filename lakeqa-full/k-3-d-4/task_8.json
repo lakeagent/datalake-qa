@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000384",
     "question": "Among Texas counties in the top five for average capital outlay spending from 2018 to 2021, identify the two highest by average prison releases in 2019 and 2020. For those two counties, compute the percentage increase in VA disability compensation recipients from 2020 to 2023, then report the larger increase percentage rounded to the nearest integer. Return the integer only. Your response should be in the format [Answer].",
     "answer": "9",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000838",
     "question": "We define a dangerous incident as an arrest where drugs or alcohol are present, and weapons are existed. In the city where Kenan Stadium is located, which zip code has the 2nd highest number of dangerous incidents? In the area of that zip code, which offense is 71st most common? Then, how many records with that offense happened in Chicago in 2021, 2023, and 2024? Using the smallest value in those records as year, what is the average acreage newly preserved across all agriculture-preservation programs in that year? Return the result in the format [Answer].",
     "answer": "1226",
     "nodes": {

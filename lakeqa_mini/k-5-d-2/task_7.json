@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000760",
     "question": "Find the Connecticut counties that satisfy both criteria: (1) more than 200 accidental overdose deaths in 2020, and (2) assignment to a COVID health-service region with a number above 80. Find the largest cities in the counties with the highest and lowest accidental drug death totals in 2020. Determine which of these two cities had the lower average unadjusted percentage of adults ages 18-64 who did not have health insurance across 2018 and 2019. Then find the largest employer in that city. Just tell me after whom that employer is named. Your response should be in the format [Answer].",
     "answer": "Elihu Yale",
     "nodes": {

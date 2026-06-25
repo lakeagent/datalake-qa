@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000248",
     "question": "What US city had the highest average age-adjusted adult obesity rate in 2016 and 2018? That city was founded by a corporation created by J. P. Morgan when he merged Federal Steel and National Steel with another company. What is the name of that company? Return the company name only. Your response should be in the format [Answer].",
     "answer": "Carnegie Steel Company",
     "nodes": {

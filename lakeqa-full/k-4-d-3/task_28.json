@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000576",
   "question": "For the NYC high school that ranked in the top 7 by overall score in all three school years: 2006-07 and 2009-11, find the neighborhood named after this high school. Finally report the New York village where the builder of the earliest constructed bridge that connects this neighborhood with the mainland is buried. How many fewer people lived in that village at the 2020 census than in the village immediately to its south? Your response should be in the format [Answer].",
   "answer": "1874",
   "nodes": {

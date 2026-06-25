@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000596",
   "question": "Identify the New York county that satisfies the listed public-assistance, foster-care, mental-health, social-services staffing, and case-opening filters, then find its county seat. For the lake immediately northwest of and adjacent to that city, how many feet deeper is the maximum depth than the average depth? Your response should be in the format [Answer].",
   "answer": 28,
   "nodes": {

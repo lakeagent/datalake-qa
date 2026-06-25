@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000463",
   "question": "Find the council district number associated with Mike Siegel, then the most common sector in 2023 for that district, then the council district with the most searches in that sector. In the 2024 race for that resulting district, by how many votes did the leading candidate exceed the runner-up? Your response should be in the format [Answer].",
   "answer": 387,
   "nodes": {

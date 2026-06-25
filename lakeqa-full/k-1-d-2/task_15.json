@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000041",
     "question": "Which state appears in both groups: vendor states ranked 9th through 13th by the sample standard deviation of 2021 campaign expenditure amounts, and recipient states ranked 6th through 10th by the median amount approved for Maryland Commerce financial assistance in 2020? Break ties alphabetically by state name. Respond with [Answer].",
     "answer": "Minnesota",
     "nodes": {

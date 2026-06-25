@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000392",
     "question": "Identify the first head of Chicago's department with the highest average overtime between 2018 and 2021. In which city did that person serve as police chief and establish a criminal justice program at a local university? Only report the city name. Your response should be in the format [Answer].",
     "answer": "Wichita",
     "nodes": {

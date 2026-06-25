@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000379",
     "question": "Can you find the Manhattan neighborhood where the only NYC elementary school in District 3 that ranked in the top 3 by performance category score in all four consecutive years from 2006-2010. Among the notable museums in that neighborhood, what is the second earliest founding year supported by the museum pages? Your response should be in the format [Answer].",
     "answer": "1869",
     "nodes": {

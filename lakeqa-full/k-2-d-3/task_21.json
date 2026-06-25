@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000184",
     "question": "Define a more supportive state as one with statewide healthcare programs that include more enrolled Native Americans, Alaskans, fostered or adopted children. Which states are the top 2 most supportive in 2017, 2nd and 3rd most supportive in 2018, and 2nd and 3rd most supportive in 2019? For the state that appears in all three years, how many more incorporated municipalities than counties are there? Please return only the number in the format [Answer].",
     "answer": 242,
     "nodes": {

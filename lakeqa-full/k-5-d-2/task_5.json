@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000762",
     "question": "Find the California cities satisfying both criteria: (1) older adults with major tooth loss above 19% in 2016, and (2) adults with frequent poor mental health above 15% in 2017. Find the county that each city is in. Then find the county that was formed earliest. Under whom was its county seat founded? Find the governor's name and tell me only this: in what year was this governor born? Your response should be in the format [Answer].",
     "answer": "1724",
     "nodes": {

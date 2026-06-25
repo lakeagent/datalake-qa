@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000245",
     "question": "For the city where Orange County Public Schools is based, what is the number of public schools in its county in school year 2022-2023 minus the number of private schools in that county in school year 2021-2022? Your response should be in the format [Answer].",
     "answer": "119",
     "nodes": {

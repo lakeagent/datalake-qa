@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000271",
     "question": "First identify the US city with the highest average age-adjusted adult obesity rate across 2016 and 2018. Then identify the corporation that founded that city. For that corporation's later acquisition, what is the difference between the price including debt and the announced purchase price, in billions of US dollars? Round your answer to one decimal. Your response should be in the format [Answer].",
     "answer": "0.8",
     "nodes": {

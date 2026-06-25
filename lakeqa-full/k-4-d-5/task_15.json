@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000739",
   "question": "Among drugs with 5 to 10 million total annual Medicaid prescriptions across U.S. states in every year from 2018 through 2022, identify the drug with the highest average prescription count across those five years. In the year that drug came into medical use, which cause of death ranked 1st by age-adjusted death rate? What is the most important risk factor for that cause of death? Your response should be in the format [Answer].",
   "answer": "Age",
   "nodes": {

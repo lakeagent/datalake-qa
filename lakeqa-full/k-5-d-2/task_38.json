@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000795",
   "question": "Among DC wards 7 and 8, identify which ward had the higher average 311 service requests from 2019 through 2020. Who represents that ward on the DC Council? This council member earned a graduate degree from which university? For that university, identify its founder and the person its flagship building is named after. How many years apart were those two people's death years? Return the number only. Your response should be in the format [Answer].",
   "answer": 95,
   "nodes": {

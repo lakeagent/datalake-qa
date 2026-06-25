@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000919",
     "question": "Across 2016-17 through 2019-20, start with Texas counties that averaged at least $50,000 in adult day care meal reimbursements and had the five largest percentage drops over that span. From those five, keep only counties with at least one abuse/neglect-related child fatality and at least three non-abuse/neglect child fatality investigations between 2018 and 2022. Among the remaining counties, find the one that is both in the top two for 2021 model-based drug poisoning death rates and in the bottom two for 2016 age-adjusted rate categories. What river does the county seat of that county lie along? Return the river name only. Your response should be in the format [Answer].",
     "answer": "Guadalupe River",
     "nodes": {

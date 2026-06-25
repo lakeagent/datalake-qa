@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000037",
     "question": "Which state is in both of these groups: contractor states ranked 8th through 12th by the median estimated value of Oregon public contracts when they were first awarded in 2020, and states ranked 5th through 9th by the sample standard deviation of average 2022 commercial electricity prices charged by investor-owned utilities? Respond with [Answer].",
     "answer": "Pennsylvania",
     "nodes": {

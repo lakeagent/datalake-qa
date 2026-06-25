@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000426",
   "question": "In 2023, which U.S. state has the 5th highest tax rate for diesel? In that state, from 2021 to 2025, define a generous year as one where the casino profit sharing program was at its peak, with highest total amount paid to both the state and an average town, which years were the 2nd to 4th most generous? In the first, second, and third years of that answer, define a county as more supported if it received more breakfast, lunch, and afternoon snack reimbursement in day care meal events. Which counties are the 4th through 6th most supported in each of those three years? Across all counties that appear in those three answers, as of 2025, how many of those counties have county seats with the same name as the county? Please return only the number in the format [Answer].",
   "answer": 2,
   "nodes": {

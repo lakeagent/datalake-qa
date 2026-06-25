@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000746",
   "question": "If the dangerousness of a school is defined by the combined total of drug, alcohol, and bomb related incidents, identify the New York City schools ranked 5th to 10th in the school years of 2012-2013, 2013-2014, and 2014-2015. For all schools in those three answers, find the top 11 schools with the most students residing in shelter in 2019-2020, then keep the 9 schools with the largest caring totals. Among those 9 schools, how many are in Brooklyn? Return only the number in the format [Answer].",
   "answer": 4,
   "nodes": {

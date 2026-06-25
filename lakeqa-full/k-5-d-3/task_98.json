@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000896",
   "question": "In each of the fiscal years of 2018-19, 2019-20, and 2020-21, which five counties submitted their reports the latest? Then consider all counties that appear in the three years, define a good hospital as one with as low mortality rate as possible under the condition of having at least 2 'Better' ratings, and find the county among those counties that has at least one hospital in the top 50 statewide list. In that county, in which year was the all-cause unexpectedly 30-day rehospitalized rate the 4th lowest? In the school year starting in that year in New York, define an acceptable school as one with zero major crimes and zero violent crimes. Among all acceptable schools, which 10 schools have the highest number of non-criminal incidents, breaking ties alphabetically? For the first school in that answer, what admissions test is required? Please return only the test name in the format [Answer].",
   "answer": "Specialized High Schools Admissions Test",
   "nodes": {

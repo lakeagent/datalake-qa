@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000597",
   "question": "Identify the New York county that satisfies the specified public-assistance, foster-care, mental-health, social-services staffing, and case-opening filters, then find its county seat. How much was the accepted construction bid for the city hall in that city, in dollars? Your response should be in the format [Answer].",
   "answer": 238750,
   "nodes": {

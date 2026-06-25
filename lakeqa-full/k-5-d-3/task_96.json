@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000894",
   "question": "Find the birth state of the candidate in the New York election campaign with the most sponsors that sponsored through agents in 2021. Rank that state by total expenditure across all categories in 2021 in the U.S., then find the state with the same rank by total amenities across all categories in 2021 among all states in the U.S. Among that state's most populous city, that state's capital, and Missouri's capital, which had the smallest 2020 census population? Please return only the city name in the format [Answer].",
   "answer": "Frankfort",
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000272",
     "question": "First identify the US city with the highest average age-adjusted adult obesity rate across 2016 and 2018. Then identify the corporation that founded that city. Comparing that corporation with the company that acquired it in 2025, which company is stated as the larger global steel producer? Return the company name only. Your response should be in the format [Answer].",
     "answer": "Nippon Steel",
     "nodes": {

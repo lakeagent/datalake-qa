@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000176",
   "question": "I am looking for Missouri state agencies that consistently ranked in the top 5 for average employee salary between 2018 and 2020. Among those agencies, how many correspond to executive department heads elected by Missouri voters? Return the number only. Your response should be in the format [Answer].",
   "answer": 2,
   "nodes": {

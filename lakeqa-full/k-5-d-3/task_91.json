@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000889",
   "question": "Among New York City schools that served high school students and reported at least 151 total VADIR incidents in 2013-2014, which schools also had at least 25 total incidents reported by school safety in 2013-2014, a safety and respect score of 7.3 or lower in 2013, and a poverty rate of at least 70% in 2013-2014? Among those schools, which had the highest four-year August graduation rate for the 2014 cohort? How many male athletic teams are named for that school? Please return only the number in the format [Answer].",
   "answer": 15,
   "nodes": {

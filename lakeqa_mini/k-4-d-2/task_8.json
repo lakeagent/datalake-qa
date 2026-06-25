@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000476",
     "question": "Between 2010 and 2019, what year has the highest number of burglaries from vehicles in Los Angeles? In that year, determine which area had the most narcotic drug laws arrests, how many vehicle burglaries occurred in that specific area in 2020? Only report the number of vehicle burglaries. Your response should be in the format [Answer].",
     "answer": "1220",
     "nodes": {

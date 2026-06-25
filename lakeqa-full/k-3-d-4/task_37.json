@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000413",
   "question": "Can you identify the county with the highest number of veterans receiving disability compensation in 2023 in the Mountain state that borders Mexico, shares the Four Corners region, and had between 4,000 and 6,000 VA pension recipients in 2020? In that county's county-seat city, how many more employees did the top listed employer have in 2024 than the city government? Return the number only. Your response should be in the format [Answer].",
   "answer": 31584,
   "nodes": {

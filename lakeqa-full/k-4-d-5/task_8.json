@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000732",
   "question": "Among NYC municipal candidates who had total campaign spending between $103,000 and $251,000 in each of the five election cycles 2001, 2003, 2005, 2009, and 2013, find the candidate that represented the borough with the higher number of residents living in New York City public housing who were accepted and enrolled in the city's summer jobs program for young people in 2019. How many boards was that candidate elected to in 1989? Return the number only. Your response should be in the format [Answer].",
   "answer": 2,
   "nodes": {

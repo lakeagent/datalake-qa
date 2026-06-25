@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000574",
     "question": "Which 10 years had the largest total amount of new land set aside for protection across all state programs? In those years, which three years had the most housing permits in Fairfield County before 2016? In the first, second, and third years of those three years, define a more engaging school as one with higher participation among teachers and parents, which five schools are the most engaging? Among all those schools, which schools had the 3rd to 7th best overall ratings between school year of 2005-06 and 2009-10 where we treat schools that are well-developed as the best ones? Across all schools, how many people in total graduated in June after 4-year education from 2005 to 2009? Please return only the number in the format [Answer].",
     "answer": "37465",
     "nodes": {

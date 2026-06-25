@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000421",
   "question": "Which Texas counties had between 700 and 4,600 people entering the state prison system in each fiscal year from 2019 to 2022, and which of those counties had 2020 census population under 900,000? Across the remaining counties, how many national protected areas are there? Your response should be in the format [Answer].",
   "answer": 5,
   "nodes": {

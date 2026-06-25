@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000816",
     "question": "Which applicant company appears most often among cancelled or withdrawn construction permits in DC in 2024? In 2024, among building permits in DC where that company appears as the permit owner, which ward appears most often? In 2022, among building permits in that ward, which permit subtype appears most often? Looking at the same ward and subtype in DC building permits from 2020, 2021, and 2023, which ANCs appear in the top three in each of those three years? In DC's automated traffic enforcement, among those ANCs, which one has more active cameras, and within that ANC which non-null camera mobility type appears most often? Return only the final answer in the format [Answer].",
     "answer": "Fixed",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000780",
   "question": "Identify the DC Council member who represents the ward that, among the top two wards, recorded both the highest average violent crimes, and the higher average 311 service requests from 2019 through 2020. Which university did this council member attend for graduate studies? Among that university's oldest and largest student newspaper and its student-run newsmagazine, how many years separate their founding dates? Your response should be in the format [Answer].",
   "answer": 49,
   "nodes": {

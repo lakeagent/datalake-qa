@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000085",
     "question": "Which state is in both of these groups: states that had at least 7 Medicaid managed care arrangements in 2017, with at least 4 of them requiring enrollee experience survey results, and states whose 2021 measures about mental health and substance use care were on average at least 4 points better than the middle reported value once each measure is treated so better performance always counts positively? After finding that state, in federal fiscal year 2017, what percentage of Medicaid and Children's Health Insurance Program children ages 0 to 3 there received a screening to check their development during their first three years of life? Respond with [Answer].",
     "answer": 60.5,
     "nodes": {

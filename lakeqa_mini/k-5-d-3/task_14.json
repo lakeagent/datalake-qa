@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000921",
     "question": "ACT, Inc. was founded in a city in Iowa. Determine the county for that city and the corresponding state. In that state, find the counties that rank in the top three for public schools, private schools, and school district offices; among those counties, what is the smallest postsecondary institution count? Only report the number. Your response should be in the format [Answer].",
     "answer": "7",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000189",
   "question": "Among NY counties with at least 65 bridges rated 'Poor', at least 50 fire departments, at least 100 bank ATMs, and at least 1.0 MW of operational renewable energy capacity, identify the counties that meet all criteria. Between those counties, how many more cities does the county with more cities have? Your response should be in the format [Answer].",
   "answer": 3,
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000852",
   "question": "Start with the states listed for the tribal land cession with the largest recorded area. Rank those states three ways: by their 2020 tribal-area population living in areas with fewer than three fixed broadband providers offering at least 25 Mbps service, by their number of census tracts marked as tribal communities, and by their average county estimate for the share of adults who were hesitant or unsure about getting a COVID-19 vaccine. Choose the state with the smallest sum of ranks, then find the county in that state with the largest share of non-Hispanic American Indian or Alaska Native residents. For that county, by how many percentage points does the latest completed-series vaccination percentage exceed the estimated share of adults who were hesitant or unsure about getting a COVID-19 vaccine? Write your answer as [ANSWER].",
   "answer": "1.85 percentage points",
   "nodes": {

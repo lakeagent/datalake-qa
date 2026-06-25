@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000850",
   "question": "Find the NYC borough that is top 2 in the number of farmers markets that accept SNAP payments through Electronic Benefits Transfer cards and offer Health Bucks coupons for fresh fruits and vegetables, food stores recognized by NYC's Shop Healthy program for improving access to healthier foods, and compost drop-off sites where residents can bring food scraps and plant waste. For that borough, what is its New York county? Within that county, find the ZIP code with the highest number of farmers markets that accept SNAP food benefits, participate in the Farmers Market Nutrition Program for eligible shoppers, and accept FreshConnect Checks nutrition coupons. What land area in square miles is listed for that ZIP code? Write your answer as [ANSWER].",
   "answer": "1.54",
   "nodes": {

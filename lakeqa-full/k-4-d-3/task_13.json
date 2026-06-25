@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000561",
     "question": "First, identify the Washington, DC ward that consistently ranked in the top four for building permits from 2022 to 2024 and had one of the highest crime rates. Among the top candidates, identify the ward that had the most scheduled street-cleaning events. In that specific ward, find the charter school whose serving spans grades 8 and 9, and is named after a famous person. What is the name of that charter school? Please return the school name only. Your response should be in the format [Answer].",
     "answer": "Sojourner Truth PCS",
     "nodes": {

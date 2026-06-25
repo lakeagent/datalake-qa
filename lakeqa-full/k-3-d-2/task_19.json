@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000244",
     "question": "For the most populous city in Michigan, in school year 2022-2023, what is the number of public schools in its county minus the number of postsecondary institutions in its county? Your response should be in the format [Answer].",
     "answer": "183",
     "nodes": {

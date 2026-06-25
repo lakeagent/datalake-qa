@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000235",
     "question": "Can you find the NYC high school in district 10 that are in top 6 by high school's overall score from school year 2006-07 to school year 2007-08, and has the lowest average additional credits. Then, find the first Turing award receiver in this high school and report which University this person obtained his PhD from. Your response should be in the format [Answer].",
     "answer": "Princeton University",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000300",
   "question": "Find the birth state of the candidate in the New York election campaign with the most sponsors that sponsored through agents in 2021. As of 2025, how many more U.S. states border that state than border Kentucky? Please return only the number in the format [Answer].",
   "answer": 1,
   "nodes": {

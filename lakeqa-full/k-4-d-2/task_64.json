@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000533",
   "question": "Identify a specific California county based on a set of health and housing statistics. The county had an Area Median Income of at least $142,800 in 2022 and $147,900 in 2023. It also had an infants, children and woman average cost per family of $570 or more in 2018 and $700 or more in 2020, a 2015 perioperative hemorrhage/hematoma observed rate of 19 or higher, and a geographical shape area of at least 3 billion square meters. For that county, how many elected supervisors does it have? Return the number only. Your response should be in the format [Answer].",
   "answer": 5,
   "nodes": {

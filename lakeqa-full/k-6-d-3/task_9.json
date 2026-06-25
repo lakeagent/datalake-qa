@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000975",
   "question": "Among Washington state's public four-year universities, which two had the highest average contract counts between 2014 and 2016? Find the counties where those two universities are located, then choose the county with the larger 2020 census population. In its county seat, what building had the highest average greenhouse gas emissions from 2015 to 2023? How many years after that building was built did its demolition begin? Please return only the number in the format [Answer].",
   "answer": 74,
   "nodes": {

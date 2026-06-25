@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000655",
   "question": "Among California physicians with a reported primary practice area and a five-digit address ZIP code, find the most common practice area in June 2019. Take that practice area's two highest-count ZIP codes. For each ZIP, find the most common patient-care hours, telemedicine hours, and years-since-licensure among physicians there. Add the three counts for each ZIP and determine which ZIP has the greater total. In that ZIP's city, how many major league sports teams play home games? Write your answer as [ANSWER].",
   "answer": 2,
   "nodes": {

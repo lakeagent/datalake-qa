@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000840",
     "question": "In each of the fiscal years of 2018-19, 2019-20, and 2020-21, which five counties submitted their reports the latest? Then consider all counties that appear in the three years, and define a good hospital is one with as low mortality rate as possible under the condition of having at least 2 'Better' ratings. With such definition, find the top 50 best hospitals, and among all those counties in the three years, which county has at least one hospital in the top 50 hospital list? In that county, in which year was the all-cause unexpectedly 30-day rehospitalized rate the 4th lowest? In the school year starting in that year in New York, define an acceptable school as one with zero major crimes and zero violent crimes. Among all acceptable schools, which 10 schools have the highest number of non-criminal incidents, breaking ties alphabetically? Rank all New York schools by the number of AP scores 3 and 3+ divided by total exams taken in 2010. For all those ten schools, what is their best statewide rank? Please return only the number in the format [Answer].",
     "answer": "6",
     "nodes": {

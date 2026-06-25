@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000727",
     "question": "Among drugs with 5 to 10 million total annual Medicaid prescriptions across U.S. states, identify the one with the highest average prescription count from 2018 through 2022. Next, determine the top 3 leading causes of death in the year this drug first entered medical use. One of these three conditions has a different most significant risk factor than the other two. Who first described this condition? Only report the name. Your response should be in the format [Answer].",
     "answer": "Hippocrates",
     "nodes": {

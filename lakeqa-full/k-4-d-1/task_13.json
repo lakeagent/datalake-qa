@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000469",
   "question": "For prescriptions dispensed to Connecticut residents, find the quarter with the highest number of private-pay prescriptions. In that quarter, identify the controlled-medicine schedule category with the highest total prescription count, then within that schedule find the highest-count drug classification. What was the first drug in that classification? Return the drug name only in the format [Answer].",
   "answer": "chlordiazepoxide (Librium)",
   "nodes": {

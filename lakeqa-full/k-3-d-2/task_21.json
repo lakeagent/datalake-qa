@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000246",
     "question": "Identify the DC Council member who represents the ward that, among the top two wards, recorded both the highest average crimes involving homicide, assault with dangerous weapon, robbery and sex abuse, and the higher average 311 service requests from 2019 through 2020. Return the council member's name only. Your response should be in the format [Answer].",
     "answer": "Wendell Felder",
     "nodes": {

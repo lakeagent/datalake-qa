@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000262",
     "question": "Identify the South Dakota county that had at least 275 and fewer than 290 VA disability compensation recipients in FY 2019 and at least 295 and no more than 310 VA disability compensation recipients in FY 2023. Then identify that county's county seat. Which earthen dam on the Missouri River is north of that city and closest to it? Your response should be in the format [Answer].",
     "answer": "Oahe Dam",
     "nodes": {

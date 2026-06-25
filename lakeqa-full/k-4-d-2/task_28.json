@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000497",
     "question": "Identify the Washington, D.C. ward that Adams Morgan belongs to. In the 2019 Washington, D.C. crime-incidents data, identify the most common offense in that ward. For that offense and ward, compute the larger incident count across the 2020 and 2021 crime-incidents data. What is that maximum incident count per 1,000 residents of the ward, using the ward's 2022 population? Round your answer to one decimal. Your response should be in the format [Answer].",
     "answer": "19.2",
     "nodes": {

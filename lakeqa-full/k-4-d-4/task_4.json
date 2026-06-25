@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000659",
     "question": "Among Providence hospital properties, only one met the following criteria: it had an assessed value consistently between $6.9 million and $7.3 million from 2015 through 2018, and it is neither an Ivy League university nor named after an incorporated Rhode Island city. The benefactor associated with this property was named in honor of another person. Who was that person's grandfather? Your response should be in the format [Answer].",
     "answer": "James Brown",
     "nodes": {

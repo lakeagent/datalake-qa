@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000550",
     "question": "Can you find out the Manhattan neighborhoods containing the top 7 high schools from 2007-2010 by a comprehensive evaluation of the school. Then, find out which NYC structures are designed by Stanford White and incorporates what one of those neighborhoods are named after. Report in what year is this structure designed. Your response should be in the format [Answer].",
     "answer": "1891",
     "nodes": {

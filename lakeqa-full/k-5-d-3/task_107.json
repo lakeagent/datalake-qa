@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000905",
     "question": "Among operational New York wind-energy projects from 2004 through 2015, find the county with the greatest total energy capacity for projects. In that county, find the municipality that appears in all three groups: the four cities with the most retail food stores, the four cities with the most active liquor licenses, and the municipalities with statewide energy-storage projects. In that municipality, which New York state route had the highest-count traffic segment in 2019? In the wind-project county, use that route to find the road name with the longest sidewalk segment. Since 1924, how many suffixed routes have been designated for the route named in that result? Please return only the number in the format [Answer].",
     "answer": 14,
     "nodes": {

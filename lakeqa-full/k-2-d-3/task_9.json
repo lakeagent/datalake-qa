@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000172",
   "question": "In 2015, identify the New York counties with population over 900,000, firearm rate under 35 per 100,000, and total state payments for homeowners' school taxes over $100 million. What is the difference in square miles between the largest and smallest counties? Your response should be in the format [Answer].",
   "answer": 1920,
   "nodes": {

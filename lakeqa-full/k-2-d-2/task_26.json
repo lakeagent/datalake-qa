@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000107",
     "question": "Which state appears in both groups: states ranked 8th through 12th by the average number of foreclosures during 2021 reported by financial institutions that were exempt from Oregon's foreclosure-avoidance program in 2022, and states ranked 12th through 16th by how much the annual drug-poisoning death rate per 100,000 people, adjusted for age, varied from 1999 through 2015? Respond with [Answer]. After finding that, what official state motto is given for that state? Your response should be in the format [Answer].",
     "answer": "Salus Populi Suprema Lex Esto",
     "nodes": {

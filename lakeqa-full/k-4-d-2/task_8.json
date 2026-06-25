@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000477",
     "question": "I am researching identity thefts in LA. First, identify the year between 2010 and 2019 with the highest number of identity theft incidents in LA. During that peak year, which area recorded the most arrests for moving traffic violations? What is the ratio of identity theft incidents that area had in 2020 to the total number of public schools in the city that area belongs to? Round the answer to the nearest integer. Your response should be in the format [Answer].",
     "answer": "1",
     "nodes": {

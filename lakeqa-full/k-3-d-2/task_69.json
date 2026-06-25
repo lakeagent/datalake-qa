@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000294",
   "question": "First identify the California hospital that satisfies both of these conditions: at least 250 TAVR hospital cases with an Average mortality rating in 2022, and at least 35,000 ambulatory surgery encounters in 2019. Then, for that hospital, find the county with the highest total of homeless inpatient encounters broken down by age. As of 2020, what was that county's median household income? Return the number only. Your response should be in the format [Answer].",
   "answer": 130890,
   "nodes": {

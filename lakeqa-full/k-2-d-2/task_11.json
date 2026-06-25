@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000092",
     "question": "I'm researching a state that ranks 7th through 11th on both of these lists: states ordered by how often babies under 1 were recorded as abuse or neglect victims for every 1,000 children that age in the most recent federal fiscal year covered by the file, and states ordered by the total federal funding tied to Medicaid's temporary COVID-19 testing coverage for uninsured people after adding all quarterly filings from 2020 through 2023. Break any ties alphabetically when identifying the state. After finding it, how many calls came into its Medicaid and CHIP call center in February 2024? Respond with [Answer].",
     "answer": 416910,
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000821",
     "question": "Among Washington cities that ranked in the top three for crude diabetes prevalence in each city-level GIS release from 2017 through 2019, which had the largest 2024 population? In that city's county, which disease had the higher 2019-2021 age-adjusted mortality rate among adults 35 and older? What was that city's 2017 crude prevalence for that disease? Please return only the prevalence in the format [Answer].",
     "answer": "5.6",
     "nodes": {

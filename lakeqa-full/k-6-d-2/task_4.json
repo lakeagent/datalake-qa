@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000960",
     "question": "Start by finding the Chicago city department with a budget of $400 million to $700 million in 2018 and $600 million to $700 million in 2019. Determine whether this department became a paid professional force before or after Pittsburgh's fire bureau did, and focus on the city whose department became paid later. For that city, identify its main commercial passenger airport. Then find the destination that had the largest number of passengers that could be carried on scheduled flights there in March 2019. What is the ZIP code in that destination city and state with the largest land area? Please return the ZIP code only. Your response should be in the format [Answer].",
     "answer": "30349",
     "nodes": {

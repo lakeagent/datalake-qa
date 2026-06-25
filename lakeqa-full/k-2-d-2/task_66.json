@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000147",
     "question": "Identify the state that belongs to both groups: states that, in 2019, had at least 5 different investor-owned electricity companies where customers received power supply and delivery from the same company and where the average price households paid was at least $0.15 per kWh, and states where Hawaii records of unpaid political-committee spending from January 1, 2008 through October 21, 2024 for committees not tied to a candidate show at least $50,000 still owed for specialized professional work and at least 8% of entries involving companies rather than individuals falling into that kind of work. As of 2025, among NBA teams based in that state, which team had won the most NBA championships? Your response should be in the format [Answer].",
     "answer": "Los Angeles Lakers",
     "nodes": {

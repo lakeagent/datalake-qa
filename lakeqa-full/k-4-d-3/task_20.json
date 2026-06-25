@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000568",
     "question": "In 2017, which U.S. state had the 3rd lowest death rate for unintentional injuries? In that state A, since 2010, which years did their offices have the 3rd to 12th highest unpaid expenditure on food and beverages? Among the years in that answer, which three years B, C, and D had the most traffic crashes in LA? In that state A, and in years B, C, and D, which departments had the 3rd to 5th highest, 4th to 6th highest, and 5th to 7th highest actual budgets for the general government function? Finally, across all departments that appear in those three answers, what was their average planned budget for the general government function in 2019? Please return only the number in the format [Answer].",
     "answer": "41526403.8",
     "nodes": {

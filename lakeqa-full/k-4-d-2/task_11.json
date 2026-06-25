@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000480",
     "question": "In what year was the city founded where the person was born after whom the NYC high school is named that had a 4-year graduation rate of 100% for both the 2009 cohort (according to 2005-2015 graduation rates) AND the 2010 cohort (according to 2005-2019 graduation rates), had a female student percentage greater than 60% in 2011-12 according to the 2011-2016 demographic snapshot, AND had enrollment less than 600 students in 2013-14 according to the 2013-2018 demographic snapshot? Your response should be in the format [Answer].",
     "answer": "1624",
     "nodes": {

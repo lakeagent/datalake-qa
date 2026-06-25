@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000089",
     "question": "Look at two state-level rankings: one from 2023 state Medicaid spending records tied to the temporary increase in the federal matching rate, where states are ranked 14th through 18th by the median amount the federal government paid toward overall Medicaid benefit spending; and one from spending records for adults covered through Medicaid expansion, where states are ranked 9th through 13th by how much the state's overall Medicaid spending eligible for federal matching varies from report to report. After identifying the state that appears in both groups, how many beneficiaries in that state were enrolled in a full-service managed care arrangement in the final month of 2022? Break ties alphabetically by state name when forming the intermediate state. Respond with [Answer].",
     "answer": 1808194,
     "nodes": {

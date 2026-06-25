@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000637",
   "question": "Among Washington cities that ranked in the top three for crude diabetes prevalence in each city-level GIS release from 2017 through 2019, which had the largest 2024 population? Which county contains that city? How many national protected areas are in that county? Return only the number in the format [Answer].",
   "answer": 3,
   "nodes": {

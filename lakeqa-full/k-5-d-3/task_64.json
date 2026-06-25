@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000862",
   "question": "Identify the Virginia county containing the NASA facility where the equipment used to collect the bare earth elevation data for the 2007 USGS survey of the national monument honoring the U.S. president born in Virginia who held a general officer rank and appears on current U.S. currency was developed. In the past year as of the end of September 2009, how many more single-engine than multi-engine aircraft were based at the county-owned public-use airport in that county? Please return the number only. Your response should be in the format [Answer].",
   "answer": 21,
   "nodes": {

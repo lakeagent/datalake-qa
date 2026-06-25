@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000389",
     "question": "Consider the Washington counties where school districts consistently achieved at least 68% English language arts performance for all students and all grades from 2014-15 through 2017-18. Among those counties, which one is in Eastern Washington, borders Idaho, and had a 2020 population under 300,000? Only report the name of the county in the format of `X County`. Your response should be in the format [Answer].",
     "answer": "Whitman County",
     "nodes": {

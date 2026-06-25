@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000404",
   "question": "Identify the NYC elementary school in District 3 that ranked in the top 3 by performance category score in each school year from 2006-07 through 2009-10, then find its neighborhood. What is the difference between the largest and smallest primary ZIP Codes listed for that neighborhood? Return the number only. Your response should be in the format [Answer].",
   "answer": 46,
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000357",
   "question": "Find the NYC high school that received an overall A rating in 2010-11 and 2011-12, was also given an A for student graduation and diploma outcomes in 2010-11, and later had the percentage of students considered prepared for college or careers between 98-99% in both 2012 and 2013, with a 2013 graduation rate below 100%. What is the official in-school newspaper of that school? Your response should be in the format [Answer].",
   "answer": "The Spectator",
   "nodes": {

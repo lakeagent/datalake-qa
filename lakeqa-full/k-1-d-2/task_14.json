@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000040",
     "question": "Which state is in both of these groups: states ranked 6th through 10th by the median reported rate across 2014 Medicaid/CHIP health-care quality measures, and states ranked 7th through 11th by the sample standard deviation of reported rates across 2019 Medicaid/CHIP health-care quality measures? Break ties alphabetically by state name. Respond with [Answer].",
     "answer": "Michigan",
     "nodes": {

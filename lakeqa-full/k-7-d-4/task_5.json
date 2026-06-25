@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA001002",
     "question": "In which city, county, and state is Virginia Tech's main campus located? In that state, identify the county that consistently ranks in the top three statewide for the number of public schools, private schools, and school district offices. Among the counties that meet these criteria, select the one with the highest number of postsecondary institutions. For that specific county, calculate the total count of public, private, and postsecondary schools and subtract the number of school district offices. Give the final answer as an integer.",
     "answer": "347",
     "nodes": {

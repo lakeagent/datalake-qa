@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000592",
   "question": "Identify the NASA facility where the equipment used to collect the bare earth elevation data for the 2007 USGS survey of the national monument honoring the U.S. president born in Virginia who held a general officer rank and appears on current U.S. currency was developed. How many acres did NASA lease on the island used for that facility? Please return the number only. Your response should be in the format [Answer].",
   "answer": 1000,
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000406",
   "question": "Identify the NYC elementary school in District 3 that ranked in the top 3 by performance category score in each school year from 2006-07 through 2009-10, then find its neighborhood. For the performing arts complex on that neighborhood, how many facilities does it have per million annual visitors? Return the number only. Your response should be in the format [Answer].",
   "answer": 6,
   "nodes": {

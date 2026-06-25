@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000322",
   "question": "First, identify the Washington, DC wards that consistently ranked in the top four for building permits from 2022 to 2024. Among those candidates, identify the two wards with the highest average crime-incident counts from 2022 to 2024. How many more listed neighborhoods with a note that they are also in another ward does the ward with the larger such count have than the other ward? Return the difference as an integer. Your response should be in the format [Answer].",
   "answer": 2,
   "nodes": {

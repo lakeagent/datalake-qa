@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000317",
   "question": "Across 2019-2021, identify the Texas counties that consistently rank in the top five for capital outlay spending. From those, keep only the counties that also rank in the statewide top five for releases from the Department of Criminal Justice in each of those years. Among the county seats of those counties, which had the largest population at the 2020 census? Return the city name only. Your response should be in the format [Answer].",
   "answer": "Houston",
   "nodes": {

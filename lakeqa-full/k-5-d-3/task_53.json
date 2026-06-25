@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000851",
   "question": "Among Montgomery County farms listed for public tours in 2023, find the city with the most entries that are open both days and include animals. For that city, find the shared ZIP code in agricultural-producer farm entries, then use that ZIP code to find the acquisition year of the largest farmland or conservation easement by recorded acreage. In that year, identify the individual farmland-preservation program with the most acres. For that fiscal year, calculate how many certified cover-crop acres there were per acre in the leading individual farmland-preservation program, then scale that by the average transfer-development-right price per dollar of agricultural transfer tax collected. Round your answer to 2 decimal places, and return as [ANSWER].",
   "answer": "0.61",
   "nodes": {

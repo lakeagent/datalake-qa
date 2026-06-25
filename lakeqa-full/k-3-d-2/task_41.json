@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000266",
     "question": "Among DC wards, first identify the top two wards by average 2019-2020 counts of crimes involving homicide, assault with dangerous weapon, robbery, or sex abuse. Among those two wards, identify the ward with the higher average 311 service-request count across 2019 and 2020. Which high school did the Council member representing that ward attend? Your response should be in the format [Answer].",
     "answer": "McKinley Technology High School",
     "nodes": {

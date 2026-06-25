@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000125",
     "question": "First identify the state that appears in both of these data.gov-derived groups: Which states would place 7th through 11th if you compared states by the typical dollar damage from railroad equipment accidents over all available years? Break any ties alphabetically.; and Which states would place 6th through 10th if you compared how much the average income on returns that owed no New York tax changes from year to year, starting with tax year 1999? Break any ties alphabetically.. After identifying that state, what fruit is listed as the state fruit of that state? Your response should be in the format [Answer].",
     "answer": "Huckleberry",
     "nodes": {

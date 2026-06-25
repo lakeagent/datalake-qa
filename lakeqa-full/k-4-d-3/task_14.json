@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000562",
     "question": "Among Washington, DC wards 2 and 5, identify which ward had more scheduled street-cleaning events from 2022 to 2024. In that ward, find the charter school whose serving spans grades 8 and 9, and is named after a famous person. What county is that person's birthplace located in? Please return the county only, i.e. `XX County`. Your response should be in the format [Answer].",
     "answer": "Ulster County",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000470",
     "question": "I'm analyzing identity theft trends in Los Angeles. First, identify the year between 2010 and 2019 that had the highest number of identity theft incidents. In that same year, which neighborhood had the most arrests for moving traffic violations? Report the number of identity theft incidents occurred in the police area containing that neighborhood in 2020. Your response should be in the format [Answer].",
     "answer": "761",
     "nodes": {

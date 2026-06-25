@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000202",
   "question": "Among Connecticut towns that ranked in the top 10 in late 2019 for preschool spaces being used, Care 4 Kids enrollment, and licensed child day-care capacity, how many unique counties contain those towns? Return only the number in the format [Answer].",
   "answer": 3,
   "nodes": {

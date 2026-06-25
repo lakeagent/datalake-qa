@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000720",
   "question": "Among Washington state's public four-year universities, which two had the highest average contract counts between 2014 and 2016? Find the counties where those two universities are located. Across those two universities and their counties, how many years apart are the earliest county formation or establishment year and the latest university founding year? Please return only the number in the format [Answer].",
   "answer": 30,
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000744",
     "question": "Define a more valuable area as one with a higher average property market value and gross income per square foot. In Manhattan, Brooklyn, and Queens, which postcodes are respectively the 7th, 8th, and 8th most valuable areas in 2008-09? For all schools in those areas, which school year has the highest number of registered students? Using the starting year of that school year, among all states where registered buses are fewer than trucks and registered cars are greater than trucks, which state has the 5th highest number of registered cars? Among the states bordering that state, how many had fewer than 2,000,000 residents at the 2020 census? Please return only the number in the format [Answer].",
     "answer": 2,
     "nodes": {

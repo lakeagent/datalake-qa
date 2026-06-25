@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000630",
   "question": "In 2023, which U.S. state has the 5th highest tax rate for diesel? In that state, from 2021 to 2025, define a generous year as one where the casino profit sharing program was at its peak, with highest total amount paid to both the state and an average town, which years were the 2nd to 4th most generous? In the first, second, and third years of that answer, define a county as more supported if it received more breakfast, lunch, and afternoon snack reimbursement in day care meal events. Which counties are the 4th through 6th most supported in each of those three years? Across all counties that appear in those three answers, define spending size as the average of the breakfast, lunch, and afternoon snack reimbursements in total. Which counties have the 3rd and 4th highest spending size? Among those two counties, how many were named for a place rather than a person? Please return only the number in the format [Answer].",
   "answer": 1,
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000602",
   "question": "Find the Iowa counties that met the 2019 unemployment, biofuel-sales, and income criteria, then compare the 2020 census populations of their county seats and keep the county with the more populous seat. How many feet longer than tall is the cable-stayed bridge for pedestrians in that county seat? Your response should be in the format [Answer].",
   "answer": 525,
   "nodes": {

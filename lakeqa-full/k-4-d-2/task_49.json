@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000518",
   "question": "Find the city where the person was born after whom the NYC high school is named that had a 4-year graduation rate of 100% for both the 2009 cohort and the 2010 cohort, had a female student percentage greater than 60% in 2011-12, and had enrollment less than 600 students in 2013-14. How many more community districts than boroughs are listed for that city? Your response should be in the format [Answer].",
   "answer": 54,
   "nodes": {

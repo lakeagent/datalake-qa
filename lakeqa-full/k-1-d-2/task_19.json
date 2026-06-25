@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000045",
     "question": "Which state appears in both groups: states ranked 5th through 9th by the median 2022 Medicare quality-of-care performance score for clinicians practicing there under the Merit-based Incentive Payment System, and states ranked 6th through 10th by how much the number of authorized Segal AmeriCorps Education Award payments to higher-education and loan-holding institutions varied across institutions and years from 1995-2016? Respond with [Answer].",
     "answer": "Nebraska",
     "nodes": {

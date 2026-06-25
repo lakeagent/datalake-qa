@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000603",
   "question": "Find the Iowa counties that met the 2019 unemployment, biofuel-sales, and income criteria, then compare the 2020 census populations of their county seats and keep the county with the more populous seat. As of 2025, how many years after its founding did the history and natural science museum in that county seat begin using its current name? Your response should be in the format [Answer].",
   "answer": 147,
   "nodes": {

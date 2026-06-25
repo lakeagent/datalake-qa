@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000083",
     "question": "Which state appears in both of these groups: the states where Hawaii state and county candidates from november 8 2006 to 31 in the 2010-2012 election cycle still owed vendors at least $300 altogether while having paid back no more than half of what they owed, and the states that in 2015 had a value of at least 2 when you multiply the number of different utilities by how much the average household price divided by the average industrial price exceeds 1 for places where supply and delivery were sold together? Once you identify that state, how many gallons of gasoline and gasohol taxed by the state were reported there by wholesale distributors in December 2023? Respond with [Answer].",
     "answer": 255332436,
     "nodes": {

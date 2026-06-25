@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000319",
   "question": "Across January 2019-2021, identify the issuing agencies that consistently ranked in the top 20 by total parking-violation fines. From those, keep only the U.S. national law-enforcement bodies and find which had the highest average number of January moving violations from 2019-2021. As of April 8 in 2022, how many officers did that law-enforcement body have? Return the number only. Your response should be in the format [Answer].",
   "answer": 494,
   "nodes": {

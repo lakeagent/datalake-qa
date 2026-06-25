@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000876",
     "question": "Identify the Chicago library branch that ranked in the top five for total number of items checked out over the year and total visitors, and in the top three for total public-computer logins, every year from 2019 to 2021. Which Chicago neighborhood is that branch located in? The trail that starts at that neighborhood is named after a canal; how many years passed between the start and completion of that canal's construction? Your response should be in the format [Answer].",
     "answer": 3,
     "nodes": {

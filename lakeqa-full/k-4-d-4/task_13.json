@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000668",
     "question": "First identify the institution that satisfies all four of these analytical conditions: all of its listed New York bank-owned ATM locations are concentrated in a single county; it appears exactly once in the 2023 foreclosure-avoidance program beneficiary affidavit records, reports zero 2022 foreclosures, and uses only one mailing city; it appears exactly once in the 2014 foreclosure-avoidance mediation beneficiary affidavit records, reports zero previous-year foreclosures, and uses only one mailing state; and it appears exactly once in the 2017 foreclosure-avoidance mediation beneficiary affidavit records and uses only one mailing state. Then, among Connecticut PPP loans issued by that institution, keep the borrower cities ranked first and second by loan count. Between those two cities, which one is more to the east? Finally, compare that city's crude obesity prevalence in the 2021 and 2022 PLACES releases. In which release year is it lower? Return the year only. Your response should be in the format [Answer].",
     "answer": "2022",
     "nodes": {

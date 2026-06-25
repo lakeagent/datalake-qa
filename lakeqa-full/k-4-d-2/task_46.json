@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000515",
     "question": "Carnegie Steel Company was founded by a person. Where was he based, and what was the minimum Police Bureau expenditure in that city in 2017 and 2018? Using the largest listed sworn-officer strength for that city's police bureau, what was the minimum expenditure per 100 sworn officers in millions of dollars? Round your answer to one decimal. Your response should be in the format [Answer].",
     "answer": "7.0",
     "nodes": {

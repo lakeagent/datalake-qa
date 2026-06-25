@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000154",
     "question": "Identify the Wyoming county that had at least 150 and fewer than 180 VA disability compensation recipients in FY 2019 and at least 260 and fewer than 280 VA disability compensation recipients in FY 2023. Which one-room schoolhouse located in that county was built in 1903 and used as a school until the 1950s? Your response should be in the format [Answer].",
     "answer": "Lower Shell School House",
     "nodes": {

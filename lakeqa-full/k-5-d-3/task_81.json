@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000879",
   "question": "In the school year of 2017-2018, which 10 preschools had the most students enrolled, the widest variety of reported ethnicities, and the closest balance between girls and boys? Which 10 districts had the most students enrolled and the strongest English and Math performance? Which 10 high schools had the most students enrolled and the strongest English and Math performance? Looking across those schools and districts together, which two school years combined the strongest attendance and English proficiency averages? In those two years and among those 10 high schools, which high schools had the most student emergency transports? Among those high schools, which school ranked 5th for the best combination of graduate count and graduation rate in 2015? As of 2025, for that high school, how many studios can a student choose from for a major? Please return only the number in the format [Answer].",
   "answer": 6,
   "nodes": {

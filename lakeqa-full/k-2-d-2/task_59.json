@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000140",
     "question": "First identify the state that appears in both of these data.gov-derived groups: Across U.S. states in the most recent federal fiscal year covered by the file, which states rank 7th through 11th when ordered by how often babies under 1 were recorded as abuse or neglect victims for every 1,000 children that age, breaking ties alphabetically; and Which states rank 7th through 11th, breaking ties alphabetically, when ordered by the total federal funding tied to Medicaid's temporary COVID-19 testing coverage for uninsured people after adding all quarterly filings from 2020 through 2023. After identifying that state, what dog is listed as the state dog of that state? Your response should be in the format [Answer].",
     "answer": "Catahoula leopard dog",
     "nodes": {

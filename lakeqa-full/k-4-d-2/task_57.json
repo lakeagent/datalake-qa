@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000526",
   "question": "Among New York counties outside of NYC, identify the top two by total mental health service recipients from 2017 to 2018. Between their county seats, find the one with the earlier incorporation date, then use its county. How many years apart were that county's agricultural society's first fair and the rebuilding of the main library of the public library system serving that county? Your response should be in the format [Answer].",
   "answer": 144,
   "nodes": {

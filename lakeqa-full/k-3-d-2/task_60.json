@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000285",
   "question": "First find the terminus cities of Route 66. Among those cities, identify the city that had higher binge drinking prevalence in both the 2016 and 2018 city health data. As of 2025, how many community areas is that city divided into? Please return only the number in the format [Answer].",
   "answer": 77,
   "nodes": {

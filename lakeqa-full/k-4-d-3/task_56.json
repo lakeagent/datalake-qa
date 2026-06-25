@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000604",
   "question": "Find the Iowa counties that met the 2019 unemployment, biofuel-sales, and income criteria, then compare the 2020 census populations of their county seats and keep the county with the more populous seat. For the city hall in that county seat, how many years after it was built did it become one of the National Register of Historic Places? Your response should be in the format [Answer].",
   "answer": 87,
   "nodes": {

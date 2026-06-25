@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000837",
     "question": "Among all government departments in the city that Bruno Mars was born and raised in, if higher efficiency means fewer average workdays to complete non-complex public-records requests, then for all of these government departments, which specific department has the second highest efficiency? Then, for that department in the same city, what are its final budgets in 2016, 2017, and 2018? From these three budget values, find the year with the second highest budget, and the last three digit of the highest budget value, if we define rank as the last three digit, and in that second-highest-budget year, consider all U.S. cities whose tenants' average overall satisfaction is neither perfect nor zero. Which city has that rank-th highest average overall satisfaction? Finally, find the 2020 census population of that city, and calculate the absolute difference between the census population and the second-highest final budget values we get in the previous step? Return the number in the format [Answer].",
     "answer": "269455498",
     "nodes": {

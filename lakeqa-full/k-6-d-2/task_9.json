@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000965",
   "question": "First identify the California hospital that satisfies both of these conditions: at least 250 TAVR hospital cases with an Average mortality rating in 2022, and at least 35,000 ambulatory surgery encounters in 2019. Then, for that hospital, find the county with the highest total of homeless inpatient encounters broken down by age. What is the county seat of that county? For that city, take the three health-outcome measures with the highest crude prevalence values in 2021, and the health-outcome measures with crude prevalence values from 15 up to but not including 23 in 2022. Which measure appears in both sets? What measurement is used to determine whether a person falls into that category? How many major adult classifications does that measurement have? Return the number only. Your response should be in the format [Answer].",
   "answer": 4,
   "nodes": {

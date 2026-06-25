@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000552",
     "question": "Find the New York counties outside of NYC having (1) over 90 youth sent to jail in 2015, (2) a total jail census under 750 in 2021, and (3) over 65,500 homeowner school-tax relief exemptions in 2022. Within them, identify the county with the higher 2021 violent-crime count. In what year was its county seat incorporated as a city? Please return the year only. Your response should be in the format [Answer].",
     "answer": "1832",
     "nodes": {

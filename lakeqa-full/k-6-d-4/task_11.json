@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000996",
   "question": "From the counties that were in the statewide top 5 for releases from the Texas state prison system in 2019, 2020, and 2021, find the county that has the most recently established county seat. In that county, identify the school district that had the highest average percentage across its sites of students automatically recognized as eligible for free school meals without submitting a household meal application from 2019-2020 through 2021-2022. Find the year that school district was incorporated. In the U.S. presidential election held in that year, what was the electoral-vote difference between the winner and runner-up? Please return only the number in the format [Answer].",
   "answer": 23,
   "nodes": {

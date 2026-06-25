@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000890",
   "question": "In the Texas city that appeared most often in the mailing addresses for investor-owned water and sewer utilities, which ZIP code appeared most often in informal complaints about water utilities? In that ZIP code, which organizations operated active sites participating in the school nutrition program, active Child and Adult Care Food Program center sites, and active summer meal program sites? Within the district that appears in all three groups, which campus received the highest score for student academic results in the state's 2021-2022 school ratings? How many grade levels does that campus serve? Please return only the number in the format [Answer].",
   "answer": 3,
   "nodes": {

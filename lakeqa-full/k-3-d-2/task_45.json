@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000270",
     "question": "Among New York counties outside of NYC, identify the top two by total mental health service recipients from 2017 to 2018. For those counties, identify their county seats. Among the professional sports teams in those county seats, which team has won the most titles? Your response should be in the format [Answer].",
     "answer": "Rochester Red Wings",
     "nodes": {

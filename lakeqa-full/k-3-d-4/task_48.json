@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000424",
   "question": "From 2014-15 to 2018-19, for all students in Grade 12, which borough had the 2nd highest average attendance rate? For that borough, define a better area as one with condominiums whose average year built are more recent and average value per square foot are higher, which postcodes are the 17th to 19th best areas in the year of 2008-2009, 4th to 6th best areas in the year of 2009-2010, and 6th to 8th best areas in the year of 2010-2011 in that borough? Across Bayside, Ozone Park, Broad Channel, and Astoria, how many have at least one ZIP Code in that postcode set? Please return only the number in the format [Answer].",
   "answer": 3,
   "nodes": {

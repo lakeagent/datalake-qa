@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000998",
     "question": "Identify in which city, county, and state is the school founded by Sal Khan located. In that state, find the county that ranks in the top three statewide for the count of public schools, private schools, and school district offices. Among the counties that meet all three criteria, find the one with the most postsecondary institutions. For that specific county, what is the difference between its combined total number of public and private schools and its combined total of district offices and postsecondary institutions? Give the final answer as an integer.",
     "answer": "2369",
     "nodes": {

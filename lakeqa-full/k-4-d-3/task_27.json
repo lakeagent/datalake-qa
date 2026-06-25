@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000575",
     "question": "Excluding Washington, which state had 9th most licenses in 2024? For that state, which months had the 2nd, 3rd, and 5th highest motor fuel? Returned in numbers from January to December. In each of the first and second months of those three months, which four districts had the highest combined attendance for both normal students and students in unstable housing? In the third month of those three month,  which 60 schools have the highest total attendance and in-person attendance among blended learners? Among those 60 schools，for schools that are in those 8 districts, which two school years rank second and third overall? Using those two years, what was the real New York state revenue in total? Please return only the number in the format [Answer].",
     "answer": "223378.6",
     "nodes": {

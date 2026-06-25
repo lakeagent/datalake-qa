@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000948",
   "question": "From the Texas cities that had diabetes prevalence above 12% in each CDC 500 Cities release from 2016 through 2019, keep the ones with populations under 100,000 in the 2020 Census, find the city that borders both of those cities, and identify the county containing that city. As of the 2024 census estimate, what was that county's population rank among Texas counties? Please return only the number in the format [Answer].",
   "answer": 9,
   "nodes": {

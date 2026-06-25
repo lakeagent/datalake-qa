@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000178",
   "question": "Among the Missouri Department of Corrections, the Missouri Department of Social Services, and the Missouri Department of Transportation, which had the highest average employee count from 2021 through 2023? How many facilities statewide does that agency have? Return the number only. Your response should be in the format [Answer].",
   "answer": 21,
   "nodes": {

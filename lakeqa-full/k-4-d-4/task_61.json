@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000716",
   "question": "Among Texas counties in the top five for average capital outlay spending from 2018 to 2021, consider those that are not among the original 23 Texas counties. Which of those had the lowest average criminal releases in 2019-20? As of 2025, how much larger was that county's 2024 estimated population than its 2020 census population? Return the difference only. Your response should be in the format [Answer].",
   "answer": 129170,
   "nodes": {

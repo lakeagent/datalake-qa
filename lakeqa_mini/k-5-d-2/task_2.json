@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000764",
     "question": "The NBA champion team based in San Antonio won its first NBA Finals against another team. Find the county that `another` team is based in. In 2020, what is the absolute difference between firearm crimes and hate crime incidents reported in that county? Only report the number in your answer. Your response should be in the format [Answer].",
     "answer": "816",
     "nodes": {

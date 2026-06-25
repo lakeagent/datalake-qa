@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000238",
     "question": "For the city where the Florida Department of Education is headquartered, in school year 2022-2023, what is the number of public schools in its county minus the number of postsecondary institutions in its county? Your response should be in the format [Answer].",
     "answer": "53",
     "nodes": {

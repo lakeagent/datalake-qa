@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000231",
     "question": "I'm comparing Veterans pension benefits across cities. Find the South Dakota county that falls in 275-290 veteran disability recipients in 2019 and 295-310 in 2023, then find the counties whose state captials are less populous than that. Comparing the South Dakota's veteran pension recipients in 2023 and those counties' VA pension recipients in 2020, report the maximum. Your response should be in the format [Answer].",
     "answer": "507",
     "nodes": {

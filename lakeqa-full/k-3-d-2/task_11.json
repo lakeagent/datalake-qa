@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000236",
     "question": "In school year 2022-2023, in the capital city of California, what is the number of public schools in its county minus the number of district administrative offices in its county? . Your response should be in the format [Answer].",
     "answer": "176",
     "nodes": {

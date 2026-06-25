@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000914",
     "question": "Identify the Texas county that had the most consistent annual number of state prison releases from 2019 to 2022 (lowest coefficient of variation among the top five by average releases). Identify the NBA champion team based in its county seat, and find which county the team it won its first NBA Finals against is based in? Your response should be in the format [Answer].",
     "answer": "Manhattan",
     "nodes": {

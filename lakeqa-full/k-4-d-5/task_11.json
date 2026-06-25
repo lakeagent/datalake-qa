@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000735",
   "question": "Among drugs with 5 to 10 million total annual Medicaid prescriptions across U.S. states in every year from 2018 through 2022, identify the drug with the second-highest average prescription count across those five years. In the year that drug was approved for medical use in the United States and the European Union, which cause of death ranked 2nd by age-adjusted death rate? What two meanings does the ancient Greek word behind that cause of death have? Report the answer alphabetically. Your response should be in the format [Answer].",
   "answer": "crab, tumor",
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000474",
     "question": "I'm analyzing simple battery assault trends in Los Angeles. First, identify the year between 2010 and 2019 that saw the highest number of these incidents. In that same year, which police area contains the neighborhood with the most arrests for the catch-all charge category? Focusing on that specific area, how many simple assault battery incidents occurred there in 2020?. Your response should be in the format [Answer].",
     "answer": "1350",
     "nodes": {

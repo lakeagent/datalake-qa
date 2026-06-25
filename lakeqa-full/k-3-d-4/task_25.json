@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000401",
   "question": "Identify the NYC senior high school that was in the top 3 by total VADIR incidents in each school year from 2010-11 through 2013-14, then find its borough. How many years after the zoo in that borough opened did the identified school open? Return the number of years only. Your response should be in the format [Answer].",
   "answer": 32,
   "nodes": {

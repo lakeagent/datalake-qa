@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000854",
   "question": "Among California physicians with a reported primary practice area and a five-digit address ZIP code, find the most common practice area in June 2019. Take that practice area's two highest-count ZIP codes. For each ZIP, find the most common patient-care hours, telemedicine hours, and years-since-licensure among physicians there. Add the three counts for each ZIP and determine which ZIP has the greater total. Use that ZIP's city/state to find its Medicare joint-replacement metropolitan area and counties. In those counties, which Medicare-certified skilled nursing facility had the most skilled-nursing-facility beds in 2021? Write your answer as [ANSWER].",
   "answer": "ST. FRANCIS CONVALESCENT PAVILION",
   "nodes": {

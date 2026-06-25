@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000313",
   "question": "For the NYC high school that ranked in the top 7 by overall score in all three school years: 2006-07 and 2009-11, find the neighborhood named after this high school. Then identify the builder of the earliest constructed bridge that connects this neighborhood with the mainland. What was the name of that builder's second wife? Your response should be in the format [Answer].",
   "answer": "Catharine Van Cortlandt Derval",
   "nodes": {

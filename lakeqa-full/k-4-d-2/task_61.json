@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000530",
   "question": "Identify a specific California county based on a set of health and housing statistics. The county had an area median income of at least $142,800 in 2022 and $147,900 in 2023. It also had qualified WIC families' average benefits redeemed of $570 or more in 2018 and $700 or more in 2020, a 2015 perioperative hemorrhage/hematoma observed rate of 19 or higher, and at least 3 billion square meters. Once you identify the county that matches all these figures, how many parks does that county's parks department manage? Please return the number only. Your response should be in the format [Answer].",
   "answer": 28,
   "nodes": {

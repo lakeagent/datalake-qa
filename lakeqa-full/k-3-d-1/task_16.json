@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000220",
   "question": "In Austin, start with the ZIP code that had the most multifamily properties without a recent audit on file. In that ZIP code, find the council district containing the affordable housing property with the most total units. As of 2025, how many years passed between the first council member's start date and the current council member's start date for that Austin City Council district? Please return only the number in the format [Answer].",
   "answer": 8,
   "nodes": {

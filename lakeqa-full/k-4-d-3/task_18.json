@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000566",
     "question": "In the 2014-15 school year of Washington, which top 5 schools had the largest low-income students amount that are expected to take Biology graduation test, which top 5 schools had the most low-income students who are left schools after 7 years, and which top 5 schools had the most low-income students enrolled? Among the schools that appear in at least two of those three answers, which three years had the highest total number of low-income students who left schools in four years? Using those years A, B, and C, we define a county is careless when a large portion of children ages 0-5 enter state-supervised care because of parental substance use. Which five counties are the most careless in years A, B, and C? Among those counties, across those same years A, B, and C, which counties have 2nd lowest and 2nd highest most transaction registration for passenger cars? Finally, what was the average of those two counties' 2010 census populations? Please return only the number in the format [Answer].",
     "answer": "48617",
     "nodes": {

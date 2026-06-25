@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000108",
     "question": "Which state appears in both groups: states ranked 6th through 10th by their statewide unemployment-insurance contribution rate in 2018, and states ranked 6th through 10th by how much average industrial electricity rates varied across ZIP-code listings for investor-owned utilities in 2020? Respond with [Answer]. After finding that, what is the highest point in that state? Your response should be in the format [Answer].",
     "answer": "Granite Peak",
     "nodes": {

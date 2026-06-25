@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000229",
     "question": "I'm interested in extreme weather records across Wyoming. What is the record high temperature ever recorded in the county seat of the Wyoming county that had between 150-180 veteran disability recipients in 2019 and 260-280 recipients in 2023? Answer the integer in Fahrenheit. Your response should be in the format [Answer].",
     "answer": "115",
     "nodes": {

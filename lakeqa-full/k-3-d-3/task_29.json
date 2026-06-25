@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000329",
   "question": "In the state with two-digit FIPS code 19, find the counties that rank in the top three for public schools, private schools, and school district offices. Among their intersection, select the county with the most postsecondary institutions. For that county, how many years after the county was created was its present courthouse built? Your response should be in the format [Answer].",
   "answer": 60,
   "nodes": {

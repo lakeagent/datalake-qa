@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000797",
   "question": "Find the birth state of the candidate in the New York election campaign with the most sponsors that sponsored through agents in 2021. Rank that state by total expenditure across all categories in 2021 in the U.S., then find the state with the same rank by total amenities across all categories in 2021 among all states in the U.S. As of 2025, how many more counties is that state subdivided into than Missouri? Please return only the number in the format [Answer].",
   "answer": 6,
   "nodes": {

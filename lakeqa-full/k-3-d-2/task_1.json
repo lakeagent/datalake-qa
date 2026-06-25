@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000226",
     "question": "Can you tell me the population of the largest city in the Idaho county reported in the 2020 census that had between 90 and 110 U.S. Department of Veterans Affairs disability compensation recipients in 2023 AND had between 88 and 92 recipients in 2019?. Your response should be in the format [Answer].",
     "answer": "2643",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000595",
   "question": "Identify the New York county that satisfies the listed public-assistance, foster-care, mental-health, social-services staffing, and case-opening filters, then find its county seat. For the private research university in that city, how many years after the seminary at its roots was founded was the university established? Your response should be in the format [Answer].",
   "answer": 39,
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000999",
     "question": "Identify the city and the county where the organization Jon Whitmore was a chief executive officer of was founded. In the state where the city is located, identify the counties that rank in the top three for the number of school district offices and also place in the top three for either public or private schools. Among the counties that meet these criteria, select the one with the highest number of postsecondary institutions. For that specific county, take the difference between the number of public and private schools, and add it to the difference between the number of colleges and district offices. Give the final answer as an integer.",
     "answer": "113",
     "nodes": {

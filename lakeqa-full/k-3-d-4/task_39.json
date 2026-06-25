@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000415",
   "question": "Find the Missouri state agency with the third-highest average total expenditure from FY 2007 through FY 2010, then identify the city where its Southwest district is based. How many more people were in that city's metropolitan area in 2022 than in the city at the 2020 census? Return the number only. Your response should be in the format [Answer].",
   "answer": 317885,
   "nodes": {

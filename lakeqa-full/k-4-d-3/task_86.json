@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000634",
   "question": "I am looking for a specific high school in Manhattan's District 2 that consistently received 'A' grades for comprehensive performance from 2007 to 2010 and is named after a relative of a U.S. president. Which U.S. presidents were related to that school's namesake? How many ranks apart were those presidents in the order of U.S. presidents? The answer is 0 if there is only one candidate president. Return only the number in the format [Answer].",
   "answer": 6,
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000179",
   "question": "Among Washington cities that ranked in the top three for crude diabetes prevalence in each city-level GIS release from 2017 through 2019, which of those repeat cities has more sister cities? Return only the city name in the format [Answer].",
   "answer": "Tacoma",
   "nodes": {

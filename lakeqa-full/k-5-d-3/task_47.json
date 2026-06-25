@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000845",
     "question": "Identify the crime types occur 5th to 7th most frequent in New York City, 12th to 14th most frequent in Austin, and 4th to 6th most frequent in Louisville. For the offense type that appears in all three cities, which year did Los Angeles have that type of offense 2nd most frequently since 2020 to present? In that year, which state had the 25th highest total motor fuel sales tax? Called this state A. For that A's government expenditure on lottery, which other state B outside of A has 8th most vendor companies that have received the payments from that A's government? Finally, find the area of state B in square miles? Please return only the number in the format [Answer].",
     "answer": "163695",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000683",
   "question": "Among Texas counties in the top five for Capital Outlay expenditures in each year from 2018 through 2021, identify the two highest by average TDCJ releases in 2019 and 2020. Of those two, pick the county with the larger percentage increase in disability compensation recipients from 2020 to 2023. Subtract that county's founding year from the incorporation year of its county-seat city. Your response should be in the format [Answer].",
   "answer": 1,
   "nodes": {

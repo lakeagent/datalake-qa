@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000506",
     "question": "For the city where the Colorado Department of Education is headquartered, identify the CBSA code from postsecondary institution records, then subtract the number of district administrative offices in that CBSA in school year 2022-2023 from the number of private schools in that CBSA in school year 2021-2022. What is that difference per 100,000 residents of the city, using the city's 2020 census population? Round your answer to one decimal. Your response should be in the format [Answer].",
     "answer": "5.9",
     "nodes": {

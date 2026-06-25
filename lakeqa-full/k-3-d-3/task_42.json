@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000342",
   "question": "Which years had the 4th to 7th lowest Black infant death rates? Which years up to 2010 had the top 4 lowest non-Hispanic and White female birth rates? Which years up to 2010 had the top 4 lowest nonmarital birth rates for Asian or Pacific women ages 15 to 19? Across the years common to all three answers, if we define a state as healthier if the percentage of former smokers and people who never smoked is higher, which U.S. state is the 21st healthiest? Using natural-region factors such as soils and topography, how many landform divisions does that state have? Please return only the number in the format [Answer].",
   "answer": 8,
   "nodes": {

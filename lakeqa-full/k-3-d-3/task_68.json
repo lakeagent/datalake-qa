@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000368",
   "question": "At Brady Hot Springs, find the date on which wells 56A-1, 81B-1, and SP-2 are all above their own median temperatures for the greatest total number of recorded minutes. What is the flight number of the flight that killed the most people on that day in history? Return only the flight number in the format [Answer].",
   "answer": "MU5735",
   "nodes": {

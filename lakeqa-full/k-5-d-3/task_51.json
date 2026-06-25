@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000849",
   "question": "In Maryland, find the county or jurisdiction with the most 2020 jobs in professional, scientific, and technical services. Within that county, identify the city tied to the largest total of promised new jobs in state-backed economic-development projects. For that city, consider the valid five-digit ZIP codes that have public-access charging or alternative-fuel station locations, choose the ZIP code with the most residential home sales in 2021, and add together three 2023 counts for that ZIP code: foreclosure notices filed, distinct eviction cases with a 2023 event, and state grant-and-loan awards made in fiscal year 2023. Write your answer as [ANSWER].",
   "answer": "107",
   "nodes": {

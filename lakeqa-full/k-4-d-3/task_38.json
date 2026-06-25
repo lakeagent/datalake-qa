@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000586",
   "question": "Identify the Chicago city department that consistently ranked in the top five for ordinance appropriations (with non-zero budget) and also had the highest average salary budget recommendations from 2019 to 2021. How many years after Cook County was incorporated was that department formally established? Return the number only. Your response should be in the format [Answer].",
   "answer": 4,
   "nodes": {

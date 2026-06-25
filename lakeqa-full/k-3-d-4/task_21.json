@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000397",
     "question": "In New Jersey, find the counties that rank in the top three for public schools, private schools, and school district offices. Among their intersection, select the county with the most postsecondary institutions, and compute (public schools + postsecondary institutions) - (private schools + district offices). Only report the integer result. Your response should be in the format [Answer].",
     "answer": "132",
     "nodes": {

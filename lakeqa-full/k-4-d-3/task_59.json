@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000607",
   "question": "Across 2021-2023, find the Missouri state agency that stayed in the top five for spending on contracted expert/specialized services and had the highest average number of employees. Find its headquarters city. For the maximum-security prison in that city operated by the agency, how many more inmates can it house than staff it has? Your response should be in the format [Answer].",
   "answer": 1336,
   "nodes": {

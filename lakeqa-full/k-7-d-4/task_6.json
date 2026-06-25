@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA001003",
     "question": "In which city, county, and state is Instructure (the developer of the Canvas management learning system) based? In that state, identify the counties that rank in the top three for private schools and also place in the top three for either public schools or school district offices. Among the counties that meet these criteria, select the one with the highest number of postsecondary institutions. For that specific county, take the total number of public schools and colleges, and subtract the combined count of private schools and district offices. Give the final answer as an integer.",
     "answer": "249",
     "nodes": {

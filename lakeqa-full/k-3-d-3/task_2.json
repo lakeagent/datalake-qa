@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000302",
   "question": "I want to study the demographic in NYC. Can you find me the zip code of the NYC high school that was in the top 3 by overall progress score in the school year 2011-13 and had an A grade in the 2010-11 progress. Report the percentage of White people contributing to the racial makeup of the neighborhood whose primary ZIP code is the same as that high school based on data in 2010 census?. Your response should be in the format [Answer].",
   "answer": "1.3",
   "nodes": {

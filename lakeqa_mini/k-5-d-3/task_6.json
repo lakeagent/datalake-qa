@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000808",
     "question": "Consider Harris, Travis, Dallas, and Bexar counties. Determine which of these consistently ranked in the statewide top five for offender releases from the Department of Criminal Justice from 2019 to 2021. Among those, compute the average annual intake counts from the Department of Criminal Justice over 2019-2021 and identify the county with the highest average. Its county seat has been home to a National Basketball Association franchise since 1971. Who founded that franchise? Return the name only. Your response should be in the format [Answer].",
     "answer": "Robert Breitbard",
     "nodes": {

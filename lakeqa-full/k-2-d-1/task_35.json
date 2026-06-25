@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000080",
     "question": "Among operational New York wind-energy projects from 2004 through 2015, find the county with the greatest total energy capacity for projects. How many protected areas are in that county? Please return only the number in the format [Answer].",
     "answer": 14,
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000277",
   "question": "Among New York counties with violent crime rates over 300 per 100,000 in 2020 and more than 100 youth sent to jail in 2015, find the county that also had total state payments for homeowners' school taxes between $60M and $90M in 2023 and a jail population above 800. How many more towns than cities are there? Your response should be in the format [Answer].",
   "answer": 22,
   "nodes": {

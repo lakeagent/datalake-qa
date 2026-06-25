@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000775",
     "question": "Identify the Montana county that had between 2500 and 2700 VA disability compensation recipients in FY 2023 and borders Canada. Then identify the counties adjacent to it. Among those adjacent counties, identify the one that had at least 200 and fewer than 240 VA disability compensation recipients in FY 2023 and had a Montana license plate code between 27 and 35. Finally, identify that county's county seat. Which Montana Cattle King had a home at the National Historic Site located in that city? Your response should be in the format [Answer].",
     "answer": "Conrad Kohrs",
     "nodes": {

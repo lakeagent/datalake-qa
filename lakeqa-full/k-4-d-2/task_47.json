@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000516",
   "question": "Identify the NYC high school that was in the top 3 by overall progress score in both the 2011-12 and 2012-13 school years and had an A grade in the 2010-11 Progress Report. Find its ZIP code. Then compare the 2010 census population of the neighborhood whose primary ZIP Code matches that ZIP with the 2010 census population of the neighborhood bordering it to the east. How many more residents did the former neighborhood have? Your response should be in the format [Answer].",
   "answer": "77319",
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000128",
     "question": "First identify the state that appears in both of these data.gov-derived groups: If you group Providence property owners by their home state, which states come in 7th through 11th place when comparing how much their 2009 property-tax bills varied? Break any ties alphabetically.; and If you group the institutions seeking exemption from Oregon's foreclosure-mediation process in 2018 by state, which states come in 6th through 10th place when comparing the middle number of foreclosure actions they reported for the previous year? Break any ties alphabetically.. After identifying that state, what food became the official state snack food of that state as the result of an elementary school project? Your response should be in the format [Answer].",
     "answer": "popcorn",
     "nodes": {

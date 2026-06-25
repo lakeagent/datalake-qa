@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000697",
   "question": "Consider the Washington counties where school districts consistently achieved at least 68% English language arts performance for all students and all grades from 2014-15 through 2017-18. Among those counties, identify the one in Eastern Washington that borders Idaho and had a 2020 population under 300,000. How many crop types does that county produce more of than any other county in the United States? Return the number only. Your response should be in the format [Answer].",
   "answer": 4,
   "nodes": {

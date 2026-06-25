@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000352",
   "question": "Among the agencies that had at least 10 items cut from their 2016-17 budget, which three actually lost the least amount of money overall? Looking only at the standard payrolls and operating costs for those agencies, which year had the second-highest total spending? In that year, which state ranks 8th for having the most colleges located in mid-sized cities, mid-sized suburbs, and rural areas close to a city? As of 2025, add together that state's state ferries routes, marine parks, and counties. Please return only the number in the format [Answer].",
   "answer": 68,
   "nodes": {

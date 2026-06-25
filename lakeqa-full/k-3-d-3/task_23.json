@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000323",
   "question": "First, identify the Washington, DC wards that consistently ranked in the top four for building permits from 2022 to 2024. Among those candidates, identify the two wards with the highest average crime-incident counts from 2022 to 2024. For those two wards, compare the listed councilmembers' last names alphabetically. Which last name comes later? Return the last name only. Your response should be in the format [Answer].",
   "answer": "Pinto",
   "nodes": {

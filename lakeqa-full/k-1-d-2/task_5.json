@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000031",
     "question": "Which state appears in both of these groups: the states ranked 4th through 6th by the average amount a donor had already contributed earlier in the 2003 election cycle, and the states whose highest 2014 ZIP-code annual average price of electricity for business customers falls between 12.07 and 12.17 cents per kilowatt-hour? Break ties alphabetically by state name. Respond with [Answer].",
     "answer": "Florida",
     "nodes": {

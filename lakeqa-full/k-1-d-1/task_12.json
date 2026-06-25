@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000012",
     "question": "Which year from 2005-2010 has the lowest number of stroke deaths in the United States? Your response should be in the format [Answer].",
     "answer": "2009",
     "nodes": {

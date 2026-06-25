@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000291",
   "question": "Find the New York counties, excluding NYC boroughs, satisfying both criteria: (1) an average rate of being sent back to prison or jail between 38% and 40% across 2018 and 2019, and (2) an average count of traffic crashes above 15,000 across 2019 and 2020. Among those counties, which one was formed from more parent counties? Return the county name only. Your response should be in the format [Answer].",
   "answer": "Monroe County",
   "nodes": {

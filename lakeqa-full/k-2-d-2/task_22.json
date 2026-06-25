@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000103",
     "question": "Which state appears in both groups: vendor states ranked 9th through 13th by the sample standard deviation of 2021 campaign expenditure amounts, and recipient states ranked 6th through 10th by the median amount approved for Maryland Commerce financial assistance in 2020? Break ties alphabetically by state name. Respond with [Answer]. After finding that, what is the English meaning of the official motto of that state? Your response should be in the format [Answer].",
     "answer": "Star of the North",
     "nodes": {

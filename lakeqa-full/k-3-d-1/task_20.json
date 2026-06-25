@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000224",
   "question": "Start with the Oklahoma county that has the most listings in the public library directory. Then find the city in that county with the highest total number of units across multi-family developments funded by the Oklahoma Housing Finance Agency. As of 2025, how many counties covers that city? Please return only the number in the format [Answer].",
   "answer": 4,
   "nodes": {

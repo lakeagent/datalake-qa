@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000382",
     "question": "Find the New England state had between 200 and 400 veteran pension recipients in both 2020 and 2021, and between 150 and 300 in 2023. What year was its capital city chartered? Only report the year in your answer. Your response should be in the format [Answer].",
     "answer": "1781",
     "nodes": {

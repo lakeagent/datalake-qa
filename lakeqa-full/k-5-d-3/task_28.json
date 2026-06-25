@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000826",
     "question": "Among the Texas counties that ranked in the top five in 2023 for completed Adult Protective Services investigations, children removed from their homes during initial Child Protective Services investigations, and children receiving Family-Based Safety Services, which county had the lowest rate of repeat Adult Protective Services investigations in 2023? In that county, which city had the most active home-based child-care food program sites in 2022-2023, and which ZIP code in that city had the most active sites participating in the school nutrition program in the 2021-2022 school year? How many distinct employer names appeared on filings received in 2023 from employers without workers' compensation coverage in that ZIP code? Return only the number.",
     "answer": "79",
     "nodes": {

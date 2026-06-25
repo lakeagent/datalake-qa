@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000249",
     "question": "Carnegie Steel Company was founded by a person. Where was he based, and what was the minimum Police Bureau expenditure in that city in 2017 and 2018? Please return only the minimum expenditure. Round your result to two dicemals. Your response should be in the format [Answer].",
     "answer": "98453962.68",
     "nodes": {

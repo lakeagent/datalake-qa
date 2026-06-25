@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA001000",
     "question": "In which city, county, and state is the organization that owns and administers the GRE headquartered? In that state, identify the county that consistently ranks in the top three statewide for the number of public schools, private schools, and school district offices. Among the counties that meet these criteria, find the one that has the most colleges. For that leading county, what is the result if you add the number of postsecondary institutions and public schools together, and then subtract the total count of private schools and district offices? Give the final answer as an integer. Your response should be in the format [Answer].",
     "answer": "132",
     "nodes": {

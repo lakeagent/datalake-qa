@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000802",
     "question": "From the top three Texas counties by average state-government spending from 2018 to 2020, identify the county with the oldest incorporated county seat. In that county, identify the school district that had the highest average percentage across its sites of students automatically recognized as eligible for free school meals without submitting a household meal application from 2018-2019 through 2020-2021. What year did that school district become independent? Please return the year only. Your response should be in the format [Answer].",
     "answer": "1952",
     "nodes": {

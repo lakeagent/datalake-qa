@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000115",
     "question": "First identify the state that appears in both of these data.gov-derived groups: Which states, in 2019, had at least 5 different investor-owned electricity companies where customers received power supply and delivery from the same company, and where the average price households paid was at least $0.15 per kWh; and Which states where the payees were located met both of these conditions in Hawaii records of unpaid political-committee spending from January 1, 2008 through October 21, 2024 for committees not tied to a candidate: at least $50,000 was still owed for specialized professional work, and at least 8% of the entries involving companies rather than individuals were for that kind of work. After identifying that state, what fruit is listed as the state fruit of that state? Your response should be in the format [Answer].",
     "answer": "Avocado",
     "nodes": {

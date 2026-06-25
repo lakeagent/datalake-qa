@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000242",
     "question": "For the largest city in Illinois, what is the number of private schools in its county in school year 2021-2022 minus the number of postsecondary institutions in that county in school year 2022-2023? Your response should be in the format [Answer].",
     "answer": "146",
     "nodes": {

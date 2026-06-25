@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000200",
   "question": "Identify the Texas counties that are in the top 5 in the number of home-based day care sites participating in the federal meal-reimbursement program for children and adults from 2018-2022. Among those counties, which one has the county seat with the lowest all-time record high temperature? Return the county name only. Your response should be in the format [Answer].",
   "answer": "Hidalgo County",
   "nodes": {

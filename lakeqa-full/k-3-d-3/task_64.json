@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000364",
   "question": "In fiscal year 2022, among the Texas counties that ranked in the top five for confirmed Adult Protective Services victims, validated perpetrators, and service activity, take the county with the lowest repeated investigation rate. Using its 2024 population estimate, how many ranks apart were that county's Texas and U.S. population ranks? Please return only the number in the format [Answer].",
   "answer": 6,
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000827",
     "question": "In Austin, start with the ZIP code that had the most multifamily properties without a recent audit on file. In that ZIP code, find the council district containing the affordable housing property with the most total units. From that district, take the ZIP codes of the public library branch with the most public computers, the community survey respondents from 2015 through 2019 who most often reported the same ZIP code, and the park with the largest asset size. Among those ZIP codes, which one had the most multifamily water service connections, and which public artwork there had the most recent completion date? Return only the artwork title.",
     "answer": "Larry Monroe Forever Mosaic",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000990",
     "question": "Identify the private in-person school founded by Sal Khan, then the city and county where it is located. Using school district office listings for that city and county, determine the two-digit state FIPS code. In that state, find the counties that rank in the top three for public schools, private schools, and school district offices; among their intersection, what is the highest postsecondary institution count? Only report the number. Your response should be in the format [Answer].",
     "answer": "206",
     "nodes": {

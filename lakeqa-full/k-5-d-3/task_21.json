@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000819",
     "question": "Using the Pittsburgh neighborhoods listed in the neighborhood profile, which neighborhood is the only one to appear in all three 1984 top-ten lists for share of college graduates, median household income, and share of workers employed within Pittsburgh? Among Pittsburgh neighborhoods that, in 2010, had populations no greater than that neighborhood's 1984 population, owner-occupied housing-unit percentages no higher than that neighborhood's 1984 listed percentage, and estimated poverty rates below 5 percent, which had the second-highest number of residents enrolled in grades 1 through 12 in 2015? Return only the final answer in the format [Answer].",
     "answer": "Regent Square",
     "nodes": {

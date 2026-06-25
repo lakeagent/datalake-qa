@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000631",
   "question": "Excluding Washington, which state had 9th most licenses in 2024? For that state, which months had the 2nd, 3rd, and 5th highest motor fuel? Return the months as numbers from January to December. In each of the first and second months of those three months, which four districts had the highest combined attendance for both normal students and students in unstable housing? In the third month of those three months, which 60 schools have the highest total attendance and in-person attendance among blended learners? Among those 60 schools, for schools that are in those 8 districts, which two school years rank second and third overall? For the starting calendar years of those two school years, how many different people served as governor of the state identified earlier? Please return only the number in the format [Answer].",
   "answer": 2,
   "nodes": {

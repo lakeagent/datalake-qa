@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000737",
   "question": "Among drugs with 5 to 10 million total annual Medicaid prescriptions across U.S. states in every year from 2018 through 2022, identify the drug with the eighth-highest average prescription count across those five years. In the year that drug was approved for medical use in the United States, which cause of death ranked 4th by age-adjusted death rate? In recent years worldwide, what have been the most common causes of deaths from that cause-of-death category? Your response should be in the format [Answer].",
   "answer": "road traffic incidents and falls",
   "nodes": {

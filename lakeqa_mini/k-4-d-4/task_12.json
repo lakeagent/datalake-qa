@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000658",
     "question": "Identify Texas counties with highway construction expenditures between $150 million and $500 million consistently across fiscal years 2018 through 2021. Among those that also had fewer than 15,000 VA disability compensation recipients in FY 2023 and whose county seat name differs from the county name, who founded the first permanent settlement in that county seat, and in what year was the Texas county named after that founder created? Report the year only. Your response should be in the format [Answer].",
     "answer": "1850",
     "nodes": {

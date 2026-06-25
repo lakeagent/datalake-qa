@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA001004",
     "question": "What is the non-profit initiative for computer science education founded by Ali Partovi in 2013? Within its based state, consider counties that are in the top 3 by public schools, in the top 3 by private schools, and in the top 3 by school district offices. Using postsecondary institution counts for those counties, identify the single county with the most postsecondary institutions. For that county, compute public schools + private schools - postsecondary institutions - school district offices. Give the final answer as an integer.",
     "answer": "668",
     "nodes": {

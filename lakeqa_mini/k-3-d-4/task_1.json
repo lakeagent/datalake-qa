@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000377",
     "question": "I'm analyzing the DC Ward that had the lowest average crime count from 2018 to 2021. Find the neighborhoods in this ward that share the same name with other wards, and the counties they border. Report the highest rank of the average household income for those counties in 2020. Your response should be in the format [Answer].",
     "answer": "20",
     "nodes": {

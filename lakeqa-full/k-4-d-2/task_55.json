@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000524",
   "question": "Among Willacy, Comal, Atascosa, and Victoria counties in Texas, keep those with at least one child death linked to abuse or neglect and at least three child death investigations not linked to that cause between 2018 and 2022. From the remaining counties, find the one that appears both among the two counties with the highest estimated 2021 fatal-overdose rates and among the two counties with the lowest estimated 2016 fatal-overdose rate ranges, then identify that county's seat. How many years apart were that city's founding and the founding of its current daily newspaper? Your response should be in the format [Answer].",
   "answer": 22,
   "nodes": {

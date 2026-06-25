@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000662",
     "question": "Can you first find the terminus cities of Route 66. Among those cities, which one had higher binge drinking prevalence in both 2016 and 2018 city health data? For that city, identify the department with the highest total overtime costs from 2014 to 2017, then report the starting salary of that department in 2025. Return the dollar amount only. Your response should be in the format [Answer].",
     "answer": "61782",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000608",
   "question": "Across 2021-2023, find the Missouri state agency that stayed in the top five for spending on contracted expert/specialized services and had the highest average number of employees. Find its headquarters city. For the Amtrak train station in that city, how many years apart were the construction of its station building and the move to that building? Your response should be in the format [Answer].",
   "answer": 129,
   "nodes": {

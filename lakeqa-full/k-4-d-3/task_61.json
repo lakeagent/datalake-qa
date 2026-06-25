@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000609",
   "question": "Across 2021-2023, find the Missouri state agency that stayed in the top five for spending on contracted expert/specialized services and had the highest average number of employees. Find its headquarters city. In 2016, how many more employees did that city's largest employer have than its second-largest employer? Your response should be in the format [Answer].",
   "answer": 12650,
   "nodes": {

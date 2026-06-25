@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000895",
   "question": "Among all government departments in the city that Bruno Mars was born and raised in, if higher efficiency means fewer average workdays to complete non-complex public-records requests, determine the department with the second highest efficiency. For that department in the same city, find its final budgets in 2016, 2017, and 2018. From these three budget values, find the year with the second highest budget and use the last three digits of the highest budget as a rank. In that second-highest-budget year, among U.S. cities whose tenants' average overall satisfaction is neither perfect nor zero, identify the city at that rank. How many major public airports does that city have? Return only the number. Your response should be in the format [Answer].",
   "answer": 3,
   "nodes": {

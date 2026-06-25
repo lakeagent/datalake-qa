@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000573",
     "question": "Among the agencies that had at least 10 items cut from their 2016-17 budget, which three actually lost the least amount of money overall? Looking only at the standard payrolls and operating costs for those agencies, which year A had the second-highest total spending? In year A, which state ranks 8th for having the most colleges located in mid-sized cities, mid-sized suburbs, and rural areas close to a city? In that state and duirng year A, among counties with at least 10 schools, which county ranked 14th for the lowest (student/teacher) ratio? In that county's election records, what are the vote gaps for the cnadidates with last name Heuett in the 2013 election, Loseth in the 2017 election, and the vote gaps between agree and disagree in Clarkston's 2018 levy vote? Finally, what is the average of those three gaps? Please return only the number in the format [Answer].",
     "answer": "1443",
     "nodes": {

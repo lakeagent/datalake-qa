@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000571",
     "question": "What are the ten fiscal years with the highest total amount of money New York City currently owes that must be paid back using our tax dollars? What are the ten fiscal years with the highest total amount of money spent by the hygiene department? What are the ten fiscal years with the highest amount of money spent on sanitation? Across the years appearing in all three answers, among metropolitan residents ages 0-74 and are died because of cancer and heart disease, which state had the 7th highest number of deaths? In the largest city of that state, define a strong math school as one with both high growth in math scores and high scores on current math exams. What are the ten strongest math schools? Among those schools, for schools with at least one specialized admissions program, what are the five schools located farthest south? Finally, for those five schools, what is the average number of low-income students in 2017-18? Please return only the number in the format [Answer].",
     "answer": "214",
     "nodes": {

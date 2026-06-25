@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000055",
     "question": "Which year from 2005-2010 has the lowest total CTA 'L' station entries. After finding that, what was the Super Bowl final score for that year's NFL season? Your response should be in the format [Answer].",
     "answer": "21-10",
     "nodes": {

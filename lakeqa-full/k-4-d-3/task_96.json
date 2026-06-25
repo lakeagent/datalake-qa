@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000644",
   "question": "In the Texas city that appeared most often in the mailing addresses for investor-owned water and sewer utilities, which ZIP code appeared most often in informal complaints about water utilities? In that ZIP code, which organizations operated active sites participating in the school nutrition program, active Child and Adult Care Food Program center sites, and active summer meal program sites? As of 2025, how many square miles does the district that appears in all three groups cover? Please return only the number in the format [Answer].",
   "answer": 53.5,
   "nodes": {

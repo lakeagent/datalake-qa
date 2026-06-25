@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000950",
   "question": "What is the total of assessment revenue and government grants for all Business Improvement Districts in New York in 2017, 2018, and 2019? In the year with the lowest amount among those three results, which county had the second highest number of individuals subsequently identified as victims in the administratively closed investigations? Then, in this county, in which year was the number of disabled adults aged between 18 and 64 the highest? Next, go back 5 years from that year and, defining affordability as affordable units divided by total units, determine which county has the 5th lowest affordability. At the 2020 census, how many of the other four New York City boroughs had a higher population than that county? Please return only the number in the format [Answer].",
   "answer": 3,
   "nodes": {

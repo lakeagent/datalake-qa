@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000489",
     "question": "Start by finding the Chicago city department with a budget of $400 million to $700 million in 2018 and $600 million to $700 million in 2019. Determine if this department became paid before or after Pittsburgh's fire bureau did, and focus on the city whose department became paid later. For that city, identify the airport that most directly serves it for commercial passenger travel; in its March 2019 scheduled traffic report, how many total seats did the top destination have? Please return the number only. Your response should be in the format [Answer].",
     "answer": "44912",
     "nodes": {

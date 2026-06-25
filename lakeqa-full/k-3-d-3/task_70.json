@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000370",
   "question": "Among the Texas counties that ranked in the top five in 2023 for completed Adult Protective Services investigations, children removed from their homes during initial Child Protective Services investigations, and children receiving Family-Based Safety Services, which county had the lowest rate of repeat Adult Protective Services investigations in 2023? How many counties were created out of the same colony as that county? Return only the number in the format [Answer].",
   "answer": 26,
   "nodes": {

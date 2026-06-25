@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000968",
     "question": "After identifying the Texas counties that consistently ranked in the top five for both capital outlay spending and prisoner releases from department of criminal justice from 2019 to 2021, identify the one that had the highest average intakes to the department of criminal justice during that period. Its county seat is home to a National Basketball Association based in the city. Who founded this team? Return the name only. Your response should be in the format [Answer].",
     "answer": "Robert Breitbard",
     "nodes": {

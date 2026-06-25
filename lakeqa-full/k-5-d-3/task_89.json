@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000887",
   "question": "In fiscal year 2022, among the Texas counties that ranked in the top five for confirmed Adult Protective Services victims, validated perpetrators, and service activity, take the county with the lowest repeated investigation rate. For that county, identify its most common confirmed Adult Protective Services allegation type in fiscal year 2022. For that county-reason combination, identify the Adult Protective Services administrative region in fiscal year 2022. As of 2025, how many independent school districts do residents of the city containing that region live in? Please return only the number in the format [Answer].",
   "answer": 5,
   "nodes": {

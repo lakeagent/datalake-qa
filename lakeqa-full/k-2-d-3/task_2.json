@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000165",
   "question": "In the state with two-digit FIPS code 06, which counties rank in the top three for each of public schools, private schools, and school district offices? Among those counties, how many more incorporated cities does the county with more contain? Your response should be in the format [Answer].",
   "answer": 70,
   "nodes": {

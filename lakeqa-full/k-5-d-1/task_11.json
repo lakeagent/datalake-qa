@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000757",
   "question": "Find the birth state of the candidate in the New York election campaign with the most sponsors that sponsored through agents in 2021. Rank that state by total expenditure across all categories in 2021 in the U.S., then find the state with the same rank by total amenities across all categories in 2021 among all states in the U.S. As of 2007, how many ranks apart are that state's goat-farming rank and corn-production rank among U.S. states? Please return only the number in the format [Answer].",
   "answer": 9,
   "nodes": {

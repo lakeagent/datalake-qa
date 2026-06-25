@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000581",
   "question": "Across 2019-2021, identify the Texas counties that consistently rank in the top five for capital outlay spending. From those, keep only the counties that also rank in the statewide top five for releases from the Department of Criminal Justice in each of those years. For the remaining counties, compute the largest average annual intake count from the Department of Criminal Justice over 2019-2021. Divide that value by the number of employees in that department's prisoner transportation network as of 2005, and round to one decimal. Return the number only. Your response should be in the format [Answer].",
   "answer": "16.7",
   "nodes": {

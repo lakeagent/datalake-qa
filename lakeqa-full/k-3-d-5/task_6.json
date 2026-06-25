@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000448",
   "question": "I'm researching the Texas counties that ranked in the top five for the average number of sites offering summer meals to children from 2018-2023. In 2022, they also had less than 12% of their population aged 65 or older in data used for planning adult protection service, and more than 3,000 children receiving services intended to keep them safely with their families. For the resulting county, how many precincts have constables? Return the number only. Your response should be in the format [Answer].",
   "answer": 8,
   "nodes": {

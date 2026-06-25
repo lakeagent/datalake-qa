@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000097",
     "question": "I'm researching a state where the 2023 bag-charge filings had a decentralization score of at least 90, computed as the number of filings with nonzero bag counts multiplied by one minus the largest single filing's share as a fraction of the total bag count. It also had, using county estimates from 2017 through 2021, at least a 16-percentage-point gap between the highest and median county rates of housing cost burden among lower-income households. Which state is it? Respond with [Answer]. After finding that, what nickname did that state earn from its political, cultural, and economic ascendancy? Your response should be in the format [Answer].",
     "answer": "Empire State",
     "nodes": {

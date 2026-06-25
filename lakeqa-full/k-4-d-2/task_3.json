@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000472",
     "question": "I'm analyzing data for the Austin City Council district represented by Zohaib Qadri. Starting from the year when the Austin City Council voted on approving a legal settlement in the Claudia Ford case against the City of Austin, identify which police sector had the highest number of searches in that district that year. Then, what is the ratio of the total number of dispatch incidents in that sector compared to the number of public schools in Austin? Round that to the nearest integer. Your response should be in the format [Answer].",
     "answer": "113",
     "nodes": {

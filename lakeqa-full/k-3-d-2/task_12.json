@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000237",
     "question": "For the city where the Colorado Department of Education is headquartered, what is the number of private schools in its core-based statistical area in school year 2021-2022 minus the number of district administrative offices in that CBSA in school year 2022-2023? . Your response should be in the format [Answer].",
     "answer": "42",
     "nodes": {

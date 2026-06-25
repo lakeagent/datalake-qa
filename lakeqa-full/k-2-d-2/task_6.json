@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000087",
     "question": "Which states would place 7th through 11th if you compared states by the typical dollar damage from railroad equipment accidents over all available years? Which states would place 6th through 10th if you compared how much the average income on returns that owed no New York tax changes from year to year, starting with tax year 1999? After finding the one state that appears in both groups, how many people in that state were enrolled in the Children's Health Insurance Program in the last month of 2022? Break any ties alphabetically when determining the shared state. Respond with [Answer].",
     "answer": 44039,
     "nodes": {

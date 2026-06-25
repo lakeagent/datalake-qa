@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000642",
   "question": "Among Connecticut towns that ranked in the top 10 in late 2019 for preschool spaces being used, Care 4 Kids enrollment, and licensed child day-care capacity, which one had the highest affordable-housing share in 2023? In that town's county, how many cities are there? Return only the number in the format [Answer].",
   "answer": 3,
   "nodes": {

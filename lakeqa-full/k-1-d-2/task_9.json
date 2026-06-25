@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000035",
     "question": "Which state appears in both of these groups: states that had poor behavioral-health care results in 2020, with at least five measures among the worst 25% of reported state results and average performance at least 5 points worse than the median reported state result for those measures, and states that had at least 10% of their counties in 2021 with utility-scale solar generation potential in the highest 20% among U.S. counties and satisfying at least two of these conditions: (1) the county unemployment rate was in the highest 20% among U.S. counties, (2) the county met the 0.2 threshold for concentration of census block groups with high low-income rates, or (3) the county met the 0.2 threshold for concentration of census block groups with high rates of residents without a high school diploma? Respond with [Answer].",
     "answer": "Texas",
     "nodes": {

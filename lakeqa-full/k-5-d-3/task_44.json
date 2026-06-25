@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000842",
     "question": "Define a more valuable area as one with a higher average property market value and gross income per square foot, in manhattan, brooklyn, and queens, which postcode is the 7th, 8th and 8th most value area in 2008-09? Next, for all schools in those areas, which school year has the highest number of registered students? Using the starting year of that school year, among all states under the condition that the number of registered buses are less than trucks and the number of registered cars are greater than trucks, which state has the 5th highest number of registered cars? Then, for that state, which county has the second most government-guaranteed loan amount, under the condition of the government approved amount is less than the businesses' total project costs? Finally, in that county, what was its population in the 2010 United States census? Please return only the number in the format [Answer].",
     "answer": "244826",
     "nodes": {

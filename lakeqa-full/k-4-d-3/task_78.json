@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000626",
   "question": "Which years had the 4th to 7th lowest Black infant death rates? Which years up to 2010 had the top 4 lowest non-Hispanic and White female birth rates? Which years up to 2010 had the top 4 lowest nonmarital birth rates for Asian or Pacific women ages 15 to 19? Across the years common to all three answers, if we define a state as healthier if the percentage of former smokers and people who never smoked is higher, which U.S. state is the 21st healthiest? For that state, which six counties have the highest average biofuel portion of sales across all years? Among those counties, which two counties had the lowest and second lowest numbers of physical abuse cases in 2008 to 2010? Across those two counties, how many cities do they contain in total? Please return only the number in the format [Answer].",
   "answer": 20,
   "nodes": {

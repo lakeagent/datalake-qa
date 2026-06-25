@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000676",
     "question": "Using school district office records for Mountain View in Santa Clara County, determine the two-digit state FIPS code. In that state, find the counties that rank in the top three for public schools, private schools, and school district offices; among their intersection, select the county with the most postsecondary institutions. For that county, compute the total number of public schools, private schools, district offices, and postsecondary institutions. Only report the integer total. Your response should be in the format [Answer].",
     "answer": "3619",
     "nodes": {

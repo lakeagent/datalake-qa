@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000268",
     "question": "Among New York counties outside of NYC, identify the top two by total mental health service recipients from 2017 to 2018. For those counties, identify their county seats. Which of those county seats had the larger city population at the 2020 census? Your response should be in the format [Answer].",
     "answer": "Buffalo",
     "nodes": {

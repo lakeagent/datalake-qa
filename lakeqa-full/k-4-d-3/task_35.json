@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000583",
   "question": "Consider Harris, Travis, Dallas, and Bexar counties. Determine which of these consistently ranked in the statewide top five for releases from the Department of Criminal Justice from 2019 to 2021. Among those, compute the average annual intake counts from the Department of Criminal Justice over 2019-2021 and identify the county with the highest average. Find that county's seat, then identify the place officially recognized as that city's birthplace. Return the place name only. Your response should be in the format [Answer].",
   "answer": "Allen's Landing",
   "nodes": {

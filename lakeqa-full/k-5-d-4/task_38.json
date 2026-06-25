@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000945",
   "question": "From the counties that were in the statewide top 5 for releases from the Texas state prison system in 2019, 2020, and 2021, find the county that has the most recently established county seat. In that county, identify the school district that had the highest average percentage across its sites of students automatically recognized as eligible for free school meals without submitting a household meal application from 2019-2020 through 2021-2022. How many pupils were in that district's original school when it was founded? Please return only the number in the format [Answer].",
   "answer": 16,
   "nodes": {

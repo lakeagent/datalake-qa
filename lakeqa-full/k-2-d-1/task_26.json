@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000071",
   "question": "Which applicant company appears most often among cancelled or withdrawn construction permits in DC in 2024? Which company owns that applicant company? Return only the company name in the format [Answer].",
   "answer": "Exelon",
   "nodes": {

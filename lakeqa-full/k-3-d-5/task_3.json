@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000445",
   "question": "Among NYC municipal candidates who had total campaign spending between $103,000 and $251,000 in each of the five election cycles 2001, 2003, 2005, 2009, and 2013, take the first candidate when those candidates are ordered by last name. Which legislative body does that candidate represent? As of 2025, how many seats are in that body? Return the number only. Your response should be in the format [Answer].",
   "answer": 63,
   "nodes": {

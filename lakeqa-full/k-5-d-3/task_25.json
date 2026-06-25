@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000823",
     "question": "At Brady Hot Springs, find the date on which wells 56A-1, 81B-1, and SP-2 are all above their own median temperatures for the greatest total number of recorded minutes. On that date, which well has the highest average pumping flow? In that well, what is the description of the unit that accounts for the greatest total drilled thickness. Where do those deposits form? Return only the answer in the format [Answer].",
     "answer": "ancient lakes",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000093",
     "question": "Which state is in both of these groups: the states ranked 8th through 12th by the average share of covered medical costs a plan is expected to pay, reported in 2022, and the states are ranked 5th through 9th by the median reported number of foreclosures under Senate Bill 558 in 2016? Respond with [Answer]. After finding that, what is the official state motto of that state? Your response should be in the format [Answer].",
     "answer": "Equal Rights",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000725",
     "question": "I'm researching upstate New York counties (excluding New York City and the Adirondack/Catskill preserves) that strike a balance between conservation and public amenities. Specifically, I'm looking for the two counties that each have at least 3 state parks, 6 farmers markets, and 40 endangered species, while also recording between 800,000 and 2 million state park visitors in 2019 and receiving $10M-$35M in lottery-funded education aid in 2019-2020. For the county among these two with the higher 2020 violent crime count, in what year was the historic Paddock Arcade built in its county seat? Your response should be in the format [Answer].",
     "answer": "1869",
     "nodes": {

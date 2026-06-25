@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000479",
     "question": "Which year saw the highest number of stolen vehicle incidents in Los Angeles between 2010 to 2019? During that peak year, which area had the most arrests for driving under the influence? Finally, how many stolen vehicles were reported in that specific area in 2020? Only report the number of the stolen vehicles. Your response should be in the format [Answer].",
     "answer": "915",
     "nodes": {

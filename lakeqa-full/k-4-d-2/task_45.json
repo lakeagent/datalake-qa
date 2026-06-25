@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000514",
     "question": "Carnegie Steel Company was founded by a person. Where was he based, and what was the minimum Police Bureau expenditure in that city in 2017 and 2018? Using that city's stated number of bridges, what was the minimum expenditure per bridge in millions of dollars? Round your answer to one decimal. Your response should be in the format [Answer].",
     "answer": "0.2",
     "nodes": {

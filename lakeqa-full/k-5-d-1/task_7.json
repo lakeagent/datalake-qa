@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000753",
     "question": "I'm analyzing crime patterns in the largest-area borough in NYC. First, identify the precinct that received the most complaints in 2022. Within that precinct, was it more common for shootings to happen inside or outside? Then, find which precinct in that borough had the highest number of complaints in 2022 where the incident happened in that same setting, and tell me how many incidents involving officers using force occurred in that latter precinct in 2024. Only report the number of incidents. Your response should be in the format [Answer].",
     "answer": "258",
     "nodes": {

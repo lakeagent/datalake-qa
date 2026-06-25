@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000982",
   "question": "Among New York City schools that served high school students and reported at least 151 total VADIR incidents in 2013-2014, which schools also had at least 25 total incidents reported by school safety in 2013-2014, a safety and respect score of 7.3 or lower in 2013, and a poverty rate of at least 70% in 2013-2014? Among those schools, which had the highest four-year August graduation rate for the 2014 cohort? Which city was home to that school? As of 2025, what rank is that city's central business district among New York City central business districts by size? Please return only the number in the format [Answer].",
   "answer": 4,
   "nodes": {

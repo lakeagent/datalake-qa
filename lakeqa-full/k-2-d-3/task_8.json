@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000171",
   "question": "In 2019 data reported by the Los Angeles Police Department, find the geo area with the most moving-traffic arrests. For that area, compare the founding or opening years of the area itself, its public airport, and the public high school named after it. What is the difference between the latest and earliest of those years? Your response should be in the format [Answer].",
   "answer": 17,
   "nodes": {

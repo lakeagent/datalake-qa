@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000455",
     "question": "From 2015 to 2020, after aggregating across all counties, which three years have the most currently publicly-assisted child support cases, which three years collected the least total funds for currently publicly-assisted child support cases, and which three years have the most children with paternity established? Across the distinct years from those three results, considering children, which counties were in the top 10 every year for adults investigated in abuse-neglect investigations involving those children? Among the counties from that result, how many have a county seat with the same name as the county? Please return only the number in the format [Answer].",
     "answer": 2,
     "nodes": {

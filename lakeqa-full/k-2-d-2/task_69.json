@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000150",
     "question": "Identify the state that is in both groups: states that had at least 7 Medicaid managed care arrangements in 2017, with at least 4 of them requiring enrollee experience survey results, and states whose 2021 measures about mental health and substance use care were on average at least 4 points better than the middle reported value once each measure is treated so better performance always counts positively. As of 2025, which children's hospital was the largest of the two children's hospitals in that state? Your response should be in the format [Answer].",
     "answer": "Hasbro Children's Hospital",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000039",
     "question": "Which state is shared by these two groups: states ranked 6th through 10th by the median aggregate taxable income, across income ranges, for 2014 New York State nonresident tax returns filed by people living in each state, and states ranked 6th through 10th by the sample standard deviation of total pharmacy reimbursements for covered outpatient drugs in 2011? Break ties alphabetically by state name. Respond with [Answer].",
     "answer": "Massachusetts",
     "nodes": {

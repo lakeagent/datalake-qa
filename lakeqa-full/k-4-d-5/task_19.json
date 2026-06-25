@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000743",
   "question": "I am looking for Texas counties that consistently ranked in the top five for child care center sites participating in the federal meal-reimbursement program for children and adults between 2018 and 2022. Among these leaders, find the ones that reported over 600 children removed from their homes by child protective services in 2022 despite completing fewer than 14,000 investigations into possible child abuse or neglect. Compare this county's establishment date with Tarrant County's and use the earlier year. At the 2020 census, how many ranks apart were the area rank and population rank of the U.S. state admitted to the Union in that year? Return the number only. Your response should be in the format [Answer].",
   "answer": 4,
   "nodes": {

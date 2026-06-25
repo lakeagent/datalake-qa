@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000904",
     "question": "Define a more supportive state as one with statewide healthcare programs that include more enrolled Native Americans, Alaskans, fostered or adopted children. Which states are the top 2 most supportive in 2017, 2nd and 3rd most supportive in 2018, and 2nd and 3rd most supportive in 2019? For the state that appears in all three years, define a more dangerous school as one with a higher combined number of rape and sexual-assault incidents. Which five school codes in that state were the most dangerous in 2017-18? Across those five schools in total, which school year had the 2nd highest number of students per teacher? Using the starting year of that school year, define a county as more developed when it has positive housing net growth and more 5+ unit housing construction. Which counties are the 5th and 6th least developed in that year? Across those counties, how many cities are there? Please return only the number in the format [Answer].",
     "answer": 5,
     "nodes": {

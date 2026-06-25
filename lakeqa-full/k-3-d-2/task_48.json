@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000273",
   "question": "Identify the NYC high school that was in the top 3 by overall progress score in both the 2011-12 and 2012-13 school years and had an A grade in the 2010-11 Progress Report. Then, for the former high school whose educational complex became home to that identified school in 2007, how many students was it built to serve? Your response should be in the format [Answer].",
   "answer": "3969",
   "nodes": {

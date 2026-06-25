@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000090",
     "question": "I'm trying to identify a state that would show up in both of these groups: states that fall 4th through 8th when you look for where diabetes-care copays varied the most from one 2024 health insurance plan to another, and states that fall 6th through 10th when you compare the typical electricity prices businesses paid in different ZIP codes served by investor-owned utilities in 2016. Once you've identified that state, how many Medicaid and CHIP beneficiaries there were fully eligible for both Medicaid and Medicare in the final month of 2022? Break any ties alphabetically when forming the intermediate state. Respond with [Answer].",
     "answer": 56155,
     "nodes": {

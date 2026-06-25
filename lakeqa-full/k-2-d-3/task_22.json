@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000185",
     "question": "Start with the states listed for the tribal land cession with the largest recorded area. Among those states, what is the difference between the largest and smallest numbers of counties? Please return only the number in the format [Answer].",
     "answer": 190,
     "nodes": {

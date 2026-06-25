@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000874",
     "question": "Identify the Chicago city department that consistently ranked in the top five by total funding in the officially approved city budget from 2019 to 2021, had a nonzero salary budget in that officially approved city budget in each of those years, and then had the highest average salary budget recommendations from 2019 to 2021. Who was the first head of that department? For that department head, how many years are there between the year he began serving as superintendent of that department to the year and his retirement from that role? Your response should be in the format [Answer].",
     "answer": 7,
     "nodes": {

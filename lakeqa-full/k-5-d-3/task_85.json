@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000883",
   "question": "I am looking for a Missouri state agency that consistently ranked in the top 5 for average employee salary between 2018 and 2020. This agency's very first officeholder also served as U.S. Attorney General. Identify the person who served in that same agency, was a U.S. Senator, and was a U.S. Attorney General, then identify that person's birthplace. How many people are elected to serve that birthplace's city council? Return the number only. Your response should be in the format [Answer].",
   "answer": 50,
   "nodes": {

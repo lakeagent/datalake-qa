@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000973",
     "question": "Define a state as strongest in teacher support if (total dollars all grantees in the state received / the number of participating teachers) is the highest. Which state is the 7th strongest in teacher support under that definition in 2010? Then, within that state, which cities received the 7th through 9th lowest arts grants in 2022, the 10th through 12th lowest in 2023, and the 11th through 13th lowest in 2024? Across all cities mentioned in those three years, in which year did their total net payment of sales tax increase the most from the previous year? In that year, among people aged 30-39, which state had the 2nd highest number of deaths involving both COVID-19 and pneumonia? In that state, which counties ranked 9th and 10th highest by percentage of baby getting born early? Finally, find the average of those counties' 2020 census populations. Please return only the number in the format [Answer].",
     "answer": "1327385.5",
     "nodes": {

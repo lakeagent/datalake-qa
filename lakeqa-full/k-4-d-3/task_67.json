@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000615",
   "question": "Identify the Chicago city department that consistently ranked in the top five by total funding in the officially approved city budget from 2019 to 2021, had a nonzero salary budget in that officially approved city budget in each of those years, and then had the highest average salary budget recommendations from 2019 to 2021. As of 2025, how many personnel per unit did that department have? Your response should be in the format [Answer].",
   "answer": 93,
     "nodes": {

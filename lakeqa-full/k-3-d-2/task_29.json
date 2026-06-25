@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000254",
     "question": "Identify the Idaho county that had between 90 and 110 U.S. Department of Veterans Affairs disability compensation recipients in FY 2023 and between 88 and 92 VA disability compensation recipients in FY 2019. Then identify the largest city in that county. Which railway reached that city in 1882? Your response should be in the format [Answer].",
     "answer": "Oregon Short Line Railway",
     "nodes": {

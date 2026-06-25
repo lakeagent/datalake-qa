@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000713",
   "question": "Among Texas counties that were in the top five for average capital outlay spending from 2018 to 2021, identify the two highest by average prison releases in 2019-20. Of those two, pick the county with the larger increase in veterans affairs disability compensation recipients from 2020 to 2023. As of 2025, what is the capacity of the county jail maintained by that county's government? Return only the number in the format [Answer].",
   "answer": 9575,
   "nodes": {

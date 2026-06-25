@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000298",
   "question": "Among the two most populous Texas counties in 2024, which had the larger increase in the number of veterans receiving disability compensation from 2020 to 2023? As of 2025, how many branch libraries does that county's public library system have? Return the number only. Your response should be in the format [Answer].",
   "answer": 26,
   "nodes": {

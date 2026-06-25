@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000906",
     "question": "Find the NYC borough that is top two in all three groups: farmers markets that accept SNAP payments through Electronic Benefits Transfer cards and offer Health Bucks coupons, food stores recognized by NYC's Shop Healthy program, and compost drop-off sites. For that borough, find its New York county. Within that county, find the ZIP code with the highest number of farmers markets that accept SNAP food benefits, participate in the Farmers Market Nutrition Program, and accept FreshConnect Checks. Which police precinct patrols the eastern Brooklyn neighborhood whose primary ZIP code is that ZIP code? Please return only the precinct in the format [Answer].",
     "answer": "73rd Precinct",
     "nodes": {

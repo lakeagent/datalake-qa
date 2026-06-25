@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000657",
     "question": "Consider the engineering firm founded after 1914 that has no current NY State construction manager projects, yet consistently ranked in the top 20 Washington State contractors by contract count annually from 2017 to 2020. In what year was the Native American interpreter born who helped negotiate the land cession that led to the founding of the city where that firm is based? Please return the year only. Your response should be in the format [Answer].",
     "answer": "1825",
     "nodes": {

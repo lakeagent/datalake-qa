@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000492",
     "question": "Consider the counties King, Clark, Pierce, Whitman, Thurston, and Spokane. Among these, identify the Eastern Washington county that borders Idaho and had a 2020 population under 300,000. In the most populous city in that county according to the 2020 census, what was the total enrollment for the school district serving that city in 2017-18? Your response should be in the format [Answer].",
     "answer": "2941",
     "nodes": {

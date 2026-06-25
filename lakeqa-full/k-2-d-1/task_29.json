@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000074",
   "question": "From 2010 through 2012, first find the Missouri county with the highest average monthly number of first reports of injury after excluding Saint Louis. What was the population of that county at the 2020 census? Please return only the number in the format [Answer].",
   "answer": 717204,
   "nodes": {

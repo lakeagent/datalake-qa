@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000513",
     "question": "Carnegie Steel Company was founded by a person. Where was he based, and what was the minimum Police Bureau expenditure in that city in 2017 and 2018? Using the 1901 sale price of Carnegie Steel to J. P. Morgan, what fraction of that sale price was the minimum expenditure? Round your answer to one decimal. Your response should be in the format [Answer].",
     "answer": "0.3",
     "nodes": {

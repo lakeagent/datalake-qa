@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000992",
     "question": "The GRE is owned and administered by an organization. Determine the city where that organization has a New Jersey address, then the county it is in and the two-digit state FIPS code from school district office listings. In that state, find the counties that rank in the top three for public schools, private schools, and school district offices; among their intersection, what is the highest postsecondary institution count? Only report the number. Your response should be in the format [Answer].",
     "answer": "16",
     "nodes": {

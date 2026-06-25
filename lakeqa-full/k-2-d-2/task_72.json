@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000153",
     "question": "Identify the state that fits both descriptions: among sponsors behind independently funded political advertising and related election-season messages in Washington, no more than 10 sponsors from that state used at least 25 different vendors; and in February 2011, the state's average household electricity price across ZIP codes for bundled service was at least $0.025 per kWh higher than its average business price. As of 2025, among electricity-generating power stations in that state, which station had the greatest capacity in megawatts? Your response should be in the format [Answer].",
     "answer": "Bath County Pumped Storage Station",
     "nodes": {

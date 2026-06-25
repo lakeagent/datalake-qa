@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000656",
     "question": "Can you find the NYC elementary schools that appear in the top 5 by the schools' learning environment in at least three years from 2006-2010 and is located in Bedford? Please report the school day in the MM/DD format. Your response should be in the format [Answer].",
     "answer": "10/28",
     "nodes": {

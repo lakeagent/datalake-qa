@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000867",
     "question": "Across 2019-2021, identify the Texas counties that consistently rank in the top five for spending on major asset purchases and long-term property improvements. Among those, keep the counties that also rank in the statewide top five for releases from the Texas state prison system in each of those years. From that set, which county had the highest average number of releases from the Texas state prison system over 2019-2021, and what is its county seat? How many municipal airports serve that city? Your response should be in the format [Answer].",
     "answer": 3,
     "nodes": {

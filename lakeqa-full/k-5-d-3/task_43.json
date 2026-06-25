@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000841",
     "question": "From 2015 to 2020, after aggregating across all counties, which three years have the most currently publicly-assisted child support cases, which three years collected least total funds for currently publicly-assisted child support cases, and which three years have the most children claimed paternity? Counting distinct years in those 9 years, and for all children, which top 10 counties have most adults being investigated due to their mistreatment to those children? Then, among schools in those counties, define a more caring school as one with a higher percentage of economically disadvantaged students, and higher student achievement. Find the school codes for the top 5 caring schools. For those 5 school codes, which schools have open enrollment and regular instruction? Finally, among those school codes, take the first six digits of those numbers as distinct district numbers, andd find the average base pay of those districts? Please return only the number in the format [Answer].",
     "answer": "176175",
     "nodes": {

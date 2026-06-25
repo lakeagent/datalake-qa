@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000501",
     "question": "In arrests reported by the Los Angeles Police Department that occurred in 2019, identify the area with the most arrests for moving traffic violations. Find the Area ID for that area in the LAPD stop-incident records. Compare the most common crime description in that Area ID in 2019 and 2020, and take the larger incident count. Using the department's number of police stations known officially as areas, what is that larger incident count per area? Round your answer to one decimal. Your response should be in the format [Answer].",
     "answer": "43.6",
     "nodes": {

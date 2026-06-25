@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000551",
     "question": "I am analyzing a specific New York State county that had between 29,000 and 75,000 households enrolled in the federal program that provides eligible low-income households with monthly benefits to buy groceries in February 2023, between 350 and 600 children placed in out-of-home care in 2023, and between 5,000 and 18,000 adults in mental health programs in 2015. It also had between 4,000 and 6,000 temporary cash-assistance cases for low-income people and families in February 2023, between 600 and 1,000 total staff in the county's social-services agency for the state fiscal year ending in 2017, and between 200 and 400 newly opened public-assistance cash-benefit cases in March 2021. What year was its county seat incorporated as a city? Please return the year only. Your response should be in the format [Answer].",
     "answer": "1847",
     "nodes": {

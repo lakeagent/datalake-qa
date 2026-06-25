@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000584",
   "question": "Across January 2019-2021, identify the issuing agencies that consistently ranked in the top 20 by total parking-violation fines. From those, keep only the U.S. national law-enforcement bodies and find which had the highest average number of January moving violations from 2019-2021. Which federal agency operates that law-enforcement body? Who was the first director of that agency? Return the name only. Your response should be in the format [Answer].",
   "answer": "Stephen Mather",
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000971",
     "question": "Identify the Chicago library branch that ranked in the top five for circulation and visitors, and top three for computer sessions, every year from 2019 to 2021. What is the per capita income of the community area where this library is located? Please return the number only. Your response should be in the format [Answer].",
     "answer": "35503",
     "nodes": {

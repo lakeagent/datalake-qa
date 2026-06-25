@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000813",
     "question": "Among the Chicago library branches Sulzer Regional Library, Edgewater, and Lincoln Belmont, which branch ranked in the top five for total visitors and in the top three for total public-computer logins every year from 2019 to 2021? What is the per capita income of the community area where this library is located? Return the number only, rounded to the closest integer. Your response should be in the format [Answer].",
     "answer": "35503",
     "nodes": {

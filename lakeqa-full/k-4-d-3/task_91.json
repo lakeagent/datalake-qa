@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000639",
   "question": "To scout fireworks competition in Iowa, look at counties that rank in the top five for 2022 personal income, 2023 population, and 2023 total motor-fuel sales. From that overlap, take the county with the lowest average unemployment rate in 2024. Use that county's county seat. As of 2025, how many sister city relationships are maintained by the sister city commission that includes that city? Please return only the number in the format [Answer].",
   "answer": 5,
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000208",
     "question": "Identify the northernmost New York City borough, then count how many NYPD shooting incidents occurred in that borough in 2023. Using that count and the borough's 2020 census population, what is the shooting-incident count per 100,000 residents, rounded to one decimal? Your response should be in the format [Answer].",
     "answer": "29.8",
     "nodes": {

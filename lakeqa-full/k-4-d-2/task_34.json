@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000503",
     "question": "In school year 2022-2023, identify the capital city of California. Use postsecondary institution records in that city to identify its county, then subtract the number of district administrative offices from the number of public schools in that city and county. Using the city's 2020 census population, what is that difference per 100,000 residents? Round your answer to one decimal. Your response should be in the format [Answer].",
     "answer": "33.5",
     "nodes": {

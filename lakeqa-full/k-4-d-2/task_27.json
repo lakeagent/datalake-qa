@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000496",
     "question": "Identify the Montana county that had at least 210 and fewer than 225 VA disability compensation recipients in FY 2019 and at least 220 and fewer than 235 VA disability compensation recipients in FY 2023. Then identify that county's county seat and the world's largest statue of a penguin located there. Who built that statue? Your response should be in the format [Answer].",
     "answer": "Ron Gustafson",
     "nodes": {

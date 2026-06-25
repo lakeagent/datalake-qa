@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000144",
     "question": "Identify the state that appears in both groups: the states where Hawaii state and county candidates in the 2010-2012 election cycle still owed vendors at least $300 altogether while having paid back no more than half of what they owed, and the states that in 2015 had a value of at least 2 when you multiply the number of different utilities by how much the average household price divided by the average industrial price exceeds 1 for places where supply and delivery were sold together. As of 2025, which Interstate Highway has the greatest route length within that state? Your response should be in the format [Answer].",
     "answer": "Interstate 10",
     "nodes": {

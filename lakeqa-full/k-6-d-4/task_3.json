@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000988",
     "question": "I'm looking for a specific Texas county that was among the top five counties by average capital outlay spending from 2018 to 2021. Among those five, this county was one of the two highest for average prison releases in 2019-2020, and unlike its peer, it saw an increase in veterans who are receiving disability-compensation payments from 2020 to 2023. Once you identify this county, tell me which University of Houston System university located in its county seat was founded earliest. Only report the name of the university. Your response should be in the format [Answer].",
     "answer": "University of Houston",
     "nodes": {

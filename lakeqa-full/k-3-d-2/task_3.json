@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000228",
     "question": "I'm researching the origins of county names in the American West. In the Idaho county between 100-120 veteran disability recipients and a license plate code starting with 'L', find the person it is named after, and report the county this person is borned in?. Your response should be in the format [Answer].",
     "answer": "Albemarle County",
     "nodes": {

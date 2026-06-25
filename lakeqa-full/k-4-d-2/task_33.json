@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000502",
     "question": "Find the NYC high school in District 10 that was in the top 6 by overall score in both 2006-07 and 2007-08 and had the lowest average additional credit across those two years. Among alumni of that high school, identify the first Turing Award recipient and the university where he received his Ph.D. Which U.S. president was an alumnus and later served as president of that university? Your response should be in the format [Answer].",
     "answer": "Woodrow Wilson",
     "nodes": {

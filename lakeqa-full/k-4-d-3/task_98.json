@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000646",
   "question": "Harry Mitchell served as mayor of a city. For that city, determine the year with the highest dissatisfied rate for the city's website, the year with the 6th highest yearly dissatisfied rate for the security in parks, and the year with the third highest dissatisfied rate for the city's online services such as registration or payment. Including all those years in total, identify the U.S. state with the third highest total healthcare service utilization rate per 1,000 beneficiaries excluding usage in December in these years. How many other U.S. states does that state border? Please return only the number in the format [Answer].",
   "answer": 1,
   "nodes": {

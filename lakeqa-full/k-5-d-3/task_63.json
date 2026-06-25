@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000861",
   "question": "Identify the Virginia county containing the NASA facility where the equipment used to collect the bare earth elevation data for the 2007 USGS survey of the national monument honoring the U.S. president born in Virginia who held a general officer rank and appears on current U.S. currency was developed. As of 2009, how many more towns did that county have than high schools and K-12 schools in its county public school district? Please return the number only. Your response should be in the format [Answer].",
   "answer": 10,
   "nodes": {

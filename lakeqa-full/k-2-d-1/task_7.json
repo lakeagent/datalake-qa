@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000052",
     "question": "For each year from 2005 through 2010, define Bonus Volatility-Adjusted Level (BVAL) as the draws' average New York Lotto bonus ball number plus half of the standard deviation of bonus ball numbers. Which year has the highest BVAL? If there is a tie, choose the earlier year. After finding that, what was the best-selling video game console of that year? Your response should be in the format [Answer].",
     "answer": "Nintendo DS",
     "nodes": {

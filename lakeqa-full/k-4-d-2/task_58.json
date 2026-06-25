@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000527",
   "question": "Among New York counties outside of NYC, identify the top two by total mental health service recipients from 2017 to 2018. Between their county seats, find the one with the earlier incorporation date, then use its county. How many campuses does the public community college serving residents in that county have? Your response should be in the format [Answer].",
   "answer": 3,
   "nodes": {

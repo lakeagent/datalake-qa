@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000661",
     "question": "Which New York City middle schools located in Queens District 26 had (1) at least 50 offers to specialized high schools on specialized high school admissions test in every school year from 2015-19, and (2) are named after scientists. In what year was the research institute founded and first directed by the older of these two scientists? Please return the year only. Your response should be in the format [Answer].",
     "answer": "1887",
     "nodes": {

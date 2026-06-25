@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000857",
   "question": "What is the name of an elementary school in New York whose location includes Clinton Hill and neighborhoods adjacent to it, has a special education kindergarten class of average class size <= 10 each year and the fewest average violent incidents excluding Other Disruptive between 2008 to 2011? For the person in that school is named after, what is the difference between the years of his earliest and latest U.S. patents? Your response should be in the format [Answer].",
   "answer": 36,
   "nodes": {

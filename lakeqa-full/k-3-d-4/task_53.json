@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000429",
   "question": "Can you find the NYC elementary schools that appear in the top 5 by the schools' learning environment in at least three years from 2006-2010 and are located in Bedford? How many film and television productions did the actor whom that school was named after appear in? Please return only the number in the format [Answer].",
   "answer": 179,
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000570",
     "question": "For all races ages 15 to 24, which ten years have most people died because of the unintentional motor and vehicle traffic? Among the years in that answer, which three years had the highest number of births for females ages 15 to 17 in Connecticut? For each of those three years, define a state's most expensive medicines as the one with the highest reimbursed amount per unit and at least 1,000 prescriptions, and define medical cost as the share of all reimbursed dollars of that medicine. Which states have the 47th through 49th most medical cost in the first year, 47th through 49th most medical cost in the second year, and 46th through 48th most medical cost in the third year? For the state appearing in all three answers, which two counties had the 7th and 8th lowest operation expenses in 2015? Finally, what was the average population in 2020 of those two counties? Please return only the number in the format [Answer].",
     "answer": "3330",
     "nodes": {

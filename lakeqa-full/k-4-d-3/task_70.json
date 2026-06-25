@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000618",
     "question": "Identify the Chicago library branch that ranked in the top five for total number of items checked out over the year and total visitors, and in the top three for total public-computer logins, every year from 2019 to 2021. For the architect who designed that branch, how many years after he was born did he receive the Driehaus Architecture Prize? Your response should be in the format [Answer].",
     "answer": 72,
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000334",
     "question": "Among Washington, DC wards 2 and 5, identify which ward had more scheduled street-cleaning events from 2022 to 2024. In that ward, find the charter school that spans grades 8 and 9. For the monument whose original plans were revised to include the person in that school's name, how many more historical women does the finished monument depict than the original plans included? Your response should be in the format [Answer].",
     "answer": 1,
     "nodes": {

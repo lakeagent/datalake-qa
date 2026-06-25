@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000885",
   "question": "Which applicant company appears most often among cancelled or withdrawn construction permits in DC in 2024? In 2024, among building permits in DC where that company appears as the permit owner, which ward appears most often? In 2022, among building permits in that ward, which permit subtype appears most often? Looking at the same ward and subtype in DC building permits from 2020, 2021, and 2023, which ANCs appear in the top three in each of those three years? Among those ANCs, which one covers the largest number of neighborhoods? Return only the ANC in the format [Answer].",
   "answer": "ANC 7B",
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000132",
     "question": "First identify the state that appears in both of these data.gov-derived groups: Among states in the 2023 Medicaid spending records tied to the temporary increase in the federal matching rate, which ones rank 14th through 18th when ordered by the median amount the federal government paid toward overall Medicaid benefit spending? Break ties alphabetically by state name.; and Among states in the Medicaid spending records for adults covered through expansion, which ones rank 9th through 13th when ordered by how much the state's overall Medicaid spending eligible for federal matching varies from report to report? Break ties alphabetically by state name.. After identifying that state, what beverage did the state senate approve as the official state beverage of that state in 2007? Your response should be in the format [Answer].",
     "answer": "water",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000670",
     "question": "Consider the Eastern Washington counties that border Idaho and had a 2020 population under 300,000. Among these, identify the one where school districts consistently achieved at least 68% English language arts performance for all students and all grades from 2014-15 through 2017-18. What is the most populous city in that county according to the 2020 census? Only report the city in your response. Your response should be in the format [Answer].",
     "answer": "Pullman",
     "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000679",
     "question": "In 1999, which U.S. state has the 3rd highest number of deaths because of Alzheimer's disease? In that state, in home meal programs, which three counties had the highest reimbursement amount in breakfast and lunch in home meal programs in 2024, 2023, and 2022? Across the counties that appear in all three of those answers, in which years did the 3rd to 5th most people pay sales tax through dealer-financed car deals? In Los Angeles and in those years, for people ages 45 through 54, for arrests that have multiple offenses, which kind of charges rank 25th through 27th when sorted from rarest to most common? Finally, in 2024, for people ages 25 through 34, how many arrests happened involving any of those three offenses ? Please return only the number in the format [Answer].",
     "answer": "24",
     "nodes": {

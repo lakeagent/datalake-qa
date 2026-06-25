@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000807",
     "question": "Across 2019-2021, identify the Texas counties that consistently ranked in the statewide top five for spending on major asset purchases and long-term property improvements and also in the statewide top five for releases from the Texas state prison system in each of those years. Among that set, find the county with the highest average intake counts into the Texas state prison system over 2019-2021. Its county seat has been home to a National Basketball Association franchise since 1971. Which franchise is it? Return the team name only. Your response should be in the format [Answer].",
     "answer": "Houston Rockets",
     "nodes": {

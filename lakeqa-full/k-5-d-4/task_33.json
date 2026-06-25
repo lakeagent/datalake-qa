@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000940",
   "question": "Find the city where the Southwest district of the Missouri Department of Transportation is based and the terminus cities of the highway whose name was first proposed there. Between those two cities, which one had higher binge drinking prevalence in both the 2016 and 2018 city health releases? For that city, identify the department with the fifth-highest average total overtime costs from 2014 to 2017. As of 2025, how many departments are grouped under the same service category as that department? Return only the number in the format [Answer].",
   "answer": 4,
   "nodes": {

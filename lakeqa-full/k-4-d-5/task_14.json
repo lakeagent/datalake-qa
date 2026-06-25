@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000738",
   "question": "Among drugs with 5 to 10 million total annual Medicaid prescriptions across U.S. states in every year from 2018 through 2022, identify the drug with the ninth-highest average prescription count across those five years. In the year that drug was approved for medical use, which causes of death ranked 4th and 5th by age-adjusted death rate? Using the annual occurrence shares for those causes in a typical year in the 2020s, which of the two ranked causes occurs more annually? Your response should be in the format [Answer].",
   "answer": "Influenza and Pneumonia",
   "nodes": {

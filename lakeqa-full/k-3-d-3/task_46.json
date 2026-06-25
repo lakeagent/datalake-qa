@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000346",
   "question": "What are the ten fiscal years with the highest total amount of money New York City currently owes that must be paid back using our tax dollars? What are the ten fiscal years with the highest total amount of money spent by the hygiene department? What are the ten fiscal years with the highest amount of money spent on sanitation? Across the years appearing in all three answers, among metropolitan residents ages 0-74 who died because of cancer and heart disease, which state had the 7th highest number of deaths? For that state, how many years passed between it becoming a state and its third capital being designated? Please return only the number in the format [Answer].",
   "answer": 21,
   "nodes": {

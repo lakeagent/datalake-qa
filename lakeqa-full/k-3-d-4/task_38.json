@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000414",
   "question": "Find the New England state that had between 200 and 400 VA pension recipients in both FY 2020 and FY 2021 and between 150 and 300 VA pension recipients in FY 2023, then identify its capital city. At the 2020 census, how many more people lived in that state's most populous city than in that capital city? Return the number only. Your response should be in the format [Answer].",
   "answer": 36669,
   "nodes": {

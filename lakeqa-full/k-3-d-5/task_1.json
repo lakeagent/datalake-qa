@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000443",
     "question": "Find the NYC high schools that were in the top 8 by overall score every year from 2006-07 through 2010-11. Determine the neighborhoods those schools are located in, identify the earliest bridge connecting that area to NYC, and report the year it is built. Your response should be in the format [Answer].",
     "answer": "1693",
     "nodes": {

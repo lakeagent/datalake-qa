@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000673",
     "question": "Identify the first head of Chicago's department with the highest average overtime between 2018 and 2021. In the city where that person previously served as police chief and founded a criminal justice program at a local university, what county is the city located in? Only report the county name in the format of `X County`. Your response should be in the format [Answer].",
     "answer": "Sedgwick County",
     "nodes": {

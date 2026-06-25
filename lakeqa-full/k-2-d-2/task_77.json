@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000158",
     "question": "We define 'high-level activity' as achieving at least 300 minutes of moderate or 150 minutes of vigorous aerobic activity per week. In 2015, which state has the 5th highest percentage of adults reaching this high-level activity? As of 2022 in that state, how many more municipalities than counties are there? Please return only the number in the format [Answer].",
     "answer": 242,
     "nodes": {

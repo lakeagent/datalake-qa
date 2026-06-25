@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000991",
     "question": "Jon Whitmore was the chief executive officer of an organization. Determine the city where that organization was founded, then the county it is in and the two-digit state FIPS code from school district office listings. In that state, find the counties that rank in the top three for public schools, private schools, and school district offices; among those counties, what is the highest postsecondary institution count? Only report the number. Your response should be in the format [Answer].",
     "answer": "11",
     "nodes": {

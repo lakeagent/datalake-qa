@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000704",
   "question": "Among Providence hospital properties, only one met the following criteria: it had an assessed value consistently between $6.9 million and $7.3 million from 2015 through 2018, and it is neither an Ivy League university nor named after an incorporated Rhode Island city. The benefactor associated with this property was named in honor of another person. As of 2025, how many students are at the school founded by that person? Please return only the number in the format [Answer].",
   "answer": 754,
   "nodes": {

@@ -1,4 +1,5 @@
 {
+    "question_id": "EQA000453",
   "question": "I am looking for Texas counties that consistently ranked in the top five for child care center sites participating in the federal meal-reimbursement program for children and adults between 2018 and 2022. Among these leaders, find the county that reported over 600 children removed from their homes by child protective services in 2022 despite completing fewer than 14,000 investigations into possible child abuse or neglect. In 2012, what was the total capacity of the jail facilities in that county? Return the number only. Your response should be in the format [Answer].",
   "answer": 4596,
   "nodes": {
