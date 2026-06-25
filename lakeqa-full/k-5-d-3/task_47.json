@@ -40,14 +40,15 @@
             "answer": "California"
         },
         "7": {
-            "source": "wikipedia/California/content.txt; wikipedia/List_of_U.S._states_and_territories_by_area/content.txt",
+            "source": "wikipedia/List_of_U.S._states_and_territories_by_area/content.txt",
             "fact": "import re\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nbucket = \"lakeqa-yc4103-datalake\"\ns3 = boto3.client(\"s3\")\nnode_6_answer = \"California\"\n\nstate_text = s3.get_object(Bucket=bucket, Key='wikipedia/California/content.txt')[\"Body\"].read().decode(\"utf-8\", errors=\"replace\")\nlist_text = s3.get_object(Bucket=bucket, Key='wikipedia/List_of_U.S._states_and_territories_by_area/content.txt')[\"Body\"].read().decode(\"utf-8\", errors=\"replace\")\n\n# The California page states it is the third-largest state by area.\nassert \"third-largest state by area\" in state_text\n\n# The list page is ordered by total area, and the third total-area entry is California.\nmarker = \"State / territory  Total area  Land area  Water area  Nationalshare (%) sq mi  km2  sq mi  km2  sq mi  km2  %\"\ntail = list_text.split(marker, 1)[1]\ncomma_numbers = re.findall(r\"\\d{1,3}(?:,\\d{3})+\", tail)\nanswer = comma_numbers[12].replace(\",\", \"\")\n",
             "subquestion": "According to Wikipedia, what is the total area of <node_6 answer> in square miles?",
             "answer": "163695"
         }
     },
     "datasets_used": [
-        "wikipedia/California/content.txt; wikipedia/List_of_U.S._states_and_territories_by_area/content.txt",
+        "wikipedia/California/content.txt",
+        "wikipedia/List_of_U.S._states_and_territories_by_area/content.txt",
         "datagov/nypd-hate-crimes/files/rows.txt",
         "datagov/nypd-hate-crimes/signed-metadata.txt",
         "datagov/nypd-hate-crimes/files/bqiq-cu78.publisher-view.json",

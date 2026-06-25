@@ -40,8 +40,8 @@
             "answer": "South Carolina"
         },
         "7": {
-            "source": "datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/v1/files/rows.csv",
-            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/v1/files/rows.csv'\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else f\"/tmp/k123_data_cache/{source}\"\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nnode_4_answer = \"2021\"\nnode_6_answer = \"South Carolina\"\nfiltered = df[df[\"State & Foreign\"].astype(str).str.strip().str.lower().eq(str(node_6_answer).strip().lower())].copy()\nfiltered[\"Veterans Pension Recipients\"] = pd.to_numeric(\n    filtered[\"Veterans Pension Recipients\"].astype(str).str.replace(\",\", \"\", regex=False),\n    errors=\"coerce\"\n)\nanswer = str(int(filtered[\"Veterans Pension Recipients\"].iloc[0]))\n",
+            "source": "datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/files/rows.txt",
+            "fact": "import os\nimport io\nimport pandas as pd\nimport boto3\n\ntry:\n    from dotenv import load_dotenv\n    load_dotenv()\nexcept Exception:\n    pass\n\nsource = 'datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/files/rows.txt'\nbucket = \"lakeqa-yc4103-datalake\"\nlocal_path = source if os.path.exists(source) else f\"/tmp/k123_data_cache/{source}\"\n\nif os.path.exists(local_path):\n    df = pd.read_csv(local_path, sep=\",\", engine=\"c\", low_memory=False)\nelse:\n    obj = boto3.client(\"s3\").get_object(Bucket=bucket, Key=source)\n    df = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), sep=\",\", engine=\"c\", low_memory=False)\n\nnode_4_answer = \"2021\"\nnode_6_answer = \"South Carolina\"\nfiltered = df[df[\"State & Foreign\"].astype(str).str.strip().str.lower().eq(str(node_6_answer).strip().lower())].copy()\nfiltered[\"Veterans Pension Recipients\"] = pd.to_numeric(\n    filtered[\"Veterans Pension Recipients\"].astype(str).str.replace(\",\", \"\", regex=False),\n    errors=\"coerce\"\n)\nanswer = str(int(filtered[\"Veterans Pension Recipients\"].iloc[0]))\n",
             "subquestion": "In 2023, how many people received pension for veterans in <node_6 answer>?",
             "answer": "2999"
         }
@@ -61,9 +61,8 @@
         "datagov/behavioral-health-servicesprovided-to-the-medicaid-and-chip-population-b6f90/signed-metadata.txt",
         "datagov/nchs-vsrr-quarterly-provisional-estimates-for-selected-indicators-of-mortality/files/rows.txt",
         "datagov/nchs-vsrr-quarterly-provisional-estimates-for-selected-indicators-of-mortality/signed-metadata.txt",
-        "datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/v1/files/rows.csv",
-        "datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/signed-metadata.txt",
-        "datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/files/rows.txt"
+        "datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/files/rows.txt",
+        "datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/signed-metadata.txt"
     ],
     "reasoning_hops": [
         {

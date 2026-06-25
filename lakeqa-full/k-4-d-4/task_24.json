@@ -40,7 +40,7 @@
             "answer": "BATTERY ON SCHOOL/PRK/HOSPITAL GROUNDS; BATTERY TRANSPORTATION PERSONNEL/PASSENGR; BENCH WARR/FAIL TO APPEAR ON FEL CHARGE"
         },
         "7": {
-            "source": "datagov/arrest-data-from-2020-to-present/files/headers.txt; https://data.lacity.org/resource/amvf-fr72.csv",
+            "source": "datagov/arrest-data-from-2020-to-present/files/rows.txt",
             "fact": "import csv\nimport io\nimport ssl\nimport urllib.parse\nimport urllib.request\n\nnode_6_answer = 'BATTERY ON SCHOOL/PRK/HOSPITAL GROUNDS; BATTERY TRANSPORTATION PERSONNEL/PASSENGR; BENCH WARR/FAIL TO APPEAR ON FEL CHARGE'\ncharges = [part.strip() for part in node_6_answer.split(';') if part.strip()]\nwhere_parts = []\nfor charge in charges:\n    escaped = charge.replace(\"'\", \"''\")\n    where_parts.append(f\"chrg_desc='{escaped}'\")\nwhere = \"date_extract_y(arst_date)=2024 AND age in('25','26','27','28','29','30','31','32','33','34') AND (\" + ' OR '.join(where_parts) + \")\"\nurl = 'https://data.lacity.org/resource/amvf-fr72.csv?' + urllib.parse.urlencode({'$select': 'count(*) as n', '$where': where})\ntext = urllib.request.urlopen(url, context=ssl._create_unverified_context()).read().decode('utf-8', 'replace')\nrows = list(csv.DictReader(io.StringIO(text)))\nanswer = str(int(rows[0]['n']))\n",
             "subquestion": "In 2024, for people ages 25 through 34, how many arrests happened involving any offenses listed in <node_6 answer>?",
             "answer": "24"
@@ -64,7 +64,6 @@
         "datagov/arrest-data-from-2010-to-2019/files/rows.txt",
         "datagov/arrest-data-from-2010-to-2019/signed-metadata.txt",
         "datagov/arrest-data-from-2010-to-2019/files/yru6-6re4.publisher-view.json",
-        "datagov/arrest-data-from-2020-to-present/files/headers.txt; https://data.lacity.org/resource/amvf-fr72.csv",
         "datagov/arrest-data-from-2020-to-present/signed-metadata.txt",
         "datagov/arrest-data-from-2020-to-present/files/rows.txt"
     ],

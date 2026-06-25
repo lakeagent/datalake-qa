@@ -65,7 +65,8 @@
         }
     },
     "datasets_used": [
-        "wikipedia/California/content.txt; wikipedia/List_of_U.S._states_and_territories_by_area/content.txt",
+        "wikipedia/California/content.txt",
+        "wikipedia/List_of_U.S._states_and_territories_by_area/content.txt",
         "datagov/nypd-hate-crimes/files/rows.txt",
         "datagov/nypd-hate-crimes/signed-metadata.txt",
         "datagov/nypd-hate-crimes/files/bqiq-cu78.publisher-view.json",
@@ -82,7 +83,6 @@
         "datagov/lottery-expenditures-multi-year-report/files/rows.txt",
         "datagov/lottery-expenditures-multi-year-report/signed-metadata.txt",
         "datagov/lottery-expenditures-multi-year-report/files/anxj-teqh.publisher-view.json",
-        "wikipedia/California/content.txt",
         "wikipedia/Oregon/content.txt",
         "wikipedia/Nevada/content.txt",
         "wikipedia/Arizona/content.txt"

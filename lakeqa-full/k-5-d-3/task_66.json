@@ -1,222 +1,224 @@
 {
     "question_id": "EQA000864",
-  "question": "Across 2019-2021, identify the Texas counties that consistently rank in the top five for spending on major asset purchases and long-term property improvements. Among those, keep the counties that also rank in the statewide top five for releases from the Texas state prison system in each of those years. From that set, which county had the highest average number of releases from the Texas state prison system over 2019-2021, and what is its county seat? For that city's light-rail system, what is the difference in miles between its longest and shortest lines? Your response should be in the format [Answer].",
-  "answer": 9.5,
-  "nodes": {
-    "1": {
-      "source": "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
-      "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-state-expenditures-by-county-2019/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"Amount\"] = pd.to_numeric(df[\"Amount\"], errors=\"coerce\")\ncategory = df[\"Major Spending Category\"].astype(str).str.strip().str.upper()\nanswer = (\n    df[category == \"CAPITAL OUTLAY\"]\n    .assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)[\"Amount\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)",
-      "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2019?",
-      "answer": [
-        "HARRIS",
-        "TRAVIS",
-        "DALLAS",
-        "HARDIN",
-        "BEXAR"
-      ]
+    "question": "Across 2019-2021, identify the Texas counties that consistently rank in the top five for spending on major asset purchases and long-term property improvements. Among those, keep the counties that also rank in the statewide top five for releases from the Texas state prison system in each of those years. From that set, which county had the highest average number of releases from the Texas state prison system over 2019-2021, and what is its county seat? For that city's light-rail system, what is the difference in miles between its longest and shortest lines? Your response should be in the format [Answer].",
+    "answer": 9.5,
+    "nodes": {
+        "1": {
+            "source": "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-state-expenditures-by-county-2019/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"Amount\"] = pd.to_numeric(df[\"Amount\"], errors=\"coerce\")\ncategory = df[\"Major Spending Category\"].astype(str).str.strip().str.upper()\nanswer = (\n    df[category == \"CAPITAL OUTLAY\"]\n    .assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)[\"Amount\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)",
+            "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2019?",
+            "answer": [
+                "HARRIS",
+                "TRAVIS",
+                "DALLAS",
+                "HARDIN",
+                "BEXAR"
+            ]
+        },
+        "2": {
+            "source": "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-state-expenditures-by-county-2020/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"Amount\"] = pd.to_numeric(df[\"Amount\"], errors=\"coerce\")\ncategory = df[\"Major Spending Category\"].astype(str).str.strip().str.upper()\nanswer = (\n    df[category == \"CAPITAL OUTLAY\"]\n    .assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)[\"Amount\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)",
+            "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2020?",
+            "answer": [
+                "TRAVIS",
+                "HARRIS",
+                "DALLAS",
+                "BEXAR",
+                "GRAYSON"
+            ]
+        },
+        "3": {
+            "source": "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-state-expenditures-by-county-2021/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"Amount\"] = pd.to_numeric(df[\"Amount\"], errors=\"coerce\")\ncategory = df[\"Major Spending Category\"].astype(str).str.strip().str.upper()\nanswer = (\n    df[category == \"CAPITAL OUTLAY\"]\n    .assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)[\"Amount\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)",
+            "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2021?",
+            "answer": [
+                "HARRIS",
+                "TRAVIS",
+                "DALLAS",
+                "BEXAR",
+                "GUADALUPE"
+            ]
+        },
+        "4": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt\"\ntarget_counties = [\"HARRIS\", \"TRAVIS\", \"DALLAS\", \"BEXAR\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ntop5 = (\n    df.assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)\n    .size()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)\nanswer = [county for county in top5 if county in target_counties]",
+            "subquestion": "In 2019, among <hop 1 answer>, which counties were in the statewide top 5 for releases from the Texas state prison system?",
+            "answer": [
+                "HARRIS",
+                "DALLAS",
+                "BEXAR"
+            ]
+        },
+        "5": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt\"\ntarget_counties = [\"HARRIS\", \"TRAVIS\", \"DALLAS\", \"BEXAR\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ntop5 = (\n    df.assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)\n    .size()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)\nanswer = [county for county in top5 if county in target_counties]",
+            "subquestion": "In 2020, among <hop 1 answer>, which counties were in the statewide top 5 for releases from the Texas state prison system?",
+            "answer": [
+                "HARRIS",
+                "DALLAS",
+                "BEXAR",
+                "TRAVIS"
+            ]
+        },
+        "6": {
+            "source": "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt\"\ntarget_counties = [\"HARRIS\", \"TRAVIS\", \"DALLAS\", \"BEXAR\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ntop5 = (\n    df.assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)\n    .size()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)\nanswer = [county for county in top5 if county in target_counties]",
+            "subquestion": "In 2021, among <hop 1 answer>, which counties were in the statewide top 5 for releases from the Texas state prison system?",
+            "answer": [
+                "HARRIS",
+                "DALLAS",
+                "BEXAR"
+            ]
+        },
+        "7": {
+            "source": "datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt\"\ntarget_counties = [\"HARRIS\", \"DALLAS\", \"BEXAR\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nanswer = (\n    df.assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)\n    .size()\n    .loc[target_counties]\n    .to_dict()\n)",
+            "subquestion": "In 2019, what were the number of releases from the Texas state prison system for counties in <hop 2 answer>?",
+            "answer": {
+                "HARRIS": 7874,
+                "DALLAS": 4660,
+                "BEXAR": 4457
+            }
+        },
+        "8": {
+            "source": "datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt\"\ntarget_counties = [\"HARRIS\", \"DALLAS\", \"BEXAR\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nanswer = (\n    df.assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)\n    .size()\n    .loc[target_counties]\n    .to_dict()\n)",
+            "subquestion": "In 2020, what were the number of releases from the Texas state prison system for counties in <hop 2 answer>?",
+            "answer": {
+                "HARRIS": 3840,
+                "DALLAS": 2519,
+                "BEXAR": 2420
+            }
+        },
+        "9": {
+            "source": "datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt",
+            "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt\"\ntarget_counties = [\"HARRIS\", \"DALLAS\", \"BEXAR\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nanswer = (\n    df.assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)\n    .size()\n    .loc[target_counties]\n    .to_dict()\n)",
+            "subquestion": "In 2021, what were the number of releases from the Texas state prison system for counties in <hop 2 answer>?",
+            "answer": {
+                "HARRIS": 4652,
+                "DALLAS": 3520,
+                "BEXAR": 2822
+            }
+        },
+        "10": {
+            "source": "wikipedia/Harris_County,_Texas/content.txt",
+            "fact": "Harris County is the most populous county in Texas and the third-most populous in the United States. The county seat is Houston, which is also the largest city in Texas and the fourth-largest city in the United States.",
+            "subquestion": "What city is the county seat of <hop 3 answer> County?",
+            "answer": "Houston"
+        },
+        "11": {
+            "source": "wikipedia/METRORail_Red_Line/content.txt",
+            "fact": "The light-rail system in Houston, Texas, has line lengths of 12.8 mi, 3.3 mi, and 6.6 mi.",
+            "subquestion": "What are the longest and shortest line lengths in the light-rail system of <hop 4 answer>?",
+            "answer": {
+                "longest": 12.8,
+                "shortest": 3.3
+            }
+        }
     },
-    "2": {
-      "source": "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
-      "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-state-expenditures-by-county-2020/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"Amount\"] = pd.to_numeric(df[\"Amount\"], errors=\"coerce\")\ncategory = df[\"Major Spending Category\"].astype(str).str.strip().str.upper()\nanswer = (\n    df[category == \"CAPITAL OUTLAY\"]\n    .assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)[\"Amount\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)",
-      "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2020?",
-      "answer": [
-        "TRAVIS",
-        "HARRIS",
-        "DALLAS",
-        "BEXAR",
-        "GRAYSON"
-      ]
-    },
-    "3": {
-      "source": "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
-      "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-state-expenditures-by-county-2021/files/rows.txt\"\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ndf[\"Amount\"] = pd.to_numeric(df[\"Amount\"], errors=\"coerce\")\ncategory = df[\"Major Spending Category\"].astype(str).str.strip().str.upper()\nanswer = (\n    df[category == \"CAPITAL OUTLAY\"]\n    .assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)[\"Amount\"]\n    .sum()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)",
-      "subquestion": "Which Texas counties were in the statewide top 5 for spending on major asset purchases and long-term property improvements in fiscal year 2021?",
-      "answer": [
-        "HARRIS",
-        "TRAVIS",
-        "DALLAS",
-        "BEXAR",
-        "GUADALUPE"
-      ]
-    },
-    "4": {
-      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
-      "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt\"\ntarget_counties = [\"HARRIS\", \"TRAVIS\", \"DALLAS\", \"BEXAR\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ntop5 = (\n    df.assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)\n    .size()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)\nanswer = [county for county in top5 if county in target_counties]",
-      "subquestion": "In 2019, among <hop 1 answer>, which counties were in the statewide top 5 for releases from the Texas state prison system?",
-      "answer": [
-        "HARRIS",
-        "DALLAS",
-        "BEXAR"
-      ]
-    },
-    "5": {
-      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
-      "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt\"\ntarget_counties = [\"HARRIS\", \"TRAVIS\", \"DALLAS\", \"BEXAR\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ntop5 = (\n    df.assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)\n    .size()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)\nanswer = [county for county in top5 if county in target_counties]",
-      "subquestion": "In 2020, among <hop 1 answer>, which counties were in the statewide top 5 for releases from the Texas state prison system?",
-      "answer": [
-        "HARRIS",
-        "DALLAS",
-        "BEXAR",
-        "TRAVIS"
-      ]
-    },
-    "6": {
-      "source": "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
-      "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt\"\ntarget_counties = [\"HARRIS\", \"TRAVIS\", \"DALLAS\", \"BEXAR\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\ntop5 = (\n    df.assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)\n    .size()\n    .sort_values(ascending=False)\n    .head(5)\n    .index.tolist()\n)\nanswer = [county for county in top5 if county in target_counties]",
-      "subquestion": "In 2021, among <hop 1 answer>, which counties were in the statewide top 5 for releases from the Texas state prison system?",
-      "answer": [
-        "HARRIS",
-        "DALLAS",
-        "BEXAR"
-      ]
-    },
-    "7": {
-      "source": "datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt",
-      "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt\"\ntarget_counties = [\"HARRIS\", \"DALLAS\", \"BEXAR\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nanswer = (\n    df.assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)\n    .size()\n    .loc[target_counties]\n    .to_dict()\n)",
-      "subquestion": "In 2019, what were the number of releases from the Texas state prison system for counties in <hop 2 answer>?",
-      "answer": {
-        "HARRIS": 7874,
-        "DALLAS": 4660,
-        "BEXAR": 4457
-      }
-    },
-    "8": {
-      "source": "datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt",
-      "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt\"\ntarget_counties = [\"HARRIS\", \"DALLAS\", \"BEXAR\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nanswer = (\n    df.assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)\n    .size()\n    .loc[target_counties]\n    .to_dict()\n)",
-      "subquestion": "In 2020, what were the number of releases from the Texas state prison system for counties in <hop 2 answer>?",
-      "answer": {
-        "HARRIS": 3840,
-        "DALLAS": 2519,
-        "BEXAR": 2420
-      }
-    },
-    "9": {
-      "source": "datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt",
-      "fact": "import boto3\nimport io\nimport pandas as pd\nfrom botocore import UNSIGNED\nfrom botocore.config import Config\n\nbucket_name = \"lakeqa-yc4103-datalake\"\nobject_key = \"datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt\"\ntarget_counties = [\"HARRIS\", \"DALLAS\", \"BEXAR\"]\ns3 = boto3.client(\"s3\", config=Config(signature_version=UNSIGNED))\nobj = s3.get_object(Bucket=bucket_name, Key=object_key)\ndf = pd.read_csv(io.BytesIO(obj[\"Body\"].read()), low_memory=False)\nanswer = (\n    df.assign(County=lambda x: x[\"County\"].astype(str).str.strip().str.upper())\n    .groupby(\"County\", dropna=True)\n    .size()\n    .loc[target_counties]\n    .to_dict()\n)",
-      "subquestion": "In 2021, what were the number of releases from the Texas state prison system for counties in <hop 2 answer>?",
-      "answer": {
-        "HARRIS": 4652,
-        "DALLAS": 3520,
-        "BEXAR": 2822
-      }
-    },
-    "10": {
-      "source": "wikipedia/Harris_County,_Texas/content.txt",
-      "fact": "Harris County is the most populous county in Texas and the third-most populous in the United States. The county seat is Houston, which is also the largest city in Texas and the fourth-largest city in the United States.",
-      "subquestion": "What city is the county seat of <hop 3 answer> County?",
-      "answer": "Houston"
-    },
-    "11": {
-      "source": "wikipedia/METRORail_Red_Line/content.txt; wikipedia/METRORail_Green_Line/content.txt; wikipedia/METRORail_Purple_Line/content.txt",
-      "fact": "The light-rail system in Houston, Texas, has line lengths of 12.8 mi, 3.3 mi, and 6.6 mi.",
-      "subquestion": "What are the longest and shortest line lengths in the light-rail system of <hop 4 answer>?",
-      "answer": {
-        "longest": 12.8,
-        "shortest": 3.3
-      }
-    }
-  },
-  "datasets_used": [
-    "wikipedia/Harris_County,_Texas/content.txt",
-    "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
-    "datagov/texas-state-expenditures-by-county-2019/signed-metadata.txt",
-    "datagov/texas-state-expenditures-by-county-2019/files/2x5x-m677.txt",
-    "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
-    "datagov/texas-state-expenditures-by-county-2020/signed-metadata.txt",
-    "datagov/texas-state-expenditures-by-county-2020/files/aact-g69n.publisher-view.json",
-    "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
-    "datagov/texas-state-expenditures-by-county-2021/signed-metadata.txt",
-    "datagov/texas-state-expenditures-by-county-2021/files/tup7-smjg.publisher-view.json",
-    "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
-    "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
-    "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
-    "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
-    "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
-    "datagov/texas-department-of-criminal-justice-releases-fy-2021/signed-metadata.txt",
-    "datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt",
-    "datagov/texas-department-of-criminal-justice-receives-fy-2019/signed-metadata.txt",
-    "datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt",
-    "datagov/texas-department-of-criminal-justice-receives-fy-2020/signed-metadata.txt",
-    "datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt",
-    "datagov/texas-department-of-criminal-justice-receives-fy-2021/signed-metadata.txt",
-    "wikipedia/METRORail_Red_Line/content.txt"
-  ],
-  "reasoning_hops": [
-    {
-      "hop": 1,
-      "node_ids": [
-        1,
-        2,
-        3
-      ],
-      "reasoning": [
-        "Node 1: Filter rows where `Major Spending Category` equals `CAPITAL OUTLAY`, normalize `County` to uppercase, group by `County`, sum `Amount`, sort descending, and keep the top 5 counties for 2019.",
-        "Node 2: Filter rows where `Major Spending Category` equals `CAPITAL OUTLAY`, normalize `County` to uppercase, group by `County`, sum `Amount`, sort descending, and keep the top 5 counties for 2020.",
-        "Node 3: Filter rows where `Major Spending Category` equals `CAPITAL OUTLAY`, normalize `County` to uppercase, group by `County`, sum `Amount`, sort descending, and keep the top 5 counties for 2021.",
-        "Hop result: the counties present in all three top-5 lists are HARRIS, TRAVIS, DALLAS, and BEXAR."
-      ],
-      "answer": [
-        "HARRIS",
-        "TRAVIS",
-        "DALLAS",
-        "BEXAR"
-      ]
-    },
-    {
-      "hop": 2,
-      "node_ids": [
-        4,
-        5,
-        6
-      ],
-      "reasoning": [
-        "Node 4: Normalize `County` to uppercase, count release rows by `County`, take the statewide top 5 counties for 2019, and keep only counties in <hop 1 answer>.",
-        "Node 5: Normalize `County` to uppercase, count release rows by `County`, take the statewide top 5 counties for 2020, and keep only counties in <hop 1 answer>.",
-        "Node 6: Normalize `County` to uppercase, count release rows by `County`, take the statewide top 5 counties for 2021, and keep only counties in <hop 1 answer>.",
-        "Hop result: the counties present in all three filtered top-5 release lists are HARRIS, DALLAS, and BEXAR."
-      ],
-      "answer": [
-        "HARRIS",
-        "DALLAS",
-        "BEXAR"
-      ]
-    },
-    {
-      "hop": 3,
-      "node_ids": [
-        7,
-        8,
-        9
-      ],
-      "reasoning": [
-        "Node 7: Normalize `County` to uppercase, count intake rows by `County`, and keep counts only for <hop 2 answer> in 2019.",
-        "Node 8: Normalize `County` to uppercase, count intake rows by `County`, and keep counts only for <hop 2 answer> in 2020.",
-        "Node 9: Normalize `County` to uppercase, count intake rows by `County`, and keep counts only for <hop 2 answer> in 2021.",
-        "Hop result: average intake counts are HARRIS: (7,874 + 3,840 + 4,652) / 3 = 5,455.33, DALLAS: (4,660 + 2,519 + 3,520) / 3 = 3,566.33, and BEXAR: (4,457 + 2,420 + 2,822) / 3 = 3,233.00; the highest average is HARRIS."
-      ],
-      "answer": "HARRIS"
-    },
-    {
-      "hop": 4,
-      "node_ids": [
-        10
-      ],
-      "reasoning": [
-        "Node 10: The county seat of Harris County is Houston.",
-        "Hop result: Houston."
-      ],
-      "answer": "Houston"
-    },
-    {
-      "hop": 5,
-      "node_ids": [
-        11
-      ],
-      "reasoning": [
-        "Node 11: The longest and shortest lines in the light-rail system of <hop 4 answer> are 12.8 miles and 3.3 miles long.",
-        "Hop result: 12.8 - 3.3 = 9.5."
-      ],
-      "answer": 9.5
-    }
-  ]
+    "datasets_used": [
+        "wikipedia/Harris_County,_Texas/content.txt",
+        "datagov/texas-state-expenditures-by-county-2019/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2019/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2019/files/2x5x-m677.txt",
+        "datagov/texas-state-expenditures-by-county-2020/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2020/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2020/files/aact-g69n.publisher-view.json",
+        "datagov/texas-state-expenditures-by-county-2021/files/rows.txt",
+        "datagov/texas-state-expenditures-by-county-2021/signed-metadata.txt",
+        "datagov/texas-state-expenditures-by-county-2021/files/tup7-smjg.publisher-view.json",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2019/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2019/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2020/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2020/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2021/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-releases-fy-2021/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2019/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2019/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2020/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2020/signed-metadata.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2021/files/rows.txt",
+        "datagov/texas-department-of-criminal-justice-receives-fy-2021/signed-metadata.txt",
+        "wikipedia/METRORail_Red_Line/content.txt",
+        "wikipedia/METRORail_Green_Line/content.txt",
+        "wikipedia/METRORail_Purple_Line/content.txt"
+    ],
+    "reasoning_hops": [
+        {
+            "hop": 1,
+            "node_ids": [
+                1,
+                2,
+                3
+            ],
+            "reasoning": [
+                "Node 1: Filter rows where `Major Spending Category` equals `CAPITAL OUTLAY`, normalize `County` to uppercase, group by `County`, sum `Amount`, sort descending, and keep the top 5 counties for 2019.",
+                "Node 2: Filter rows where `Major Spending Category` equals `CAPITAL OUTLAY`, normalize `County` to uppercase, group by `County`, sum `Amount`, sort descending, and keep the top 5 counties for 2020.",
+                "Node 3: Filter rows where `Major Spending Category` equals `CAPITAL OUTLAY`, normalize `County` to uppercase, group by `County`, sum `Amount`, sort descending, and keep the top 5 counties for 2021.",
+                "Hop result: the counties present in all three top-5 lists are HARRIS, TRAVIS, DALLAS, and BEXAR."
+            ],
+            "answer": [
+                "HARRIS",
+                "TRAVIS",
+                "DALLAS",
+                "BEXAR"
+            ]
+        },
+        {
+            "hop": 2,
+            "node_ids": [
+                4,
+                5,
+                6
+            ],
+            "reasoning": [
+                "Node 4: Normalize `County` to uppercase, count release rows by `County`, take the statewide top 5 counties for 2019, and keep only counties in <hop 1 answer>.",
+                "Node 5: Normalize `County` to uppercase, count release rows by `County`, take the statewide top 5 counties for 2020, and keep only counties in <hop 1 answer>.",
+                "Node 6: Normalize `County` to uppercase, count release rows by `County`, take the statewide top 5 counties for 2021, and keep only counties in <hop 1 answer>.",
+                "Hop result: the counties present in all three filtered top-5 release lists are HARRIS, DALLAS, and BEXAR."
+            ],
+            "answer": [
+                "HARRIS",
+                "DALLAS",
+                "BEXAR"
+            ]
+        },
+        {
+            "hop": 3,
+            "node_ids": [
+                7,
+                8,
+                9
+            ],
+            "reasoning": [
+                "Node 7: Normalize `County` to uppercase, count intake rows by `County`, and keep counts only for <hop 2 answer> in 2019.",
+                "Node 8: Normalize `County` to uppercase, count intake rows by `County`, and keep counts only for <hop 2 answer> in 2020.",
+                "Node 9: Normalize `County` to uppercase, count intake rows by `County`, and keep counts only for <hop 2 answer> in 2021.",
+                "Hop result: average intake counts are HARRIS: (7,874 + 3,840 + 4,652) / 3 = 5,455.33, DALLAS: (4,660 + 2,519 + 3,520) / 3 = 3,566.33, and BEXAR: (4,457 + 2,420 + 2,822) / 3 = 3,233.00; the highest average is HARRIS."
+            ],
+            "answer": "HARRIS"
+        },
+        {
+            "hop": 4,
+            "node_ids": [
+                10
+            ],
+            "reasoning": [
+                "Node 10: The county seat of Harris County is Houston.",
+                "Hop result: Houston."
+            ],
+            "answer": "Houston"
+        },
+        {
+            "hop": 5,
+            "node_ids": [
+                11
+            ],
+            "reasoning": [
+                "Node 11: The longest and shortest lines in the light-rail system of <hop 4 answer> are 12.8 miles and 3.3 miles long.",
+                "Hop result: 12.8 - 3.3 = 9.5."
+            ],
+            "answer": 9.5
+        }
+    ]
 }

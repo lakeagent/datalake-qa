@@ -56,7 +56,7 @@
             "answer": "Aedes aegypti"
         },
         "7": {
-            "source": "wikipedia/Aedes_aegypti/content.txt | wikipedia/Aedes_albopictus/content.txt",
+            "source": "wikipedia/Aedes_aegypti/content.txt",
             "fact": "The Aedes aegypti article notes that the Linnaean names and descriptions were later translated and published in `1762`. The Aedes albopictus article states that Frederick A. Askew Skuse first scientifically described the Asian tiger mosquito in `1894`.",
             "subquestion": "What year is the first description of <hop 4 answer>'s scientific name?",
             "answer": "1762"
@@ -64,7 +64,8 @@
     },
     "datasets_used": [
         "wikipedia/Cameron_County,_Texas/content.txt",
-        "wikipedia/Aedes_aegypti/content.txt | wikipedia/Aedes_albopictus/content.txt",
+        "wikipedia/Aedes_aegypti/content.txt",
+        "wikipedia/Aedes_albopictus/content.txt",
         "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/rows.txt",
         "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/signed-metadata.txt",
         "datagov/child-and-adult-care-food-programs-cacfp-day-care-homes-meal-reimbursement-program-ye-2018/files/m3iw-uy6q.txt",

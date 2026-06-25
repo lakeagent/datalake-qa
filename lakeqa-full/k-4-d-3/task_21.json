@@ -52,14 +52,13 @@
             "answer": "10623"
         },
         "9": {
-            "source": "derived from node 7 and node 8 answers",
+            "source": "datagov/county-population-in-iowa-by-year/files/rows.txt",
             "fact": "node_7_answer = '6605'\nnode_8_answer = '10623'\nvalues = [float(node_7_answer), float(node_8_answer)]\nmean_value = sum(values) / len(values)\nanswer = str(int(mean_value) if mean_value.is_integer() else mean_value)\n",
             "subquestion": "What is the average April 01 2020 population of the two counties in <node_6 answer>?",
             "answer": "8614"
         }
     },
     "datasets_used": [
-        "derived from node 7 and node 8 answers",
         "datagov/nchs-infant-mortality-rates-by-race-united-states-1915-2013/files/rows.txt",
         "datagov/nchs-infant-mortality-rates-by-race-united-states-1915-2013/signed-metadata.txt",
         "datagov/nchs-natality-measures-for-females-by-race-and-hispanic-origin-united-states/files/rows.txt",
