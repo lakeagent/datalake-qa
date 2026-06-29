@@ -61,8 +61,13 @@
         "datagov/behavioral-health-servicesprovided-to-the-medicaid-and-chip-population-b6f90/signed-metadata.txt",
         "datagov/nchs-vsrr-quarterly-provisional-estimates-for-selected-indicators-of-mortality/files/rows.txt",
         "datagov/nchs-vsrr-quarterly-provisional-estimates-for-selected-indicators-of-mortality/signed-metadata.txt",
+<<<<<<< Updated upstream
         "datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/files/rows.txt",
         "datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/signed-metadata.txt"
+=======
+        "datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/signed-metadata.txt",
+        "datagov/veteran-pension-expenditures-by-state-of-residence-and-age-group-fy-2023/files/rows.txt"
+>>>>>>> Stashed changes
     ],
     "reasoning_hops": [
         {
